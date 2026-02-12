@@ -103,62 +103,141 @@ const server = createServer(async (req, res) => {
     if (IS_PROD) return sendJson(res, 404, { error: "not_found" }, correlationId);
     const m = getMetricsSnapshot();
     const k = getKpiSnapshot();
+
+    const percent = (v: number): string => `${(v * 100).toFixed(1)}%`;
+    const euro = (v: number): string => `${v.toFixed(3)} €`;
+
+    const successRate = Number(k.verification_success_rate ?? 0);
+    const falseDenyRate = Number(k.false_deny_rate ?? 0);
+    const overrideRate = Number(k.policy_override_rate ?? 0);
+    const replayBlockRate = Number(k.replay_block_rate ?? 1);
+    const securityScore = Number(k.security_profile_score ?? 0);
+
+    const modeledBaselineCost = Number(process.env.BASELINE_COST_PER_VERIFICATION_EUR ?? 0.12);
+    const mitchCost = Number(k.estimated_cost_per_verification_eur ?? 0);
+    const costSavingPerVerification = Math.max(0, modeledBaselineCost - mitchCost);
+    const costSavingRate = modeledBaselineCost > 0 ? costSavingPerVerification / modeledBaselineCost : 0;
+
+    const issuerCurrent = Number(process.env.DIRECT_PARTNER_ISSUER_CURRENT ?? 0);
+    const issuerTarget = Number(process.env.DIRECT_PARTNER_ISSUER_TARGET ?? 1);
+    const rpCurrent = Number(process.env.DIRECT_PARTNER_RP_CURRENT ?? 0);
+    const rpTarget = Number(process.env.DIRECT_PARTNER_RP_TARGET ?? 2);
+
+    const issuerProgress = issuerTarget > 0 ? Math.min(1, issuerCurrent / issuerTarget) : 0;
+    const rpProgress = rpTarget > 0 ? Math.min(1, rpCurrent / rpTarget) : 0;
+
+    const denyBars = Object.entries(m.denyByCode)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([code, count]) => {
+        const width = m.totals.deny > 0 ? Math.max(3, Math.round((count / m.totals.deny) * 100)) : 0;
+        return `<div class="bar-row"><span class="label">${code}</span><div class="bar"><span style="width:${width}%"></span></div><span class="value">${count}</span></div>`;
+      })
+      .join("");
+
     const recentRows = m.recentDecisions
       .map(
         (d) => `<tr><td>${d.at}</td><td>${d.requestId}</td><td>${d.decision}</td><td>${d.decisionCode}</td></tr>`
       )
       .join("");
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>miTch Dashboard</title></head><body style="font-family:Arial;max-width:920px;margin:2rem auto;line-height:1.4">
-<h1>miTch Local Dashboard</h1>
-<p><b>Started:</b> ${m.startedAt}</p>
-<ul>
-<li><b>Requests:</b> ${m.totals.requests}</li>
-<li><b>ALLOW:</b> ${m.totals.allow}</li>
-<li><b>DENY:</b> ${m.totals.deny}</li>
-</ul>
-<h3>Deny by Code</h3>
-<pre>${JSON.stringify(m.denyByCode, null, 2)}</pre>
-<h3>Security KPI (critical deny categories)</h3>
-<ul>
-<li><b>deny_credential_revoked_total:</b> ${k.deny_credential_revoked_total ?? 0}</li>
-<li><b>deny_status_source_unavailable_total:</b> ${k.deny_status_source_unavailable_total ?? 0}</li>
-<li><b>deny_jurisdiction_incompatible_total:</b> ${k.deny_jurisdiction_incompatible_total ?? 0}</li>
-<li><b>deny_reauth_proof_invalid_total:</b> ${k.deny_reauth_proof_invalid_total ?? 0}</li>
-<li><b>deny_resolver_quorum_failed_total:</b> ${k.deny_resolver_quorum_failed_total ?? 0}</li>
-<li><b>deny_status_source_unavailable_rate:</b> ${k.deny_status_source_unavailable_rate ?? 0}</li>
-<li><b>false_allow_total:</b> ${k.false_allow_total ?? 0}</li>
-<li><b>revoked_cache_hit_total:</b> ${k.revoked_cache_hit_total ?? 0}</li>
-<li><b>revoked_cache_store_total:</b> ${k.revoked_cache_store_total ?? 0}</li>
-<li><b>resolver_queries_total:</b> ${k.resolver_queries_total ?? 0}</li>
-<li><b>resolver_quorum_failures_total:</b> ${k.resolver_quorum_failures_total ?? 0}</li>
-<li><b>resolver_inconsistent_responses_total:</b> ${k.resolver_inconsistent_responses_total ?? 0}</li>
-</ul>
-<h3>Estimated Cost KPI</h3>
-<ul>
-<li><b>estimated_cost_per_verification_eur:</b> ${k.estimated_cost_per_verification_eur ?? 0}</li>
-<li><b>crypto_allowed_algs_count:</b> ${k.crypto_allowed_algs_count ?? 0}</li>
-<li><b>reauth_strong_enabled:</b> ${k.reauth_strong_enabled ?? 0}</li>
-<li><b>webauthn_verify_mode_code:</b> ${k.webauthn_verify_mode_code ?? 0}</li>
-<li><b>webauthn_native_mode_enabled:</b> ${k.webauthn_native_mode_enabled ?? 0}</li>
-<li><b>webauthn_allowlist_mode_enabled:</b> ${k.webauthn_allowlist_mode_enabled ?? 0}</li>
-<li><b>webauthn_secret_config_valid:</b> ${k.webauthn_secret_config_valid ?? 0}</li>
-<li><b>webauthn_native_attempt_total:</b> ${k.webauthn_native_attempt_total ?? 0}</li>
-<li><b>webauthn_native_success_total:</b> ${k.webauthn_native_success_total ?? 0}</li>
-<li><b>webauthn_native_deny_total:</b> ${k.webauthn_native_deny_total ?? 0}</li>
-<li><b>webauthn_native_success_rate:</b> ${k.webauthn_native_success_rate ?? 0}</li>
-<li><b>estimated_monthly_verification_volume:</b> ${k.estimated_monthly_verification_volume ?? 0}</li>
-<li><b>estimated_fixed_monthly_cost_eur:</b> ${k.estimated_fixed_monthly_cost_eur ?? 0}</li>
-<li><b>estimated_monthly_run_cost_eur:</b> ${k.estimated_monthly_run_cost_eur ?? 0}</li>
-<li><b>security_profile_score:</b> ${k.security_profile_score ?? 0}</li>
-</ul>
-<h3>Recent Decisions (last 10)</h3>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%">
-<thead><tr><th>Time</th><th>Request ID</th><th>Decision</th><th>Code</th></tr></thead>
-<tbody>${recentRows || "<tr><td colspan='4'><i>No decisions yet</i></td></tr>"}</tbody>
-</table>
-<p><a href="/metrics">/metrics (JSON)</a> | <a href="/metrics.csv">/metrics.csv</a></p>
-</body></html>`;
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>miTch Dashboard</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#111832;--line:#2a3358;--muted:#9aa6cc;--txt:#f5f7ff;--ok:#36d399;--warn:#fbbf24;--bad:#f87171;--accent:#7aa2ff}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 10% 0%, #182347 0%, #0b1020 55%);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:1160px;margin:22px auto;padding:0 16px}
+    .head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+    .muted{color:var(--muted);font-size:13px}
+    .grid{display:grid;gap:12px}
+    .grid.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px}
+    .grid.main{grid-template-columns:2fr 1.1fr}
+    .card{background:linear-gradient(180deg,#121b39,#0f1732);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .k{font-size:12px;color:var(--muted);margin-bottom:6px}.v{font-size:26px;font-weight:700;letter-spacing:.2px}
+    .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;color:var(--muted)}
+    .bar-row{display:grid;grid-template-columns:1.4fr 2fr auto;gap:8px;align-items:center;margin:8px 0}
+    .bar{height:8px;background:#1b264a;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,#7aa2ff,#59d1ff)}
+    .label{font-size:12px;color:#cfd8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.value{font-size:12px;color:#cfd8ff}
+    table{width:100%;border-collapse:collapse;margin-top:8px} th,td{font-size:12px;padding:7px 8px;border-bottom:1px solid #223058;text-align:left}
+    th{color:var(--muted);font-weight:600}
+    .pill-ok{color:#a7f3d0}.pill-warn{color:#fde68a}.pill-bad{color:#fecaca}
+    .targets li{margin:6px 0;color:#d5dcff}
+    .footer{margin-top:10px;font-size:12px;color:var(--muted)}
+    @media (max-width:980px){.grid.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.main{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1 style="margin:0 0 4px 0;font-size:26px">miTch Pilot Dashboard</h1>
+      <div class="muted">Started ${m.startedAt} · Fokus: Security + Adoption ohne Overload</div>
+    </div>
+    <div class="chip">Security Score ${securityScore}/100</div>
+  </div>
+
+  <div class="grid kpis">
+    <div class="card"><div class="k">Verification Success</div><div class="v">${percent(successRate)}</div><div class="muted">Ziel ≥ 99%</div></div>
+    <div class="card"><div class="k">Replay Block Rate</div><div class="v">${percent(replayBlockRate)}</div><div class="muted">Ziel 100%</div></div>
+    <div class="card"><div class="k">Kosten / Verifikation</div><div class="v">${euro(mitchCost)}</div><div class="muted">Modelled Baseline ${euro(modeledBaselineCost)}</div></div>
+    <div class="card"><div class="k">Ersparnis ggü. Baseline</div><div class="v">${percent(costSavingRate)}</div><div class="muted">${euro(costSavingPerVerification)} pro Check</div></div>
+  </div>
+
+  <div class="grid main">
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Security + Quality Verlauf</h3>
+      <div class="bar-row"><span class="label">False Deny Rate</span><div class="bar"><span style="width:${Math.min(100, Math.round(falseDenyRate * 100))}%"></span></div><span class="value">${percent(falseDenyRate)}</span></div>
+      <div class="bar-row"><span class="label">Policy Override Rate</span><div class="bar"><span style="width:${Math.min(100, Math.round(overrideRate * 100))}%"></span></div><span class="value">${percent(overrideRate)}</span></div>
+      <div class="bar-row"><span class="label">Deny Status Source Unavailable</span><div class="bar"><span style="width:${Math.min(100, Math.round(Number(k.deny_status_source_unavailable_rate ?? 0) * 100))}%"></span></div><span class="value">${percent(Number(k.deny_status_source_unavailable_rate ?? 0))}</span></div>
+
+      <h4 style="margin:12px 0 6px 0">Top Deny Codes</h4>
+      ${denyBars || "<div class='muted'>Noch keine Deny-Daten vorhanden.</div>"}
+
+      <h4 style="margin:12px 0 6px 0">Recent Decisions</h4>
+      <table>
+        <thead><tr><th>Zeit</th><th>Request</th><th>Decision</th><th>Code</th></tr></thead>
+        <tbody>${recentRows || "<tr><td colspan='4'><i>No decisions yet</i></td></tr>"}</tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Marktanalyse · Direkt-Partner</h3>
+      <div class="muted" style="margin-bottom:8px">Klein starten: 1 Issuer + 2 RPs als Proof-Markt.</div>
+
+      <div class="bar-row"><span class="label">Issuer Funnel</span><div class="bar"><span style="width:${Math.round(issuerProgress * 100)}%"></span></div><span class="value">${issuerCurrent}/${issuerTarget}</span></div>
+      <div class="bar-row"><span class="label">RP Funnel</span><div class="bar"><span style="width:${Math.round(rpProgress * 100)}%"></span></div><span class="value">${rpCurrent}/${rpTarget}</span></div>
+
+      <h4 style="margin:12px 0 6px 0">Zielgruppe (ICP)</h4>
+      <ul class="targets" style="padding-left:18px;margin:0">
+        <li>EU-regulierte Plattformen mit Alters-/Eligibility-Prüfung</li>
+        <li>RPs mit Compliance-Druck und hoher Haftung</li>
+        <li>Teams, die Integration in &lt;2 Tagen brauchen</li>
+      </ul>
+
+      <h4 style="margin:12px 0 6px 0">Warum günstiger?</h4>
+      <ul class="targets" style="padding-left:18px;margin:0">
+        <li>Weniger Datenhaltung beim RP → geringerer Audit- und Breach-Impact</li>
+        <li>Drop-in Verifier statt Eigenbau/Operations-Overhead</li>
+        <li>Deny-Code + Evidence-Flow reduziert manuelle Incident-Zeit</li>
+      </ul>
+
+      <div class="footer">
+        Hinweis: Kostenvergleich nutzt modellierte Baseline (BASELINE_COST_PER_VERIFICATION_EUR).
+        Für echte Marktzahlen im Pilot mit Realdaten kalibrieren.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Quellen: <a href="/metrics" style="color:#bcd1ff">/metrics</a> · <a href="/kpi" style="color:#bcd1ff">/kpi</a> · <a href="/metrics.csv" style="color:#bcd1ff">/metrics.csv</a> · <a href="/audit/verify" style="color:#bcd1ff">/audit/verify</a>
+  </div>
+</div>
+</body>
+</html>`;
     return sendHtml(res, 200, html, correlationId);
   }
 
