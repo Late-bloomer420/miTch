@@ -225,6 +225,17 @@ const server = createServer(async (req, res) => {
         <li>Deny-Code + Evidence-Flow reduziert manuelle Incident-Zeit</li>
       </ul>
 
+      <h4 style="margin:12px 0 6px 0">Konkurrenz-Matrix (kompakt)</h4>
+      <table>
+        <thead><tr><th>Option</th><th>Go-live</th><th>Data-Min</th><th>Audit</th></tr></thead>
+        <tbody>
+          <tr><td><b>miTch</b></td><td class="pill-ok">Schnell</td><td class="pill-ok">Hoch</td><td class="pill-ok">Hoch</td></tr>
+          <tr><td>KYC Suite (breit)</td><td class="pill-warn">Mittel</td><td class="pill-warn">Mittel</td><td class="pill-ok">Hoch</td></tr>
+          <tr><td>AV Spezialist</td><td class="pill-ok">Schnell</td><td class="pill-warn">Mittel</td><td class="pill-warn">Mittel</td></tr>
+          <tr><td>Inhouse Build</td><td class="pill-bad">Langsam</td><td class="pill-warn">Variabel</td><td class="pill-warn">Variabel</td></tr>
+        </tbody>
+      </table>
+
       <div class="footer">
         Hinweis: Kostenvergleich nutzt modellierte Baseline (BASELINE_COST_PER_VERIFICATION_EUR).
         Für echte Marktzahlen im Pilot mit Realdaten kalibrieren.
