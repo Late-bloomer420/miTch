@@ -5,7 +5,7 @@ Stand: 2026-02-12
 ## Current baseline
 - Repo: `https://github.com/Late-bloomer420/mitch-temp.git`
 - Branch: `main`
-- Last completed batch: `f37cd8c` (security_profile_score KPI) + `70535e7` (backlog refresh)
+- Last completed batch: visual operating layer + decision framework docs (`103`-`107`) and index refresh
 - Operating mode: small autonomous hardening batches, fail-closed, pilot-focused
 
 ## Current security posture snapshot (latest local)
@@ -39,6 +39,11 @@ Stand: 2026-02-12
 - `WEBAUTHN_VERIFY_MODE=signed` (or native when adapter evidence is ready)
 - `WEBAUTHN_ASSERTION_HMAC_SECRET=<strong secret>`
 - Keep fail-closed defaults; never rely on weak compatibility mode in production.
+
+## Fast visual entry points
+- `105_Visual_Control_Panel.md` (scan priorities in 30 seconds)
+- `106_Document_Map_By_Purpose.md` (find docs by intent)
+- `103_GTM_Security_Decision_Framework.md` (decide GO/PILOT/DEFER)
 
 ## Batch-close checklist
 - [ ] Code/tests green (`npm test`, `npm run kpi:check`)

@@ -128,6 +128,11 @@ It is designed to be pasted into other AI systems (Gemini, Claude, AI Studio) or
 - `100_Security_Profile_Score_KPI_v1.md` - compact 0-100 security posture score in KPI/dashboard/checks
 - `101_WebAuthn_Native_Runtime_Usage_Metrics.md` - native WebAuthn runtime attempt/success/deny KPI visibility
 - `102_WebAuthn_Mismatch_and_Replay_Edge_Tests.md` - adversarial tests for signed/native context mismatch and challenge replay denial
+- `103_GTM_Security_Decision_Framework.md` - lean decision template for GO/PILOT/DEFER with buyer + security + compliance gates
+- `104_Decision_Card_Example_ZK_Bundle_v2.md` - example filled decision card using the 103 framework
+- `105_Visual_Control_Panel.md` - at-a-glance visual control page (Now/Next/Later/Defer + decision gates)
+- `106_Document_Map_By_Purpose.md` - repo map by intent (Decide/Build/Prove/Sell) for faster navigation
+- `107_Positioning_Guardrail_Not_WorldCoin2.md` - narrative and positioning guardrail to avoid trust-damaging framing drift
 - `STATE.md` - single-screen current state (Now/Next/Later, blockers, safe runtime reminders)
 - `src/tools/kpiCheckCli.ts` - CLI check for KPI thresholds (`npm run kpi:check`)
 - `src/api/metrics.ts` - in-service counters for basic KPI telemetry (`GET /metrics`)
