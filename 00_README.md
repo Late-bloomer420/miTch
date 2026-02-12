@@ -133,6 +133,7 @@ It is designed to be pasted into other AI systems (Gemini, Claude, AI Studio) or
 - `105_Visual_Control_Panel.md` - at-a-glance visual control page (Now/Next/Later/Defer + decision gates)
 - `106_Document_Map_By_Purpose.md` - repo map by intent (Decide/Build/Prove/Sell) for faster navigation
 - `107_Positioning_Guardrail_Not_WorldCoin2.md` - narrative and positioning guardrail to avoid trust-damaging framing drift
+- `pilot_Closer_Playbook.md` - operational weekly playbook to close first issuer+RP pilot with measurable outcomes
 - `STATE.md` - single-screen current state (Now/Next/Later, blockers, safe runtime reminders)
 - `src/tools/kpiCheckCli.ts` - CLI check for KPI thresholds (`npm run kpi:check`)
 - `src/api/metrics.ts` - in-service counters for basic KPI telemetry (`GET /metrics`)
