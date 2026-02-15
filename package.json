@@ -17,7 +17,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "turbo run test",
     "clean": "turbo run clean",
-    "clean:pnpm": "pnpm -r --filter ./packages/* clean"
+    "clean:pnpm": "pnpm -r --filter ./packages/* clean",
+    "git:setup": "bash scripts/git/setup-git-integration.sh",
+    "git:check": "bash scripts/git/check-git-integration.sh"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",

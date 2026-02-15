@@ -53,6 +53,18 @@ pnpm build
 pnpm dev:wallet
 ```
 
+### Git Integration (recommended once per clone)
+
+```bash
+# configure local git defaults + repo hooks
+pnpm git:setup
+
+# verify integration status
+pnpm git:check
+```
+
+This enables local repository hygiene hooks (`.githooks/pre-commit`) and safe defaults for pull/fetch behavior.
+
 ### Repository Structure
 
 ```
