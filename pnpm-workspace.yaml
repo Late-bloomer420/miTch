@@ -1,4 +1,4 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "apps/verifier-demo/*"
+  - "src/apps/*"
+  - "src/packages/*"
+  - "src/apps/verifier-demo/*"
