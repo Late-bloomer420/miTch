@@ -1,0 +1,33 @@
+{
+  "name": "mitch-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "build:pnpm": "pnpm -r --filter ./packages/* build",
+    "build:topo": "pnpm -r --filter ./packages/* --sort build",
+    "build:all": "pnpm -r --filter ./packages/* build && pnpm -r --filter ./apps/* build",
+    "dev:wallet": "pnpm --filter @mitch/wallet-pwa dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "clean:pnpm": "pnpm -r --filter ./packages/* clean"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "playwright": "^1.58.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.0",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

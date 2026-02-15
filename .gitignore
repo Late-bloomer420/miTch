@@ -1,0 +1,34 @@
+# Node/TypeScript
+node_modules/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Turbo / caches
+.turbo/
+.logs/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor/OS
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build/Output directories (common)
+build/
+out/
+
+# Vite / cache
+.vite/
+
+# pnpm store (keep lockfile; commit pnpm-lock.yaml)
+.pnpm-store/
+
+# Misc
+*.local

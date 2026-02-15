@@ -1,0 +1,19 @@
+{
+    "name": "@mitch/phase0-security",
+    "version": "0.1.0",
+    "description": "Phase-0 Security Hardening: Local Audit Log, Verifier Direct Protocol, and Compliance Checking",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "test": "node dist/integration-example.js"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0"
+    },
+    "author": "miTch Core Team",
+    "license": "UNLICENSED"
+}

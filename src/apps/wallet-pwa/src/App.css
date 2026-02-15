@@ -1,0 +1,151 @@
+:root {
+    --accent-green: #00e676;
+    --accent-blue: #00bfff;
+    --accent-red: #ff5252;
+    --accent-yellow: #ffd740;
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-card-light: #2c2c2c;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --border-color: #333333;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Audit Log Colors */
+.audit-info .audit-message {
+    color: var(--accent-blue);
+}
+
+.audit-success .audit-message {
+    color: var(--accent-green);
+}
+
+.audit-warning .audit-message {
+    color: var(--accent-yellow);
+}
+
+.audit-error .audit-message {
+    color: var(--accent-red);
+}
+
+/* Policy Debug */
+.policy-debug {
+    background: var(--bg-card-light);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.policy-debug h4 {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.policy-debug pre {
+    font-family: 'Courier New', Monaco, monospace;
+    font-size: 11px;
+    color: var(--accent-green);
+    overflow-x: auto;
+    padding: 12px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .policy-debug {
+        font-size: 12px;
+    }
+}
+
+/* Secure UI Components */
+.secure-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: mitchFadeIn 0.3s ease-out;
+}
+
+.secure-prompt {
+    background: #1e1e1e;
+    border: 2px solid var(--accent-blue);
+    border-radius: 24px;
+    padding: 30px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 0 50px rgba(0, 191, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.secure-prompt::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, var(--accent-blue), transparent);
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.3;
+}
+
+.secure-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.secure-badge {
+    background: var(--accent-blue);
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+@keyframes mitchFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

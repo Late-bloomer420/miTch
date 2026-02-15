@@ -1,0 +1,77 @@
+import { describe, test, expect, beforeAll } from 'vitest';
+import { SoftwareKeyGuardian } from '../src/SoftwareKeyGuardian';
+import { KeyProtectionLevel } from '../src/types/KeyProtectionLevel';
+import * as sharedCrypto from '../src/index';
+
+// Ensure browser-only globals exist in Node test env
+beforeAll(() => {
+  if (!(globalThis as any).btoa) {
+    (globalThis as any).btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
+  }
+  // Node 20+ exposes globalThis.crypto with WebCrypto; if not, fail fast
+  expect(globalThis.crypto && (globalThis.crypto as any).subtle).toBeDefined();
+});
+
+describe('SoftwareKeyGuardian', () => {
+  test('createKey returns public JWK without private material and signs/verifies data', async () => {
+    const guardian = new SoftwareKeyGuardian();
+    const res = await guardian.createKey({ userId: 'unit-test-user' });
+
+    expect(res.level).toBe(KeyProtectionLevel.SOFTWARE_EPHEMERAL);
+    expect(res.publicKeyJwk.kty).toBe('EC');
+    expect((res.publicKeyJwk as any).crv).toBe('P-256');
+    expect((res.publicKeyJwk as any).d).toBeUndefined();
+
+    const data = new TextEncoder().encode('hello');
+    const sig = await guardian.sign({ keyId: res.keyId, challenge: data });
+    expect(sig instanceof Uint8Array).toBe(true);
+    expect(sig.length).toBeGreaterThan(0);
+
+    const publicKey = await crypto.subtle.importKey(
+      'jwk',
+      res.publicKeyJwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['verify']
+    );
+    const ok = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      publicKey,
+      sig,
+      data
+    );
+    expect(ok).toBe(true);
+  });
+
+  test('sign throws when key is not found', async () => {
+    const guardian = new SoftwareKeyGuardian();
+    const data = new TextEncoder().encode('payload');
+    await expect(guardian.sign({ keyId: 'missing-key', challenge: data })).rejects.toThrow(/Key not found/);
+  });
+});
+
+describe('tee-attestation (archived placeholder)', () => {
+  test('module can be imported without throwing', async () => {
+    await expect(import('../src/tee-attestation')).resolves.toBeDefined();
+  });
+
+  test('module exposes no named exports', async () => {
+    const mod = await import('../src/tee-attestation');
+    expect(Object.keys(mod)).toHaveLength(0);
+  });
+
+  test('legacy class symbols are not exported', async () => {
+    const mod = await import('../src/tee-attestation');
+    expect((mod as any).TEEManager).toBeUndefined();
+    expect((mod as any).SoftwareEnclaveProvider).toBeUndefined();
+    expect((mod as any).AttestationVerifier).toBeUndefined();
+  });
+
+  test('package entrypoint does not re-export TEEManager', () => {
+    expect((sharedCrypto as any).TEEManager).toBeUndefined();
+  });
+
+  test('package entrypoint does not re-export SoftwareEnclaveProvider', () => {
+    expect((sharedCrypto as any).SoftwareEnclaveProvider).toBeUndefined();
+  });
+});

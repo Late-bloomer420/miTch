@@ -1,0 +1,20 @@
+{
+    "name": "@mitch/benchmarks",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "bench:anchor": "tsx src/l2_stress_test.ts",
+        "bench:cold": "tsx src/cold_path_benchmark.ts"
+    },
+    "dependencies": {
+        "@mitch/audit-log": "workspace:*",
+        "@mitch/shared-crypto": "workspace:*",
+        "@mitch/shared-types": "workspace:*"
+    },
+    "devDependencies": {
+        "tsx": "^4.7.0",
+        "typescript": "^5.3.3",
+        "@types/node": "^20.11.0"
+    }
+}
