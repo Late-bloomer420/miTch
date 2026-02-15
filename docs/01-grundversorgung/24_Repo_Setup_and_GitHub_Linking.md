@@ -37,3 +37,23 @@ git branch -vv
 ## Notes
 - GitHub CLI (`gh`) is not installed on this machine, so automatic repo creation via CLI is unavailable.
 - Browser relay is available but currently no attached tab; attach OpenClaw extension tab to allow UI automation.
+
+
+## Local Git integration hygiene (new)
+Run once after cloning:
+
+```bash
+pnpm git:setup
+```
+
+Validate anytime:
+
+```bash
+pnpm git:check
+```
+
+What this configures:
+- `core.hooksPath=.githooks` (activates tracked repo hooks)
+- `fetch.prune=true` (cleans removed remote branches on fetch)
+- `pull.ff=only` (prevents accidental merge commits on pull)
+- pre-commit guard blocking generated/dependency paths
