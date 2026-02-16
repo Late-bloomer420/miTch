@@ -1,0 +1,23 @@
+{
+  "name": "@mitch/integration-tests",
+  "version": "0.1.0",
+  "description": "End-to-end integration tests across all miTch packages",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:e2e": "vitest run --testNamePattern=E2E"
+  },
+  "dependencies": {
+    "@mitch/mock-issuer": "workspace:*",
+    "@mitch/policy-engine": "workspace:*",
+    "@mitch/layer-resolver": "workspace:*",
+    "@mitch/revocation-statuslist": "workspace:*",
+    "@mitch/eid-issuer-connector": "workspace:*",
+    "@mitch/webauthn-verifier": "workspace:*",
+    "@mitch/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
