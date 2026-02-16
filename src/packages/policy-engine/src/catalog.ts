@@ -36,6 +36,7 @@ export class DenialResolver {
             case ReasonCode.UNKNOWN_VERIFIER: return 'UNKNOWN_VERIFIER';
             case ReasonCode.NO_SUITABLE_CREDENTIAL: return 'NO_SUITABLE_CREDENTIAL';
             case ReasonCode.CLAIM_NOT_ALLOWED: return 'ATTRIBUTE_BLOCKED';
+            case ReasonCode.LAYER_VIOLATION: return 'LAYER_VIOLATION';
             case ReasonCode.CREDENTIAL_EXPIRED:
             case ReasonCode.CREDENTIAL_TOO_OLD: return 'FRESHNESS_EXPIRED';
             case ReasonCode.NO_MATCHING_RULE: return 'NO_MATCHING_RULE';
@@ -75,6 +76,17 @@ export class DenialResolver {
             severity: 'HIGH',
             learnMoreUrl: 'https://mitch.example/policies#MINIMIZATION',
             actions: [
+                { id: 'act_contact', label: 'Anbieter kontaktieren', type: 'CONTACT_VERIFIER', requiresConfirm: false }
+            ]
+        },
+        'LAYER_VIOLATION': {
+            reasonCode: 'LAYER_VIOLATION',
+            title: 'Schutzebene-Verstoß',
+            message: 'Dieser Service ist nicht für diese Datenkategorie autorisiert. Die angeforderten Daten erfordern eine höhere Schutzebene.',
+            severity: 'CRITICAL',
+            learnMoreUrl: 'https://mitch.example/policies#LAYER_MODEL',
+            actions: [
+                { id: 'act_learn', label: 'Schutzebenen verstehen', type: 'LEARN_MORE', requiresConfirm: false },
                 { id: 'act_contact', label: 'Anbieter kontaktieren', type: 'CONTACT_VERIFIER', requiresConfirm: false }
             ]
         },

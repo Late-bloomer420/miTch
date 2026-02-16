@@ -59,6 +59,8 @@ export interface PolicyRule {
     requiresUserConsent?: boolean;
     /** Rule evaluation priority (higher = first) */
     priority?: number;
+    /** Minimum protection layer required for this verifier (0=WELT, 1=GRUNDVERSORGUNG, 2=VULNERABLE) */
+    minimumLayer?: number;
 }
 
 /**
@@ -130,6 +132,7 @@ export type PolicyDenialCode =
     | 'UNKNOWN_VERIFIER'
     | 'NO_SUITABLE_CREDENTIAL'
     | 'ATTRIBUTE_BLOCKED'
+    | 'LAYER_VIOLATION'
     | 'FRESHNESS_EXPIRED'
     | 'POLICY_MISMATCH'
     | 'CONSENT_REQUIRED'

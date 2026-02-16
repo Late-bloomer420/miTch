@@ -20,6 +20,7 @@
         "test": "vitest run"
     },
     "dependencies": {
+        "@mitch/layer-resolver": "workspace:*",
         "@mitch/shared-types": "workspace:*",
         "@mitch/predicates": "workspace:*"
     },

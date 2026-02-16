@@ -32,6 +32,12 @@ import type {
     Requirement
 } from '@mitch/shared-types';
 import { DenialResolver } from './catalog';
+import {
+    ProtectionLayer,
+    getMinimumLayerForData,
+    includesLayer,
+    getLayerName
+} from '@mitch/layer-resolver';
 
 /**
  * Context for policy evaluation.
@@ -61,6 +67,7 @@ export enum ReasonCode {
     NO_MATCHING_RULE = 'NO_MATCHING_RULE',
     UNKNOWN_VERIFIER = 'UNKNOWN_VERIFIER',
     CLAIM_NOT_ALLOWED = 'CLAIM_NOT_ALLOWED',
+    LAYER_VIOLATION = 'LAYER_VIOLATION',
     UNTRUSTED_ISSUER = 'UNTRUSTED_ISSUER',
     CREDENTIAL_EXPIRED = 'CREDENTIAL_EXPIRED',
     CREDENTIAL_TOO_OLD = 'CREDENTIAL_TOO_OLD',
@@ -233,6 +240,30 @@ export class PolicyEngine {
                 // If nothing is left after intersection, we must deny.
                 // This handles cases where the request asks ONLY for things not in the allowed list.
                 return this.result('DENY', [ReasonCode.CLAIM_NOT_ALLOWED], context, policy, startTime, credentials, matchedRule);
+            }
+
+            // Layer-Based Protection Check
+            // Verify that the verifier's layer authorization includes all required claim layers
+            const verifierLayer = matchedRule.minimumLayer ?? ProtectionLayer.WELT;
+            const allRequestedClaims = [...intersection.effectiveClaims, ...intersection.effectiveProvenClaims];
+
+            for (const claim of allRequestedClaims) {
+                const requiredLayer = getMinimumLayerForData(claim);
+                if (!includesLayer(verifierLayer, requiredLayer)) {
+                    console.warn(
+                        `[PolicyEngine] LAYER_VIOLATION: Verifier at ${getLayerName(verifierLayer)} ` +
+                        `cannot access ${claim} (requires ${getLayerName(requiredLayer)})`
+                    );
+                    return this.result(
+                        'DENY',
+                        [ReasonCode.LAYER_VIOLATION],
+                        context,
+                        policy,
+                        startTime,
+                        credentials,
+                        matchedRule
+                    );
+                }
             }
 
             // Select Credential for THIS requirement using EFFECTIVE claims

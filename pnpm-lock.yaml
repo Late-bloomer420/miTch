@@ -294,6 +294,9 @@ importers:
 
   src/packages/policy-engine:
     dependencies:
+      '@mitch/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../predicates
