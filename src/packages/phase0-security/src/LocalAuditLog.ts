@@ -118,7 +118,7 @@ export class LocalAuditLog {
             sequence: chained.sequence,
             prevHash: chained.prevHash,
             hash: chained.hash,
-            iv: this.bufferToHex(iv),
+            iv: this.bufferToHex(iv.buffer as ArrayBuffer),
             ciphertext: this.bufferToHex(encryptedBuffer)
         };
 
@@ -174,9 +174,9 @@ export class LocalAuditLog {
                             const ciphertext = this.hexToBuffer(item.ciphertext);
 
                             const decryptedBuffer = await crypto.subtle.decrypt(
-                                { name: 'AES-GCM', iv },
+                                { name: 'AES-GCM', iv: iv as BufferSource },
                                 this.encryptionKey!,
-                                ciphertext
+                                ciphertext as BufferSource
                             );
 
                             const payload = JSON.parse(new TextDecoder().decode(decryptedBuffer));

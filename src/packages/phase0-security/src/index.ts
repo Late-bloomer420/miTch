@@ -141,7 +141,7 @@ export class LocalAuditLog {
         let tamperedCount = 0;
 
         for (const entry of entries) {
-            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: entry.iv }, this.encryptionKey, entry.encrypted_data);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: entry.iv as BufferSource }, this.encryptionKey, entry.encrypted_data);
             const eventJson = new TextDecoder().decode(decrypted);
 
             const dataToHash = eventJson + prevHash;
@@ -196,7 +196,7 @@ export class LocalAuditLog {
 
         const decryptedEvents: AuditEvent[] = [];
         for (const entry of entries) {
-            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: entry.iv }, this.encryptionKey, entry.encrypted_data);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: entry.iv as BufferSource }, this.encryptionKey, entry.encrypted_data);
             const event = JSON.parse(new TextDecoder().decode(decrypted));
             decryptedEvents.push(event);
         }
@@ -384,8 +384,8 @@ export class VerifierDirectClient {
         const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
 
         const base64 = btoa(String.fromCharCode(...bytes));
-        return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=\/g, '');
-  }
+        return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
 }
 
 export class WalletDirectProtocol {
@@ -748,7 +748,7 @@ export class SplitKeyProtection {
     async reconstructKey(shares: KeyShare[]): Promise<CryptoKey> {
         if (shares.length < 2) throw new Error('Need at least 2 key shares');
         const reconstructed = this.shamirReconstruct(shares.slice(0, 2));
-        return crypto.subtle.importKey('raw', reconstructed, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+        return crypto.subtle.importKey('raw', reconstructed.buffer as ArrayBuffer, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
     }
 
     private shamirSplit(secret: Uint8Array, threshold: number, shares: number): Uint8Array[] {

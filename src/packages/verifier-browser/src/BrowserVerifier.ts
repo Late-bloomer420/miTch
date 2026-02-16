@@ -104,20 +104,20 @@ export class BrowserVerifier {
     async createSession(): Promise<VerificationSession> {
         // 1. Generate ephemeral key pair (P-256 ECDSA)
         const keyPair = await generateEphemeralKeyPair();
-        
+
         // 2. Export public key for wallet
         const publicKeyJWK = await exportPublicKeyJWK(keyPair.publicKey);
-        
+
         // 3. Generate session ID and nonce
         const sessionId = generateSessionId();
         const nonce = generateNonce();
-        
+
         // 4. Compute expiration
         const expiresAt = Date.now() + this.config.sessionTimeoutMs;
-        
+
         // 5. Build challenge URL (for QR code)
         const challengeUrl = this.buildChallengeUrl(sessionId, nonce);
-        
+
         // 6. Store session (with private key in memory)
         const session: VerificationSession = {
             sessionId,
@@ -127,9 +127,9 @@ export class BrowserVerifier {
             expiresAt,
             _privateKey: keyPair.privateKey // Internal only
         };
-        
+
         await this.sessionStorage.set(sessionId, session);
-        
+
         // 7. Return public session data (no private key)
         return {
             sessionId: session.sessionId,
@@ -148,7 +148,7 @@ export class BrowserVerifier {
     ): Promise<VerifiedResponse> {
         // 1. Retrieve session
         const session = await this.sessionStorage.get(response.sessionId);
-        
+
         if (!session) {
             return {
                 success: false,
@@ -174,13 +174,13 @@ export class BrowserVerifier {
             const dataToVerify = new TextEncoder().encode(
                 response.sessionId + response.encryptedPayload
             );
-            
+
             const signatureBuffer = base64UrlToBuffer(response.signature);
-            
+
             // Import wallet's public key
             // TODO: Resolve DID to get public key (for now, assume wallet sends JWK)
             // const walletPubKey = await this.resolveDidToPublicKey(response.walletDid);
-            
+
             // For PoC: Skip signature verification (requires DID resolution)
             // const isValid = await verifySignature(walletPubKey, dataToVerify, signatureBuffer);
             // if (!isValid) {
@@ -229,12 +229,12 @@ export class BrowserVerifier {
         timeoutMs: number = 60_000
     ): Promise<VerifiedResponse> {
         const startTime = Date.now();
-        
+
         // Polling loop (check every 1 second)
         while (Date.now() - startTime < timeoutMs) {
             // Check if session has been fulfilled
             const session = await this.sessionStorage.get(sessionId);
-            
+
             if (!session) {
                 // Session was deleted (response received or expired)
                 return {
@@ -281,9 +281,10 @@ export class BrowserVerifier {
      * Periodic cleanup of expired sessions
      */
     private startCleanupTimer(): void {
-        if (this.sessionStorage instanceof InMemorySessionStorage) {
+        const storage = this.sessionStorage as any;
+        if (typeof storage.cleanup === 'function') {
             setInterval(() => {
-                this.sessionStorage.cleanup!();
+                storage.cleanup();
             }, 60_000); // Every minute
         }
     }

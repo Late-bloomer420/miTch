@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Express } from 'express';
 import cors from 'cors';
 import { VerifierSDK } from '@mitch/verifier-sdk';
 import { NonceStore } from './nonce-store';
@@ -16,7 +16,7 @@ import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
 
-export const app = express();
+export const app: Express = express();
 
 const isTestMode = process.env.MITCH_TEST_MODE === '1';
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';

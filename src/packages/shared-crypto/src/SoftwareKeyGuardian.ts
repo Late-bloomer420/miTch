@@ -37,7 +37,7 @@ export class SoftwareKeyGuardian implements KeyGuardian {
     const sig = await crypto.subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
       keyPair.privateKey,
-      opts.challenge
+      opts.challenge as BufferSource
     );
     return new Uint8Array(sig);
   }

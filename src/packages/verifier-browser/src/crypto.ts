@@ -74,8 +74,8 @@ export async function verifySignature(
                 hash: 'SHA-256'
             },
             publicKey,
-            signature,
-            data
+            signature as BufferSource,
+            data as BufferSource
         );
     } catch {
         return false;
@@ -86,11 +86,11 @@ export async function verifySignature(
  * Compute SHA-256 hash
  */
 export async function sha256(data: string | Uint8Array): Promise<string> {
-    const buffer = typeof data === 'string' 
+    const buffer = typeof data === 'string'
         ? new TextEncoder().encode(data)
         : data;
-    
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer as BufferSource);
     return bufferToHex(new Uint8Array(hashBuffer));
 }
 
@@ -105,7 +105,7 @@ export async function decryptJWE(
     // Note: Full JWE implementation requires JOSE library
     // For PoC, we assume wallet sends simple base64-encoded encrypted data
     // In production, use `jose` library for proper JWE handling
-    
+
     // TODO: Implement full JWE decryption with ECDH-ES
     // For now, return placeholder
     throw new Error('JWE decryption not yet implemented (use JOSE library)');
@@ -132,7 +132,7 @@ export function base64UrlToBuffer(base64url: string): Uint8Array {
     const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const binaryString = atob(base64 + padding);
-    
+
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);

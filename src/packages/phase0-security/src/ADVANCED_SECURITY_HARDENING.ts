@@ -68,7 +68,7 @@ export class UserDerivedKeyProtection {
         const key = await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
-                salt: salt,
+                salt: salt as BufferSource,
                 iterations: 600000,
                 hash: 'SHA-256'
             },
