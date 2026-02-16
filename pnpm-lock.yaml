@@ -261,6 +261,22 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.33)
 
+  src/packages/mock-issuer:
+    dependencies:
+      jose:
+        specifier: ^5.2.0
+        version: 5.10.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.33
+        version: 20.19.33
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.33)
+
   src/packages/oid4vci:
     dependencies:
       '@mitch/policy-engine':
@@ -304,12 +320,18 @@ importers:
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@mitch/mock-issuer':
+        specifier: workspace:*
+        version: link:../mock-issuer
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.33)
 
   src/packages/predicates:
     dependencies:
