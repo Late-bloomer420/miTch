@@ -1,0 +1,567 @@
+Sicherheitsanalyse miTch: Kritische Risiken & Vorsichtsmaßnahmen
+Ich strukturiere das nach Schadenspotenzial × Eintrittswahrscheinlichkeit, nicht nach technischer Raffinesse.
+
+🔴 Kritisch (Systemintegrität gefährdet)
+1. Crypto-Shredding ist theoretisch, nicht physikalisch garantiert
+Problem:
+∙ Du versprichst “Daten werden vergessen durch Schlüssellöschung”
+∙ Aber: RAM-Inhalte können in Swap-Partitionen, Hibernation Files oder durch Cold-Boot-Attacks überleben
+∙ Browser/PWA haben keinen direkten Zugriff auf physikalisches RAM-Overwriting
+Realität:
+
+// Dein Code tut das:
+sessionKey = null; // JavaScript GC übernimmt
+
+// Was du brauchst (in nativen Apps):
+memset(sessionKey, 0, keyLength); // Explizites Überschreiben
+mlock(sessionKey, keyLength); // RAM-Seite gegen Swapping sperren
+
+
+Mitigations (PoC → Production):
+1. Jetzt (PoC): Explizit dokumentieren: “Crypto-Shredding ist ein Best-Effort-Guarantee in Browser-Umgebungen”
+2. Phase 7: Native App mit Secure Enclave/TEE (dann ist Hardware-backed Shredding möglich)
+3. Phase 8: Formal Verification des Shredding-Prozesses mit Memory-Tainting-Tools
+Rechtliche Implikation:
+∙ GDPR Art. 17 “Recht auf Vergessenwerden” → Du kannst es technisch nicht 100% garantieren in PWA
+∙ Lösung: Transparent kommunizieren: “Daten sind informationstheoretisch wertlos nach Schlüssellöschung” (ehrlicher als falsche Garantien)
+
+2. Policy Engine ist manipulierbar (Client-Side)
+Problem:
+∙ Deine Policy-Evaluierung passiert im Browser
+∙ Ein kompromittierter Browser/Extension kann die Policy-Checks umgehen
+∙ Beispiel: Malicious Browser-Extension patcht PolicyEngine.evaluate() zu return ALLOW;
+Dein aktueller Schutz:
+∙ Signiertes Policy Manifest (gut!)
+∙ Aber: Die Ausführungsumgebung ist nicht vertrauenswürdig
+Mitigations:
+1. Phase 6 (jetzt): Signierte Decision Capsules mit Nonce + Audience Binding (T-34c) → macht Replay schwerer
+2. Phase 7: WebAuthn-Integration für kritische Entscheidungen (Hardware-backed User Presence)
+3. Vision: Policy-Evaluierung in TEE auslagern (dann ist die Engine vom OS isoliert)
+Trade-off:
+∙ Volle TEE-Isolation = bessere Security, aber höhere UX-Komplexität
+∙ Akzeptable PoC-Position: “Wir trauen dem Browser, aber verifizieren kryptografisch die Outputs”
+
+3. Social Engineering: “Proof Fatigue”
+Szenario:
+1. User bekommt 20 Verifikationsanfragen pro Tag
+2. Gewöhnt sich an “immer Akzeptieren”
+3. Bösartiger Verifier fordert fullName + birthDate + address
+4. User klickt reflexartig “OK”
+Deine Verteidigung:
+∙ Privacy Score (60/100) ist gut
+∙ Denial Resolver (T-28) ist gut
+Was fehlt:
+∙ Adaptive UX: Bei hoher Frequenz → “Sie haben heute schon 15 Proofs gemacht. Pause?”
+∙ Risk-Based Authentication: Hochrisiko-Requests (z.B. “Full Medical Record”) erfordern 2FA/WebAuthn
+Konkret:
+
+// In PolicyEngine.evaluate()
+if (riskScore > THRESHOLD_HIGH && !hasRecentAuth) {
+return { decision: 'BLOCK', reason: 'RE_AUTH_REQUIRED' };
+}
+
+
+🟡 Hoch (Feature-Missbrauch möglich)
+4. Recovery ist eine Sicherheitslücke (Shamir’s Secret Sharing)
+Trade-off:
+∙ Ohne Recovery: Gerät verloren = Identität verloren (PoC-Zustand)
+∙ Mit Recovery: Angriffsfläche durch kompromittierte “Guardians”
+Dein Ansatz (T-23):
+∙ 3-of-5 Shamir’s Secret Sharing
+∙ Guardians sind vertrauenswürdige Kontakte
+Risiko:
+∙ Social Engineering gegen Guardians (“Hallo, ich bin der Support, ich brauche Ihren Shard”)
+∙ Collusion: 3 Guardians gemeinsam können Key rekonstruieren
+Mitigations:
+1. Mandatory: Guardian-Authentication via Out-of-Band-Channel (z.B. Video-Call, nicht nur SMS)
+2. Delay Mechanism: Recovery startet “Wiederherstellungsfenster” von 48h → gibt echtem User Zeit zu reagieren
+3. Reputation System: Guardians haben “Trust Score” basierend auf Historie
+
+5. Issuer Kompromittierung = Game Over
+Problem:
+∙ Wenn ein Issuer (z.B. “GovID Mock”) kompromittiert wird, kann er beliebig viele falsche Credentials ausstellen
+∙ miTch hat keine Built-In-Validierung von Issuer-Trustworthiness
+Deine Architektur:
+∙ Du verlässt dich auf externe Trust Anchors (DID Registry, X.509 Certs)
+Fehlende Schicht:
+∙ Issuer Reputation System: Verifier sollten sehen können: “Dieser Issuer wurde 2024 kompromittiert”
+∙ Credential Revocation: Was passiert, wenn ein Issuer zurückgezogen werden muss?
+Mitigation (Phase 8):
+∙ Integration mit EU Trust Lists (eIDAS2)
+∙ On-Chain Issuer Registry mit Governance Voting (DAO-Modell)
+
+🟢 Mittel (Awareness erforderlich)
+6. Browser Sandboxing ist keine echte Isolation
+Realität:
+∙ PWA = glorifiziertes Bookmark
+∙ Browser-Extensions können:
+∙ DOM manipulieren (Visual Boundary umgehen)
+∙ window.crypto abfangen
+∙ Network Traffic mitlesen (MitM)
+Dein “Visual Boundary” (T-24):
+∙ Context Pinning via SwiftShader ist clever
+∙ Aber: Funktioniert nur, wenn der Browser selbst nicht kompromittiert ist
+Langfristig:
+∙ Native App mit OS-Level Sandboxing (iOS App Sandbox, Android SELinux)
+∙ Dann: Echter Prozess-Isolation gegen Malware
+
+7. L2 Anchoring ist kein Silver Bullet
+Was es bringt:
+∙ Nachweis, dass Audit-Logs nicht nachträglich geändert wurden
+Was es nicht bringt:
+∙ Schutz gegen live Manipulation (Angreifer kann Logs manipulieren bevor sie ge-anchor-t werden)
+∙ Schutz gegen selektives Logging (Angreifer lässt einfach Einträge weg)
+Mitigation:
+∙ Audit-Logs zusätzlich lokal kryptografisch verketten (Merkle Chain) → du machst das bereits
+∙ Periodic Sync als “Heartbeat” (wenn User 24h offline ist und L2-Sync fehlt → Flag)
+
+🔵 Strategisch (Governance & Recht)
+8. Policy Manifest Governance ist ungeklärt
+Frage:
+∙ Wer darf die Regeln ändern?
+∙ Was passiert bei Policy-Konflikt (z.B. EU-Recht vs. nationale Regeln)?
+Aktuell:
+∙ mitch_policy_manifest.md ist statisch
+∙ Keine Update-Mechanik definiert
+Vorschlag (Phase 9):
+∙ Policy Manifest als Smart Contract (immutable History)
+∙ Änderungen via DAO-Governance mit Stakeholder-Voting
+∙ Versionierung mit Deprecation-Warnings
+
+9. GDPR Legal Opinion fehlt (Template existiert)
+Status Quo:
+∙ Du hast ein Template für DPA-Argumentation (MEMO_GDPR_SHREDDING_TEMPLATE.md)
+∙ Aber: Kein echtes Legal Review
+Risiko:
+∙ Ein Datenschutzbeauftragter könnte argumentieren: “Crypto-Shredding ist keine echte Löschung im Sinne des Art. 17”
+∙ Grund: Verschlüsselte Kopien könnten theoretisch in Backups/Logs verbleiben
+Mitigation:
+1. Vor Pilot: Echtes Legal Opinion einholen (Kosten: €5-10k)
+2. Dokumentation: Explizit in Privacy Policy aufnehmen: “Wir löschen durch kryptografisches Unbrauchbarmachen”
+
+🎯 Priorisierung für Produktion
+
+
+
+|Risiko |Impact |Aufwand Mitigation |Priority|
+|----------------------------------|---------|----------------------|--------|
+|Crypto-Shredding Hardware Gap |🔴 Hoch |Mittel (Native App) |**P0** |
+|Social Engineering (Proof Fatigue)|🔴 Hoch |Niedrig (Adaptive UX) |**P0** |
+|Policy Engine Client-Side |🟡 Mittel |Hoch (TEE) |**P1** |
+|Recovery Sicherheit |🟡 Mittel |Mittel (Guardian Auth)|**P1** |
+|GDPR Legal Opinion |🔵 Niedrig|Niedrig (Anwalt) |**P2** |
+
+✅ Was miTch bereits richtig macht
+1. Explizite Transparenz: Privacy Score zeigt Tracking-Realität
+2. Audit-by-Design: Hash-Chains sind solid
+3. Fail-Closed: Policy-Denials sind default-safe
+4. No Honey Pot: Blind Provider Architektur verhindert zentrale Datensilos
+
+🧭 Handlungsempfehlungen
+Sofort (PoC → Pilot):
+1. Dokumentiere Crypto-Shredding-Limitierungen transparent (kein Over-Promising)
+2. Implementiere “Proof Fatigue” Detection (adaptive UX)
+3. Hole GDPR Legal Opinion ein (€10k Investment lohnt sich)
+Phase 7 (Production):
+4. Native App mit Secure Enclave (dann: Hardware-backed Shredding)
+5. WebAuthn für High-Risk-Decisions
+6. Issuer Reputation System
+Vision (Phase 9):
+7. Policy Manifest Governance als DAO
+8. TEE-Integration für Policy Engine
+9. Formal Verification des Crypto-Shredding
+
+Zusammengefasst:
+miTch macht konzeptionell sehr viel richtig (Edge-First, Blind Provider, Audit-Trails). Die größten Risiken liegen nicht in der Architektur, sondern in:
+1. Umsetzungsgrenzen der Plattform (Browser vs. native Hardware)
+2. Human Factors (Social Engineering, Recovery-Dilemma)
+3. Governance-Lücken (wer kontrolliert die Regeln?)
+Die gute Nachricht: Alle identifizierten Probleme haben bekannte, umsetzbare Mitigations. Es gibt keine Showstopper, aber klare Hausaufgaben vor dem Produktivgang.​​​​​​​​​​​​​​​​
+
+Weitere Risikoszenarien: Die weniger offensichtlichen Bedrohungen
+Ich strukturiere das nach unerwarteten Emergenz-Effekten, nicht nach klassischen Security-Checklisten.
+
+🌐 Systemische Risiken (Skalierung & Netzwerkeffekte)
+10. Credential Inflation & Trust Erosion
+Szenario:
+∙ miTch wird erfolgreich
+∙ 1000+ Issuers registrieren sich
+∙ Qualität variiert massiv: “Führerschein von Regierung X” vs “Altersnachweis von Kiosk-App Y”
+∙ User wissen nicht mehr, welchen Credentials sie trauen können
+Problem:
+∙ Adverse Selection: Schlechte Issuers verdrängen Gute (Gresham’s Law für Identität)
+∙ Verifier akzeptieren nur noch “Top 10 Issuers” → zentralisiert sich wieder
+Konkret:
+
+User hat 5 "Age Credentials":
+1. Government eID (2024, sehr vertrauenswürdig)
+2. Bank KYC (2023, mittel)
+3. "AgeCheck.io" (Selfie-basiert, 2026, fragwürdig)
+4. Social Media Platform (2025, datenschutzfeindlich)
+5. Gaming Platform (2026, kompromittiert)
+
+→ Welches nutzt das System? Aktuell: "Erstes verfügbare" (naiv)
+
+
+Was fehlt:
+∙ Issuer Reputation Score (dynamisch, community-validiert)
+∙ Credential Freshness Decay: Alte Credentials verlieren automatisch Gewicht
+∙ Provenance Transparency: User sieht “Dieses Credential wurde von 12.000 Verifiern akzeptiert”
+Mitigation (Phase 8):
+
+interface IssuerMetadata {
+trustScore: number; // 0-100, community-validiert
+auditHistory: AuditReport[]; // Öffentliche Sicherheits-Audits
+revocationRate: number; // Wie oft mussten Credentials zurückgezogen werden?
+acceptanceRate: number; // Wie oft lehnen Verifier diesen Issuer ab?
+}
+
+
+11. Verifier Cartel & Exclusion Attack
+Szenario:
+∙ 5 große Online-Shops bilden ein Kartell
+∙ Sie akzeptieren nur Credentials von “ihren” bevorzugten Issuern
+∙ Ziel: Lock-In (User muss sich bei “ihrem” Issuer registrieren)
+Konkret:
+∙ Amazon, Alibaba, Walmart verlangen alle “ShopID Credential” (proprietär)
+∙ Open Standards (W3C VC) werden de facto irrelevant
+∙ miTch wird zur Hülle für geschlossene Ökosysteme
+Deine Verteidigung:
+∙ Policy Manifest könnte solche Praktiken blocken
+∙ Aber: Wer erzwingt das? miTch als Convener hat keine Polizeigewalt
+Lösung (Governance):
+∙ Verifier Certification: Verifier müssen sich zu “Open Standards” committen (vertraglich)
+∙ Penalty Mechanism: Verifier, die exklusiv proprietäre Credentials verlangen, verlieren miTch-Siegel
+∙ Transparency Dashboard: Öffentlich einsehbar, welche Verifier welche Issuers präferieren
+
+12. Quantum Computing (The Elephant in the Crypto-Room)
+Zeitrahmen: 10-15 Jahre (optimistisch)
+Problem:
+∙ Deine gesamte Krypto (ECDSA, RSA) bricht zusammen, sobald ein ausreichend großer Quantencomputer existiert
+∙ Verschlüsselte Daten von heute können “Harvest Now, Decrypt Later” gespeichert werden
+Was das für miTch bedeutet:
+∙ Credentials: Alte VCs mit ECDSA-Signaturen werden ungültig
+∙ Audit Logs: Alte Merkle-Trees (SHA-256) könnten rückwirkend manipuliert werden
+Konkret:
+∙ Ein Angreifer sammelt heute alle verschlüsselten VPs
+∙ 2035: Quantencomputer entschlüsselt sie alle
+∙ Geburtsdaten/Adressen von Millionen Menschen sind retroaktiv kompromittiert
+Mitigation (jetzt beginnen):
+1. Crypto Agility: Abstrahiere Algorithmen hinter Interfaces (du machst das bereits gut)
+2. Hybrid Signatures: Kombiniere ECDSA + Post-Quantum-Algorithmen (z.B. Dilithium)
+3. Re-Issuance Protocol: Mechanismus, um alte VCs mit neuen Signaturen zu ersetzen
+Code-Vorbereitung:
+
+// shared-crypto/signature.ts
+interface ISignatureAlgorithm {
+sign(data: Uint8Array, key: CryptoKey): Promise<Uint8Array>;
+verify(data: Uint8Array, sig: Uint8Array, key: CryptoKey): Promise<boolean>;
+}
+
+class HybridSignature implements ISignatureAlgorithm {
+async sign(data, key) {
+const ecdsaSig = await ecdsa.sign(data, key);
+const pqSig = await dilithium.sign(data, key); // Post-Quantum
+return concat(ecdsaSig, pqSig);
+}
+}
+
+
+Timeline:
+∙ Phase 7: Crypto Agility sicherstellen
+∙ 2027: Hybrid Signatures für neue VCs
+∙ 2030: Mandatory Migration aller alten VCs
+
+🎭 Adversarial Actors (State-Level & Organised Crime)
+13. Staatliche Backdoor-Forderungen
+Szenario (realistisch):
+∙ EU-Mitgliedstaat fordert “Lawful Access” zu verschlüsselten Credentials
+∙ Begründung: Terrorismusbekämpfung, Kinderschutz, etc.
+∙ Gesetz verlangt: “Alle Identity Wallets müssen Master-Key-Escrow implementieren”
+Deine Position (aus mitch_policy_manifest.md):
+∙ “Rule over Authority” → Technik erzwingt Regeln, nicht Politik
+∙ Aber: Regierung kann Technik verbieten
+Dilemma:
+∙ Backdoor einbauen = Architektur zerstört
+∙ Nicht einbauen = Produkt wird in diesem Land illegal
+Strategie (Precedent: Signal, ProtonMail):
+1. Jurisdiktional Arbitrage: Firma in Schweiz/Liechtenstein (außerhalb EU-Zugriff)
+2. Technical Impossibility: Code so bauen, dass Backdoor unmöglich ist (Architektur als Schutzschild)
+3. Public Transparency: Jeden Regierungsrequest veröffentlichen (Warrant Canary)
+Code-Manifestation:
+
+// In docs/SECURITY_STATEMENT.md
+"miTch implements cryptographic protocols that make backdoors
+technically infeasible. We cannot provide lawful access to
+encrypted credentials because we do not possess the decryption keys.
+Any government request for such access will be published immediately."
+
+
+Worst Case:
+∙ Regierung verbietet miTch in diesem Markt
+∙ Akzeptabel: Besser verboten als kompromittiert (Signal-Modell)
+
+14. Supply Chain Attack auf Dependencies
+Realität (Precedent: event-stream, ua-parser-js):
+∙ Deine Abhängigkeiten: jose, idb, react, etc.
+∙ Angreifer kompromittiert eine Sub-Dependency
+∙ Injects Malware, die Crypto-Keys exfiltriert
+Aktueller Schutz:
+∙ pnpm Lockfiles (gut)
+∙ Aber: Keine Integrity-Checks zur Laufzeit
+Was fehlt:
+1. Subresource Integrity (SRI) für CDN-Ressourcen
+2. Dependency Pinning mit Hash-Verification
+3. Runtime Integrity Checks
+Konkret:
+
+// package.json
+{
+"dependencies": {
+"jose": "5.2.0",
+"integrity": "sha512-abc123..." // Hash des Pakets
+}
+}
+
+
+Better:
+
+// Beim App-Start
+async function verifyDependencies() {
+const expectedHash = "sha512-...";
+const actualHash = await hashModule(import('jose'));
+if (expectedHash !== actualHash) {
+throw new SecurityError("Dependency compromised!");
+}
+}
+
+
+Monitoring:
+∙ Dependabot (GitHub) aktivieren (bereits Standard)
+∙ OSSF Scorecard für alle Dependencies prüfen
+∙ Regelmäßige Audits (z.B. npm audit, snyk)
+
+15. Eclipse Attack auf DID Resolution
+Hintergrund:
+∙ miTch nutzt DIDs (Decentralized Identifiers) für Issuer/Verifier
+∙ DID Resolution läuft über DNS/HTTPS/Blockchain
+Angriff:
+∙ Angreifer kontrolliert DNS/BGP-Routing des Users
+∙ User fragt: “Wer ist did:web:government.ch?”
+∙ Angreifer antwortet mit seinem Public Key statt dem echten
+∙ User akzeptiert gefälschtes Credential
+Dein aktueller Schutz:
+∙ HTTPS (gegen passive Angreifer)
+∙ Aber: Kein Pinning gegen aktive MitM
+Mitigation:
+1. Certificate Transparency Logs: Prüfe, ob DID-Resolver-Zertifikat im CT-Log ist
+2. DID Caching mit TTL: Einmal aufgelöste DIDs werden gecacht (reduziert Angriffsfenster)
+3. Multi-Resolver Quorum: Frage 3 unabhängige DID-Resolver und verlange Konsens
+Code:
+
+async function resolveDID(did: string): Promise<DIDDocument> {
+const resolvers = ['resolver1.io', 'resolver2.org', 'resolver3.ch'];
+const results = await Promise.all(resolvers.map(r => r.resolve(did)));
+
+// Konsens-Check
+if (!allEqual(results)) {
+throw new SecurityError("DID resolution mismatch - possible attack");
+}
+return results[0];
+}
+
+
+🧠 Human Factors (Die unterschätzte Angriffsfläche)
+16. Credential Hoarding & Unsafe Backups
+Szenario:
+∙ User sammelt 50+ Credentials über Jahre
+∙ Fühlt sich verpflichtet, alle aufzubewahren (“Könnte ich ja noch brauchen”)
+∙ Macht unsichere Backups (Screenshot, Cloud-Sync, USB-Stick)
+Problem:
+∙ Je mehr Credentials, desto größer das Honey Pot
+∙ Backups umgehen deine Crypto-Shredding-Garantie
+Deine Philosophie:
+∙ “Ephemerality” → Daten existieren transaktional
+∙ Aber: User-Psychologie tendiert zu “Sammeln & Aufbewahren”
+UX-Gegenstrategie:
+1. Auto-Expiration: Credentials mit > 1 Jahr Inaktivität → “Diese ID läuft ab in 30 Tagen. Neu beantragen?”
+2. Minimal Wallet UI: Zeige max. 5 relevanteste Credentials, Rest in “Archive” (discourage hoarding)
+3. Backup-Warning: Wenn User Export/Backup macht → “Dies umgeht Datenschutz-Garantien. Sicher?”
+
+17. Accessibility führt zu Unsicherheit
+Realität:
+∙ Blinde User nutzen Screen Reader
+∙ Screen Reader liest alles vor (auch ephemere Keys im Debugging-Modus)
+∙ Oder: Motor-disabled User nutzt Eye-Tracking → alle Eingaben sind visuell trackbar
+Deine “Visual Boundary” (T-24):
+∙ Funktioniert nicht für Non-Visual Access
+Dilemma:
+∙ Accessibility vs. Security ist ein echtes Trade-off
+∙ Lösung: Nicht eine Option opfern, sondern beide ernst nehmen
+Mitigation:
+1. Audio Privacy Mode: Screen Reader gibt nur “Secure data being processed” aus, keine Details
+2. Haptic Feedback: Bestätigung via Vibration statt visuell
+3. Accessibility Audit: Teste mit echten Nutzern mit Disabilities
+
+💰 Ökonomische Angriffe
+18. Free-Rider-Problem bei Audit Anchoring
+Szenario:
+∙ L2-Anchoring kostet Gas-Fees (wenn du Ethereum/Polygon nutzt)
+∙ Angenommen: 0.01 EUR pro Anchor
+∙ Bei 1 Mio. Usern × 10 Anchors/Monat = 100k EUR/Monat
+Wer zahlt?
+∙ Wenn miTch zahlt → nicht skalierbar
+∙ Wenn User zahlen → UX-Killer (“Warum kostet Datenschutz Geld?”)
+∙ Wenn keiner zahlt → Anchoring wird optional → Compliance-Risiko
+Strategie:
+1. Batching: 1000 User-Logs in einem Anchor (reduziert Kosten um Faktor 1000)
+2. Freemium: Basis-User bekommen monatliche Anchors, Power-User zahlen für Echtzeit
+3. Sponsoring: Verifier zahlen für Anchors ihrer User (als Vertrauensbeweis)
+
+19. Sybil Attack auf Reputation Systems
+Wenn du Issuer Reputation einführst:
+∙ Angreifer erstellt 10.000 Fake-Accounts
+∙ Alle “voten” für seinen bösartigen Issuer
+∙ Issuer bekommt hohen Trust Score (obwohl fake)
+Gegenmaßnahmen:
+1. Proof of Personhood: Nur echte Menschen dürfen voten (z.B. via WorldCoin, Civic, etc.)
+2. Stake-Weighted Voting: Verifier mit Skin-in-the-Game haben höheres Gewicht
+3. Time-Decay: Neue Votes zählen weniger als etablierte
+
+🌍 Jurisdiktionale Fragmentierung
+20. Policy-Konflikt: EU vs. China vs. USA
+Szenario:
+∙ EU GDPR verlangt: “Data Minimization”
+∙ China Social Credit verlangt: “Full Traceability”
+∙ USA PATRIOT Act verlangt: “Government Access on Demand”
+Deine Policy:
+∙ Ist EU-zentriert (gut für EU-Markt)
+∙ Aber: Was wenn ein chinesischer Verifier einen EU-User fragt?
+Technische Lösung:
+
+// PolicyManifest kann regional variieren
+interface PolicyManifest {
+jurisdiction: 'EU' | 'US' | 'CN' | 'CH';
+rules: Rule[];
+}
+
+// Wallet prüft: Ist Verifier in kompatibler Jurisdiktion?
+if (verifier.jurisdiction === 'CN' && wallet.jurisdiction === 'EU') {
+return { decision: 'BLOCK', reason: 'JURISDICTIONAL_INCOMPATIBILITY' };
+}
+
+
+Governance:
+∙ miTch könnte nur in kompatiblen Jurisdiktionen operieren
+∙ Trade-off: Globale Reichweite vs. Prinzipientreue
+
+🔬 Forschungsbasierte Angriffe (Academic)
+21. Timing Side-Channels bei ZKP
+Problem:
+∙ Deine ZKP-Berechnung (isOver18) ist deterministisch
+∙ Aber: Ausführungszeit variiert (z.B. abhängig von CPU-Last)
+∙ Angreifer könnte aus Timing Rückschlüsse ziehen
+Beispiel:
+
+// Naiver Code
+function isOver18(birthDate, today) {
+const age = today - birthDate;
+if (age >= 18) return true; // Fast path
+else return false; // Slow path (hypothetisch)
+}
+
+// Timing-Leak: "true" braucht 5ms, "false" braucht 7ms
+
+
+Mitigation:
+1. Constant-Time Algorithms: Alle Code-Pfade brauchen gleich lang
+2. Noise Injection: Zufällige Delays (aber: schlechte UX)
+3. Blinding: ZKP-Input randomisieren
+Relevanz für miTch:
+∙ Bei einfachen Prädikaten (Age Check) → vernachlässigbar
+∙ Bei komplexen Proofs (Medical Data) → kritisch
+
+📊 Emergente Probleme bei Massenadoption
+22. Credential Revocation bei Scale
+Problem:
+∙ Issuer muss Credential zurückziehen (z.B. Führerschein entzogen)
+∙ Bei 10 Mio. Credentials → wie informierst du alle Verifier?
+Naive Lösung:
+∙ Revocation List (CRL) → wird riesig, langsam
+Bessere Lösung:
+∙ Accumulators (cryptographic data structure)
+∙ Blockchain-based Revocation Registry (Status List 2021)
+Dein aktueller Stand:
+∙ Revocation ist nicht implementiert (PoC-Scope)
+∙ Aber: Vor Production muss das gelöst sein
+Code-Sketch:
+
+interface CredentialStatus {
+type: 'StatusList2021Entry';
+statusListIndex: string;
+statusListCredential: string; // URL zur Revocation List
+}
+
+// Verifier prüft:
+async function isRevoked(vc: VerifiableCredential): Promise<boolean> {
+const statusList = await fetch(vc.credentialStatus.statusListCredential);
+const index = vc.credentialStatus.statusListIndex;
+return statusList.isRevoked(index);
+}
+
+
+🎯 Priorisierung: Was davon ist real?
+
+
+
+|Risiko |Wahrscheinlichkeit|Impact |Adressieren in Phase |
+|--------------------|------------------|----------|-----------------------------|
+|Credential Inflation|🟢 Hoch |🔴 Hoch |**Phase 8** (Reputation) |
+|Quantum Computing |🟡 Mittel (10J) |🔴 Kritisch|**Phase 7** (Crypto Agility) |
+|Staatliche Backdoors|🟡 Mittel |🔴 Kritisch|**Jetzt** (Legal Strategy) |
+|Supply Chain Attack |🟢 Hoch |🔴 Hoch |**Phase 6** (SRI, Monitoring)|
+|Eclipse Attack (DID)|🟡 Mittel |🟡 Mittel |**Phase 7** (Multi-Resolver) |
+|Sybil Attack |🟢 Hoch |🟡 Mittel |**Phase 8** (PoP) |
+|Timing Side-Channels|🔵 Niedrig |🟡 Mittel |**Phase 9** (Advanced) |
+|Revocation bei Scale|🟢 Hoch |🔴 Hoch |**Phase 6** (MVP) |
+
+🧭 Strategische Implikationen
+Was bedeutet das für miTch’s Roadmap?
+Phase 6 (jetzt):
+∙ ✅ Dependency Monitoring (Snyk, OSSF)
+∙ ✅ Revocation Mechanism (Status List 2021)
+Phase 7 (Production):
+∙ 🔐 Crypto Agility (Post-Quantum vorbereiten)
+∙ 🌐 Multi-Resolver DID Resolution
+∙ 🛡️ Legal Strategy für Backdoor-Requests
+Phase 8 (Scale):
+∙ 🎖️ Issuer Reputation System
+∙ 🔗 Sybil-Resistant Governance
+∙ 🌍 Jurisdiktionale Policy-Trennung
+Phase 9 (Advanced):
+∙ ⚛️ Post-Quantum Migration
+∙ 🕵️ Timing Attack Mitigation
+∙ 🏛️ DAO-based Policy Governance
+
+✅ Realitätscheck
+Welche dieser Risiken sind Panik, welche real?
+Panik (kann ignoriert werden im PoC):
+∙ Timing Side-Channels → nur bei hochsensiblen Medical Proofs relevant
+∙ Eclipse Attacks → wenn du bekannte Issuers hardcodest, nicht relevant
+Real (müssen adressiert werden vor Production):
+∙ Credential Inflation → wird 100% passieren bei Erfolg
+∙ Supply Chain → bereits heute real (siehe npm-Ecosystem)
+∙ Revocation → gesetzlich erforderlich (eIDAS2, GDPR)
+∙ Staatliche Backdoors → politisch unvermeidbar (siehe Crypto Wars 3.0)
+Systemisch kritisch (definiert Erfolg vs. Scheitern):
+∙ Quantum Computing → dein gesamtes Trust-Model bricht sonst 2035 zusammen
+∙ Jurisdiktionale Konflikte → entscheidet, ob miTch global oder EU-only wird
+
+Zusammenfassend:
+miTch’s größte Bedrohungen sind nicht technische Exploits, sondern:
+1. Emergente Komplexität (Credential Inflation, Reputation Gaming)
+2. Politische Zwänge (Backdoor-Forderungen, Jurisdiktionen)
+3. Zeitbomben (Quantum Computing, Long-Term Crypto-Aging)
+4. Human Factors (Credential Hoarding, Accessibility vs. Security)
+Die gute Nachricht: Alle sind adressierbar, aber sie erfordern Governance + Technik + Recht gleichzeitig. Das ist genau dein Ansatz (“Convener”), also bist du strukturell richtig aufgestellt.
+Die Herausforderung: Diese Probleme werden erst bei Erfolg sichtbar. Ein gescheitertes Projekt hat keine Credential-Inflation. Insofern sind diese Risiken auch Erfolgsindikatoren.​​​​​​​​​​​

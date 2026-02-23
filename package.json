@@ -13,7 +13,9 @@
     "kpi:check": "npm run compile && node dist/tools/kpiCheckCli.js",
     "adjudicate": "npm run compile && node dist/tools/adjudicateCli.js",
     "start": "node dist/server.js",
-    "dev": "npm run compile && node dist/server.js"
+    "dev": "npm run compile && node dist/server.js",
+    "poc": "npm run compile && node dist/poc-sdjwt.js",
+    "poc:web": "npm run compile && node dist/poc-web/server.js"
   },
   "keywords": [
     "privacy",

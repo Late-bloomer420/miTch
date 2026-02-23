@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>miTch — DPIA & GDPR Compliance Framework</title>
+<style>
+  :root {
+    --bg: #0a0e17; --surface: #131a2b; --surface2: #1a2340; --border: #2a3555;
+    --text: #e2e8f0; --text-dim: #8892a8;
+    --accent: #6366f1; --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+    --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+    --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+    --blue: #3b82f6; --orange: #f97316;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; }
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .back { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--accent); text-decoration: none; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .back:hover { text-decoration: underline; }
+
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.3rem; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text-dim); font-size: 1rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 2rem 0 0.8rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.2rem 0 0.5rem; color: var(--accent); }
+  p { margin-bottom: 0.8rem; color: var(--text); }
+  .dim { color: var(--text-dim); }
+
+  .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin: 0.1rem; }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+  th { text-align: left; padding: 0.6rem 0.8rem; background: var(--surface2); color: var(--accent); font-weight: 600; border-bottom: 2px solid var(--border); }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(99,102,241,0.05); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin: 1rem 0; }
+  .card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+
+  ul { margin: 0.5rem 0 0.8rem 1.5rem; }
+  li { margin-bottom: 0.3rem; }
+
+  .risk-high { color: var(--red); font-weight: 600; }
+  .risk-med { color: var(--yellow); font-weight: 600; }
+  .risk-low { color: var(--green); font-weight: 600; }
+
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 4px; }
+
+  .footer { text-align: center; padding: 2rem 0; color: var(--text-dim); font-size: 0.82rem; border-top: 1px solid var(--border); margin-top: 3rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="/" class="back">← Back to Demo</a>
+
+<h1>📋 Data Protection Impact Assessment</h1>
+<p class="subtitle">GDPR Article 35 — miTch Identity Verification Infrastructure</p>
+
+<div style="margin-bottom:1.5rem">
+  <span class="badge badge-green">✅ Art. 25 Privacy by Design</span>
+  <span class="badge badge-green">✅ Art. 17 Right to Erasure</span>
+  <span class="badge badge-green">✅ Art. 5 Data Minimization</span>
+  <span class="badge badge-green">✅ Art. 7 Consent</span>
+  <span class="badge badge-green">✅ Art. 30 Processing Records</span>
+  <span class="badge badge-green">✅ Art. 32 Security</span>
+  <span class="badge badge-green">✅ Art. 35 DPIA</span>
+</div>
+
+<!-- SECTION 1 -->
+<h2>1. Description of Processing</h2>
+
+<h3>1.1 What We Do</h3>
+<p>miTch provides <strong>privacy-preserving identity verification</strong>. Users prove attributes about themselves (e.g., "I am over 18") without revealing the underlying personal data (e.g., their birthdate).</p>
+
+<h3>1.2 Roles</h3>
+<table>
+  <tr><th>Role</th><th>Entity</th><th>Responsibility</th></tr>
+  <tr><td><strong>Data Subject</strong></td><td>User (Holder)</td><td>Controls all disclosure decisions via wallet on their device</td></tr>
+  <tr><td><strong>Data Controller</strong></td><td>Verifier (e.g., shop, health portal)</td><td>Requests specific claims, processes verification result</td></tr>
+  <tr><td><strong>Data Processor</strong></td><td>miTch Infrastructure</td><td>Facilitates verification without accessing personal data</td></tr>
+  <tr><td><strong>Issuer</strong></td><td>State Provider (e.g., eID Austria)</td><td>Signs credentials based on verified identity</td></tr>
+</table>
+
+<h3>1.3 Data Categories Processed</h3>
+<table>
+  <tr><th>Category</th><th>Example</th><th>Raw PII Stored?</th><th>Retention</th></tr>
+  <tr><td>Age predicates</td><td><code>over_18: true</code></td><td><span class="badge badge-green">Never</span></td><td>In signed credential (user's device only)</td></tr>
+  <tr><td>Email verification</td><td><code>email_verified: true</code></td><td><span class="badge badge-green">Never</span></td><td>In signed credential (user's device only)</td></tr>
+  <tr><td>Jurisdiction</td><td><code>jurisdiction: AT</code></td><td><span class="badge badge-green">Never</span></td><td>In signed credential (user's device only)</td></tr>
+  <tr><td>Raw personal data</td><td>Name, birthdate, address</td><td><span class="badge badge-red">Crypto-shredded</span></td><td>Exists only during credential issuance, then mathematically destroyed</td></tr>
+</table>
+
+<h3>1.4 Processing Flow</h3>
+<div class="card">
+  <p><strong>Step 1 — Issuance:</strong> User authenticates with state provider (e.g., eID). Raw PII is received on-device, encrypted with an ephemeral key, predicates are derived locally, credential is signed, ephemeral key is destroyed. Raw PII is now mathematically irrecoverable.</p>
+  <p><strong>Step 2 — Presentation:</strong> Verifier requests specific claims. User selects which claims to disclose via wallet consent screen. Only selected claims are sent as part of an SD-JWT selective disclosure proof.</p>
+  <p><strong>Step 3 — Verification:</strong> Verifier validates the cryptographic proof. Receives only the disclosed boolean predicates. Cannot access any hidden claims. Issuer is not contacted and does not learn about the verification.</p>
+</div>
+
+<!-- SECTION 2 -->
+<h2>2. Necessity & Proportionality</h2>
+
+<h3>2.1 Why This Processing Is Necessary</h3>
+<ul>
+  <li><strong>Legal compliance:</strong> EU regulations (DSA, Tobacco Products Directive, JuSchG) require age verification for certain services</li>
+  <li><strong>Health sector:</strong> EHDS requires identity verification for health data access</li>
+  <li><strong>Financial services:</strong> KYC regulations require identity verification</li>
+</ul>
+
+<h3>2.2 Why miTch Is Proportionate</h3>
+<table>
+  <tr><th>Traditional Approach</th><th>miTch Approach</th></tr>
+  <tr><td>Upload photo ID → name, birthdate, address, photo collected</td><td>Prove <code>over_18: true</code> → one boolean, nothing else</td></tr>
+  <tr><td>Data stored in verifier's database → breach risk</td><td>No data stored → nothing to breach</td></tr>
+  <tr><td>Identity provider tracks every verification</td><td>Issuer doesn't know when/where credentials are used</td></tr>
+  <tr><td>Delete request = hope they actually delete</td><td>Crypto-shredding = mathematical guarantee of destruction</td></tr>
+</table>
+
+<!-- SECTION 3 -->
+<h2>3. Risk Assessment</h2>
+
+<h3>3.1 Risks to Data Subjects</h3>
+<table>
+  <tr><th>Risk</th><th>Severity</th><th>Likelihood</th><th>Mitigation</th><th>Residual Risk</th></tr>
+  <tr>
+    <td>Verifier correlation across sessions</td>
+    <td class="risk-med">Medium</td>
+    <td class="risk-med">Medium</td>
+    <td>Per-session derived keyIds (HMAC), timing jitter, response padding</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Device compromise exposes wallet</td>
+    <td class="risk-high">High</td>
+    <td class="risk-low">Low</td>
+    <td>Secure enclave storage, biometric unlock, credential expiry</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Issuer tracking of credential usage</td>
+    <td class="risk-med">Medium</td>
+    <td class="risk-low">Low</td>
+    <td>Pre-issued credentials, issuer never contacted during verification</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Network observer traffic analysis</td>
+    <td class="risk-med">Medium</td>
+    <td class="risk-med">Medium</td>
+    <td>Response padding (fixed 4KB), timing jitter (50-200ms), disclosure padding</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Credential replay attack</td>
+    <td class="risk-high">High</td>
+    <td class="risk-low">Low</td>
+    <td>Nonce binding, holder key binding, credential expiry, rate limiting</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Dark pattern consent manipulation</td>
+    <td class="risk-med">Medium</td>
+    <td class="risk-low">Low</td>
+    <td>Three-tier consent model, equal-weight buttons, verifier policy registration</td>
+    <td class="risk-low">Low</td>
+  </tr>
+  <tr>
+    <td>Loss of consent audit trail</td>
+    <td class="risk-low">Low</td>
+    <td class="risk-med">Medium</td>
+    <td>Hash-chained audit log, local consent receipts, exportable records</td>
+    <td class="risk-low">Low</td>
+  </tr>
+</table>
+
+<h3>3.2 Risks to the Organization</h3>
+<table>
+  <tr><th>Risk</th><th>Mitigation</th></tr>
+  <tr><td>GDPR non-compliance penalties</td><td>Privacy by design (Art. 25), DPIA (Art. 35), ROPA (Art. 30) — all implemented</td></tr>
+  <tr><td>Data breach notification obligation</td><td>No personal data stored → no data breach possible → no notification needed</td></tr>
+  <tr><td>Right to erasure requests</td><td>Crypto-shredding exceeds Art. 17 requirements — data is already destroyed</td></tr>
+</table>
+
+<!-- SECTION 4 -->
+<h2>4. Measures to Address Risks</h2>
+
+<h3>4.1 Technical Safeguards</h3>
+<div class="card">
+  <h4>🔐 Cryptographic</h4>
+  <ul>
+    <li><strong>SD-JWT Selective Disclosure:</strong> Only chosen claims revealed. Verifier cannot access hidden claims.</li>
+    <li><strong>Ed25519 Signatures:</strong> Issuer signs credentials, holder binds presentations to verifier nonce.</li>
+    <li><strong>Crypto-Shredding:</strong> Ephemeral keys (AES-256) encrypt raw PII. Key destruction = provable data destruction.</li>
+    <li><strong>StatusList2021 Revocation:</strong> Privacy-preserving bitstring. Verifier downloads entire list — issuer can't identify which credential was checked.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>🛡️ Metadata Minimization</h4>
+  <ul>
+    <li><strong>Response Padding:</strong> All responses padded to fixed 4KB — observers can't infer content from size.</li>
+    <li><strong>Timing Jitter:</strong> 50-200ms random delay prevents timing correlation.</li>
+    <li><strong>Disclosure Padding:</strong> Dummy disclosures added — hides actual number of claims.</li>
+    <li><strong>Identical Decline Responses:</strong> "Declined" and "not available" produce identical responses.</li>
+    <li><strong>Per-Session Identifiers:</strong> HMAC-derived keyIds — unlinkable across verifiers.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>📋 Audit & Accountability</h4>
+  <ul>
+    <li><strong>Tamper-Evident Audit Chain:</strong> Every action hash-chained. Any modification breaks the chain.</li>
+    <li><strong>Consent Receipts:</strong> Every disclosure decision logged with evidence hashes (no PII in receipts).</li>
+    <li><strong>ROPA (Art. 30):</strong> Aggregate processing records — counts only, no identifiers.</li>
+    <li><strong>Crypto-Shred Proofs:</strong> Provable evidence that encryption keys were destroyed.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>👤 User Control</h4>
+  <ul>
+    <li><strong>Three-Tier Consent:</strong> Legal/Service/Optional claims clearly separated. Optional unchecked by default.</li>
+    <li><strong>Equal-Weight Buttons:</strong> Approve and Decline are same size — no dark patterns.</li>
+    <li><strong>Full Visibility:</strong> Users see exactly what is shared AND what is hidden.</li>
+    <li><strong>Consent Revocation:</strong> Users can revoke any remembered consent at any time.</li>
+    <li><strong>Data Portability:</strong> Export all consent receipts as JSON (Art. 20).</li>
+  </ul>
+</div>
+
+<!-- SECTION 5 -->
+<h2>5. GDPR Compliance Matrix</h2>
+
+<table>
+  <tr><th>Article</th><th>Requirement</th><th>Status</th><th>Implementation</th></tr>
+  <tr><td>Art. 5(1)(a)</td><td>Lawfulness</td><td><span class="badge badge-green">✅</span></td><td>Three-tier consent with legal basis per claim</td></tr>
+  <tr><td>Art. 5(1)(b)</td><td>Purpose limitation</td><td><span class="badge badge-green">✅</span></td><td>Purpose constraints in verification requests</td></tr>
+  <tr><td>Art. 5(1)(c)</td><td>Data minimization</td><td><span class="badge badge-green">✅</span></td><td>Selective disclosure — only requested predicates</td></tr>
+  <tr><td>Art. 5(1)(d)</td><td>Accuracy</td><td><span class="badge badge-green">✅</span></td><td>Issuer-signed credentials from trusted sources</td></tr>
+  <tr><td>Art. 5(1)(e)</td><td>Storage limitation</td><td><span class="badge badge-green">✅</span></td><td>Crypto-shredding — data self-destructs</td></tr>
+  <tr><td>Art. 5(1)(f)</td><td>Integrity & confidentiality</td><td><span class="badge badge-green">✅</span></td><td>Ed25519 signatures, encrypted storage, audit chain</td></tr>
+  <tr><td>Art. 5(2)</td><td>Accountability</td><td><span class="badge badge-green">✅</span></td><td>Audit chain, ROPA, consent receipts, this DPIA</td></tr>
+  <tr><td>Art. 6</td><td>Lawful basis</td><td><span class="badge badge-green">✅</span></td><td>Legal basis required per claim tier</td></tr>
+  <tr><td>Art. 7</td><td>Consent conditions</td><td><span class="badge badge-green">✅</span></td><td>Informed, specific, freely given, withdrawable, demonstrable</td></tr>
+  <tr><td>Art. 13/14</td><td>Transparency</td><td><span class="badge badge-green">✅</span></td><td>Transparency report in demo, privacy policy</td></tr>
+  <tr><td>Art. 15</td><td>Right of access</td><td><span class="badge badge-green">✅</span></td><td>All data in user's wallet — full visibility</td></tr>
+  <tr><td>Art. 17</td><td>Right to erasure</td><td><span class="badge badge-green">✅✅</span></td><td>Crypto-shredding exceeds requirements — provable destruction</td></tr>
+  <tr><td>Art. 20</td><td>Data portability</td><td><span class="badge badge-green">✅</span></td><td>Consent receipt export (JSON)</td></tr>
+  <tr><td>Art. 25</td><td>Privacy by design</td><td><span class="badge badge-green">✅✅</span></td><td>Core architecture — not an add-on</td></tr>
+  <tr><td>Art. 30</td><td>Processing records</td><td><span class="badge badge-green">✅</span></td><td>ROPA with aggregate counts, no PII</td></tr>
+  <tr><td>Art. 32</td><td>Security measures</td><td><span class="badge badge-green">✅</span></td><td>Encryption, key management, rate limiting, blind abuse detection</td></tr>
+  <tr><td>Art. 35</td><td>DPIA</td><td><span class="badge badge-green">✅</span></td><td>This document</td></tr>
+</table>
+
+<!-- SECTION 6 -->
+<h2>6. What miTch Structurally Cannot Do</h2>
+
+<div class="card">
+  <p>These are not policy promises — they are <strong>architectural guarantees</strong>:</p>
+  <ul>
+    <li>🚫 <strong>Cannot store raw PII</strong> — ephemeral keys are destroyed after credential issuance</li>
+    <li>🚫 <strong>Cannot track credential usage</strong> — issuer is never contacted during verification</li>
+    <li>🚫 <strong>Cannot see what users share</strong> — selective disclosure happens on-device</li>
+    <li>🚫 <strong>Cannot correlate users across verifiers</strong> — per-session derived identifiers</li>
+    <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
+    <li>🚫 <strong>Cannot distinguish declined from missing</strong> — identical responses by design</li>
+  </ul>
+  <p class="dim" style="margin-top:0.8rem"><em>"miTch works not because it knows everything — but because it structurally cannot know anything."</em></p>
+</div>
+
+<!-- SECTION 7 -->
+<h2>7. Conclusion</h2>
+
+<p>This Data Protection Impact Assessment confirms that miTch's identity verification processing is <strong>compliant with GDPR Articles 5, 6, 7, 13, 15, 17, 20, 25, 30, 32, and 35</strong>.</p>
+
+<p>The processing is <strong>necessary</strong> (legal requirements for identity verification), <strong>proportionate</strong> (only boolean predicates, not raw identity data), and <strong>safeguarded</strong> (crypto-shredding, selective disclosure, tamper-evident audit, metadata minimization).</p>
+
+<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides guarantees that exceed GDPR requirements — particularly for the right to erasure (Art. 17), where crypto-shredding provides mathematical proof of data destruction rather than relying on deletion promises.</p>
+
+<div class="card" style="text-align:center; margin-top:2rem">
+  <p style="font-size:1.1rem; font-weight:600">miTch — The Forgetting Layer</p>
+  <p class="dim">User-Sovereign Identity & Authorization Infrastructure</p>
+  <p class="dim" style="margin-top:0.5rem">DPIA Version 1.0 — February 2026</p>
+</div>
+
+<div class="footer">
+  miTch Project • GDPR Compliant by Architecture • <a href="/" style="color:var(--accent)">Back to Demo</a>
+</div>
+
+</div>
+</body>
+</html>

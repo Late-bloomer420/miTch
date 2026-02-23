@@ -1,0 +1,23 @@
+{
+  "startedAt": "2026-02-11T11:19:36.853Z",
+  "totals": {
+    "requests": 2,
+    "allow": 2,
+    "deny": 0
+  },
+  "denyByCode": {},
+  "recentDecisions": [
+    {
+      "at": "2026-02-11T11:35:59.003Z",
+      "requestId": "req-http-1770809758968-0.49669270520988207",
+      "decision": "ALLOW",
+      "decisionCode": "ALLOW_MINIMAL_PROOF_VALID"
+    },
+    {
+      "at": "2026-02-11T11:32:09.231Z",
+      "requestId": "req-http-1770809529190-0.19174646446070742",
+      "decision": "ALLOW",
+      "decisionCode": "ALLOW_MINIMAL_PROOF_VALID"
+    }
+  ]
+}

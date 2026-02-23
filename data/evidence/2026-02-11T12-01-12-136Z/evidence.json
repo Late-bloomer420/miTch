@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-02-11T12:01:12.146Z",
+  "results": [
+    {
+      "scenario": "allow_valid",
+      "code": "ALLOW_MINIMAL_PROOF_VALID"
+    },
+    {
+      "scenario": "deny_replay",
+      "code": "DENY_BINDING_NONCE_REPLAY"
+    },
+    {
+      "scenario": "deny_hash_mismatch",
+      "code": "DENY_BINDING_HASH_MISMATCH"
+    },
+    {
+      "scenario": "deny_revoked_key",
+      "code": "DENY_CRYPTO_KEY_STATUS_INVALID"
+    }
+  ]
+}

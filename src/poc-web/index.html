@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>miTch — The Forgetting Layer | PoC Demo</title>
+<style>
+  :root {
+    --bg: #0a0e17; --surface: #131a2b; --surface2: #1a2340; --border: #2a3555;
+    --text: #e2e8f0; --text-dim: #8892a8;
+    --accent: #6366f1; --accent-glow: rgba(99,102,241,0.3);
+    --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+    --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+    --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+    --blue: #3b82f6; --blue-dim: rgba(59,130,246,0.15);
+    --orange: #f97316; --orange-dim: rgba(249,115,22,0.15);
+    --radius: 12px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding-bottom: 60px; }
+
+  .header { text-align: center; padding: 2rem 1rem 1.2rem; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(99,102,241,0.08) 0%, transparent 100%); }
+  .header h1 { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header .tagline { color: var(--text-dim); margin-top: 0.3rem; font-size: 0.95rem; }
+
+  .flow { display: flex; justify-content: center; gap: 0.4rem; padding: 1rem; flex-wrap: wrap; }
+  .flow-step { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; font-size: 0.8rem; color: var(--text-dim); transition: all 0.3s; }
+  .flow-step.active { border-color: var(--accent); color: var(--text); box-shadow: 0 0 15px var(--accent-glow); }
+  .flow-step.done { border-color: var(--green); color: var(--green); }
+  .flow-arrow { color: var(--text-dim); font-size: 1rem; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; padding: 0.8rem 1.2rem; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s; }
+  .panel.hl-green { border-color: var(--green); box-shadow: 0 0 20px rgba(34,197,94,0.1); }
+  .panel.hl-red { border-color: var(--red); box-shadow: 0 0 20px rgba(239,68,68,0.1); }
+  .panel.hl-blue { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+  .panel.hl-orange { border-color: var(--orange); box-shadow: 0 0 20px rgba(249,115,22,0.1); }
+
+  .ph { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+  .ph .icon { font-size: 1.2rem; }
+  .pb { padding: 1rem; min-height: 140px; }
+
+  .btn { padding: 0.5rem 1.1rem; border: none; border-radius: 8px; font-family: var(--font); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-success { background: var(--green); color: white; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+  .claims-list { list-style: none; margin: 0.6rem 0; }
+  .claims-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.6rem; border-radius: 6px; margin-bottom: 0.2rem; }
+  .claims-list li:hover { background: var(--surface2); }
+  .claims-list input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .claims-list label { cursor: pointer; flex: 1; font-size: 0.9rem; }
+
+  .rb { background: var(--surface2); border-radius: 8px; padding: 0.7rem 0.9rem; margin: 0.5rem 0; font-family: var(--mono); font-size: 0.78rem; line-height: 1.55; overflow-x: auto; }
+  .k { color: var(--accent); } .vt { color: var(--green); } .vf { color: var(--red); } .vs { color: var(--yellow); } .hv { color: var(--red); font-style: italic; }
+
+  .tag { display: inline-block; padding: 0.12rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+  .tag-green { background: var(--green-dim); color: var(--green); }
+  .tag-red { background: var(--red-dim); color: var(--red); }
+  .tag-yellow { background: var(--yellow-dim); color: var(--yellow); }
+  .tag-blue { background: var(--blue-dim); color: var(--blue); }
+  .tag-orange { background: var(--orange-dim); color: var(--orange); }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 0.6rem 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .cc { padding: 0.7rem; }
+  .cc.sees { background: var(--green-dim); }
+  .cc.doesnt { background: var(--red-dim); }
+  .cc h4 { font-size: 0.75rem; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cc.sees h4 { color: var(--green); } .cc.doesnt h4 { color: var(--red); }
+  .cc ul { list-style: none; font-size: 0.82rem; }
+  .cc li { padding: 0.1rem 0; }
+  .cc.sees li::before { content: "✅ "; } .cc.doesnt li::before { content: "🚫 "; }
+
+  .full { grid-column: 1 / -1; }
+  .placeholder { color: var(--text-dim); text-align: center; padding: 1.5rem; font-size: 0.85rem; }
+  .placeholder .emoji { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fi { animation: fadeIn 0.35s ease-out; }
+
+  .status-bar { text-align: center; padding: 0.6rem; background: var(--surface); border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.78rem; position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+  .tab { padding: 0.5rem 1rem; font-size: 0.82rem; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .chain-entry { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; }
+  .chain-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .chain-dot.green { background: var(--green); } .chain-dot.red { background: var(--red); } .chain-dot.blue { background: var(--accent); } .chain-dot.orange { background: var(--orange); }
+
+  .transparency-item { padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .transparency-item h4 { font-size: 0.85rem; margin-bottom: 0.2rem; }
+  .transparency-item p { font-size: 0.8rem; color: var(--text-dim); }
+
+  .gdpr-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; background: var(--green-dim); color: var(--green); margin: 0.15rem; }
+  .gdpr-badge.warn { background: var(--yellow-dim); color: var(--yellow); }
+  .gdpr-badge.miss { background: var(--red-dim); color: var(--red); }
+
+  .section-title { font-size: 0.95rem; font-weight: 700; margin: 1.2rem 0 0.6rem; color: var(--text); }
+  .dim { color: var(--text-dim); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔒 miTch — The Forgetting Layer</h1>
+  <div class="tagline">User-Sovereign Identity & Authorization Infrastructure</div>
+  <div style="margin-top:0.6rem">
+    <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
+    <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
+    <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
+    <span class="gdpr-badge">✅ Art. 7 Consent</span>
+    <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
+    <span class="gdpr-badge">✅ Art. 32 Security</span>
+  </div>
+</div>
+
+<div class="flow" id="flow">
+  <div class="flow-step" id="fs-issue"><span>①</span> Issue</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="fs-wallet"><span>②</span> Wallet</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="fs-verify"><span>③</span> Verify</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="fs-network"><span>④</span> Observer</div>
+</div>
+
+<div class="grid">
+
+  <!-- ISSUER -->
+  <div class="panel" id="p-issuer">
+    <div class="ph"><span class="icon">🏛️</span> Issuer (State Provider) <span class="tag tag-blue" style="margin-left:auto">eID Austria</span></div>
+    <div class="pb" id="issuer-body">
+      <p class="dim">Issues SD-JWT credential. Raw PII is <strong>crypto-shredded</strong> after signing.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="doIssue()">🔏 Issue Credential</button>
+        <button class="btn btn-ghost" onclick="doReset()">↺ Reset All</button>
+      </div>
+      <div id="issuer-result"></div>
+    </div>
+  </div>
+
+  <!-- WALLET -->
+  <div class="panel" id="p-wallet">
+    <div class="ph"><span class="icon">📱</span> Wallet (Your Device) <span class="tag tag-yellow" style="margin-left:auto">User-Controlled</span></div>
+    <div class="pb" id="wallet-body">
+      <div class="placeholder" id="wallet-ph"><span class="emoji">📱</span>Issue a credential first</div>
+      <div id="wallet-ctrl" style="display:none">
+        <p class="dim">Select which claims to reveal. <strong>Only checked claims</strong> reach the verifier.</p>
+        <ul class="claims-list" id="claims-list"></ul>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="doPresent()">🛡️ Present to Verifier</button>
+        </div>
+      </div>
+      <div id="wallet-result"></div>
+    </div>
+  </div>
+
+  <!-- VERIFIER -->
+  <div class="panel" id="p-verifier">
+    <div class="ph"><span class="icon">🏪</span> Verifier <span class="tag tag-green" style="margin-left:auto">CoolShop.at</span></div>
+    <div class="pb">
+      <div class="placeholder" id="verifier-ph"><span class="emoji">🏪</span>Waiting for presentation...</div>
+      <div id="verifier-result"></div>
+    </div>
+  </div>
+
+  <!-- NETWORK OBSERVER -->
+  <div class="panel" id="p-network">
+    <div class="ph"><span class="icon">👁️</span> Network Observer <span class="tag tag-red" style="margin-left:auto">Adversary</span></div>
+    <div class="pb">
+      <div class="placeholder" id="network-ph"><span class="emoji">👁️</span>Monitoring traffic...</div>
+      <div id="network-result"></div>
+    </div>
+  </div>
+
+  <!-- CRYPTO-SHREDDING -->
+  <div class="panel full" id="p-shred">
+    <div class="ph"><span class="icon">🔥</span> Crypto-Shredding (GDPR Art. 17) <span class="tag tag-orange" style="margin-left:auto">Provable Deletion</span></div>
+    <div class="pb">
+      <div class="placeholder" id="shred-ph"><span class="emoji">🔥</span>Issue a credential to see crypto-shredding in action</div>
+      <div id="shred-result"></div>
+    </div>
+  </div>
+
+  <!-- REVOCATION -->
+  <div class="panel full" id="p-revoke">
+    <div class="ph"><span class="icon">🔄</span> Revocation (StatusList2021) <span class="tag tag-blue" style="margin-left:auto">Privacy-Preserving</span></div>
+    <div class="pb">
+      <p class="dim">Issuer publishes a compressed bitstring. Verifier downloads the <strong>entire list</strong> and checks locally. Issuer <strong>cannot tell</strong> which credential was checked.</p>
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="doRevoke()" id="btn-rev" disabled>⛔ Revoke</button>
+        <button class="btn btn-success" onclick="doUnrevoke()" id="btn-unrev" disabled>✅ Unrevoke</button>
+        <button class="btn btn-primary" onclick="doPresent()" id="btn-reverify" disabled>🔄 Re-verify</button>
+      </div>
+      <div id="revoke-result"></div>
+    </div>
+  </div>
+
+  <!-- AUDIT & COMPLIANCE -->
+  <div class="panel full" id="p-audit">
+    <div class="ph"><span class="icon">📋</span> Audit & Compliance <span class="tag tag-green" style="margin-left:auto">GDPR Ready</span></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('audit-chain')">🔗 Audit Chain</div>
+      <div class="tab" onclick="switchTab('consent-log')">📝 Consent Log</div>
+      <div class="tab" onclick="switchTab('ropa')">📊 ROPA (Art. 30)</div>
+      <div class="tab" onclick="switchTab('transparency')">👁️ Transparency (Art. 13)</div>
+    </div>
+    <div class="pb">
+      <div id="tc-audit-chain" class="tab-content active">
+        <div class="placeholder" id="audit-ph"><span class="emoji">🔗</span>Audit entries appear as you interact</div>
+        <div id="audit-chain-content"></div>
+      </div>
+      <div id="tc-consent-log" class="tab-content">
+        <div class="placeholder" id="consent-ph"><span class="emoji">📝</span>Consent receipts appear after presentations</div>
+        <div id="consent-content"></div>
+      </div>
+      <div id="tc-ropa" class="tab-content">
+        <div id="ropa-content"><p class="dim">Processing activity records will appear here.</p></div>
+      </div>
+      <div id="tc-transparency" class="tab-content">
+        <div id="transparency-content"><p class="dim">Loading transparency report...</p></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DPIA Popup -->
+<div id="dpia-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border:1px solid var(--accent); border-radius:16px; padding:2rem; max-width:500px; width:90%; text-align:center; box-shadow:0 0 40px var(--accent-glow);">
+    <div style="font-size:2.5rem; margin-bottom:0.8rem;">✅🔒</div>
+    <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete</h2>
+    <p class="dim" style="margin-bottom:1rem;">The verifier confirmed your claim without seeing any personal data. This entire process is GDPR compliant by architecture.</p>
+    <p style="margin-bottom:1.5rem; font-size:0.9rem;">Want to see how we meet every GDPR requirement?</p>
+    <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
+      <a href="/docs" target="_blank" class="btn btn-primary" style="text-decoration:none;">📋 Read DPIA & Compliance Framework</a>
+      <button class="btn btn-ghost" onclick="closeDpiaPopup()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  miTch PoC • SD-JWT + Ed25519 + StatusList2021 + Crypto-Shredding + Audit Chain • Zero dependencies • <span id="status-text">Ready</span>
+</div>
+
+<script>
+const API = '';
+let issuedClaims = [];
+let hasCredential = false;
+let auditEntries = [];
+let consentReceipts = [];
+
+async function api(path, body) {
+  const opts = { method: body !== undefined ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json' } };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  let res;
+  try { res = await fetch(window.location.origin + path, opts); } catch(e) {
+    setStatus('❌ Connection failed — is the server running?');
+    return { success: false, error: 'Connection failed: ' + e.message };
+  }
+  if (!res.ok) { setStatus('❌ Server error: ' + res.status); return { success: false, error: 'HTTP ' + res.status }; }
+  try { return await res.json(); } catch(e) { return { success: false, error: 'Bad response' }; }
+}
+
+function setStatus(t) { document.getElementById('status-text').textContent = t; }
+
+function showDpiaPopup() {
+  const el = document.getElementById('dpia-popup');
+  el.style.display = 'flex';
+}
+function closeDpiaPopup() {
+  document.getElementById('dpia-popup').style.display = 'none';
+}
+
+function setFlow(step) {
+  ['issue','wallet','verify','network'].forEach(s => {
+    const el = document.getElementById('fs-' + s);
+    el.classList.remove('active','done');
+  });
+  const order = ['issue','wallet','verify','network'];
+  const idx = order.indexOf(step);
+  for (let i = 0; i < idx; i++) document.getElementById('fs-' + order[i]).classList.add('done');
+  if (idx >= 0) document.getElementById('fs-' + order[idx]).classList.add('active');
+}
+
+function hl(id, color) {
+  const p = document.getElementById(id);
+  p.classList.remove('hl-green','hl-red','hl-blue','hl-orange');
+  if (color) p.classList.add('hl-' + color);
+  setTimeout(() => p.classList.remove('hl-green','hl-red','hl-blue','hl-orange'), 2500);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tc-' + name).classList.add('active');
+}
+
+function renderAuditChain(entries) {
+  if (!entries || entries.length === 0) return;
+  document.getElementById('audit-ph').style.display = 'none';
+  const colors = { credential_issued: 'blue', crypto_shred: 'orange', verification_allowed: 'green', verification_denied: 'red', consent_given: 'green', credential_revoked: 'red', credential_unrevoked: 'green' };
+  document.getElementById('audit-chain-content').innerHTML = entries.map(e => `
+    <div class="chain-entry fi">
+      <div class="chain-dot ${colors[e.action] || 'blue'}"></div>
+      <div>
+        <div><strong>${e.action}</strong> <span class="dim">— ${new Date(e.timestamp).toLocaleTimeString()}</span></div>
+        <div class="dim" style="font-family:var(--mono);font-size:0.72rem">hash: ${e.entryHash.substring(0,20)}... → prev: ${e.previousHash.substring(0,12)}...</div>
+        ${e.evidence.claimCategories ? `<div class="dim">categories: ${e.evidence.claimCategories.join(', ')}</div>` : ''}
+        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof.keyId} destroyed (${e.evidence.shredProof.method})</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderConsent(receipts) {
+  if (!receipts || receipts.length === 0) return;
+  document.getElementById('consent-ph').style.display = 'none';
+  const icons = { approved: '🟢', declined: '🔴', partial: '🟡' };
+  document.getElementById('consent-content').innerHTML = receipts.map(r => `
+    <div class="chain-entry fi">
+      <div>${icons[r.action] || '⚪'}</div>
+      <div style="flex:1">
+        <div><strong>${r.verifier.name}</strong> (${r.verifier.id}) <span class="dim">— ${new Date(r.timestamp).toLocaleTimeString()}</span></div>
+        <div>${r.claims.map(c => c.disclosed ? `<span class="tag tag-green" style="margin:1px">${c.name}</span>` : `<span class="tag tag-red" style="margin:1px">${c.name}</span>`).join(' ')}</div>
+        <div class="dim" style="font-family:var(--mono);font-size:0.7rem">receipt: ${r.id} | evidence: ${r.evidence.requestHash.substring(0,12)}...</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadTransparency() {
+  const el = document.getElementById('transparency-content');
+  try {
+  const data = await api('/api/transparency');
+  if (!data || !data.whatWeProcess) {
+    el.innerHTML = '<p class="dim">Could not load transparency report. <button class="btn btn-ghost" onclick="loadTransparency()">Retry</button></p>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="section-title">What We Process</div>
+    ${data.whatWeProcess.map(p => `
+      <div class="transparency-item">
+        <h4>${p.category}</h4>
+        <p>Purpose: ${p.purpose} | Legal basis: ${p.legalBasis}</p>
+        <p>Retention: ${p.retention}</p>
+      </div>
+    `).join('')}
+    <div class="section-title">What We NEVER Process</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin:0.4rem 0">
+      ${data.whatWeNeverProcess.map(i => `<span class="tag tag-red">🚫 ${i}</span>`).join(' ')}
+    </div>
+    <div class="section-title">What We Log</div>
+    ${data.whatWeLog.map(l => `<div class="transparency-item"><h4>${l.item}</h4><p>${l.detail}</p></div>`).join('')}
+    <div class="section-title">What We NEVER Log</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin:0.4rem 0">
+      ${data.whatWeNeverLog.map(i => `<span class="tag tag-red">🚫 ${i}</span>`).join(' ')}
+    </div>
+    <div class="section-title">Your Rights (GDPR)</div>
+    ${data.userRights.map(r => `
+      <div class="transparency-item">
+        <h4>${r.right} <span class="gdpr-badge">${r.gdprArticle}</span></h4>
+        <p><strong>How:</strong> ${r.howToExercise}</p>
+        <p><strong>Implementation:</strong> ${r.mitchImplementation}</p>
+      </div>
+    `).join('')}
+    <div class="section-title">Technical Safeguards</div>
+    ${data.technicalSafeguards.map(s => `
+      <div class="transparency-item"><h4>${s.measure}</h4><p>${s.description}</p></div>
+    `).join('')}
+  `;
+  } catch(e) { el.innerHTML = '<p class="dim">Transparency report unavailable. <button class="btn btn-ghost" onclick="loadTransparency()">Retry</button></p>'; }
+}
+
+async function refreshAudit() {
+  try {
+  const data = await api('/api/audit');
+  if (!data || !data.chain) return;
+  auditEntries = data.chain.entries;
+  consentReceipts = data.consent.receipts;
+  renderAuditChain(auditEntries);
+  renderConsent(consentReceipts);
+  // ROPA
+  const ropa = data.ropa;
+  document.getElementById('ropa-content').innerHTML = `
+    <p class="dim" style="margin-bottom:0.6rem">${ropa.note}</p>
+    ${ropa.aggregateRecords.map(r => `
+      <div class="rb fi">
+        <div><span class="k">activity:</span> ${r.activity}</div>
+        <div><span class="k">controller:</span> ${r.controller}</div>
+        <div><span class="k">period:</span> ${r.period}</div>
+        <div><span class="k">count:</span> <span class="vt">${r.count}</span></div>
+        <div><span class="k">data_categories:</span> ${r.dataCategories.join(', ')}</div>
+        <div><span class="k">legal_basis:</span> ${r.legalBasis}</div>
+      </div>
+    `).join('')}
+    ${ropa.aggregateRecords.length === 0 ? '<p class="dim">No processing recorded yet.</p>' : ''}
+  `;
+  } catch(e) { console.error('refreshAudit failed:', e); document.getElementById('audit-chain-content').innerHTML = '<p class="dim">Audit error: ' + e.message + '</p>'; }
+}
+
+async function doIssue() {
+  setStatus('Issuing credential...'); setFlow('issue');
+  const data = await api('/api/issue', {});
+  if (!data.success) {
+    document.getElementById('issuer-result').innerHTML = `<div class="rb fi" style="margin-top:0.8rem"><span class="vf">❌ Error: ${data.error || 'Unknown error'}</span></div>`;
+    return;
+  }
+  hasCredential = true;
+  const c = data.credential;
+  issuedClaims = c.claims.map(cl => cl.name);
+
+  document.getElementById('issuer-result').innerHTML = `
+    <div class="rb fi" style="margin-top:0.8rem">
+      <div><span class="k">credential_id:</span> ${c.id}</div>
+      <div><span class="k">type:</span> ${c.type}</div>
+      <div><span class="k">issuer:</span> ${c.issuer}</div>
+      <div><span class="k">claims:</span> ${c.totalClaims} (hashed in SD-JWT)</div>
+      <div><span class="k">expires:</span> ${c.expiresAt}</div>
+      <div><span class="k">status_index:</span> #${c.statusListIndex}</div>
+    </div>`;
+
+  // Crypto-shred result
+  const cs = data.cryptoShredding;
+  if (cs) {
+    document.getElementById('shred-ph').style.display = 'none';
+    document.getElementById('shred-result').innerHTML = `
+      <div class="fi">
+        <div class="comparison">
+          <div class="cc sees">
+            <h4>Before Shredding</h4>
+            <ul>
+              <li>Raw PII encrypted with ephemeral key</li>
+              <li>Key: ${cs.ephemeralKeyId}</li>
+              <li>Ciphertext: ${cs.rawPIIEncrypted}</li>
+            </ul>
+          </div>
+          <div class="cc doesnt">
+            <h4>After Shredding</h4>
+            <ul>
+              <li>Key zeroed &amp; destroyed</li>
+              <li>Method: ${cs.shredProof.method}</li>
+              <li>Decryption attempt: FAILED ✅</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rb">
+          <div style="color:var(--orange)">🔥 ${cs.decryptionAttempt}</div>
+          <div><span class="k">destroyed_at:</span> ${cs.shredProof.destroyedAt}</div>
+          <div><span class="k">audit_chain:</span> ${data.auditChain ? data.auditChain.chainLength : '?'} entries, valid: <span class="vt">${data.auditChain ? data.auditChain.chainValid : '?'}</span></div>
+        </div>
+      </div>`;
+    hl('p-shred', 'orange');
+  }
+
+  // Wallet
+  document.getElementById('wallet-ph').style.display = 'none';
+  document.getElementById('wallet-ctrl').style.display = 'block';
+  document.getElementById('wallet-result').innerHTML = '';
+  document.getElementById('claims-list').innerHTML = issuedClaims.map(name => `
+    <li><input type="checkbox" id="c-${name}" value="${name}" ${name === 'over_18' ? 'checked' : ''}>
+    <label for="c-${name}">${name}</label></li>
+  `).join('');
+
+  document.getElementById('btn-rev').disabled = false;
+  document.getElementById('btn-unrev').disabled = false;
+  document.getElementById('btn-reverify').disabled = false;
+
+  hl('p-issuer', 'blue'); setFlow('wallet'); setStatus('Credential issued — select claims');
+  refreshAudit();
+}
+
+async function doPresent() {
+  if (!hasCredential) return;
+  const checked = issuedClaims.filter(n => document.getElementById('c-' + n)?.checked);
+  if (!checked.length) { alert('Select at least one claim.'); return; }
+
+  setStatus('Presenting...'); setFlow('verify');
+  const data = await api('/api/present', { disclose: checked });
+  if (!data.success) return;
+
+  document.getElementById('wallet-result').innerHTML = `
+    <div class="rb fi" style="margin-top:0.6rem">
+      <div><span class="k">disclosed:</span> <span class="vt">${data.wallet.disclosed.join(', ')}</span></div>
+      <div><span class="k">hidden:</span> <span class="hv">${data.wallet.hidden.join(', ')}</span></div>
+    </div>`;
+
+  const v = data.verifier;
+  document.getElementById('verifier-ph').style.display = 'none';
+  document.getElementById('verifier-result').innerHTML = `
+    <div class="fi">
+      <div style="margin-bottom:0.5rem">
+        ${v.valid ? '<span class="tag tag-green">✅ PROOF VALID</span>' : '<span class="tag tag-red">❌ INVALID — ' + (v.reason||'') + '</span>'}
+        ${data.revocation.revoked ? '<span class="tag tag-red" style="margin-left:4px">REVOKED</span>' : ''}
+      </div>
+      <div class="comparison">
+        <div class="cc sees"><h4>Verifier sees</h4><ul>${data.wallet.disclosed.map(c => `<li>${c}: ${v.claimsReceived[c]}</li>`).join('')}</ul></div>
+        <div class="cc doesnt"><h4>Verifier does NOT see</h4><ul>${data.wallet.hidden.map(c => `<li>${c}</li>`).join('')}<li>Name</li><li>Birthdate</li><li>Address</li></ul></div>
+      </div>
+    </div>`;
+
+  document.getElementById('network-ph').style.display = 'none';
+  const n = data.network;
+  document.getElementById('network-result').innerHTML = `
+    <div class="fi">
+      <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
+      <div class="rb" style="margin-top:0.5rem">
+        <div><span class="k">payload:</span> <span class="hv">${n.observerSees}</span></div>
+        <div><span class="k">actual_size:</span> ${n.actualResponseBytes}B → <span class="k">padded:</span> ${n.paddedResponseBytes}B</div>
+        <div><span class="k">can_identify_user:</span> <span class="vf">false</span></div>
+        <div><span class="k">timing:</span> <span class="vs">${n.timingJitter}</span></div>
+      </div>
+      <p class="dim" style="margin-top:0.5rem">Observer sees a fixed-size blob. Can't determine claims, identity, or decisions.</p>
+    </div>`;
+
+  hl('p-verifier', v.valid ? 'green' : 'red');
+  hl('p-network', 'red');
+  setFlow('network');
+  setStatus(v.valid ? 'Verified ✅' : 'Failed ❌');
+  refreshAudit();
+  if (v.valid) setTimeout(showDpiaPopup, 800);
+}
+
+async function doRevoke() {
+  const data = await api('/api/revoke', {});
+  document.getElementById('revoke-result').innerHTML = `<div class="rb fi"><span class="vf">⛔ ${data.message}</span> <span class="dim">— re-verify to see effect</span></div>`;
+  hl('p-revoke', 'red'); setStatus('Revoked'); refreshAudit();
+}
+async function doUnrevoke() {
+  const data = await api('/api/unrevoke', {});
+  document.getElementById('revoke-result').innerHTML = `<div class="rb fi"><span class="vt">✅ ${data.message}</span></div>`;
+  hl('p-revoke', 'green'); setStatus('Unrevoked'); refreshAudit();
+}
+async function doReset() {
+  await api('/api/reset', {});
+  hasCredential = false; issuedClaims = [];
+  ['issuer-result','wallet-result','verifier-result','network-result','revoke-result','shred-result','audit-chain-content','consent-content'].forEach(id => document.getElementById(id).innerHTML = '');
+  ['wallet-ph','verifier-ph','network-ph','shred-ph','audit-ph','consent-ph'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = ''; });
+  document.getElementById('wallet-ctrl').style.display = 'none';
+  ['btn-rev','btn-unrev','btn-reverify'].forEach(id => document.getElementById(id).disabled = true);
+  setFlow('issue'); setStatus('Ready');
+}
+
+setFlow('issue');
+// Retry transparency load until server is ready
+(async function initTransparency() {
+  for (let i = 0; i < 5; i++) {
+    try { await loadTransparency(); return; } catch(e) {}
+    await new Promise(r => setTimeout(r, 1000));
+  }
+})();
+</script>
+</body>
+</html>

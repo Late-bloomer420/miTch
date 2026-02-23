@@ -1,0 +1,11 @@
+{
+  "decisions_total": 1,
+  "allow_total": 1,
+  "deny_total": 0,
+  "verification_success_rate": 1,
+  "replay_block_rate": 1,
+  "false_deny_rate": 1,
+  "policy_override_rate": 0,
+  "latency_p50_ms": 5,
+  "latency_p95_ms": 5
+}
