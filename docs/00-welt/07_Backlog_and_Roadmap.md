@@ -89,6 +89,21 @@ This backlog replaces the old concept-only framing.
 4. Refresh backlog queue ordering (keep “Now” small)
 5. Commit and push with explicit hardening intent
 
+
+## 4c) Backlog hygiene findings (errors/unclear definitions discovered)
+
+- [ ] **Fix invalid file reference in memory discipline**
+  - `00_README.md` does not exist; clarify target as `README.md` or create a canonical index file and update all references.
+- [ ] **Align update protocol commands with workspace tooling**
+  - protocol currently says `npm test` + `npm run kpi:check`, but root scripts are `pnpm test` and no `kpi:check` script exists yet. Define the canonical command set.
+- [ ] **Define `security_profile_score` formally**
+  - currently referenced in queue item 3, but metric definition, formula, and ownership are missing; add spec + thresholds + response actions.
+- [ ] **Resolve status narrative mismatch across core docs**
+  - `STATE.md` says build validated/ready for deployment while this roadmap frames implementation as actively hardening; add a single source of truth and sync status wording.
+- [ ] **Clarify “Revocation semantics v2+” acceptance criteria**
+  - current phrasing is too broad (“fuller StatusList2021 behavior”); add must-have behaviors, non-goals, and test evidence required for completion.
+
+
 ---
 
 ## 5) Hard guardrails (do not violate)
