@@ -1,31 +1,33 @@
 {
-  "name": "mitch-privacy-first",
+  "name": "mitch-monorepo",
   "version": "0.0.1",
-  "description": "Privacy-first personal data infrastructure - Phase 0",
-  "main": "dist/index.js",
-  "scripts": {
-    "compile": "tsc",
-    "test": "npm run compile && node dist/tests/core.js && node dist/tests/auth.js && node dist/tests/httpKeySourceQuorum.js",
-    "evidence": "npm run compile && node dist/tests/evidence.js",
-    "evidence:export": "npm run compile && node dist/tests/evidenceExport.js",
-    "swarm:test": "npm run compile && node dist/tests/swarmAttack.js",
-    "security:deps": "npm audit --audit-level=high",
-    "kpi:check": "npm run compile && node dist/tools/kpiCheckCli.js",
-    "adjudicate": "npm run compile && node dist/tools/adjudicateCli.js",
-    "start": "node dist/server.js",
-    "dev": "npm run compile && node dist/server.js",
-    "poc": "npm run compile && node dist/poc-sdjwt.js",
-    "poc:web": "npm run compile && node dist/poc-web/server.js"
-  },
-  "keywords": [
-    "privacy",
-    "user-control",
-    "data-sovereignty"
+  "private": true,
+  "workspaces": [
+    "src/apps/*",
+    "src/packages/*"
   ],
-  "author": "",
-  "license": "MIT",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "build:pnpm": "pnpm -r --filter ./src/packages/* build",
+    "build:topo": "pnpm -r --filter ./src/packages/* --sort build",
+    "build:all": "pnpm -r --filter ./src/packages/* build && pnpm -r --filter ./src/apps/* build",
+    "dev:wallet": "pnpm --filter @mitch/wallet-pwa dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "clean:pnpm": "pnpm -r --filter ./src/packages/* clean"
+  },
   "devDependencies": {
-    "@types/node": "^25.0.3",
-    "typescript": "^5.9.3"
-  }
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "playwright": "^1.58.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.0",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@9.0.0"
 }

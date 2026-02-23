@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DecisionCapsule",
+    "description": "Cryptographically bound policy decision artifact for miTch. Structure definition only.",
+    "type": "object",
+    "required": [
+        "decision_id",
+        "verdict",
+        "request_hash",
+        "policy_hash",
+        "verifier_did",
+        "issuer_trust_refs",
+        "allowed_claims",
+        "risk_level",
+        "requires_presence",
+        "expires_at"
+    ],
+    "properties": {
+        "decision_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this decision instance."
+        },
+        "verdict": {
+            "type": "string",
+            "enum": [
+                "ALLOW",
+                "DENY",
+                "PROMPT"
+            ],
+            "description": "The outcome of the policy evaluation."
+        },
+        "request_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "SHA-256 hash of the original VerifierRequest."
+        },
+        "policy_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "SHA-256 hash of the PolicyManifest version used."
+        },
+        "verifier_did": {
+            "type": "string",
+            "pattern": "^did:[a-z0-9]+:[a-zA-Z0-9_.-]+$",
+            "description": "Clean DID of the interacting verifier."
+        },
+        "issuer_trust_refs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of TrustedIssuer DIDs that formed the basis of trust."
+        },
+        "allowed_claims": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "The exact set of claims permitted for disclosure."
+        },
+        "risk_level": {
+            "type": "string",
+            "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH"
+            ],
+            "description": "Assessed risk category."
+        },
+        "requires_presence": {
+            "type": "boolean",
+            "description": "Whether a strong proof of presence (biometric/key) is mandated."
+        },
+        "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when this decision expires."
+        },
+        "wallet_attestation": {
+            "type": "string",
+            "description": "Cryptographic signature or TEE attestation from the wallet."
+        }
+    }
+}

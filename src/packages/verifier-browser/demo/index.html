@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquor Store POS | miTch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module">
+        import { VerifierClient } from '../dist/index.js';
+
+        const client = new VerifierClient();
+        let session = null;
+
+        // UI State Machine
+        const ui = {
+            idle: () => {
+                document.getElementById('step-idle').classList.remove('hidden');
+                document.getElementById('step-pending').classList.add('hidden');
+                document.getElementById('step-success').classList.add('hidden');
+                document.body.className = "bg-gray-100";
+            },
+            pending: () => {
+                document.getElementById('step-idle').classList.add('hidden');
+                document.getElementById('step-pending').classList.remove('hidden');
+                document.getElementById('qrcode').innerHTML = ''; // Clear ID
+            },
+            success: (data) => {
+                document.getElementById('step-pending').classList.add('hidden');
+                document.getElementById('step-success').classList.remove('hidden');
+                document.body.className = "bg-green-600 transition-colors duration-500";
+
+                // Show verified data
+                document.getElementById('verified-age').textContent = "18+ Verified";
+                document.getElementById('verified-issuer').textContent = data.issuer || "Unknown";
+            }
+        };
+
+        // 1. Generate Session (Click "Check Age")
+        window.startVerification = async () => {
+            ui.pending();
+
+            // Create Ephemeral Keys
+            session = await client.generateSession();
+            console.log("Session Created:", session);
+
+            // Render QR Code
+            new QRCode(document.getElementById("qrcode"), {
+                text: session.deepLink,
+                width: 256,
+                height: 256
+            });
+
+            // Start Polling (Simulation of Relay)
+            // In a real Hybrid-Relay, we would subscribe to a WebSocket here.
+            // For MVP Manual, we assume the user checks the phone.
+            // BUT: To simulate the "Green Screen", let's provide a debug input for pasting the JWE.
+        };
+
+        window.reset = () => {
+            session = null;
+            ui.idle();
+        };
+
+        // Debug: Simulate receiving data
+        window.simulateReceive = async () => {
+            const dummyData = prompt("Paste JWE (or leave empty for mock success)");
+            if (!dummyData) {
+                // Mock Success
+                ui.success({ issuer: "did:mitch:gov-id" });
+            } else {
+                try {
+                    const decrypted = await client.verifyResponse(dummyData, session);
+                    ui.success(decrypted);
+                } catch (e) {
+                    alert("Decryption Failed: " + e.message);
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="bg-gray-100 h-screen flex flex-col items-center justify-center font-sans">
+
+    <!-- Step 1: Idle -->
+    <div id="step-idle" class="text-center">
+        <h1 class="text-4xl font-bold mb-8 text-gray-800">Liquor Store POS</h1>
+        <button onclick="startVerification()"
+            class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl shadow-lg hover:bg-blue-700 transition">
+            🔞 Check Age
+        </button>
+        <p class="mt-4 text-gray-500">miTch Verified</p>
+    </div>
+
+    <!-- Step 2: Pending (QR Code) -->
+    <div id="step-pending" class="hidden text-center bg-white p-8 rounded-2xl shadow-xl">
+        <h2 class="text-2xl font-bold mb-4">Scan with miTch Wallet</h2>
+        <div id="qrcode" class="flex justify-center mb-4"></div>
+        <div class="animate-pulse text-blue-600 font-mono text-sm">Waiting for connection...</div>
+
+        <!-- Debug/Simulate Logic -->
+        <div class="mt-8 border-t pt-4">
+            <button onclick="simulateReceive()" class="text-gray-400 text-xs hover:text-gray-600 underline">
+                (Debug) Simulate Scan
+            </button>
+            <button onclick="reset()" class="text-red-400 text-xs hover:text-red-600 underline ml-4">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div id="step-success" class="hidden text-center text-white">
+        <div class="text-9xl mb-4">✅</div>
+        <h2 class="text-5xl font-bold mb-2">APPROVED</h2>
+        <div class="text-xl opacity-90 mt-4">
+            <span id="verified-age" class="font-bold"></span>
+            <span class="mx-2">•</span>
+            Via <span id="verified-issuer"></span>
+        </div>
+        <button onclick="reset()"
+            class="mt-12 bg-white text-green-800 px-6 py-2 rounded-full font-bold shadow-lg hover:bg-gray-100">
+            Next Customer
+        </button>
+    </div>
+
+</body>
+
+</html>

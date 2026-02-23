@@ -1,0 +1,21 @@
+{
+  "name": "@mitch/poc-hardened",
+  "version": "0.0.1",
+  "description": "Hardened PoC - security-focused verification service with KPI tooling",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node dist/tests/core.js && node dist/tests/auth.js && node dist/tests/httpKeySourceQuorum.js",
+    "evidence": "tsc && node dist/tests/evidence.js",
+    "swarm:test": "tsc && node dist/tests/swarmAttack.js",
+    "kpi:check": "tsc && node dist/tools/kpiCheckCli.js",
+    "start": "node dist/server.js",
+    "dev": "tsc && node dist/server.js",
+    "poc": "tsc && node dist/poc-sdjwt.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  }
+}

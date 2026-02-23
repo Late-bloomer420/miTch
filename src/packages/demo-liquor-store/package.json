@@ -1,0 +1,23 @@
+{
+  "name": "@mitch/demo-liquor-store",
+  "version": "0.1.0",
+  "description": "Interactive Liquor Store Demo for Investor Presentations",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "demo": "node dist/demo.js"
+  },
+  "dependencies": {
+    "@mitch/mock-issuer": "workspace:*",
+    "@mitch/policy-engine": "workspace:*",
+    "@mitch/layer-resolver": "workspace:*",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.19.33"
+  }
+}

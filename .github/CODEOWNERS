@@ -1,0 +1,16 @@
+# miTch Code Owners
+# Default owner for everything
+*                           @Late-bloomer420
+
+# Core architecture & security
+/docs/00-welt/              @Late-bloomer420
+/docs/03-architecture/      @Late-bloomer420
+/src/packages/phase0-security/ @Late-bloomer420
+
+# Policy engine (critical)
+/src/packages/policy-engine/ @Late-bloomer420
+/src/packages/layer-resolver/ @Late-bloomer420
+
+# Credentials & crypto
+/src/packages/mock-issuer/  @Late-bloomer420
+/src/packages/shared-crypto/ @Late-bloomer420

@@ -1,0 +1,11 @@
+{
+    "name": "@mitch/secure-memory",
+    "version": "0.0.1",
+    "main": "src/ephemeral_key.ts",
+    "scripts": {
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "vitest": "^1.0.0"
+    }
+}
