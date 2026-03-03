@@ -1,53 +1,57 @@
 # STATE.md — Current Operating State
 
-Stand: 2026-02-12
+**Date:** 2026-03-04  
+**Branch:** `consolidation`  
+**Repo:** `https://github.com/Late-bloomer420/miTch.git` (also mirrored at `mitch-temp.git`)
 
-## Current baseline
-- Repo: `https://github.com/Late-bloomer420/mitch-temp.git`
-- Branch: `main`
-- Last completed batch: visual operating layer + decision framework docs (`103`-`107`) and index refresh
-- Operating mode: small autonomous hardening batches, fail-closed, pilot-focused
+---
 
-## Current security posture snapshot (latest local)
-- `security_profile_score`: 100 (with strong+signe d test config)
-- `false_allow_total`: 0
-- `deny_resolver_quorum_failed_total`: 0
-- `deny_reauth_proof_invalid_total`: 0
-- Note: score depends on runtime config and current telemetry; this is not an absolute security guarantee.
+## Current Phase
 
-## Now (do next)
-1. Add doc/runbook for `security_profile_score` interpretation and operator actions
-2. Start strict native verifier adapter contract (input/output + deny mapping)
-3. Add kpi:check warning rule for sustained native deny rate spikes
+Post-consolidation. The 7→1 repo merge is complete. Now closing **P0 gaps** needed for a pilot.
 
-## Next (short buffer)
-1. Start strict native verifier adapter contract (input/output + deny mapping)
-2. Revocation semantics tightening beyond light scaffold (scope-controlled)
-3. Pilot alert routing/escalation ownership draft
+## What's Done
 
-## Later (important, not immediate)
-1. PQ/hybrid signature migration v1
-2. Recovery security design deepening
-3. External legal completion (GDPR opinion + pilot wording)
+- ✅ Monorepo structure: 22 packages + 3 apps, clean DAG, no circular deps
+- ✅ Policy engine with layer-aware evaluation (Layer 0/1/2)
+- ✅ SD-JWT VC credential stack
+- ✅ Predicate proofs (hash-based, not ZKP)
+- ✅ Crypto-shredding primitives
+- ✅ Audit log with hash-chain
+- ✅ Wallet PWA shell
+- ✅ E2E demo flow (liquor store)
+- ✅ Layered documentation structure (docs/00–05)
+- ✅ Basic revocation deny list (REVOKED_CREDENTIAL_IDS)
 
-## Active blockers / constraints
-- `memory_search` quota blocked (OpenAI embeddings 429 insufficient_quota)
-- Workaround: rely on repo-first memory discipline (`STATE.md`, backlog, numbered docs, daily memory log)
+## P0 — TODO for Pilot
 
-## Safe runtime config reminders (when testing stronger WebAuthn)
-- `REQUIRE_STRONG_REAUTH=1`
-- `WEBAUTHN_VERIFY_MODE=signed` (or native when adapter evidence is ready)
-- `WEBAUTHN_ASSERTION_HMAC_SECRET=<strong secret>`
-- Keep fail-closed defaults; never rely on weak compatibility mode in production.
+- [ ] **G-01:** DID resolution + signature verification (stubs only today)
+- [ ] **G-02:** Credential revocation — StatusList2021 runtime enforcement
+- [ ] **G-03:** Policy engine — deterministic conflict resolution + deny reason codes
+- [ ] **G-04:** Presentation binding & anti-replay (nonce TTL, canonicalization)
+- [ ] **G-05:** eID issuer connector (at least 1 real or high-fidelity sim)
+- [ ] **G-06:** Wallet credential persistence
 
-## Fast visual entry points
-- `105_Visual_Control_Panel.md` (scan priorities in 30 seconds)
-- `106_Document_Map_By_Purpose.md` (find docs by intent)
-- `103_GTM_Security_Decision_Framework.md` (decide GO/PILOT/DEFER)
+**Critical path:** G-01 → G-04 → G-03 → G-02 → G-05 → G-06
 
-## Batch-close checklist
-- [ ] Code/tests green (`npm test`, `npm run kpi:check`)
-- [ ] Relevant numbered doc updated/added
-- [ ] `07_Backlog_and_Roadmap.md` kept current
-- [ ] `00_README.md` index updated
-- [ ] Commit + push with clear message
+## P1 — Should Fix for Pilot Quality
+
+Key items: key lifecycle separation (G-07), JWE decryption (G-08), blockchain anchor stubs (G-09), WebAuthn in full flow (G-10), supply chain security (G-11), log redaction (G-15).
+
+## Known Issues
+
+- `policy-engine` depends on `mock-issuer` — layering violation, should be injected
+- 6 orphan packages with no internal connections (may be dead code)
+- No CI pipeline running
+- `npm`/`kpi:check` references in old docs should be `pnpm`
+
+## Batch-Close Checklist
+
+- [ ] `pnpm test` green
+- [ ] `pnpm build` clean
+- [ ] Relevant docs updated
+- [ ] Commit with clear message
+
+---
+
+Full gap tracker: see `consolidated-gaps.md` (31 gaps, P0–P3).

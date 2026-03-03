@@ -1,344 +1,158 @@
-# miTch - The Forgetting Layer
-
-**User-Sovereign Identity & Authorization Infrastructure**
+# miTch — The Forgetting Layer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
-> **"miTch is Trust for everything that is NOT free of User PII"**
-
-miTch is a technical Convenor infrastructure that provides **Compliance-as-a-Service** through automated, cryptographic forgetting (Crypto-Shredding) and privacy-preserving verifications without storing data.
+miTch is **privacy-preserving compliance middleware** — a proof mediation layer where verifiers receive minimal cryptographic proofs instead of raw PII. Data is encrypted with ephemeral keys that are destroyed after each transaction (crypto-shredding), so forgetting is structural, not optional. The system is fail-closed and deny-biased: if anything is ambiguous, access is denied.
 
 ---
 
-## 🎯 Core Philosophy
+## Architecture
 
-**miTch works not because it knows everything – but because it structurally cannot know anything.**
-
-### Protection Layers
-
-miTch implements a **layer-based protection model**:
-
-| Layer | Name | Purpose | Examples |
-|-------|------|---------|----------|
-| **Layer 0** | **WELT** (World) | Universal principles, global rules | Policy manifest, fundamental rights |
-| **Layer 1** | **GRUNDVERSORGUNG** (Basic Services) | Children + essential services | Age verification, basic identity |
-| **Layer 2** | **ERWACHSENE-VULNERABLE** (Adults-Vulnerable) | Health, elderly, finance | EHDS health records, financial services |
-
-**Principle:** Higher layers inherit protections from lower layers. No commercialization of fundamental rights.
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 18+ (LTS recommended)
-- pnpm 9.0.0+
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/Late-bloomer420/miTch.git
-cd miTch
-
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Run wallet PWA
-pnpm dev:wallet
-```
-
-### Repository Structure
+miTch is a **pnpm monorepo** (Turborepo) with **22 packages + 3 apps = 25 workspaces**.
 
 ```
 miTch/
-├── docs/                           # Documentation (by layer)
-│   ├── 00-welt/                   # Layer 0: Universal principles
-│   ├── 01-grundversorgung/        # Layer 1: Basic services + kids
-│   ├── 02-erwachsene-vulnerable/  # Layer 2: Health, elderly, finance
-│   ├── 03-architecture/           # Technical architecture
-│   ├── 04-legal/                  # GDPR, compliance, certification
-│   └── 05-business/               # Business model, monetization
+├── docs/                          # Specifications & design docs
+│   ├── 00-welt/                  # Layer 0: Universal principles
+│   ├── 01-grundversorgung/       # Layer 1: Children + essential services
+│   ├── 02-erwachsene-vulnerable/ # Layer 2: Health, elderly, finance
+│   ├── 03-architecture/          # Technical architecture & ADRs
+│   ├── 04-legal/                 # GDPR, compliance
+│   └── 05-business/              # Business model
 ├── src/
-│   ├── apps/                      # Applications
-│   │   ├── wallet-pwa/           # Main wallet PWA
-│   │   ├── issuer-mock/          # Mock credential issuer
-│   │   └── verifier-demo/        # Demo verifier service
-│   └── packages/                  # Shared packages
-│       ├── policy-engine/        # Core policy evaluation
-│       ├── shared-crypto/        # Cryptographic primitives
-│       ├── audit-log/            # Immutable audit chain
-│       ├── secure-storage/       # Encrypted storage
-│       └── [11 more...]
-└── archive/                       # Historical preservation
-    ├── git-bundles/              # Original repository histories
-    └── prototypes/               # Early implementations
+│   ├── apps/                     # 3 applications
+│   │   ├── wallet-pwa/          # Holder wallet (Vite PWA)
+│   │   ├── issuer-mock/         # Mock credential issuer
+│   │   └── verifier-demo/       # Demo verifier service
+│   └── packages/                 # 22 library packages
+└── archive/                      # Historical repos & prototypes
 ```
 
----
+### Protection Layers
 
-## 🔑 Core Features
+Higher layers inherit all protections from lower layers:
 
-### ✅ Crypto-Shredding (Automatic Forgetting)
-- Data encrypted with ephemeral keys `K_trans`
-- Keys destroyed after transaction completion
-- GDPR Art. 17 compliant erasure
-- Mathematically irreversible
+| Layer | Name | Scope |
+|-------|------|-------|
+| 0 | WELT | Universal principles, non-linkability, data minimization |
+| 1 | GRUNDVERSORGUNG | Children + essential services, mandatory crypto-shredding |
+| 2 | ERWACHSENE-VULNERABLE | Health, finance, elderly — GDPR Art. 9 |
 
-### ✅ Layer-Aware Policy Engine
-- Rule-based (not authority-based) trust
-- Protection layer enforcement
-- Data minimization by construction
-- User sovereignty
+### Packages
 
-### ✅ Zero-Knowledge Proofs
-- Age verification without date of birth
-- Selective credential disclosure
-- Predicate evaluation (e.g., "is_over_18")
-- No PII leakage to verifiers
-
-### ✅ Audit-by-Design
-- Immutable hash-chain audit log
-- Crypto-shredding proof generation
-- Local audit (no central tracking)
-- Exportable compliance reports
-
----
-
-## 📚 Documentation
-
-### Start Here
-1. **[Project OnePager](docs/00-welt/01_Project_OnePager.md)** - Quick overview
-2. **[Principles & Non-Negotiables](docs/00-welt/02_Principles_and_NonNegotiables.md)** - Core values
-3. **[Policy Manifest](docs/00-welt/mitch_policy_manifest.md)** - Binding policies
-4. **[Master Brief](docs/00-welt/MASTER_BRIEF.md)** - Complete vision
-
-### Key Concepts
-- **[Data Flows & PII Boundaries](docs/00-welt/04_Data_Flows_and_PII_Boundaries.md)**
-- **[Threat Model](docs/00-welt/05_Threat_Model.md)**
-- **[Policy Engine Specification](docs/00-welt/06_Policy_Engine_Spec.md)**
-
-### Development
-- **[MVP Execution Plan](docs/03-architecture/mvp/12_MVP_Execution_Plan_6_Weeks.md)**
-- **[Architecture Decision Log](docs/03-architecture/mvp/16_MVP_Architecture_Decision_Log.md)**
-- **[API Contract](docs/03-architecture/mvp/17_API_Contract_v0.md)**
-
-### Legal & Compliance
-- **[GDPR Crypto-Shredding Memo](docs/04-legal/MEMO_GDPR_SHREDDING.md)** ⚠️ Critical
-- **[Certification Readiness](docs/04-legal/certification_readiness_mapping.md)**
-- **[Digital Rights Charter](docs/00-welt/digital_rights_charter.md)**
-
----
-
-## 🏗️ Architecture
-
-### High-Level Components
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                      miTch Convener                      │
-│              (Rules Enforcement Layer)                   │
-└─────────────────────────────────────────────────────────┘
-                          ↑
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-┌───────▼──────┐  ┌───────▼──────┐  ┌──────▼──────┐
-│   Holder     │  │    Issuer    │  │  Verifier   │
-│  (Wallet)    │  │  (Gov/Bank)  │  │   (Shop)    │
-│              │  │              │  │             │
-│ • Local Keys │  │ • Signs VCs  │  │ • Requests  │
-│ • ZK Proofs  │  │ • OID4VCI    │  │ • Receives  │
-│ • Crypto-    │  │              │  │   Proofs    │
-│   Shredding  │  │              │  │   (no PII)  │
-└──────────────┘  └──────────────┘  └─────────────┘
-```
-
-### Edge-First Architecture
-- **Local Decisions:** All data release decisions on user device
-- **Ephemerality:** Data exists only transactionally, default is "deleted"
-- **Blind Provider:** miTch sees metadata for audit, never PII
-
----
-
-## 🧪 Use Cases
-
-### 1. Age Verification (Beachhead)
-**Problem:** EU GDPR requires child protection, but age checks lead to mass data collection
-
-**miTch Solution:**
-1. User wallet computes: `(today - birthDate) >= 18`
-2. Sends only: `{"isOver18": true}` + cryptographic proof
-3. Shop receives guarantee without storing date of birth
-4. Session key destroyed (Crypto-Shredding)
-
-**Benefits:**
-- No PII storage = no data breach risk
-- Automatic GDPR compliance
-- Faster onboarding (single-click verify)
-
-### 2. Health Records (EHDS Layer 2)
-- Emergency access to critical health data
-- Selective disclosure (e.g., allergies only)
-- Layer 2 protection: no commercialization
-
-### 3. Professional Credentials
-- Employment verification without full CV
-- License validation without tracking
-- Zero-knowledge credential proofs
-
----
-
-## 🛠️ Development
-
-### Monorepo Structure
-
-This is a **pnpm workspace monorepo** using Turborepo.
-
-```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
-
-# Development mode (wallet)
-pnpm dev:wallet
-
-# Lint & format
-pnpm lint
-pnpm format
-
-# Clean build artifacts
-pnpm clean
-```
-
-### Key Packages
-
+**Core (depended on by most other packages):**
 | Package | Purpose |
 |---------|---------|
-| `@mitch/policy-engine` | Core policy evaluation logic |
-| `@mitch/shared-crypto` | Crypto-shredding, ephemeral keys, ZKPs |
-| `@mitch/audit-log` | Immutable audit chain implementation |
+| `@mitch/shared-types` | Shared TypeScript types (12 dependents) |
+| `@mitch/shared-crypto` | Cryptographic primitives, ephemeral keys |
+
+**Mid-level:**
+| Package | Purpose |
+|---------|---------|
+| `@mitch/policy-engine` | Rule-based policy evaluation, layer enforcement |
+| `@mitch/audit-log` | Immutable hash-chain audit log |
+| `@mitch/predicates` | Predicate evaluation (e.g., age >= 18) |
 | `@mitch/secure-storage` | Encrypted credential storage |
-| `@mitch/predicates` | Zero-knowledge predicate evaluation |
-| `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
+| `@mitch/layer-resolver` | Protection layer resolution |
+| `@mitch/mock-issuer` | Mock credential issuer library |
 | `@mitch/verifier-sdk` | Server-side verifier library |
 | `@mitch/verifier-browser` | Client-side verifier (zero-backend) |
+| `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
+| `@mitch/anchor-service` | Merkle/blockchain anchor (stubs) |
+
+**Standalone / experimental:**
+| Package | Purpose |
+|---------|---------|
+| `@mitch/eid-issuer-connector` | eID/eIDAS issuer integration (stub) |
+| `@mitch/revocation-statuslist` | StatusList2021 revocation (early) |
+| `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
+| `@mitch/secure-memory` | Secure memory handling |
+| `@mitch/phase0-security` | Security hardening experiments |
+| `@mitch/poc-hardened` | Hardened proof-of-concept server |
+
+**Test & tooling:**
+| Package | Purpose |
+|---------|---------|
+| `@mitch/integration-tests` | Cross-package integration tests |
+| `@mitch/benchmarks` | Performance benchmarks |
+| `@mitch/demo-liquor-store` | E2E demo: age-gated purchase |
+| `@mitch/secure-ui-test` | UI security testing |
 
 ---
 
-## 📊 Project Status
+## Getting Started
 
-**Current Phase:** Phase 5 - SME Pilot Readiness
+**Prerequisites:** Node.js 18+, pnpm 9.0.0+
 
-### Milestones
-- [x] **Phase 1-4:** Core implementation (policy-engine, crypto-shredding, audit)
-- [x] **Phase 5 (Active):** 15-minute integration for small businesses
-- [ ] **Phase 6:** Production hardening
-- [ ] **Phase 7:** Certification (GDPR, eIDAS)
-- [ ] **Phase 8:** Public launch
+```bash
+git clone https://github.com/Late-bloomer420/miTch.git
+cd miTch
+pnpm install
+pnpm build
+pnpm test
+```
 
-### Active Tasks
-- [ ] T-85: Browser Verifier SDK (`@mitch/verifier-browser`)
-- [ ] T-86: Ephemeral Key Generation (client-side)
-- [ ] T-87: Liquor Store Demo Page
-- [ ] T-88: Wallet Ephemeral Support
-
-See [BACKLOG](docs/00-welt/07_Backlog_and_Roadmap.md) for detailed roadmap.
-
----
-
-## ⚖️ Legal & Governance
-
-### Non-Negotiable Principles
-1. **Rule over Authority** - Trust from rules, not central power
-2. **Data Minimization by Construction** - Built-in, not bolted-on
-3. **User Sovereignty** - User controls all data releases
-4. **Non-Linkability** - No cross-service tracking possible
-5. **EU-First Trust** - GDPR/eIDAS compliant by design
-
-### Absolute Prohibitions (Never Events)
-- ❌ Central user profiles
-- ❌ Cross-service tracking
-- ❌ Data commercialization
-- ❌ **Commercialization of fundamental rights** (Teilhabe ohne Datenzwang)
-
-See [Policy Manifest](docs/00-welt/mitch_policy_manifest.md) for binding policies.
+Other commands:
+```bash
+pnpm dev:wallet    # Run wallet PWA in dev mode
+pnpm lint          # Lint all packages
+pnpm format        # Format with Prettier
+pnpm clean         # Clean build artifacts
+```
 
 ---
 
-## 🤝 Contributing
+## Current Status (2026-03-04)
 
-We welcome contributions that align with miTch's core principles!
+**Phase: Post-consolidation, closing P0 gaps**
 
-### Before Contributing
-1. Read [Principles & Non-Negotiables](docs/00-welt/02_Principles_and_NonNegotiables.md)
-2. Review [Policy Manifest](docs/00-welt/mitch_policy_manifest.md)
-3. Check [open issues](https://github.com/Late-bloomer420/miTch/issues)
+This repo was consolidated from 7 separate locations on 2026-02-15. Original git histories are preserved in `archive/git-bundles/`.
 
-### Development Guidelines
-- All code must pass `pnpm lint` and `pnpm test`
-- No central data storage (violates principles)
-- Document layer implications (Layer 0/1/2)
-- Add tests for policy enforcement
-- Follow existing commit conventions
+### What works
+- Monorepo builds and tests pass (`pnpm build && pnpm test` — run it to see current count)
+- Policy engine with layer-aware rule evaluation
+- SD-JWT VC credential stack
+- Audit log with hash-chain integrity
+- Predicate proofs (e.g., `age >= 18` without revealing DOB) — note: these are **hash-based predicate proofs**, not full zero-knowledge proofs (no snark/stark library yet)
+- Crypto-shredding primitives (ephemeral key generation + destruction)
+- E2E demo flow (liquor store age verification)
+- Wallet PWA shell
 
----
+### What's in progress (P0 gaps)
+- DID resolution + signature verification (stubs only)
+- Credential revocation runtime enforcement (basic deny list exists, no StatusList2021)
+- Policy engine deterministic conflict resolution + deny reason codes
+- Presentation binding & anti-replay (nonce TTL, canonicalization)
+- eID issuer connector (stub)
+- Wallet credential persistence (TODO)
 
-## 📜 License
+### What's not done
+- TEE integration
+- Multi-device sync
+- Quantum-ready signatures
+- Production deployment / CI pipeline
+- External GDPR legal opinion
+- RP integration SDK
 
-This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file for details.
-
-### Key Points
-- ✅ Open source (MIT)
-- ✅ Free for commercial use
-- ✅ No warranty (use at own risk)
-- ⚠️ Policy Manifest is protected intellectual property (see governance)
-
----
-
-## 🔗 Links
-
-- **GitHub:** [github.com/Late-bloomer420/miTch](https://github.com/Late-bloomer420/miTch)
-- **Documentation:** [docs/00-welt/00_README.md](docs/00-welt/00_README.md)
-- **Issues:** [GitHub Issues](https://github.com/Late-bloomer420/miTch/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/Late-bloomer420/miTch/discussions)
+See [`docs/`](docs/) for detailed specifications and [consolidated-gaps](https://github.com/Late-bloomer420/miTch/blob/consolidation/docs/consolidated-gaps.md) for the full gap tracker (31 items, prioritized P0–P3).
 
 ---
 
-## 📞 Contact
+## Key Design Principles
 
-- **Maintainer:** Late-bloomer420
-- **Email:** jonas.f.meyer@googlemail.com
-- **GitHub:** [@Late-bloomer420](https://github.com/Late-bloomer420)
-
----
-
-## 🌟 Acknowledgments
-
-**miTch** builds on the principles of:
-- **SSI (Self-Sovereign Identity)** movement
-- **Zero-Knowledge Cryptography** research
-- **Privacy by Design** methodology
-- **EU GDPR** regulatory framework
-- **eIDAS** digital identity standards
+1. **Fail-closed** — ambiguity → deny
+2. **Rule over authority** — trust from rules, not central power
+3. **Data minimization by construction** — built-in, not bolted-on
+4. **User sovereignty** — user controls all data releases
+5. **No central identity custody** — ever
 
 ---
 
-**Remember:** *miTch works not because it knows everything – but because it structurally cannot know anything.*
+## License
 
-🔐 **Trust through Rules, Not Authority**
+[MIT](LICENSE)
 
 ---
 
-*Repository consolidated: 2026-02-15*
-*Migration from 7 locations to unified layer-based structure*
-*All original git histories preserved in `archive/git-bundles/`*
+**Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
