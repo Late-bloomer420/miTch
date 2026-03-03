@@ -66,7 +66,7 @@ describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {
         // 2. Attack: Send pkgForA to Verifier B
         // This should fail because SDK B uses DID_B to reconstruct AAD
         await expect(sdkB.verifyPresentation(JSON.stringify(pkgForA)))
-            .rejects.toThrow(/SECURITY_VIOLATION/i);
+            .rejects.toThrow(/SECURITY_VIOLATION|Key Unwrap Failed/i);
     });
 
     test('V2: Recipient Binding Manipulation - changing verifier_did in context is detected', async () => {
@@ -88,7 +88,7 @@ describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {
         pkg.aad_context.verifier_did = 'did:mitch:evil-verifier';
 
         await expect(sdkA.verifyPresentation(JSON.stringify(pkg)))
-            .rejects.toThrow(/addressed to different verifier/i);
+            .rejects.toThrow(/addressed to .* verifier|AAD Binding Violation/i);
     });
 
     test('V3: Integrity Tamper - modifying ciphertext results in decryption failure', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EphemeralKey } from '../src/ephemeral_key';
-import { webcrypto } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 describe('EphemeralKey (Production Ready)', () => {
 
@@ -23,7 +23,7 @@ describe('EphemeralKey (Production Ready)', () => {
 
         // Post shred hash of 32 zeros
         const zeros = new Uint8Array(32);
-        const expectedHash = webcrypto.createHash('sha256').update(zeros).digest('hex');
+        const expectedHash = createHash('sha256').update(zeros).digest('hex');
         expect(proof.postShredHash).toBe(expectedHash);
     });
 

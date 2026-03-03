@@ -1,4 +1,4 @@
-import { webcrypto } from 'node:crypto';
+import { webcrypto, createHash } from 'node:crypto';
 
 export interface ShredProof {
     timestamp: string;
@@ -138,7 +138,7 @@ export class EphemeralKey {
     }
 
     private computeHash(data: Uint8Array): string {
-        const hash = webcrypto.createHash('sha256');
+        const hash = createHash('sha256');
         hash.update(data);
         return hash.digest('hex');
     }

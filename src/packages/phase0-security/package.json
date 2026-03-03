@@ -7,12 +7,12 @@
     "type": "module",
     "scripts": {
         "build": "tsc",
-        "test": "node dist/integration-example.js"
+        "test": "node --experimental-vm-modules -e \"import('fake-indexeddb/auto').then(()=>import('./dist/integration-example.js'))\""
     },
-    "dependencies": {},
     "devDependencies": {
-        "typescript": "^5.0.0",
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.0.0",
+        "fake-indexeddb": "^6.2.5",
+        "typescript": "^5.0.0"
     },
     "author": "miTch Core Team",
     "license": "UNLICENSED"

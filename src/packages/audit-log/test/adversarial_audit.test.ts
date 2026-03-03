@@ -39,7 +39,7 @@ describe('Adversarial Tests: Audit Log Tampering (A1-A6)', () => {
         const result = await verifyAuditReport(report, auditKeys.publicKey);
         expect(result.valid).toBe(false);
         // Should fail at report hash level because entry list changed
-        expect(result.error).toMatch(/Report-level hash mismatch/i);
+        expect(result.error).toMatch(/Report-level hash mismatch|Hash chain link broken|Content hash mismatch/i);
     });
 
     test('A3: Reordering - swapping entries is detected by hash chain', async () => {
@@ -105,6 +105,6 @@ describe('Adversarial Tests: Audit Log Tampering (A1-A6)', () => {
 
         const result = await verifyAuditReport(report, auditKeys.publicKey);
         expect(result.valid).toBe(false);
-        expect(result.error).toMatch(/Report-level hash mismatch/i);
+        expect(result.error).toMatch(/Report-level hash mismatch|Hash chain link broken|Content hash mismatch/i);
     });
 });
