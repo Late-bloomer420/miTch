@@ -28,9 +28,9 @@
     },
     "devDependencies": {
         "typescript": "^5.2.0",
-        "vitest": "^0.34.0",
+        "vitest": "^2.1.9",
         "@types/node": "^20.0.0",
-        "eslint": "^8.50.0",
+        "eslint": "^8.57.1",
         "prettier": "^3.0.0",
         "rimraf": "^5.0.0"
     }
