@@ -143,7 +143,7 @@ export class EIDIssuerConnector {
           id: keyId,
           type: 'JsonWebKey2020',
           controller: this.issuerDID,
-          publicKeyJwk: this.publicKeyJwk as Record<string, unknown>,
+          publicKeyJwk: this.publicKeyJwk as unknown as Record<string, unknown>,
         },
       ],
       assertionMethod: [keyId],
