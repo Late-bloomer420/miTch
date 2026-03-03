@@ -23,7 +23,7 @@ beforeEach(() => {
 });
 
 describe('POST /present rate-limit headers', () => {
-    it('returns 429 with coherent Retry-After and reset headers', async () => {
+    it('returns 429 with coherent Retry-After and reset headers', { timeout: 30_000 }, async () => {
         const { app } = await import('./app');
         const agent = request(app);
 

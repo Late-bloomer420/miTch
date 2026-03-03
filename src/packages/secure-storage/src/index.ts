@@ -219,6 +219,63 @@ export class SecureStorage {
     }
 
     /**
+     * Delete a credential by ID.
+     * Removes both the encrypted payload and metadata from IndexedDB.
+     */
+    async delete(id: string): Promise<boolean> {
+        const db = await this.dbPromise;
+
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            // Check existence first
+            const getReq = store.get(id);
+            getReq.onsuccess = () => {
+                if (!getReq.result) {
+                    resolve(false); // Nothing to delete
+                    return;
+                }
+                const delReq = store.delete(id);
+                delReq.onsuccess = () => resolve(true);
+                delReq.onerror = () => reject(delReq.error);
+            };
+            getReq.onerror = () => reject(getReq.error);
+        });
+    }
+
+    /**
+     * Check if a credential exists by ID (without decrypting).
+     */
+    async has(id: string): Promise<boolean> {
+        const db = await this.dbPromise;
+
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.count(id);
+            request.onsuccess = () => resolve(request.result > 0);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * Get raw encrypted document (for testing encryption-at-rest guarantees).
+     * NOT for production use — exposed for test assertions only.
+     */
+    async getRawDocument(id: string): Promise<EncryptedDocument | null> {
+        const db = await this.dbPromise;
+
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(id);
+            request.onsuccess = () => resolve(request.result ?? null);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
      * List all items (Metadata Only).
      * Used by PolicyEngine to find candidates.
      */

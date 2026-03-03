@@ -9,6 +9,7 @@
     ],
     "scripts": {
         "build": "tsc",
+        "pretest": "npx playwright install chromium --with-deps 2>/dev/null || true",
         "test": "tsx src/context_pinning.test.ts"
     },
     "peerDependencies": {
