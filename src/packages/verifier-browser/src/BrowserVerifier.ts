@@ -45,6 +45,8 @@ import {
     base64UrlToBuffer
 } from './crypto.js';
 
+import { DIDSignatureVerifier } from '@mitch/shared-crypto';
+
 /**
  * Default in-memory session storage
  * Sessions are lost on page refresh (ephemeral by design)
@@ -78,6 +80,7 @@ class InMemorySessionStorage implements SessionStorage {
 export class BrowserVerifier {
     private config: Required<BrowserVerifierConfig>;
     private sessionStorage: SessionStorage;
+    private didVerifier: DIDSignatureVerifier;
 
     constructor(
         config: BrowserVerifierConfig,
@@ -92,6 +95,7 @@ export class BrowserVerifier {
         };
 
         this.sessionStorage = sessionStorage ?? new InMemorySessionStorage();
+        this.didVerifier = new DIDSignatureVerifier();
 
         // Start periodic cleanup
         this.startCleanupTimer();
@@ -170,45 +174,46 @@ export class BrowserVerifier {
         }
 
         try {
-            // 3. Verify signature (wallet signs sessionId + encryptedPayload)
-            const dataToVerify = new TextEncoder().encode(
-                response.sessionId + response.encryptedPayload
+            // 3. Verify signature against DID-resolved key
+            // The wallet signs (sessionId + encryptedPayload) as a JWT
+            // We resolve the wallet's DID, extract the verification key, and verify
+            const verificationResult = await this.didVerifier.verifyPresentation(
+                response.signature,
+                response.walletDid,
+                { purpose: 'authentication' }
             );
 
-            const signatureBuffer = base64UrlToBuffer(response.signature);
+            if (!verificationResult.verified) {
+                // Fail-closed: DID resolution failure, key mismatch, or invalid signature = DENY
+                await this.sessionStorage.delete(response.sessionId);
+                return {
+                    success: false,
+                    timestamp: Date.now(),
+                    walletDid: response.walletDid,
+                    error: verificationResult.error ?? 'Signature verification failed'
+                };
+            }
 
-            // Import wallet's public key
-            // TODO: Resolve DID to get public key (for now, assume wallet sends JWK)
-            // const walletPubKey = await this.resolveDidToPublicKey(response.walletDid);
+            // 4. Decrypt payload (JWE) with ephemeral private key
+            // TODO: Implement JWE decryption with ephemeral private key (requires JOSE CompactDecrypt)
+            // const decryptedPayload = await compactDecrypt(response.encryptedPayload, session._privateKey!);
+            // For now, extract claims from the verified JWT payload
+            const payload = verificationResult.payload ?? {};
+            const provenClaims = (payload.provenClaims as Record<string, boolean>) ?? {};
+            const disclosedClaims = (payload.disclosedClaims as Record<string, unknown>) ?? {};
 
-            // For PoC: Skip signature verification (requires DID resolution)
-            // const isValid = await verifySignature(walletPubKey, dataToVerify, signatureBuffer);
-            // if (!isValid) {
-            //     return { success: false, error: 'Invalid signature', ... };
-            // }
-
-            // 4. Decrypt payload (JWE)
-            // TODO: Implement JWE decryption with ephemeral private key
-            // const decryptedPayload = await decryptJWE(
-            //     response.encryptedPayload,
-            //     session._privateKey!
-            // );
-
-            // 5. For PoC: Simulate successful verification
-            // In production: Parse decrypted payload as DecisionCapsule
-            const mockResponse: VerifiedResponse = {
+            const verifiedResponse: VerifiedResponse = {
                 success: true,
-                provenClaims: {
-                    'age >= 18': true
-                },
+                provenClaims,
+                disclosedClaims,
                 timestamp: Date.now(),
                 walletDid: response.walletDid
             };
 
-            // 6. Cleanup session (one-time use)
+            // 5. Cleanup session (one-time use)
             await this.sessionStorage.delete(response.sessionId);
 
-            return mockResponse;
+            return verifiedResponse;
 
         } catch (error) {
             return {

@@ -384,6 +384,13 @@ importers:
         version: 5.9.3
 
   src/packages/poc-hardened:
+    dependencies:
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@mitch/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
     devDependencies:
       '@types/node':
         specifier: ^25.0.3
@@ -535,6 +542,9 @@ importers:
 
   src/packages/verifier-browser:
     dependencies:
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types

@@ -6,6 +6,7 @@ import { createSignedLocalRequest, localResolveKey } from "./api/testRequestFact
 import { getMetricsSnapshot, recordDecision, resetMetrics } from "./api/metrics";
 import { isAuthorized } from "./config/auth";
 import { envResolveKey } from "./proof/envKeyResolver";
+import { createDIDKeyResolver } from "./proof/didKeyResolver";
 import { appendEvent } from "./api/eventLog";
 import { getKpiSnapshot } from "./api/kpi";
 import { recordAdjudication, recordOverride } from "./api/operations";
@@ -27,8 +28,9 @@ const defaultPolicy: PolicyManifestV0 = {
   failClosed: true,
 };
 
-// TODO: replace with real key resolver + issuer status integration
-const resolveKey: ResolveKey = ALLOW_TEST_KEYS ? localResolveKey : envResolveKey;
+// DID-based key resolver with fallback to env/test resolver
+const baseResolver: ResolveKey = ALLOW_TEST_KEYS ? localResolveKey : envResolveKey;
+const resolveKey: ResolveKey = createDIDKeyResolver(baseResolver);
 
 function sendJson(res: ServerResponse, statusCode: number, body: unknown, correlationId?: string): void {
   const json = JSON.stringify(body);
