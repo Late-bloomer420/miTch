@@ -19,11 +19,32 @@ import path from 'path';
 export const app: Express = express();
 
 const isTestMode = process.env.MITCH_TEST_MODE === '1';
+/**
+ * G-12: Production-safe trust proxy configuration
+ *
+ * Options (via environment variables):
+ *   TRUST_PROXY=1              — Enable trust proxy (required)
+ *   TRUST_PROXY_HOPS=2         — Number of trusted hops (default: 1)
+ *   TRUST_PROXY_CIDR=...       — Comma-separated CIDR allowlist (takes precedence over hops)
+ *                                 e.g. "10.0.0.0/8,172.16.0.0/12,127.0.0.1"
+ *
+ * When TRUST_PROXY_CIDR is set, Express only trusts X-Forwarded-* headers from
+ * those specific IP ranges. This is the most secure option for production.
+ * When only TRUST_PROXY_HOPS is set, Express trusts that many proxy hops.
+ * Never set trust proxy to `true` (trusts any source).
+ */
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const TRUST_PROXY_HOPS = Number.parseInt(process.env.TRUST_PROXY_HOPS || '1', 10);
+const TRUST_PROXY_CIDR = process.env.TRUST_PROXY_CIDR;
 if (TRUST_PROXY) {
-    // TODO: In production, prefer explicit proxy hop counts or CIDR allowlists.
-    app.set('trust proxy', Number.isFinite(TRUST_PROXY_HOPS) ? TRUST_PROXY_HOPS : 1);
+    if (TRUST_PROXY_CIDR) {
+        // CIDR allowlist: most secure — only named networks can set forwarded headers
+        const cidrs = TRUST_PROXY_CIDR.split(',').map(s => s.trim()).filter(Boolean);
+        app.set('trust proxy', cidrs);
+    } else {
+        // Hop count: acceptable when exact proxy chain depth is known
+        app.set('trust proxy', Number.isFinite(TRUST_PROXY_HOPS) ? TRUST_PROXY_HOPS : 1);
+    }
 }
 
 // Enable CORS so the Wallet PWA and Frontend can talk to us
