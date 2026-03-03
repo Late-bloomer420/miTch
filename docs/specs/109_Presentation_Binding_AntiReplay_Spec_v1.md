@@ -1,4 +1,4 @@
-# 108 — Presentation Binding & Anti-Replay Spec v1
+# 109 — Presentation Binding & Anti-Replay Spec v1
 
 Stand: 2026-03-04
 Status: Normative (P0 — blocks Phase 5 pilot)

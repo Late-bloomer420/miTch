@@ -8,6 +8,9 @@ export * from './recovery';
 export * from './secure-buffer';
 export * from './webauthn';
 export * from './did';
+export * from './nonce-store';
+export * from './presentation-binding';
+export * from './did-verification';
 
 // Phase 0: KeyGuardian (replaces tee-attestation)
 export * from './types/KeyProtectionLevel.js';
