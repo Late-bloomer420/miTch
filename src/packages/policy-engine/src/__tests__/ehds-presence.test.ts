@@ -97,4 +97,43 @@ describe('EHDS Emergency: requiresPresence flow', () => {
     expect(result.reasonCodes).not.toContain(ReasonCode.PRESENCE_REQUIRED);
     expect(result.decisionCapsule?.requires_presence).toBe(false);
   });
+
+  it('research request with denySecondaryUse → DENY + SECONDARY_USE_DENIED', async () => {
+    const policyWithOptOut = {
+      ...EHDS_POLICY,
+      globalSettings: { ...EHDS_POLICY.globalSettings, denySecondaryUse: true },
+    };
+
+    const request: VerifierRequest = {
+      verifierId: 'hospital-madrid-er-1',
+      origin: 'https://er.hospital-madrid.es',
+      usagePurpose: 'researchSecondary' as any,
+      requirements: [{
+        credentialType: 'PatientSummary',
+        requestedClaims: ['bloodGroup', 'allergies'],
+        requestedProvenClaims: [],
+      }],
+    };
+
+    const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], policyWithOptOut);
+    expect(result.verdict).toBe('DENY');
+    expect(result.reasonCodes).toContain(ReasonCode.SECONDARY_USE_DENIED);
+  });
+
+  it('research request WITHOUT denySecondaryUse → PROMPT (not denied)', async () => {
+    const request: VerifierRequest = {
+      verifierId: 'hospital-madrid-er-1',
+      origin: 'https://er.hospital-madrid.es',
+      usagePurpose: 'researchSecondary' as any,
+      requirements: [{
+        credentialType: 'PatientSummary',
+        requestedClaims: ['bloodGroup', 'allergies'],
+        requestedProvenClaims: [],
+      }],
+    };
+
+    const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], EHDS_POLICY);
+    expect(result.verdict).toBe('PROMPT');
+    expect(result.reasonCodes).toContain(ReasonCode.PRESENCE_REQUIRED);
+  });
 });

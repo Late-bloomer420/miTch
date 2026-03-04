@@ -32,7 +32,29 @@ export interface TrustedIssuer {
     credentialTypes: string[];
     /** Optional expiration of trust relationship */
     validUntil?: string;
+    /** Role of the issuer (standard, HDAB for research access, emergency) */
+    issuerRole?: 'standard' | 'hdab' | 'emergency';
 }
+
+/**
+ * Geographic scope for data access rules.
+ * Based on GDPR adequacy framework + EHDS cross-border requirements.
+ */
+export type GeoScope =
+    | 'eu-only'             // Only EU/EEA verifiers (default for Layer 2+)
+    | 'eu-plus-adequacy'    // EU + countries with adequacy decision (JP, KR, etc.)
+    | 'global';             // No geographic restriction
+
+/**
+ * EHDS usage purpose classification.
+ * Primary use = direct patient care; secondary use = research, statistics, policy assessment.
+ * These are structurally different legal relationships (GDPR/EHDS).
+ */
+export type UsagePurpose =
+    | 'primaryCare'         // Direct treatment — highest priority
+    | 'researchSecondary'   // Science — user can globally opt out
+    | 'policyAssessment'    // Government effectiveness measurement
+    | 'statistics';         // Aggregated, de-identified
 
 /**
  * A single policy rule for matching verifier requests.
@@ -63,6 +85,12 @@ export interface PolicyRule {
     priority?: number;
     /** Minimum protection layer required for this verifier (0=WELT, 1=GRUNDVERSORGUNG, 2=VULNERABLE) */
     minimumLayer?: number;
+    /** EHDS usage purpose this rule applies to (default: primaryCare) */
+    usagePurpose?: UsagePurpose;
+    /** EHDS: Verifier must present a valid HDAB permit for this rule */
+    requiresHdabPermit?: boolean;
+    /** Geographic scope restriction for this rule */
+    geoScope?: GeoScope;
 }
 
 /**
@@ -77,6 +105,10 @@ export interface GlobalPolicySettings {
     blockUnknownVerifiers?: boolean;
     /** Strict origin + DID binding for verifiers */
     strictVerifierBinding?: boolean;
+    /** EHDS: Global opt-out for secondary use (research, statistics) */
+    denySecondaryUse?: boolean;
+    /** EHDS: Deny secondary use for specific countries (ISO 3166-1 alpha-2) */
+    denySecondaryUseCountries?: string[];
 }
 
 /**
@@ -96,6 +128,8 @@ export interface VerifierRequest {
     purpose?: string;
     /** Anti-replay nonce from verifier */
     nonce?: string;
+    /** EHDS usage purpose declared by the verifier */
+    usagePurpose?: UsagePurpose;
     /**
      * Support for multiple requirements (Atomic Bundle)
      * If empty/undefined, falls back to legacy single-VC fields below.

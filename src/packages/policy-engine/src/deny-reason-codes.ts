@@ -72,6 +72,12 @@ export enum DenyReasonCode {
   // --- Conflict Resolution ---
   CONFLICT_DENY_WINS = 'DENY_CONFLICT_RESOLUTION',
 
+  // --- EHDS Compliance ---
+  HDAB_PERMIT_REQUIRED = 'DENY_HDAB_PERMIT_REQUIRED',
+  SECONDARY_USE_DENIED = 'DENY_SECONDARY_USE_DENIED',
+  GEO_SCOPE_VIOLATION = 'DENY_GEO_SCOPE_VIOLATION',
+  BREAK_GLASS_ACTIVATED = 'ALLOW_BREAK_GLASS_ACTIVATED',
+
   // --- Catch-all ---
   INTERNAL_SAFE_FAILURE = 'DENY_INTERNAL_SAFE_FAILURE',
 }
@@ -279,6 +285,28 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
     user: 'Dieser Dienst ist in deiner Region nicht verfügbar.',
     verifier: VERIFIER_BUCKET_GENERIC,
     audit: 'Jurisdiction mismatch between requester runtime and policy requirements.',
+  },
+
+  // --- EHDS Compliance ---
+  [DenyReasonCode.HDAB_PERMIT_REQUIRED]: {
+    user: 'Der Anfragende benötigt eine HDAB-Genehmigung für Forschungsdatenzugriff.',
+    verifier: VERIFIER_BUCKET_GENERIC,
+    audit: 'Verifier lacks required HDAB (Health Data Access Body) permit for secondary use access.',
+  },
+  [DenyReasonCode.SECONDARY_USE_DENIED]: {
+    user: 'Du hast Forschungszugriff auf deine Daten deaktiviert.',
+    verifier: VERIFIER_BUCKET_GENERIC,
+    audit: 'User global opt-out for secondary use (denySecondaryUse=true in PolicyManifest).',
+  },
+  [DenyReasonCode.GEO_SCOPE_VIOLATION]: {
+    user: 'Dieser Dienst befindet sich außerhalb des erlaubten geographischen Bereichs.',
+    verifier: VERIFIER_BUCKET_GENERIC,
+    audit: 'Verifier geographic location violates geoScope restriction on matched policy rule.',
+  },
+  [DenyReasonCode.BREAK_GLASS_ACTIVATED]: {
+    user: '⚠️ Notfallzugriff wurde aktiviert — du wirst benachrichtigt.',
+    verifier: VERIFIER_BUCKET_USER_ACTION,
+    audit: 'Break-glass emergency access granted without prior consent. User notification queued.',
   },
 
   // --- Conflict Resolution ---

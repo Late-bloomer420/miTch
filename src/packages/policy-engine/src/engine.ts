@@ -78,7 +78,13 @@ export enum ReasonCode {
     // PROMPT
     CONSENT_REQUIRED = 'CONSENT_REQUIRED',
     SENSITIVE_CLAIM = 'SENSITIVE_CLAIM',
-    PRESENCE_REQUIRED = 'PRESENCE_REQUIRED'
+    PRESENCE_REQUIRED = 'PRESENCE_REQUIRED',
+
+    // EHDS Compliance
+    SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
+    HDAB_PERMIT_REQUIRED = 'HDAB_PERMIT_REQUIRED',
+    GEO_SCOPE_VIOLATION = 'GEO_SCOPE_VIOLATION',
+    BREAK_GLASS_ACTIVATED = 'BREAK_GLASS_ACTIVATED'
 }
 
 export type CapsuleSigner = (capsule: DecisionCapsule) => Promise<string>;
@@ -296,6 +302,13 @@ export class PolicyEngine {
         reasonCodes.push(ReasonCode.CREDENTIAL_VALID);
         if (matchedRule.requiresTrustedIssuer) {
             reasonCodes.push(ReasonCode.TRUSTED_ISSUER);
+        }
+
+        // 3b. EHDS Secondary Use Check
+        const declaredPurpose = (request as any).usagePurpose || matchedRule.usagePurpose || 'primaryCare';
+        const isSecondaryUse = declaredPurpose !== 'primaryCare';
+        if (isSecondaryUse && policy.globalSettings?.denySecondaryUse) {
+            return this.result('DENY', [ReasonCode.SECONDARY_USE_DENIED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
         }
 
         // 4. Consent & Presence Logic
