@@ -9,15 +9,15 @@
     ],
     "scripts": {
         "build": "tsc",
-        "pretest": "npx playwright install chromium --with-deps 2>/dev/null || true",
-        "test": "tsx src/context_pinning.test.ts"
+        "test": "echo 'secure-ui-test: Playwright E2E — skipped in unit test run. Use: pnpm test:e2e'",
+        "test:e2e": "tsx src/context_pinning.test.ts"
     },
     "peerDependencies": {
         "playwright": "^1.40.0"
     },
     "devDependencies": {
+        "typescript": "^5.0.0",
         "@types/node": "^20.0.0",
-        "tsx": "^4.7.0",
-        "typescript": "^5.0.0"
+        "tsx": "^4.7.0"
     }
 }
