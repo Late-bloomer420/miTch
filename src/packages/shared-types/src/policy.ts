@@ -91,6 +91,8 @@ export interface PolicyRule {
     requiresHdabPermit?: boolean;
     /** Geographic scope restriction for this rule */
     geoScope?: GeoScope;
+    /** EHDS: Allow break-glass emergency access without prior consent */
+    allowBreakGlass?: boolean;
 }
 
 /**
@@ -270,6 +272,8 @@ export interface InteractionMetadata {
     accessibilityActive?: boolean;
     inputSource?: 'TOUCH' | 'MOUSE' | 'KEYBOARD' | 'UNKNOWN';
     responseTimeMs?: number; // Time from prompt render to action
+    /** Whether the user is currently available to interact (false = unconscious/unreachable) */
+    userPresent?: boolean;
     proofOfPresence?: {
         type: 'BIOMETRIC' | 'PIN' | 'PASSKEY';
         success: boolean;
@@ -284,4 +288,6 @@ export interface StoredCredentialMetadata {
     issuedAt: string;
     expiresAt?: string;
     claims: string[];
+    /** Credential lifecycle status */
+    status?: 'active' | 'dispensed' | 'revoked' | 'expired';
 }

@@ -78,6 +78,9 @@ export enum DenyReasonCode {
   GEO_SCOPE_VIOLATION = 'DENY_GEO_SCOPE_VIOLATION',
   BREAK_GLASS_ACTIVATED = 'ALLOW_BREAK_GLASS_ACTIVATED',
 
+  // --- Single-Use Nullifier ---
+  CREDENTIAL_DISPENSED = 'DENY_CREDENTIAL_DISPENSED',
+
   // --- Catch-all ---
   INTERNAL_SAFE_FAILURE = 'DENY_INTERNAL_SAFE_FAILURE',
 }
@@ -314,6 +317,13 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
     user: 'Eine Sicherheitsregel blockiert diese Anfrage.',
     verifier: VERIFIER_BUCKET_GENERIC,
     audit: 'Multiple rules matched; at least one produced DENY — deny-wins applied.',
+  },
+
+  // --- Single-Use Nullifier ---
+  [DenyReasonCode.CREDENTIAL_DISPENSED]: {
+    user: 'Dieses Rezept wurde bereits eingelöst.',
+    verifier: VERIFIER_BUCKET_GENERIC,
+    audit: 'Credential has been marked as dispensed (single-use nullifier). Re-presentation blocked.',
   },
 
   // --- Catch-all ---

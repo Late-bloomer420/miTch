@@ -85,7 +85,8 @@ export enum ReasonCode {
     SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
     HDAB_PERMIT_REQUIRED = 'HDAB_PERMIT_REQUIRED',
     GEO_SCOPE_VIOLATION = 'GEO_SCOPE_VIOLATION',
-    BREAK_GLASS_ACTIVATED = 'BREAK_GLASS_ACTIVATED'
+    BREAK_GLASS_ACTIVATED = 'BREAK_GLASS_ACTIVATED',
+    CREDENTIAL_DISPENSED = 'CREDENTIAL_DISPENSED'
 }
 
 export type CapsuleSigner = (capsule: DecisionCapsule) => Promise<string>;
@@ -340,6 +341,18 @@ export class PolicyEngine {
             }
         }
 
+        // 3e. Break-Glass Emergency Access (EHDS Art. 8(5))
+        // If rule allows break-glass AND requires presence but user isn't available,
+        // grant access with immediate audit alert instead of blocking
+        if (matchedRule.allowBreakGlass) {
+            const userAvailable = context.interaction?.userPresent !== false;
+            if (!userAvailable && (matchedRule.requiresPresence || matchedRule.requiresUserConsent)) {
+                // Break-glass: ALLOW without consent, but with audit trail
+                reasonCodes.push(ReasonCode.BREAK_GLASS_ACTIVATED);
+                return this.result('ALLOW', reasonCodes, context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
+            }
+        }
+
         // 4. Consent & Presence Logic
         const requiresConsent = matchedRule.requiresUserConsent
             || policy.globalSettings?.requireConsentForAll;
@@ -517,6 +530,12 @@ export class PolicyEngine {
         const reasons: string[] = [];
 
         const suitable = credentials.filter(cred => {
+            // T-B2: Skip dispensed/revoked credentials (single-use nullifier)
+            if (cred.status === 'dispensed' || cred.status === 'revoked') {
+                if (!reasons.includes(ReasonCode.CREDENTIAL_DISPENSED)) reasons.push(ReasonCode.CREDENTIAL_DISPENSED);
+                return false;
+            }
+
             if (req.credentialType !== '*' && !cred.type.includes(req.credentialType)) return false;
 
             // Minimization Check
