@@ -103,6 +103,24 @@ pnpm clean         # Clean build artifacts
 
 ---
 
+## Fail-Closed Golden Tests (Merge-Blocking)
+
+The `test:golden` script runs fail-closed regression tests that enforce three invariants:
+
+1. **Unknown verifier / DID resolution fails → DENY**
+2. **Revocation status unknown/unreachable → DENY** (for configured risk layers)
+3. **Policy ambiguity / purpose mismatch → DENY or PROMPT, never ALLOW**
+
+These tests are **merge-blocking** in CI. A refactor that reintroduces an "ALLOW on failure" bug will fail the build immediately.
+
+```bash
+pnpm test:golden
+```
+
+Includes a specific regression test for the 2026-03-03 bug where StatusList fetch failure returned ALLOW instead of DENY.
+
+---
+
 ## Current Status (2026-03-04)
 
 **Phase: Post-consolidation, closing P0 gaps**

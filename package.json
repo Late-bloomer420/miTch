@@ -16,6 +16,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "turbo run test",
+    "test:golden": "pnpm --filter @mitch/integration-tests exec vitest run src/fail-closed-golden.test.ts",
     "clean": "turbo run clean",
     "clean:pnpm": "pnpm -r --filter ./src/packages/* clean"
   },

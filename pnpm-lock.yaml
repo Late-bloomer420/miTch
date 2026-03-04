@@ -307,6 +307,9 @@ importers:
       '@mitch/revocation-statuslist':
         specifier: workspace:*
         version: link:../revocation-statuslist
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types

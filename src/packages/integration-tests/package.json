@@ -14,7 +14,8 @@
     "@mitch/revocation-statuslist": "workspace:*",
     "@mitch/eid-issuer-connector": "workspace:*",
     "@mitch/webauthn-verifier": "workspace:*",
-    "@mitch/shared-types": "workspace:*"
+    "@mitch/shared-types": "workspace:*",
+    "@mitch/shared-crypto": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
