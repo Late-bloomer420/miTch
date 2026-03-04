@@ -91,6 +91,7 @@ export const DEMO_POLICY: PolicyManifest = {
       deniedClaims: ['insuranceId', 'financialData', 'geneticData'],
       requiresUserConsent: true,       // ← PROMPT
       requiresPresence: true,          // ← WebAuthn PFLICHT (Layer 2)
+      allowBreakGlass: true,           // ← EHDS Art. 8(5): Notfall-Zugriff ohne Consent
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 730,       // 2 Jahre für Notfalldaten
       priority: 100,                   // Höchste Prio
