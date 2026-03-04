@@ -94,7 +94,7 @@ let hashFnSync: ((data: string) => string) | null = null;
 
 try {
     // Attempt standard require for Node.js contexts
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const req = (typeof require !== 'undefined') ? require : null;
     if (req) {
         const crypto = req('crypto');

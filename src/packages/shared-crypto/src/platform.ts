@@ -9,7 +9,7 @@ export const crypto: Crypto = (() => {
     if (typeof globalThis.crypto !== 'undefined') {
         return globalThis.crypto;
     }
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const nodeCrypto = require('crypto').webcrypto;
     return nodeCrypto;
 })();

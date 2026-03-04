@@ -115,7 +115,7 @@ const EHDS_PRESCRIPTION = {
     }
 };
 
-let verifierKeyPair: CryptoKeyPair | null = null;
+const verifierKeyPair: CryptoKeyPair | null = null;
 
 // T-35b: DID Resolution Cache
 const keyCache = new Map<string, { key: CryptoKey, expires: number }>();
