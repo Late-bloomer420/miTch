@@ -24,3 +24,4 @@ export * from './conflict-resolver';
 
 export * from './capability-negotiation';
 export * from './audit-metadata';
+export * from './geo-scope';
