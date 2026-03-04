@@ -5,6 +5,7 @@ interface SecureZoneProps {
     children: React.ReactNode;
     onIntervention: (reason: string) => void;
     className?: string;
+    style?: React.CSSProperties;
 }
 
 /**
@@ -14,7 +15,7 @@ interface SecureZoneProps {
  * It performs runtime checks to ensure the element isn't being spoofed, covered, or redressed
  * by malicious overlays (Clickjacking/UI Redress).
  */
-export const SecureZone: React.FC<SecureZoneProps> = ({ children, onIntervention, className }) => {
+export const SecureZone: React.FC<SecureZoneProps> = ({ children, onIntervention, className, style: externalStyle }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isSecure, setIsSecure] = useState(true);
 
@@ -118,7 +119,7 @@ export const SecureZone: React.FC<SecureZoneProps> = ({ children, onIntervention
             ref={containerRef}
             className={`${className || ''} ${!isSecure ? 'security-lockdown' : ''}`}
             onClickCapture={handleCapture}
-            style={!isSecure ? { border: '2px solid red', pointerEvents: 'none', opacity: 0.5 } : {}}
+            style={!isSecure ? { ...externalStyle, border: '2px solid red', pointerEvents: 'none', opacity: 0.5 } : { ...externalStyle }}
         >
             {/* Visual Indicator of Security Zone */}
             <div style={{ position: 'absolute', top: -10, right: -10, fontSize: '10px', color: isSecure ? 'green' : 'red' }}>

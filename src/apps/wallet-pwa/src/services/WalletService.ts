@@ -131,7 +131,7 @@ const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 const localStoreShim: Storage = (() => {
     try {
         if (typeof localStorage !== 'undefined') return localStorage;
-    } catch (_: __) { }
+    } catch (_: unknown) { }
     const mem = new Map<string, string>();
     return {
         getItem: (k: string) => (mem.has(k) ? mem.get(k)! : null),
@@ -265,7 +265,7 @@ export class WalletService {
                             // Production would use key wrapping (wrapKey/unwrapKey).
                             console.log('📦 Audit key marker found in storage (generating session keys)');
                         }
-                    } catch (_: __) {
+                    } catch (_: unknown) {
                         // Storage error or first run — will generate fresh keys
                     }
 
@@ -280,7 +280,7 @@ export class WalletService {
                             claims: ['created'],
                             issuedAt: new Date().toISOString()
                         });
-                    } catch (_: __) {
+                    } catch (_: unknown) {
                         console.warn('⚠️ Failed to persist audit key marker');
                     }
 
