@@ -2,12 +2,27 @@
   "name": "@mitch/layer-resolver",
   "version": "0.1.0",
   "description": "Protection layer resolution and enforcement for miTch",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "clean": "rimraf dist",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "mitch",
@@ -20,7 +35,7 @@
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.3.3",
-    "vitest": "^2.1.9",
+    "vitest": "^1.0.0",
     "rimraf": "^5.0.0"
   }
 }

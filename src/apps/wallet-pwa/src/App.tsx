@@ -14,6 +14,63 @@ import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
 import { CONFIG } from './config';
+import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
+
+const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
+    {
+        id: 1,
+        scenario: '🍺 Liquor Store',
+        title: 'Age Verification — Zero Knowledge',
+        description:
+            'A liquor store scans your wallet QR. miTch evaluates the request against ' +
+            'your policy. The store is trusted and only asks for proof of age ≥ 18. ' +
+            'No consent dialog needed — miTch auto-approves because the rule already covers this.',
+        whatVerifierSees: '✅ age ≥ 18: true (proof only)',
+        whatIsBlocked: '❌ birthDate  ❌ name  ❌ address',
+        buttonId: 'btn-liquor-store',
+        expectedVerdict: 'ALLOW'
+    },
+    {
+        id: 2,
+        scenario: '🏥 Doctor Login',
+        title: 'Multi-Credential — Consent Required',
+        description:
+            'A hospital portal requests your ID (age ≥ 18) and medical license. ' +
+            'miTch finds a matching rule but flags it for explicit consent — ' +
+            'two credential types, professional data. You must approve.',
+        whatVerifierSees: '✅ age ≥ 18  ✅ role: Physician  ✅ licenseId',
+        whatIsBlocked: '❌ birthDate  ❌ salary  ❌ home address',
+        buttonId: 'btn-doctor-login',
+        expectedVerdict: 'PROMPT'
+    },
+    {
+        id: 3,
+        scenario: '🚑 EHDS Emergency Room',
+        title: 'Health Data — Biometric Binding Required',
+        description:
+            'A Spanish ER requests your patient summary (blood group, allergies). ' +
+            'This is Layer 2 data — the highest protection tier. miTch requires ' +
+            'explicit consent AND biometric presence (WebAuthn). ' +
+            'The Approve button stays locked until your fingerprint/PIN confirms presence.',
+        whatVerifierSees: '✅ bloodGroup  ✅ allergies  ✅ emergencyContacts',
+        whatIsBlocked: '❌ diagnosis history  ❌ genetic data  ❌ insuranceId',
+        buttonId: 'btn-ehds-er',
+        expectedVerdict: 'PROMPT+BIOMETRIC'
+    },
+    {
+        id: 4,
+        scenario: '💊 Pharmacy',
+        title: 'ePrescription — Time-Limited Disclosure',
+        description:
+            'A pharmacy requests your prescription details. The credential is only ' +
+            'valid for 30 days (freshness policy). After approval, the session key is ' +
+            'destroyed immediately — Crypto-Shredding in action.',
+        whatVerifierSees: '✅ medication  ✅ dosageInstruction  ✅ refillsRemaining',
+        whatIsBlocked: '❌ diagnosis  ❌ genetic data  ❌ insuranceId',
+        buttonId: 'btn-pharmacy',
+        expectedVerdict: 'PROMPT'
+    }
+];
 
 export default function App() {
     const [status, setStatus] = useState<string>('LOCKED');
@@ -24,6 +81,9 @@ export default function App() {
     const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null); // T-28: Store pending request for override
     const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
     const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
+    const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
+        () => !sessionStorage.getItem('guidedDemoCompleted')
+    );
 
     // Service Instance
     const walletRef = useRef<WalletService>(new WalletService());
@@ -550,6 +610,7 @@ export default function App() {
             )}
 
             <button
+                id="btn-liquor-store"
                 onClick={() => {
                     if (status === 'SHREDDED') {
                         setStatus('IDLE');
@@ -628,6 +689,7 @@ export default function App() {
                 <h3 style={{ margin: '0 0 15px 0', fontSize: 16, color: '#fff' }}>🚀 Advanced Feature Demos</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <button
+                        id="btn-doctor-login"
                         onClick={handleMultiProofDemo}
                         style={{ padding: 12, background: '#0891b2', border: '1px solid #0e7490', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', gridColumn: 'span 2' }}
                     >
@@ -646,12 +708,14 @@ export default function App() {
                         Social Recovery (T-28)
                     </button>
                     <button
+                        id="btn-ehds-er"
                         onClick={handleHealthAccessDemo}
                         style={{ padding: 12, background: '#be123c', border: '1px solid #fb7185', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
                     >
                         EHDS: ER (T-30a)
                     </button>
                     <button
+                        id="btn-pharmacy"
                         onClick={handlePharmacyDemo}
                         style={{ padding: 12, background: '#059669', border: '1px solid #10b981', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
                     >
@@ -676,6 +740,42 @@ export default function App() {
                     </button>
                 </div>
             </div>
+
+            {status === 'IDLE' && !guidedDemoActive && (
+                <button
+                    onClick={() => {
+                        sessionStorage.removeItem('guidedDemoCompleted');
+                        setGuidedDemoActive(true);
+                    }}
+                    style={{
+                        width: '100%',
+                        maxWidth: 400,
+                        padding: '10px 18px',
+                        marginBottom: 12,
+                        background: 'transparent',
+                        border: '1px solid #333',
+                        borderRadius: 10,
+                        color: '#666',
+                        cursor: 'pointer',
+                        fontSize: 13
+                    }}
+                >
+                    ▶ Start Guided Demo
+                </button>
+            )}
+
+            <GuidedDemoMode
+                isActive={guidedDemoActive && status === 'IDLE'}
+                onExit={() => setGuidedDemoActive(false)}
+                onStepExecute={(_stepId) => { }}
+                steps={DEMO_STEPS_CONFIG.map(s => ({
+                    ...s,
+                    onExecute: s.id === 1 ? handleProveAge
+                        : s.id === 2 ? handleMultiProofDemo
+                            : s.id === 3 ? handleHealthAccessDemo
+                                : handlePharmacyDemo
+                }))}
+            />
         </div>
     );
 

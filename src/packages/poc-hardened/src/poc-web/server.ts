@@ -40,7 +40,7 @@ let auditChain: AuditChain;
 let keyManager: EphemeralKeyManager;
 let ropaStore: ROPAStore;
 let consentStore: ConsentReceiptStore;
-let _lastEphemeralKeyId: string | null = null;
+let lastEphemeralKeyId: string | null = null;
 
 function sha256(data: string): string {
   return createHash("sha-256").update(data, "utf8").digest("hex").substring(0, 16);
@@ -54,7 +54,7 @@ function initState(): void {
   keyManager = new EphemeralKeyManager();
   ropaStore = new ROPAStore();
   consentStore = new ConsentReceiptStore();
-  _lastEphemeralKeyId = null;
+  lastEphemeralKeyId = null;
   credential = null;
 
   // Register ROPA activities
@@ -83,7 +83,7 @@ initState();
 function handleIssue(): object {
   // Create ephemeral key for raw PII
   const ek = keyManager.createKey();
-  _lastEphemeralKeyId = ek.keyId;
+  lastEphemeralKeyId = ek.keyId;
 
   // Simulate: encrypt raw PII with ephemeral key
   const rawPII = JSON.stringify({ name: "Jonas", birthdate: "1998-05-12", email: "jonas@example.at" });
