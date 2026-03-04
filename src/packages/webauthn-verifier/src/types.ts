@@ -12,7 +12,7 @@ export interface AuthenticatorInfo {
 
 export interface VerificationResult {
   verified: boolean;
-  reason?: 'CHALLENGE_MISMATCH' | 'COUNTER_REPLAY' | 'SIGNATURE_INVALID' | 'KEY_NOT_FOUND';
+  reason?: 'CHALLENGE_MISMATCH' | 'CHALLENGE_EXPIRED' | 'CHALLENGE_NOT_FOUND' | 'COUNTER_REPLAY' | 'SIGNATURE_INVALID' | 'KEY_NOT_FOUND';
   newCounter?: number;
 }
 

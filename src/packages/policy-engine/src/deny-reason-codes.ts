@@ -254,14 +254,14 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
     audit: 'Policy rule requires explicit user consent (requiresUserConsent=true).',
   },
   [DenyReasonCode.PRESENCE_REQUIRED]: {
-    user: 'Biometrische Bestätigung erforderlich.',
+    user: 'Biometrische Bestätigung erforderlich. Bitte bestätige erneut.',
     verifier: VERIFIER_BUCKET_USER_ACTION,
-    audit: 'Presence proof required (accessibility active or high-risk).',
+    audit: 'Presence proof required — user did not interact with authenticator within challenge window (WebAuthn timeout) or accessibility/high-risk prompt.',
   },
   [DenyReasonCode.REAUTH_REQUIRED]: {
-    user: 'Erneute Authentifizierung erforderlich.',
+    user: 'Erneute Authentifizierung erforderlich. Bitte melde dich neu an.',
     verifier: VERIFIER_BUCKET_USER_ACTION,
-    audit: 'Re-authentication required — high-risk prompt threshold reached.',
+    audit: 'Re-authentication required — session expired or WebAuthn challenge not found (consumed/lost). Full re-auth needed.',
   },
 
   // --- Infrastructure ---

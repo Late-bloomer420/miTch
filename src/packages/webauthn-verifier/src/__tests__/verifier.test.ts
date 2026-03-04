@@ -58,7 +58,7 @@ describe('WebAuthnNativeVerifier', () => {
     const result = await verifier.verifyAssertion(signedAssertion, userDID);
 
     expect(result.verified).toBe(false);
-    expect(result.reason).toBe('CHALLENGE_MISMATCH');
+    expect(result.reason).toBe('CHALLENGE_NOT_FOUND');
   });
 
   it('should reject expired challenge', async () => {
@@ -91,7 +91,7 @@ describe('WebAuthnNativeVerifier', () => {
     const result = await verifier.verifyAssertion(signedAssertion, userDID);
 
     expect(result.verified).toBe(false);
-    expect(result.reason).toBe('CHALLENGE_MISMATCH');
+    expect(result.reason).toBe('CHALLENGE_EXPIRED');
   });
 
   it('should reject unknown authenticator', async () => {

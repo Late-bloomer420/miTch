@@ -109,13 +109,13 @@ export class WebAuthnNativeVerifier {
     // 1. Get stored challenge
     const storedChallenge = this.challenges.get(userDID);
     if (!storedChallenge) {
-      return { verified: false, reason: 'CHALLENGE_MISMATCH' };
+      return { verified: false, reason: 'CHALLENGE_NOT_FOUND' };
     }
 
-    // 2. Check expiry
+    // 2. Check expiry — distinguishes timeout (user didn't interact) from session loss
     if (Date.now() > storedChallenge.expiresAt) {
       this.challenges.delete(userDID);
-      return { verified: false, reason: 'CHALLENGE_MISMATCH' };
+      return { verified: false, reason: 'CHALLENGE_EXPIRED' };
     }
 
     // 3. Get authenticator info
