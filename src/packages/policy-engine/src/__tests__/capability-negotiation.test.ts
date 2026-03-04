@@ -43,6 +43,6 @@ describe('Capability negotiation v1', () => {
     });
 
     expect(result.verdict).toBe('DENY');
-    expect(result.reasonCode).toBe(DenyReasonCode.BINDING_FAILED);
+    expect(result.reasonCode).toBe(DenyReasonCode.DOWNGRADE_ATTACK);
   });
 });

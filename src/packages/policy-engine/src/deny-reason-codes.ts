@@ -45,6 +45,7 @@ export enum DenyReasonCode {
   HASH_MISMATCH = 'DENY_BINDING_HASH_MISMATCH',
   AUDIENCE_MISMATCH = 'DENY_BINDING_AUDIENCE_MISMATCH',
   BINDING_EXPIRED = 'DENY_BINDING_EXPIRED',
+  DOWNGRADE_ATTACK = 'DENY_DOWNGRADE_ATTACK',
 
   // --- Crypto ---
   CRYPTO_VERIFY_FAILED = 'DENY_CRYPTO_VERIFY_FAILED',
@@ -203,6 +204,11 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
     user: 'Die Anfrage ist abgelaufen. Bitte starte den Vorgang neu.',
     verifier: VERIFIER_BUCKET_GENERIC,
     audit: 'Request timestamp outside acceptable skew window.',
+  },
+  [DenyReasonCode.DOWNGRADE_ATTACK]: {
+    user: 'Sicherheitsprüfung fehlgeschlagen. Bitte versuche es erneut.',
+    verifier: VERIFIER_BUCKET_GENERIC,
+    audit: 'Capability downgrade rejected — requested profile disables mutually supported security features.',
   },
 
   // --- Crypto ---

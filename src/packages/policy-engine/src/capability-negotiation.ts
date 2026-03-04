@@ -56,8 +56,7 @@ export function negotiateCapabilities(input: CapabilityNegotiationInput): Capabi
   if (input.requestedProfile) {
     for (const [flag, value] of Object.entries(input.requestedProfile) as Array<[keyof CapabilityFlags, boolean]>) {
       if (!value && input.wallet.capabilities[flag] && input.verifier.capabilities[flag]) {
-        // TODO(reason-code-gap): Introduce dedicated downgrade-attack deny code.
-        return { verdict: 'DENY', reasonCode: DenyReasonCode.BINDING_FAILED };
+        return { verdict: 'DENY', reasonCode: DenyReasonCode.DOWNGRADE_ATTACK };
       }
     }
   }
