@@ -9,8 +9,8 @@ import type { PolicyRule } from '@mitch/shared-types';
 describe('E2E: Full Credential Lifecycle', () => {
   let mockIssuer: MockGovernmentIssuer;
   let eidConnector: EIDIssuerConnector;
-  let _policyEngine: PolicyEngine;
-  let _revocationChecker: StatusListRevocationChecker;
+  let policyEngine: PolicyEngine;
+  let revocationChecker: StatusListRevocationChecker;
 
   beforeEach(async () => {
     mockIssuer = new MockGovernmentIssuer();
@@ -229,7 +229,7 @@ describe('E2E: Full Credential Lifecycle', () => {
     }, userDID);
 
     expect(result.verified).toBe(false);
-    expect(result.reason).toBe('CHALLENGE_MISMATCH');
+    expect(result.reason).toBe('CHALLENGE_EXPIRED');
     console.log('✅ Expired challenge correctly rejected');
   });
 

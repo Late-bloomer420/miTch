@@ -81,7 +81,7 @@ export class StatusListRevocationChecker {
       });
 
       return this.checkBitstring(statusEntry, credential, false);
-    } catch (_error: __error) {
+    } catch (_error: unknown) {
       // Fetch failed — apply fail-closed with grace period logic
       return this.handleFetchFailure(statusEntry, cached, riskTier, now);
     }
