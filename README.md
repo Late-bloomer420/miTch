@@ -123,37 +123,14 @@ Includes a specific regression test for the 2026-03-03 bug where StatusList fetc
 
 ## Current Status (2026-03-04)
 
-**Phase: Post-consolidation, closing P0 gaps**
+**Single source of truth:**
+- P0 evidence and closure status: [`docs/ops/EVIDENCE_PACK_P0.md`](docs/ops/EVIDENCE_PACK_P0.md)
+- Latest pilot dry run record: [`docs/pilot/PILOT_DRY_RUN_01.md`](docs/pilot/PILOT_DRY_RUN_01.md)
 
-This repo was consolidated from 7 separate locations on 2026-02-15. Original git histories are preserved in `archive/git-bundles/`.
+**Pilot path (fixed minimal scenario):**
+- **Altersverifikation (18+)** as the single validation use-case for current pilot execution.
 
-### What works
-- Monorepo builds and tests pass (`pnpm build && pnpm test` — run it to see current count)
-- Policy engine with layer-aware rule evaluation
-- SD-JWT VC credential stack
-- Audit log with hash-chain integrity
-- Predicate proofs (e.g., `age >= 18` without revealing DOB) — note: these are **hash-based predicate proofs**, not full zero-knowledge proofs (no snark/stark library yet)
-- Crypto-shredding primitives (ephemeral key generation + destruction)
-- E2E demo flow (liquor store age verification)
-- Wallet PWA shell
-
-### What's in progress (P0 gaps)
-- DID resolution + signature verification (stubs only)
-- Credential revocation runtime enforcement (basic deny list exists, no StatusList2021)
-- Policy engine deterministic conflict resolution + deny reason codes
-- Presentation binding & anti-replay (nonce TTL, canonicalization)
-- eID issuer connector (stub)
-- Wallet credential persistence (TODO)
-
-### What's not done
-- TEE integration
-- Multi-device sync
-- Quantum-ready signatures
-- Production deployment / CI pipeline
-- External GDPR legal opinion
-- RP integration SDK
-
-See [`docs/`](docs/) for detailed specifications and [consolidated-gaps](https://github.com/Late-bloomer420/miTch/blob/consolidation/docs/consolidated-gaps.md) for the full gap tracker (31 items, prioritized P0–P3).
+See docs canon map: [`docs/DOCS_CANON.md`](docs/DOCS_CANON.md).
 
 ---
 
