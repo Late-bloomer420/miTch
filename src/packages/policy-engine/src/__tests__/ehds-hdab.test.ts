@@ -7,8 +7,7 @@ import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '
 
 const HDAB_POLICY: PolicyManifest = {
   version: '1.2',
-  owner: 'did:example:wallet-user',
-  globalSettings: { blockUnknownVerifiers: true, defaultDeny: true },
+  globalSettings: { blockUnknownVerifiers: true },
   trustedIssuers: [
     { did: 'did:eu:research-institute-*', name: 'EU Research', credentialTypes: ['PatientSummary'], issuerRole: 'hdab' as const },
     { did: 'did:example:ehealth-authority', name: 'eHealth', credentialTypes: ['PatientSummary'] },
@@ -26,7 +25,6 @@ const CREDENTIAL: StoredCredentialMetadata = {
   issuedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
   expiresAt: new Date(Date.now() + 350 * 24 * 60 * 60 * 1000).toISOString(),
   claims: ['bloodGroup', 'allergies'],
-  provenClaims: [],
 };
 
 const ctx: EvaluationContext = { timestamp: Date.now(), userDID: 'did:example:wallet-user' };

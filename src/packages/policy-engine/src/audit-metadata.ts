@@ -1,5 +1,23 @@
-import { createHash } from 'node:crypto';
 import { DenyReasonCode } from './deny-reason-codes';
+
+// Browser-safe SHA-256 hash (sync fallback for non-crypto environments)
+function sha256Hex(data: string): string {
+  // Use node:crypto if available, otherwise a simple deterministic hash
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { createHash } = require('node:crypto');
+    return createHash('sha256').update(data).digest('hex');
+  } catch {
+    // Fallback: simple but deterministic hash for browser environments
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0');
+  }
+}
 
 export interface AuditInput {
   verifierId: string;
@@ -34,5 +52,5 @@ export function createAuditRecord(input: AuditInput): AuditRecord {
 }
 
 export function hashVerifierId(verifierId: string, salt: string): string {
-  return createHash('sha256').update(`${salt}:${verifierId}`).digest('hex');
+  return sha256Hex(`${salt}:${verifierId}`);
 }

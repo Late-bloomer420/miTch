@@ -54,7 +54,7 @@ function initState(): void {
   keyManager = new EphemeralKeyManager();
   ropaStore = new ROPAStore();
   consentStore = new ConsentReceiptStore();
-  lastEphemeralKeyId = null;
+  _lastEphemeralKeyId = null;
   credential = null;
 
   // Register ROPA activities
@@ -83,7 +83,7 @@ initState();
 function handleIssue(): object {
   // Create ephemeral key for raw PII
   const ek = keyManager.createKey();
-  lastEphemeralKeyId = ek.keyId;
+  _lastEphemeralKeyId = ek.keyId;
 
   // Simulate: encrypt raw PII with ephemeral key
   const rawPII = JSON.stringify({ name: "Jonas", birthdate: "1998-05-12", email: "jonas@example.at" });

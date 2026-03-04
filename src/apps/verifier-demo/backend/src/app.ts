@@ -165,7 +165,6 @@ app.get('/health', (req, res) => {
         metrics: metrics.get(),
         system: {
             rate_limiter: rateLimiter.size(),
-            // @ts-expect-error - Accessing private nonce store size if needed
             nonce_store_entries: (nonceStore as any).entries?.size || 0
         }
     });

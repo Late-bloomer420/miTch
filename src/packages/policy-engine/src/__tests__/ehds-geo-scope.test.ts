@@ -81,10 +81,9 @@ function makePolicy(geoScope?: string): PolicyManifest {
   if (geoScope) rule.geoScope = geoScope;
   return {
     version: '1.2',
-    owner: 'did:example:wallet-user',
     globalSettings: { blockUnknownVerifiers: false },
     trustedIssuers: [
-      { did: 'did:example:ehealth-authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
+      { did: 'did:example:ehealth-authority', name: 'eHealth Authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
     ],
     rules: [rule],
   };

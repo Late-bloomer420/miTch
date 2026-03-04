@@ -8,14 +8,13 @@ import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '
 
 const EHDS_POLICY: PolicyManifest = {
   version: '1.2',
-  owner: 'did:example:wallet-user',
   globalSettings: {
     blockUnknownVerifiers: true,
-    defaultDeny: true,
+
   },
   trustedIssuers: [
-    { did: 'did:example:ehealth-authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
-    { did: 'did:example:gov-issuer', credentialTypes: ['AgeCredential', 'VerifiableCredential'] },
+    { did: 'did:example:ehealth-authority', name: 'eHealth Authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
+    { did: 'did:example:gov-issuer', name: 'Government Issuer', credentialTypes: ['AgeCredential', 'VerifiableCredential'] },
   ],
   rules: [
     {
