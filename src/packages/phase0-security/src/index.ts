@@ -899,7 +899,7 @@ export class PhysicalSeizureProtection {
             try {
                 await fetch(checkInURL, { method: 'POST' });
                 console.info("[Security] Dead man's switch: checked in");
-            } catch (error: _error) {
+            } catch (error: unknown) {
                 console.warn('[Security] Check-in failed - device may be seized');
             }
         }, 24 * 60 * 60 * 1000);

@@ -2,7 +2,7 @@ import { AuditLogEntry, AuditLogExport, L2AnchorReceipt } from '@mitch/shared-ty
 import { sha256, signData, verifyData, canonicalStringify } from '@mitch/shared-crypto';
 import { StateAnchorClient } from './anchor';
 import { IndexedDBAuditStore } from './storage/indexeddb-store';
-import { L2AnchorClient, type type L2AnchorConfig } from './storage/l2-anchor-client';
+import { L2AnchorClient, type L2AnchorConfig } from './storage/l2-anchor-client';
 import { EscrowBackupService, type EscrowConfig } from './storage/escrow-backup';
 export * from './verify';
 export * from './storage';
