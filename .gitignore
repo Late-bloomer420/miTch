@@ -1,38 +1,59 @@
-# Node/TypeScript
+# ============================================================
+#  miTch — .gitignore
+#  Regel: So spezifisch wie nötig, so breit wie sinnvoll.
+#  Niemals Quellcode-Ordner mit generischen Namen ignorieren.
+# ============================================================
+
+# ── Node / Package Manager ──────────────────────────────────
 node_modules/
+.pnpm-store/
+
+# ── Build-Artefakte ─────────────────────────────────────────
 dist/
+build/
+out/
 coverage/
-*.log
 *.tsbuildinfo
 
-# Turbo / caches
+# ── Turbo / Caches ──────────────────────────────────────────
 .turbo/
 .logs/
+.vite/
+.cache/
 
-# Env / secrets
+# ── Umgebung / Secrets ──────────────────────────────────────
 .env
 .env.*
 !.env.example
+!.env.strict.example
 
-# Editor/OS
+# ── Runtime-Artefakte (generiert, nicht committen) ──────────
+src/apps/verifier-demo/backend/verifier-key.json
+src/apps/verifier-demo/backend/nonce-cache.json
+
+# ── Editor / OS ─────────────────────────────────────────────
 .vscode/
+.idea/
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Build/Output directories (common)
-build/
-out/
-
-# Vite / cache
-.vite/
-
-# pnpm store (keep lockfile; commit pnpm-lock.yaml)
-.pnpm-store/
-
-# Misc
 *.local
 
-# Local PoC
-data/
-dist/
+# ── Logs ────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Test-Output ─────────────────────────────────────────────
+test-results/
+playwright-report/
+blob-report/
+
+# ── Temporäre Dateien ───────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+
+# ── EXPLIZIT NICHT IGNORIEREN ───────────────────────────────
+# src/**/data/   ← Quellcode! (DemoPolicy.ts, Seed-Credentials)
+# docs/          ← Dokumentation
+# archive/       ← Git-Bundles
