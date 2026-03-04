@@ -53,10 +53,10 @@ type BiometricState = 'idle' | 'pending' | 'verified' | 'failed';
 // ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
 const REASON_LABELS: Partial<Record<string, string>> = {
-  [ReasonCode.CONSENT_REQUIRED]:  '✋ Explizite Zustimmung erforderlich',
-  [ReasonCode.SENSITIVE_CLAIM]:   '⚠️  Enthält sensible Daten',
+  [ReasonCode.CONSENT_REQUIRED]: '✋ Explizite Zustimmung erforderlich',
+  [ReasonCode.SENSITIVE_CLAIM]: '⚠️  Enthält sensible Daten',
   [ReasonCode.PRESENCE_REQUIRED]: '🔐 Biometrische Anwesenheit erforderlich',
-  'HIGH_RISK_VERIFIER':           '🚨 Unbekannter / risikobehafteter Verifier',
+  'HIGH_RISK_VERIFIER': '🚨 Unbekannter / risikobehafteter Verifier',
 };
 
 function humanReadableReason(code: string): string {
@@ -65,9 +65,9 @@ function humanReadableReason(code: string): string {
 
 function riskColor(level: string | undefined): string {
   switch (level) {
-    case 'HIGH':   return '#E53935';
+    case 'HIGH': return '#E53935';
     case 'MEDIUM': return '#F57C00';
-    default:       return '#2e7d32';
+    default: return '#2e7d32';
   }
 }
 
@@ -90,22 +90,25 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
 
     try {
       // Sicherstellen dass Passkey registriert ist
-      if (!WebAuthnService.isRegistered()) {
+      const isRegistered = await WebAuthnService.isRegistered();
+      if (!isRegistered) {
         onLog?.('📱 Registriere Passkey auf diesem Gerät...', 'info');
         await WebAuthnService.registerPasskey();
       }
 
-      const proof = await WebAuthnService.provePresence(capsule.decision_id);
-      setPresenceProof(proof);
+      const proof = await WebAuthnService.provePresenceDetailed(capsule.decision_id);
+      setPresenceProof(proof.signature);
       setBiometricState('verified');
       onLog?.('✅ Biometrie bestätigt — Anwesenheit kryptographisch gebunden', 'success');
 
     } catch (err) {
-      const msg = (err as Error).message;
+      const errObj = err as Error;
+      const msg = errObj.message;
+      const errName = errObj.name;
       setBiometricState('failed');
 
-      if (msg.includes('CANCELLED')) {
-        onLog?.('⚠️  Biometrie abgebrochen', 'warning');
+      if (msg.includes('CANCELLED') || errName === 'NotAllowedError') {
+        onLog?.('⚠️  Biometrie abgebrochen oder Timeout erreicht (60s).', 'warning');
       } else {
         onLog?.(`❌ Biometrie fehlgeschlagen: ${msg}`, 'error');
       }
@@ -119,6 +122,15 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
     : capsule.verifier_did;
 
   const decisionShort = capsule.decision_id.substring(0, 18) + '…';
+
+  // Device detection for dynamic icon
+  const getBiometricIcon = () => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('windows')) return '👤'; // Face ID or Windows Hello
+    if (ua.includes('mac') || ua.includes('android')) return '👆'; // Touch ID or Fingerprint
+    return '🔑'; // Generic Fallback
+  };
+  const bioIcon = getBiometricIcon();
 
   return (
     <div className="secure-backdrop">
@@ -221,12 +233,12 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
 
           {/* Wenn keine Daten → rein ZKP */}
           {!(capsule as any).proven_claims?.length &&
-           !(capsule as any).allowed_claims?.length &&
-           !(capsule as any).authorized_requirements?.length && (
-            <div style={{ fontSize: 13, color: '#888' }}>
-              Nur kryptographische Nachweise — keine Rohdaten
-            </div>
-          )}
+            !(capsule as any).allowed_claims?.length &&
+            !(capsule as any).authorized_requirements?.length && (
+              <div style={{ fontSize: 13, color: '#888' }}>
+                Nur kryptographische Nachweise — keine Rohdaten
+              </div>
+            )}
         </div>
 
         {/* ── Security Checksum ────────────────────────────────────────── */}
@@ -265,7 +277,7 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
                   fontSize: 15, fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                👆 Jetzt verifizieren
+                {bioIcon} Jetzt verifizieren
               </button>
             )}
 

@@ -38,22 +38,58 @@ export interface PresenceProof {
   method: 'webauthn' | 'software-fallback';
 }
 
-// ── Passkey-Storage (sessionStorage — kein PII, nur Metadaten) ──────────────
+// ── Passkey-Storage (IndexedDB — persistiert, kein PII, nur Metadaten) ──────────────
 
+const PASSKEY_DB_NAME = 'mitch_passkey_db';
+const PASSKEY_STORE_NAME = 'passkeys';
 const PASSKEY_STORAGE_KEY = 'mitch_passkey_registration';
 
-function savePasskeyMeta(meta: PasskeyRegistration): void {
+function getPasskeyDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('IndexedDB not available'));
+      return;
+    }
+    const request = indexedDB.open(PASSKEY_DB_NAME, 1);
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(PASSKEY_STORE_NAME)) {
+        db.createObjectStore(PASSKEY_STORE_NAME);
+      }
+    };
+    request.onsuccess = (event) => resolve((event.target as IDBOpenDBRequest).result);
+    request.onerror = (event) => reject((event.target as IDBOpenDBRequest).error);
+  });
+}
+
+async function savePasskeyMeta(meta: PasskeyRegistration): Promise<void> {
   try {
-    sessionStorage.setItem(PASSKEY_STORAGE_KEY, JSON.stringify(meta));
+    const db = await getPasskeyDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(PASSKEY_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(PASSKEY_STORE_NAME);
+      const request = store.put(JSON.stringify(meta), PASSKEY_STORAGE_KEY);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
   } catch {
-    // sessionStorage nicht verfügbar — in-memory reicht für Session
+    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
   }
 }
 
-function loadPasskeyMeta(): PasskeyRegistration | null {
+async function loadPasskeyMeta(): Promise<PasskeyRegistration | null> {
   try {
-    const raw = sessionStorage.getItem(PASSKEY_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const db = await getPasskeyDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(PASSKEY_STORE_NAME, 'readonly');
+      const store = tx.objectStore(PASSKEY_STORE_NAME);
+      const request = store.get(PASSKEY_STORAGE_KEY);
+      request.onsuccess = () => {
+        const raw = request.result;
+        resolve(raw ? JSON.parse(raw) : null);
+      };
+      request.onerror = () => reject(request.error);
+    });
   } catch {
     return null;
   }
@@ -181,7 +217,7 @@ export class WebAuthnService {
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
         userVerification: 'required',       // Biometrie erzwingen
-        residentKey: 'preferred',           // Passkey (discoverable credential)
+        residentKey: 'required',            // Passkey (discoverable credential)
       },
       attestation: 'none',                  // Kein Server-Attestation (privacy-preserving)
       timeout: 60_000,
@@ -207,7 +243,7 @@ export class WebAuthnService {
       registeredAt: new Date().toISOString(),
     };
 
-    savePasskeyMeta(registration);
+    await savePasskeyMeta(registration);
     console.log(`[WebAuthn] ✅ Passkey registered: ${credentialId.substring(0, 16)}...`);
 
     return registration;
@@ -237,21 +273,19 @@ export class WebAuthnService {
       return SoftwareFallback.sign(decisionId);
     }
 
-    // Challenge = SHA-256(decisionId) → verhindert direkte Nutzung als Nonce
-    const challengeBytes = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(decisionId)
-    );
+    // Challenge = decisionId → bindet Biometrie direkt an die Policy (T-24)
+    // Wir hashen die Challenge nicht mehr, damit der Verifier das Binding prüfen kann
+    const challengeBytes = new TextEncoder().encode(decisionId);
 
     const rpId = location.hostname;
-    const existingPasskey = loadPasskeyMeta();
+    const existingPasskey = await loadPasskeyMeta();
 
     const allowCredentials: PublicKeyCredentialDescriptor[] =
       existingPasskey && existingPasskey.credentialId !== 'software-fallback'
         ? [{
-            type: 'public-key',
-            id: base64urlToBuffer(existingPasskey.credentialId),
-          }]
+          type: 'public-key',
+          id: base64urlToBuffer(existingPasskey.credentialId),
+        }]
         : []; // Leer = Browser zeigt alle verfügbaren Passkeys
 
     const getOptions: PublicKeyCredentialRequestOptions = {
@@ -304,8 +338,8 @@ export class WebAuthnService {
   /**
    * Prüft ob auf diesem Gerät bereits ein Passkey registriert ist.
    */
-  static isRegistered(): boolean {
-    const meta = loadPasskeyMeta();
+  static async isRegistered(): Promise<boolean> {
+    const meta = await loadPasskeyMeta();
     return meta !== null && meta.credentialId !== 'software-fallback';
   }
 
@@ -336,9 +370,16 @@ export class WebAuthnService {
    * Der Passkey selbst bleibt im OS-Authenticator — der Nutzer muss
    * ihn dort manuell löschen.
    */
-  static clearRegistration(): void {
+  static async clearRegistration(): Promise<void> {
     try {
-      sessionStorage.removeItem(PASSKEY_STORAGE_KEY);
+      const db = await getPasskeyDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(PASSKEY_STORE_NAME, 'readwrite');
+        const store = tx.objectStore(PASSKEY_STORE_NAME);
+        const request = store.delete(PASSKEY_STORAGE_KEY);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
     } catch {
       // ignore
     }

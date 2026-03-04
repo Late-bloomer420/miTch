@@ -102,6 +102,21 @@ export default function App() {
                 await walletRef.current.initialize("123456");
                 addLog('🔓 Wallet Decrypted & Ready', 'success');
                 setCurrentPolicy(walletRef.current.getPolicy());
+
+                // --- WebAuthn Auto-Registration Hook ---
+                try {
+                    const isAvailable = await WebAuthnService.isAvailable();
+                    const isRegistered = await WebAuthnService.isRegistered();
+                    if (isAvailable && !isRegistered) {
+                        addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
+                        await WebAuthnService.registerPasskey();
+                        addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
+                    }
+                } catch (authError) {
+                    addLog(`⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`, 'warning');
+                }
+                // ----------------------------------------
+
                 setStatus('IDLE');
             } catch (e) {
                 console.error(e);
