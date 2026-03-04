@@ -306,6 +306,74 @@ export default function App() {
         }
     };
 
+    const handleResearchDemo = async () => {
+        addLog('🔬 RESEARCH: Simulating Secondary-Use Data Request...', 'warning');
+        addLog('📥 Request: "Provide Blood Group & Allergies for research"', 'info');
+
+        const request: VerifierRequest = {
+            verifierId: 'did:eu:research-institute-fhi',
+            origin: 'https://research.fhi.eu',
+            usagePurpose: 'researchSecondary' as any,
+            requirements: [{
+                credentialType: 'PatientSummary',
+                requestedClaims: ['bloodGroup', 'allergies'],
+                requestedProvenClaims: []
+            }]
+        };
+
+        const context: EvaluationContext = {
+            timestamp: Date.now(),
+            userDID: 'did:example:wallet-user'
+        };
+
+        const result = await walletRef.current.evaluateRequest(request, context);
+        setEvaluationResult(result);
+
+        if (result.verdict === 'DENY') {
+            setStatus('DENIED');
+            addLog(`🚫 Secondary Use BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+            return;
+        }
+        if (result.verdict === 'PROMPT') {
+            addLog(`🔔 Research Consent Required: ${result.reasonCodes.join(', ')}`, 'info');
+            setShowConsent(true);
+            return;
+        }
+        addLog(`✅ Research Access ALLOWED`, 'success');
+        await proceedWithProof(result);
+    };
+
+    const handleCrossBorderDemo = async () => {
+        addLog('🇪🇸 CROSS-BORDER: Spanish Hospital Emergency...', 'warning');
+        addLog('📥 Request: "Provide Blood Type & Allergies (Cross-Border EU)"', 'info');
+
+        const request: VerifierRequest = {
+            verifierId: 'did:es:hospital-barcelona-er-1',
+            origin: 'https://er.barcelona.health',
+            requirements: [{
+                credentialType: 'PatientSummary',
+                requestedClaims: ['bloodGroup', 'allergies'],
+                requestedProvenClaims: []
+            }]
+        };
+
+        const context: EvaluationContext = {
+            timestamp: Date.now(),
+            userDID: 'did:example:wallet-user'
+        };
+
+        const result = await walletRef.current.evaluateRequest(request, context);
+        setEvaluationResult(result);
+
+        if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
+            addLog(`✅ Cross-Border Access via GDPR Art. 1`, 'success');
+            if (result.verdict === 'PROMPT') setShowConsent(true);
+            else await proceedWithProof(result);
+        } else {
+            addLog(`🚫 Cross-Border BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+        }
+    };
+
     const renderLogLine = (l: string, i: number) => {
         if (l.startsWith('DONE')) return <div key={i} style={{ marginTop: 10, borderTop: '1px solid #333', paddingTop: 5, color: '#888' }}>{l.split('|')[1]}</div>;
         const parts = l.split('|');
@@ -588,6 +656,23 @@ export default function App() {
                         style={{ padding: 12, background: '#059669', border: '1px solid #10b981', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
                     >
                         EHDS: Pharmacy (T-30b)
+                    </button>
+                    <div style={{ width: '100%', gridColumn: 'span 2', marginTop: 10, marginBottom: 5, color: '#888', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        EHDS Scenarios
+                    </div>
+                    <button
+                        onClick={handleResearchDemo}
+                        disabled={status !== 'IDLE'}
+                        style={{ padding: 12, background: '#7B1FA2', border: 'none', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+                    >
+                        🔬 Research: Patient Data
+                    </button>
+                    <button
+                        onClick={handleCrossBorderDemo}
+                        disabled={status !== 'IDLE'}
+                        style={{ padding: 12, background: '#00695C', border: 'none', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+                    >
+                        🇪🇸 Cross-Border: Barcelona ER
                     </button>
                 </div>
             </div>
