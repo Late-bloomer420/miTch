@@ -11,8 +11,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@simplewebauthn/server": "^9.0.3",
-    "@simplewebauthn/browser": "^9.0.1",
+    "@simplewebauthn/server": "^13.2.3",
+    "@simplewebauthn/browser": "^13.2.2",
     "jose": "^5.2.0"
   },
   "devDependencies": {
