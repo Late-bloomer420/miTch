@@ -12,6 +12,7 @@ import { SecureZone } from './components/SecureZone';
 import { WebAuthnService } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
+import { ConsentModal } from './components/ConsentModal';
 import { CONFIG } from './config';
 
 export default function App() {
@@ -22,7 +23,7 @@ export default function App() {
     const [currentPolicy, setCurrentPolicy] = useState<PolicyManifest | null>(null);
     const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null); // T-28: Store pending request for override
     const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
-    const [privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
+    const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
 
     // Service Instance
     const walletRef = useRef<WalletService>(new WalletService());
@@ -355,90 +356,20 @@ export default function App() {
 
             {/* T-24: Secure Decision Boundary (Human-in-the-Loop) */}
             {showConsent && evaluationResult?.decisionCapsule && (
-                <div className="secure-backdrop">
-                    <div className="secure-prompt">
-                        <div className="secure-header">
-                            <span className="secure-badge">OFFICIAL WALLET BOUNDARY</span>
-                            <div style={{ flex: 1 }} />
-                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 10px var(--accent-green)' }} />
-                        </div>
-
-                        <h2 style={{ fontSize: 22, margin: '0 0 10px 0' }}>🔐 Presentation Permit</h2>
-                        <p style={{ color: '#ccc', fontSize: 14 }}>
-                            A verifier at <span style={{ color: 'var(--accent-blue)' }}>{evaluationResult.decisionCapsule.verifier_did}</span> is requesting data.
-                        </p>
-
-                        <div style={{ background: '#000', padding: 15, borderRadius: 12, margin: '20px 0' }}>
-                            <div style={{ fontSize: 12, color: '#666', marginBottom: 5 }}>SECURITY CHECKSUM</div>
-                            <div style={{ fontFamily: 'monospace', color: 'var(--accent-yellow)', fontSize: 13, wordBreak: 'break-all' }}>
-                                Decision ID: {evaluationResult.decisionCapsule.decision_id.substring(0, 18)}...
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: 25 }}>
-                            <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>PERMITTED DATA (STRICT)</div>
-
-                            {evaluationResult.decisionCapsule.authorized_requirements ? (
-                                evaluationResult.decisionCapsule.authorized_requirements.map((req: any, i: number) => (
-                                    <div key={i} style={{ marginBottom: 15, paddingLeft: 10, borderLeft: '2px solid #333' }}>
-                                        <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>FROM: {req.credential_type}</div>
-                                        {req.proven_claims.map((c: string) => (
-                                            <div key={c} style={{ fontSize: 14, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                ✅ PROOF: {c}
-                                            </div>
-                                        ))}
-                                        {req.allowed_claims.map((c: string) => (
-                                            <div key={c} style={{ fontSize: 14, color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                ⚠️ DATA: {c}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ))
-                            ) : (
-                                <>
-                                    {(evaluationResult.decisionCapsule as any).proven_claims?.map((c: string) => (
-                                        <div key={c} style={{ fontSize: 14, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            ✅ PROOF OF: {c}
-                                        </div>
-                                    ))}
-                                    {(evaluationResult.decisionCapsule as any).allowed_claims?.map((c: string) => (
-                                        <div key={c} style={{ fontSize: 14, color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            ⚠️ RAW DATA: {c}
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: 15 }}>
-                            <button
-                                onClick={() => { setStatus('DENIED'); addLog('🚫 User REJECTED via Secure UI', 'error'); setShowConsent(false); }}
-                                style={{ flex: 1, padding: 14, background: '#333', border: '1px solid #444', borderRadius: 12, color: '#fff', cursor: 'pointer', fontWeight: 600 }}
-                            >
-                                Reject
-                            </button>
-                            <SecureZone
-                                onIntervention={(reason) => addLog(`🚨 Security Intervention: ${reason}`, 'error')}
-                                className="secure-action-wrapper"
-                            >
-                                <button
-                                    onClick={() => {
-                                        setShowConsent(false);
-                                        setShowPrivacyAudit(true); // Move to audit after consent
-                                        addLog('🛡️ Initiating Privacy Transparency Layer...', 'info');
-                                    }}
-                                    style={{ width: '100%', height: '100%', padding: 14, background: 'var(--accent-blue)', border: 'none', borderRadius: 12, color: '#000', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px rgba(0, 191, 255, 0.3)' }}
-                                >
-                                    Sign & Authorize
-                                </button>
-                            </SecureZone>
-                        </div>
-
-                        <div style={{ marginTop: 20, textAlign: 'center', fontSize: 11, color: '#555' }}>
-                            🛡️ Identity is protected by memory-shredding session K_trans
-                        </div>
-                    </div>
-                </div>
+                <ConsentModal
+                    capsule={evaluationResult.decisionCapsule}
+                    reasonCodes={evaluationResult.reasonCodes}
+                    onApprove={(presenceProof) => {
+                        setShowConsent(false);
+                        proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
+                    }}
+                    onReject={() => {
+                        setStatus('DENIED');
+                        addLog('🚫 User rejected via Secure UI', 'error');
+                        setShowConsent(false);
+                    }}
+                    onLog={addLog}
+                />
             )}
 
             {/* T-28: Smart Denial & Recovery Modal */}

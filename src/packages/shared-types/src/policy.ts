@@ -57,6 +57,8 @@ export interface PolicyRule {
     maxCredentialAgeDays?: number;
     /** Force user consent even if rule matches */
     requiresUserConsent?: boolean;
+    /** Require WebAuthn presence proof (biometric) for this rule */
+    requiresPresence?: boolean;
     /** Rule evaluation priority (higher = first) */
     priority?: number;
     /** Minimum protection layer required for this verifier (0=WELT, 1=GRUNDVERSORGUNG, 2=VULNERABLE) */

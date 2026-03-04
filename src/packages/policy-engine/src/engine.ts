@@ -23,10 +23,8 @@ import type {
     VerifierRequest,
     PolicyManifest,
     PolicyRule,
-    TrustedIssuer,
     PolicyEvaluationResult,
     DecisionCapsule,
-    DelegationRules,
     InteractionMetadata,
     StoredCredentialMetadata,
     Requirement
@@ -301,8 +299,10 @@ export class PolicyEngine {
         }
 
         // 4. Consent & Presence Logic
-        const requiresConsent = matchedRule.requiresUserConsent || policy.globalSettings?.requireConsentForAll;
-        const requiresPresence = context.interaction?.accessibilityActive || false;
+        const requiresConsent = matchedRule.requiresUserConsent
+            || policy.globalSettings?.requireConsentForAll;
+        const requiresPresence = (matchedRule as any).requiresPresence === true
+            || context.interaction?.accessibilityActive === true;
 
         let verdict: 'ALLOW' | 'DENY' | 'PROMPT' = 'ALLOW';
 

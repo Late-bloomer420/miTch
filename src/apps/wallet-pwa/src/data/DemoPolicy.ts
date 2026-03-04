@@ -1,52 +1,124 @@
+/**
+ * DemoPolicy.ts
+ *
+ * Das User-Manifest für den Demo-Flow.
+ * Wird von WalletService als DEFAULT_POLICY geladen und in
+ * localStoreShim persistiert. User-Änderungen (PolicyEditor) werden
+ * darüber gemergt — diese Datei ist nur der "factory default".
+ *
+ * Regel-Logik:
+ *   - requiresUserConsent: true  → PROMPT (User muss aktiv zustimmen)
+ *   - requiresPresence: true     → PROMPT + WebAuthn-Ceremony (biometric bind)
+ *   - provenClaims only          → ZKP-Nachweis, niemals Rohdaten
+ *   - deniedClaims               → hart blockiert, engine wirft DENY
+ */
+
 import { PolicyManifest } from '@mitch/shared-types';
 
 export const DEMO_POLICY: PolicyManifest = {
-    version: "1.0",
-    globalSettings: {
-        requireConsentForAll: true,
-        blockUnknownVerifiers: true
+  version: '1.2',
+
+  globalSettings: {
+    // Unbekannte Verifier → DENY (fail-closed)
+    blockUnknownVerifiers: true,
+    // Keine stillen Auto-Releases ohne User-Aktion
+    requireConsentForAll: false, // Per-Regel geregelt, nicht global (Performance)
+    defaultFreshnessDays: 365,
+    strictVerifierBinding: false, // für localhost-Demo relaxed
+  },
+
+  trustedIssuers: [
+    {
+      did: 'did:example:gov-issuer',
+      name: 'Government ID Issuer (Demo)',
+      credentialTypes: ['AgeCredential'],
     },
-    trustedIssuers: [
-        {
-            did: "did:example:gov-issuer",
-            name: "Government ID Issuer",
-            credentialTypes: ["AgeCredential"]
-        },
-        {
-            did: "did:example:st-mary-hospital",
-            name: "St. Mary Hospital",
-            credentialTypes: ["EmploymentCredential", "DoctorLicense"]
-        },
-        {
-            did: "did:example:ehealth-authority", // T-30: EHDS
-            name: "European Health Data Space",
-            credentialTypes: ["PatientSummary", "Prescription", "HealthRecord"]
-        }
-    ],
-    rules: [
-        {
-            id: "rule-liquor-store-01",
-            context: "Allow Age Verification for Liquor Store",
-            verifierPattern: "did:mitch:verifier-liquor-store", // Exact match
-            allowedClaims: [], // Zero-Knowledge: No raw attributes
-            provenClaims: ["age >= 18"], // Only proof result
-            priority: 10
-        },
-        {
-            id: "rule-hospital-er-01", // T-30a
-            context: "Allow Emergency Access to Patient Summary",
-            verifierPattern: "hospital-madrid-er-1",
-            allowedClaims: ["bloodGroup", "allergies", "activeProblems", "emergencyContacts"],
-            provenClaims: [],
-            priority: 100 // Emergency Priority
-        },
-        {
-            id: "rule-pharmacy-01", // T-30b
-            context: "Allow Prescription Fulfillment",
-            verifierPattern: "pharmacy-berlin-center",
-            allowedClaims: ["medication", "dosageInstruction", "refillsRemaining"],
-            provenClaims: [],
-            priority: 50
-        }
-    ]
+    {
+      did: 'did:example:st-mary-hospital',
+      name: 'St. Mary Hospital (Demo)',
+      credentialTypes: ['EmploymentCredential', 'DoctorLicense'],
+    },
+    {
+      did: 'did:example:ehealth-authority',
+      name: 'European Health Data Space (EHDS)',
+      credentialTypes: ['PatientSummary', 'Prescription', 'HealthRecord'],
+    },
+  ],
+
+  rules: [
+    // ── Rule 1: Altersnachweis (Liquor Store / Tabak etc.) ─────────────────
+    // ZKP only — kein Rohdatum, kein Name, keine ID
+    // Auto-ALLOW: Nutzer hat einmalig Zustimmung gegeben → kein PROMPT mehr
+    {
+      id: 'rule-age-proof-01',
+      context: 'Altersnachweis ≥18 für regulierten Kauf (Liquor, Tabak)',
+      verifierPattern: 'did:mitch:verifier-liquor-store',
+      allowedClaims: [],               // Keine Rohdaten
+      provenClaims: ['age >= 18'],     // Nur Nachweis (ZKP)
+      deniedClaims: ['birthDate', 'name', 'address', 'nationalId'],
+      requiresUserConsent: false,      // ← ALLOW (einmalig akzeptiert)
+      requiresTrustedIssuer: true,
+      maxCredentialAgeDays: 365,
+      priority: 10,
+    },
+
+    // ── Rule 2: Arzt-Portal Login (Multi-VC: Alter + Berufserlaubnis) ──────
+    // Erfordert aktive Zustimmung (PROMPT), aber KEIN biometrisches Binding
+    {
+      id: 'rule-hospital-login-01',
+      context: 'Arzt-Login: Identität (≥18) + Berufserlaubnis',
+      verifierPattern: 'med-portal-login',
+      allowedClaims: ['role', 'licenseId'],
+      provenClaims: ['age >= 18'],
+      deniedClaims: ['birthDate', 'salary', 'homeAddress'],
+      requiresUserConsent: true,       // ← PROMPT
+      requiresTrustedIssuer: true,
+      maxCredentialAgeDays: 180,
+      priority: 20,
+    },
+
+    // ── Rule 3: EHDS Notaufnahme (Gesundheitsdaten) ────────────────────────
+    // Sensibelste Daten: PROMPT + Presence (biometric bind) PFLICHT
+    // Entspricht Layer 2 — Commercialization absolut verboten
+    {
+      id: 'rule-ehds-emergency-01',
+      context: 'EHDS Notaufnahme: Blutgruppe, Allergien, Notfallkontakte',
+      verifierPattern: 'hospital-*-er-*',   // Wildcard: alle ER-Verifier
+      allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
+      provenClaims: [],
+      deniedClaims: ['insuranceId', 'financialData', 'geneticData'],
+      requiresUserConsent: true,       // ← PROMPT
+      requiresPresence: true,          // ← WebAuthn PFLICHT (Layer 2)
+      requiresTrustedIssuer: true,
+      maxCredentialAgeDays: 730,       // 2 Jahre für Notfalldaten
+      priority: 100,                   // Höchste Prio
+    },
+
+    // ── Rule 4: Apotheke / Rezept ──────────────────────────────────────────
+    {
+      id: 'rule-pharmacy-01',
+      context: 'Rezept-Einlösung: Medikation, Dosierung',
+      verifierPattern: 'pharmacy-*',
+      allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
+      provenClaims: [],
+      deniedClaims: ['diagnosis', 'geneticData', 'insuranceId'],
+      requiresUserConsent: true,       // ← PROMPT
+      requiresTrustedIssuer: true,
+      maxCredentialAgeDays: 30,        // Rezepte sind kurzlebig
+      priority: 50,
+    },
+  ],
 };
+
+// ── Type-Erweiterung für requiresPresence ────────────────────────────────────
+//
+// PolicyRule in @mitch/shared-types kennt `requiresPresence` noch nicht.
+// Bis das Feld dort offiziell ergänzt ist, kannst du den Typ lokal erweitern:
+//
+//   declare module '@mitch/shared-types' {
+//     interface PolicyRule {
+//       requiresPresence?: boolean;
+//     }
+//   }
+//
+// Empfehlung: Das Feld direkt in shared-types/src/policy.ts ergänzen (siehe Schritt 1b unten).
