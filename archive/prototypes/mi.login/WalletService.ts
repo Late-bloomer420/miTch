@@ -24,7 +24,7 @@ import {
 } from '@mitch/shared-crypto';
 
 import { DEMO_POLICY } from '../data/DemoPolicy';
-import { DocumentService, ProofOfExistence } from './DocumentService';
+import { ProofOfExistence } from './DocumentService';
 import {
     evaluatePredicates,
     CommonPredicates,
@@ -115,7 +115,7 @@ const EHDS_PRESCRIPTION = {
     }
 };
 
-const verifierKeyPair: CryptoKeyPair | null = null;
+const _verifierKeyPair: CryptoKeyPair | null = null;
 
 // T-35b: DID Resolution Cache
 const keyCache = new Map<string, { key: CryptoKey, expires: number }>();
@@ -162,7 +162,7 @@ async function resolveDID(did: string): Promise<DIDDocument> {
             const doc = await response.json();
             console.log(`✅ Resolved ${did} via Demo Backend`);
             return doc;
-        } catch (e) {
+        } catch {
             console.warn(`[DID Resolver] Demo backend unreachable, using mock for ${did}`);
             return generateMockDIDDocument(did);
         }
@@ -321,7 +321,7 @@ export class WalletService {
 
         // Initialize Policy Engine
         this.policyEngine = new PolicyEngine(async (capsule: DecisionCapsule) => {
-            const { wallet_attestation, ...toSign } = capsule;
+            const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
             const payload = canonicalStringify(toSign);
             if (!this.policyPrivateKey) throw new Error("Enclave Key not initialized");
             return signData(payload, this.policyPrivateKey);
@@ -345,7 +345,7 @@ export class WalletService {
                     console.log(`Migrating Policy from ${currentVer} to ${newVer}`);
                     this.savePolicy(DEFAULT_POLICY);
                 }
-            } catch (e) {
+            } catch {
                 this.savePolicy(DEFAULT_POLICY);
             }
         }
@@ -575,7 +575,7 @@ export class WalletService {
             let credentialData: Record<string, unknown> | null;
             try {
                 credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
-            } catch (e) {
+            } catch {
                 await this.ensureSeeded();
                 credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
             }

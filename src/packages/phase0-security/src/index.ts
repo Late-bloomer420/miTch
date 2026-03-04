@@ -751,7 +751,7 @@ export class SplitKeyProtection {
         return crypto.subtle.importKey('raw', reconstructed.buffer as ArrayBuffer, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
     }
 
-    private shamirSplit(secret: Uint8Array, threshold: number, shares: number): Uint8Array[] {
+    private shamirSplit(secret: Uint8Array, _threshold: number, _shares: number): Uint8Array[] {
         return [secret, secret, secret]; // Placeholder; use proper lib in production
     }
 
@@ -811,7 +811,7 @@ export class MemoryHardeningProtection {
 export interface EncryptedKey { ciphertext: ArrayBuffer; iv: Uint8Array; }
 
 export class NetworkHardeningProtection {
-    async fetchWithCertPinning(url: string, expectedCertHash: string): Promise<Response> {
+    async fetchWithCertPinning(url: string, _expectedCertHash: string): Promise<Response> {
         const response = await fetch(url);
         console.warn('[Security] Certificate pinning check (placeholder)');
         return response;
@@ -868,7 +868,7 @@ export class SupplyChainHardeningProtection {
         }
     }
 
-    async verifyReproducibleBuild(sourceCodeHash: string, builtArtifactHash: string, buildRecipe: string): Promise<boolean> {
+    async verifyReproducibleBuild(sourceCodeHash: string, builtArtifactHash: string, _buildRecipe: string): Promise<boolean> {
         console.info('[Security] Reproducible build verification (requires rebuild)');
         return sourceCodeHash === builtArtifactHash;
     }
@@ -899,7 +899,7 @@ export class PhysicalSeizureProtection {
             try {
                 await fetch(checkInURL, { method: 'POST' });
                 console.info("[Security] Dead man's switch: checked in");
-            } catch (error) {
+            } catch (error: _error) {
                 console.warn('[Security] Check-in failed - device may be seized');
             }
         }, 24 * 60 * 60 * 1000);
@@ -911,7 +911,7 @@ export class PhysicalSeizureProtection {
     private async clearAllStorage(): Promise<void> { }
     private async getStoredPINHash(): Promise<string> { return ''; }
     private async hashPIN(pin: string): Promise<string> { return pin; }
-    private async loadRealWallet(pin: string): Promise<WalletState> { return { credentials: [] }; }
+    private async loadRealWallet(_pin: string): Promise<WalletState> { return { credentials: [] }; }
     private async loadDecoyWallet(): Promise<WalletState> {
         return { credentials: [{ type: 'DriversLicense', name: 'John Doe', birthdate: '1980-01-01' }] };
     }

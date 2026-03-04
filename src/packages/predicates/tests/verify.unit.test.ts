@@ -9,7 +9,7 @@ describe('verifyPredicateResult (unit)', () => {
         }
     };
 
-    const signFn = async (data: string) => `sig:${data.length}`;
+    const _signFn = async (data: string) => `sig:${data.length}`;
     const verifyFn = async (data: string, sig: string) => sig === `sig:${data.length}`;
 
     it('fails closed if signature invalid', async () => {

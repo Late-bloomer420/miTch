@@ -61,7 +61,7 @@ export class WebAuthnService {
     static async verifyPresence(decisionId: string, attestation: string): Promise<boolean> {
         if (!this.userKey) return false;
 
-        const signature = new Uint8Array(
+        const _signature = new Uint8Array(
             atob(attestation).split("").map(c => c.charCodeAt(0))
         );
 

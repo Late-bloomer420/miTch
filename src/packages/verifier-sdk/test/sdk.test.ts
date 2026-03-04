@@ -28,7 +28,7 @@ describe('VerifierSDK Attack Vectors', () => {
 
     // Mock Replay Cache
     const seenNonces = new Set<string>();
-    const mockReplayCheck = async (nonce: string, decisionId: string) => {
+    const mockReplayCheck = async (nonce: string, _decisionId: string) => {
         if (seenNonces.has(nonce)) return true;
         seenNonces.add(nonce);
         return false;
@@ -154,7 +154,7 @@ describe('VerifierSDK Attack Vectors', () => {
 
     it('should REJECT incorrect Verifier DID (Address Check)', async () => {
         // Encrypt FOR a different verifier
-        const pkg = await createValidPackage({ verifierDid: 'did:example:WRONG_TARGET' });
+        const _pkg = await createValidPackage({ verifierDid: 'did:example:WRONG_TARGET' });
         // The SDK checks pkg.aad_context.verifier_did vs config.verifierDid
         // Here we spoof the AAD context to MATCH the config, but the ENCRYPTION was done with WRONG AAD?
         // Wait, if I change aad_context in the package, the DECRYPTION will fail because AAD input to GCM is derived from it.

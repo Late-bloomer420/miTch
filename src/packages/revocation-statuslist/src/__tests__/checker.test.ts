@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { StatusListRevocationChecker } from '../index';
 import type { StatusListEntry, StatusListCredential } from '../types';
 

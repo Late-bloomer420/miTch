@@ -95,7 +95,7 @@ export const SecureZone: React.FC<SecureZoneProps> = ({ children, onIntervention
 
         // Manual check again to be safe
         if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
+        const _rect = containerRef.current.getBoundingClientRect();
         const topElement = document.elementFromPoint(e.clientX, e.clientY);
         const isSelfOrChild = containerRef.current === topElement || containerRef.current.contains(topElement as Node);
 

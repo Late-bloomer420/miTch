@@ -90,7 +90,7 @@ export class SplitKeyProtection {
      * Implementation should use a robust library like 'sss-wasm' or '@noble/curves'.
      * This defines the contract for Phase-1 implementation.
      */
-    static async splitKey(secret: Uint8Array): Promise<Uint8Array[]> {
+    static async splitKey(_secret: Uint8Array): Promise<Uint8Array[]> {
         console.log('🔐 [Placeholder] Splitting Master Key (Shamir 2-of-3)...');
         // TODO: Integrate 'sss-wasm' in Phase-1 build
         // For Phase-0, we warn that this is a mocked interface

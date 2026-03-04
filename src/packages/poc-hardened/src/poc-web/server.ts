@@ -40,7 +40,7 @@ let auditChain: AuditChain;
 let keyManager: EphemeralKeyManager;
 let ropaStore: ROPAStore;
 let consentStore: ConsentReceiptStore;
-let lastEphemeralKeyId: string | null = null;
+let _lastEphemeralKeyId: string | null = null;
 
 function sha256(data: string): string {
   return createHash("sha-256").update(data, "utf8").digest("hex").substring(0, 16);

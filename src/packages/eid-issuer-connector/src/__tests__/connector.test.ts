@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { EIDIssuerConnector, computeAge, isOver18 } from '../index';
-import { importJWK, jwtVerify } from 'jose';
 import type { EIDIssuanceRequest } from '../types';
 
 describe('EIDIssuerConnector — Simulator Mode', () => {

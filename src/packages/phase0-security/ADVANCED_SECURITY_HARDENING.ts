@@ -132,7 +132,7 @@ class SplitKeyProtection {
   }
 
   // Simplified Shamir's Secret Sharing (use library in production)
-  private shamirSplit(secret: Uint8Array, threshold: number, shares: number): Uint8Array[] {
+  private shamirSplit(secret: Uint8Array, _threshold: number, _shares: number): Uint8Array[] {
     // TODO: Use @noble/curves or similar for production
     return [secret, secret, secret]; // Placeholder
   }
@@ -283,7 +283,7 @@ class NetworkHardeningProtection {
    */
   async fetchWithCertPinning(
     url: string,
-    expectedCertHash: string
+    _expectedCertHash: string
   ): Promise<Response> {
     // Note: True cert pinning requires browser extension or native app
     // This is conceptual - browser fetch() doesn't expose cert details
@@ -433,7 +433,7 @@ class SupplyChainHardeningProtection {
   async verifyReproducibleBuild(
     sourceCodeHash: string,
     builtArtifactHash: string,
-    buildRecipe: string
+    _buildRecipe: string
   ): Promise<boolean> {
     // User rebuilds miTch from source using build recipe
     // Compares resulting hash with published hash
@@ -537,7 +537,7 @@ class PhysicalSeizureProtection {
       try {
         await fetch(checkInURL, { method: 'POST' });
         console.info('[Security] Dead man\'s switch: checked in');
-      } catch (error) {
+      } catch (error: _error) {
         console.warn('[Security] Check-in failed - device may be seized');
       }
     }, 24 * 60 * 60 * 1000); // 24h
@@ -550,7 +550,7 @@ class PhysicalSeizureProtection {
   private async clearAllStorage(): Promise<void> {}
   private async getStoredPINHash(): Promise<string> { return ''; }
   private async hashPIN(pin: string): Promise<string> { return pin; }
-  private async loadRealWallet(pin: string): Promise<WalletState> { return { credentials: [] }; }
+  private async loadRealWallet(_pin: string): Promise<WalletState> { return { credentials: [] }; }
 }
 
 interface WalletState {

@@ -9,8 +9,8 @@ import type { PolicyRule } from '@mitch/shared-types';
 describe('E2E: Full Credential Lifecycle', () => {
   let mockIssuer: MockGovernmentIssuer;
   let eidConnector: EIDIssuerConnector;
-  let policyEngine: PolicyEngine;
-  let revocationChecker: StatusListRevocationChecker;
+  let _policyEngine: PolicyEngine;
+  let _revocationChecker: StatusListRevocationChecker;
 
   beforeEach(async () => {
     mockIssuer = new MockGovernmentIssuer();
@@ -57,7 +57,7 @@ describe('E2E: Full Credential Lifecycle', () => {
 
     // STEP 4: Revocation Check (optional but recommended)
     // Mock status entry (would come from credential)
-    const statusEntry = {
+    const _statusEntry = {
       id: 'https://example.com/status/1',
       type: 'StatusList2021Entry' as const,
       statusPurpose: 'revocation' as const,

@@ -1,4 +1,4 @@
-import { VerificationRequestV0, VerificationResponseV0 } from "../types/api";
+import { VerificationResponseV0 } from "../types/api";
 import { PolicyManifestV0 } from "../types/policy";
 import { InMemoryNonceStore } from "../binding/nonceStore";
 import { validateBinding } from "../binding/validateBinding";

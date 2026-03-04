@@ -1,6 +1,4 @@
 import { CredentialRequest, CredentialRequestSchema, CredentialResponse } from './types';
-import { signData, verifyData } from '@mitch/shared-crypto';
-import { z } from 'zod';
 
 
 /**
@@ -121,7 +119,7 @@ export class OID4VCIIssuer {
         console.log(`[AUDIT] ${JSON.stringify(entry)}`);
     }
 
-    private async signCredential(credential: any): Promise<string> {
+    private async signCredential(_credential: any): Promise<string> {
         // Placeholder for actual crypto signing
         // Should use @mitch/shared-crypto
         return "mock_signature_" + Date.now();

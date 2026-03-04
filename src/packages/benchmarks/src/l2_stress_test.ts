@@ -1,5 +1,5 @@
 import { AuditLog } from '@mitch/audit-log';
-import { generateKeyPair, sha256 } from '@mitch/shared-crypto';
+import { generateKeyPair } from '@mitch/shared-crypto';
 import { performance } from 'perf_hooks';
 
 /**

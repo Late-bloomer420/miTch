@@ -6,7 +6,7 @@
  * Each shred event produces a proof for the audit chain.
  */
 
-import { createHash, randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
 import { ShredProof } from "./auditChain";
 
 // ─── Types ───────────────────────────────────────────────────────

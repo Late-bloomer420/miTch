@@ -542,7 +542,7 @@ export class PolicyEngine {
 
             // T-88: Ephemeral Key Propagation
             if (request.ephemeralResponseKey) {
-                const key = request.ephemeralResponseKey as any; // WebCrypto Key
+                const _key = request.ephemeralResponseKey as any; // WebCrypto Key
                 // We can't synchronously export here if it's a CryptoKey.
                 // Ideally, the Request should have the JWK if it came from the parser?
                 // No, WalletService parsed it to CryptoKey.

@@ -59,7 +59,7 @@ async function validateDeterministicRendering() {
         // 5. Validation Logic (The "Pin")
         // This hash represents the "Expected State" of the UI component.
         // It must match exactly across all environments (Dev, CI, User Device if using headless check).
-        const EXPECTED_HASH = 'mock-hash-to-be-updated-after-first-run';
+        const _EXPECTED_HASH = 'mock-hash-to-be-updated-after-first-run';
 
         // Note: For this first run, we just log it. In a real test, we would assert.
         // if (currentHash !== EXPECTED_HASH) ...

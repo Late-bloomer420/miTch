@@ -73,7 +73,7 @@ export const PrivacyAuditModal: React.FC<PrivacyAuditModalProps> = ({ verifierNa
         return '#ef4444'; // Red
     };
 
-    const calculateVPNBoost = (trackers: TrackingPoint[]) => {
+    const calculateVPNBoost = (_trackers: TrackingPoint[]) => {
         // Simple logic: sum mitigated penalty for VPN
         // In real app reuse service logic, simplified here for UI
         return 40;

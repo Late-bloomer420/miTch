@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { EphemeralKey, SecureBuffer } from '../src';
+import { SecureBuffer } from '../src';
 
 describe('EphemeralKey Primitive', () => {
     test('Lifecycle: Create -> Use -> Shred -> Fail', async () => {

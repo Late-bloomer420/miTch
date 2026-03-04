@@ -155,7 +155,7 @@ export const FORBIDDEN_EXPORT_FIELDS = [
  */
 export function validateNoPii(record: Record<string, unknown>): string[] {
   const keys = Object.keys(record);
-  const serialized = JSON.stringify(record);
+  const _serialized = JSON.stringify(record);
   const violations: string[] = [];
 
   for (const forbidden of FORBIDDEN_EXPORT_FIELDS) {

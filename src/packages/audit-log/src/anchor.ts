@@ -30,7 +30,7 @@ export class StateAnchorClient {
     /**
      * Resolve a root from the chain (Mock lookup)
      */
-    static async getAnchor(txId: string): Promise<L2AnchorReceipt | null> {
+    static async getAnchor(_txId: string): Promise<L2AnchorReceipt | null> {
         // In a real scenario, this would query a Graph node or L2 RPC
         return null;
     }

@@ -115,7 +115,7 @@ export async function decrypt(
     try {
         const pt = await crypto.subtle.decrypt(alg, key, ciphertext);
         return new TextDecoder().decode(pt);
-    } catch (e) {
+    } catch {
         throw new Error(`DECRYPTION_FAILED: Authentication tag mismatch or wrong AAD binding.`);
     }
 }

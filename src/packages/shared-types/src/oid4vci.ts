@@ -5,7 +5,7 @@
  * API contracts for issuer-wallet communication
  */
 
-import { VerifiableCredential, DID } from './vc';
+import { VerifiableCredential } from './vc';
 
 /**
  * Credential Issuer Metadata

@@ -14,7 +14,7 @@
  * - Auditable key lifecycle
  */
 
-import { generateSymmetricKey, wrapKeyForRecipient } from './keys';
+import { wrapKeyForRecipient } from './keys';
 import { encrypt, decrypt } from './encryption';
 
 /**

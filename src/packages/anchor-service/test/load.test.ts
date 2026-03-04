@@ -45,7 +45,7 @@ describe('Anchor Service Load Test (T-43)', () => {
         expect(mockProvider.publishRoot).toHaveBeenCalled(); // Should have flushed multiple batches
 
         // Memory Leak Check: Ensure internal map is empty
-        // @ts-ignore - Accessing private property for testing
+        // @ts-expect-error - Accessing private property for testing
         expect(service.pendingSubmissions.size).toBe(0);
 
         // Verify Integrity (First and Last)

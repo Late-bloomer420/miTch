@@ -27,7 +27,7 @@ import {
 
 
 import { DEMO_POLICY } from '../data/DemoPolicy';
-import { DocumentService, ProofOfExistence } from './DocumentService';
+import { ProofOfExistence } from './DocumentService';
 import {
     evaluatePredicates,
     CommonPredicates,
@@ -131,7 +131,7 @@ const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 const localStoreShim: Storage = (() => {
     try {
         if (typeof localStorage !== 'undefined') return localStorage;
-    } catch (_) { }
+    } catch (_: __) { }
     const mem = new Map<string, string>();
     return {
         getItem: (k: string) => (mem.has(k) ? mem.get(k)! : null),
@@ -265,7 +265,7 @@ export class WalletService {
                             // Production would use key wrapping (wrapKey/unwrapKey).
                             console.log('📦 Audit key marker found in storage (generating session keys)');
                         }
-                    } catch (_) {
+                    } catch (_: __) {
                         // Storage error or first run — will generate fresh keys
                     }
 
@@ -280,13 +280,13 @@ export class WalletService {
                             claims: ['created'],
                             issuedAt: new Date().toISOString()
                         });
-                    } catch (_) {
+                    } catch (_: __) {
                         console.warn('⚠️ Failed to persist audit key marker');
                     }
 
 
                     // 3. Generate Identity Keys (Phase 0: RAM Only - Ephemeral)
-                    const IDENTITY_KEY_ID = 'identity-keys-v1';
+                    const _IDENTITY_KEY_ID = 'identity-keys-v1';
 
                     // Remove persistence check: Always generate fresh keys per session
                     console.log('✨ Creating SESSION-SCOPED Identity Keypair (RAM only)...');
@@ -306,7 +306,7 @@ export class WalletService {
                     // Initialize Policy Engine
                     step = 'initPolicyEngine';
                     this.policyEngine = new PolicyEngine(async (capsule: DecisionCapsule) => {
-                        const { wallet_attestation, ...toSign } = capsule;
+                        const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
                         const payload = canonicalStringify(toSign);
                         // Consistent use of shared-crypto
                         if (!this.policyPrivateKey) throw new Error("Identity Key not initialized");
@@ -364,7 +364,7 @@ export class WalletService {
                     console.log(`Migrating Policy from ${currentVer} to ${newVer}`);
                     this.savePolicy(DEFAULT_POLICY);
                 }
-            } catch (e) {
+            } catch {
                 this.savePolicy(DEFAULT_POLICY);
             }
         }
@@ -690,7 +690,7 @@ export class WalletService {
             let credentialData: Record<string, unknown> | null;
             try {
                 credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
-            } catch (e) {
+            } catch {
                 await this.ensureSeeded();
                 credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
             }

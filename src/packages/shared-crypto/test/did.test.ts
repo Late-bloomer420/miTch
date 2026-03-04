@@ -9,7 +9,7 @@
  * - Fail-closed behavior (resolution failure, key mismatch, timeout, malformed docs)
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SignJWT, generateKeyPair, exportJWK } from 'jose';
 import {
     DIDResolver,

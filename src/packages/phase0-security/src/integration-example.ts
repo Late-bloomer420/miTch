@@ -5,10 +5,10 @@
 import { LocalAuditLog } from './LocalAuditLog.js';
 import { VerifierDirectProtocol, DIRECT_VERIFIER_DID } from './VerifierDirectProtocol.js';
 import { EIDASComplianceChecker, ComplianceStatus } from './EIDASComplianceChecker.js';
-import { PanicGuard, UserDerivedKeyProtection } from './ADVANCED_SECURITY_HARDENING.js';
+import { UserDerivedKeyProtection } from './ADVANCED_SECURITY_HARDENING.js';
 
 // Mock global fetch so tests never make real network calls
-const _originalFetch = globalThis.fetch;
+const __originalFetch = globalThis.fetch;
 globalThis.fetch = async (_input: any, _init?: any) => {
     return new Response(JSON.stringify({ status: 'accepted' }), {
         status: 200,

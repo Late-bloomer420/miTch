@@ -66,7 +66,7 @@ export class VerifierSDK {
             } else {
                 pkg = input;
             }
-        } catch (e) {
+        } catch {
             throw new TransportParseError('JSON parse failed');
         }
 

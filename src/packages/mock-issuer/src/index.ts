@@ -6,7 +6,7 @@
  * Uses JOSE for JWT signing with ES256 algorithm.
  */
 
-import { SignJWT, generateKeyPair, exportJWK, importJWK, jwtVerify } from 'jose';
+import { SignJWT, generateKeyPair, exportJWK, jwtVerify } from 'jose';
 import type { JWK, KeyLike } from 'jose';
 
 /**

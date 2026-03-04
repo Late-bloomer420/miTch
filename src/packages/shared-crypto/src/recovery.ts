@@ -1,4 +1,3 @@
-import { generateKeyPair } from './keys';
 
 /**
  * RecoveryService: Implements "Trust Circle" Social Recovery.

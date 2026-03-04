@@ -3,7 +3,7 @@
  * Defines what events are logged and how they form a hash chain
  */
 
-import { DID, URI } from './vc';
+import { DID } from './vc';
 
 /**
  * Types of auditable events in the miTch system

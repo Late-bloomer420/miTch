@@ -155,7 +155,7 @@ export class SecureStorage {
                     const plaintext = await decrypt(result.ciphertext, this.key);
                     const parsed = JSON.parse(plaintext) as T;
                     resolve(parsed);
-                } catch (e) {
+                } catch {
                     reject(new Error('Decryption Failed: Key might be wrong or data corrupted.'));
                 }
             };
@@ -209,7 +209,7 @@ export class SecureStorage {
                     }
 
                     resolve(minimizedPayload as Pick<T, string>);
-                } catch (e) {
+                } catch {
                     reject(new Error('Decryption Failed: Key might be wrong or data corrupted.'));
                 }
             };

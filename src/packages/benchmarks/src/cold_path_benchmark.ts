@@ -80,7 +80,7 @@ function benchmarkPolicyEval(ruleCount: number): number {
 
     if (matchedRule) {
         // Claim Intersection
-        const effectiveClaims = requestedClaims.filter(c =>
+        const _effectiveClaims = requestedClaims.filter(c =>
             matchedRule.allowedClaims.includes(c) && !matchedRule.deniedClaims.includes(c)
         );
     }

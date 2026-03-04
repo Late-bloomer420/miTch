@@ -7,7 +7,7 @@
  * 3. eIDAS 2.0 compliance checking
  */
 
-import { LocalAuditLog, AuditEvent } from './LocalAuditLog';
+import { LocalAuditLog } from './LocalAuditLog';
 import { VerifierDirectClient, WalletDirectProtocol } from './VerifierDirectProtocol';
 import { EIDASComplianceChecker } from './EIDASComplianceChecker';
 

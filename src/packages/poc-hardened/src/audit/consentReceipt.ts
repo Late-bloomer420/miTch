@@ -7,7 +7,7 @@
  * NO raw PII — only what TYPE of thing was shared.
  */
 
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 
 // ─── Types ───────────────────────────────────────────────────────
 

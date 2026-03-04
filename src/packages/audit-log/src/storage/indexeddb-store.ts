@@ -119,7 +119,7 @@ export class IndexedDBAuditStore {
                 );
 
                 // Remove internal fields
-                const cleanEntries = entries.map(({ walletId, storedAt, ...entry }) => entry);
+                const cleanEntries = entries.map(({ walletId: _walletId, storedAt: _storedAt, ...entry }) => entry);
                 resolve(cleanEntries);
             };
 
@@ -160,7 +160,7 @@ export class IndexedDBAuditStore {
                 const walletEntries = entries.filter(e => e.walletId === this.walletId);
 
                 // Remove internal fields
-                const cleanEntries = walletEntries.map(({ walletId, storedAt, ...entry }: any) => entry);
+                const cleanEntries = walletEntries.map(({ walletId: _walletId, storedAt: _storedAt, ...entry }: any) => entry);
                 resolve(cleanEntries);
             };
 

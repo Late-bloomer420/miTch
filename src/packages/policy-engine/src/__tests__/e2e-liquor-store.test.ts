@@ -122,7 +122,7 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   it('❌ DENY: Store tries to request health data (Layer 2 violation)', async () => {
     const birthdate = new Date('1990-01-01');
     const userDID = 'did:example:user123';
-    const credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const _credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
 
     // Malicious store tries to request health data (Layer 2)
     const policy: PolicyManifest = {

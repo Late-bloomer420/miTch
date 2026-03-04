@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
 import '@testing-library/jest-dom'; // Note: usually setup in a setup file, but explicit here for PoC simplicity

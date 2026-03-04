@@ -10,7 +10,7 @@
  * - DSGVO Art. 30: Record of processing activities
  */
 
-import { LocalAuditLog, AuditEvent } from './LocalAuditLog';
+import { LocalAuditLog } from './LocalAuditLog';
 
 export interface ComplianceReport {
   compliant: boolean;

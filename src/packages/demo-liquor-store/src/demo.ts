@@ -56,7 +56,7 @@ async function runDemo() {
   await sleep(500);
   const birthdate = new Date('1990-05-15');
   const userDID = 'did:example:alice';
-  const credential = await issuer.issueAgeCredential(birthdate, userDID);
+  const _credential = await issuer.issueAgeCredential(birthdate, userDID);
   await sleep(1000);
   log('✅ Age Credential issued (JWT signed)', 'success');
   log(`   User: ${userDID}`, 'info');

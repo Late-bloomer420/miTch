@@ -29,9 +29,9 @@ describe('EphemeralKey (Production Ready)', () => {
 
     it('should clear call site buffer on import', () => {
         const sensitive = new Uint8Array([1, 2, 3, 4]);
-        const originalCopy = new Uint8Array(sensitive); // Keep a backup to verify we had data
+        const _originalCopy = new Uint8Array(sensitive); // Keep a backup to verify we had data
 
-        const key = EphemeralKey.import(sensitive);
+        const _key = EphemeralKey.import(sensitive);
 
         // Caller's buffer should be zeroed now
         expect(sensitive[0]).toBe(0);
@@ -50,7 +50,7 @@ describe('EphemeralKey (Production Ready)', () => {
             await key.use(async () => {
                 throw new Error("Oops");
             });
-        } catch (e) {
+        } catch {
             // Expected
         }
 

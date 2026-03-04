@@ -59,7 +59,7 @@ export class EIDASComplianceChecker {
                 name: 'Audit Log Accessibility (GDPR Art. 15)',
                 result: ComplianceStatus.PASS
             };
-        } catch (e) {
+        } catch {
             return {
                 id: 'AUDIT_ACCESS',
                 name: 'Audit Log Accessibility (GDPR Art. 15)',
@@ -116,7 +116,7 @@ export class EIDASComplianceChecker {
                 result: ComplianceStatus.PASS,
                 details: `${entries.length} entries found.`
             };
-        } catch (e) {
+        } catch {
             return {
                 id: 'PROCESSING_RECORD',
                 name: 'Record of Processing (GDPR Art. 30)',

@@ -427,7 +427,7 @@ export class EIDIssuerConnector {
   /**
    * Verify an eID attribute.
    */
-  async verifyAttribute(attribute: EIDAttribute): Promise<boolean> {
+  async verifyAttribute(_attribute: EIDAttribute): Promise<boolean> {
     if (this.mode === 'mock' || this.mode === 'simulator') {
       return true; // Simulated verification always succeeds
     }

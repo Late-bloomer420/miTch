@@ -99,8 +99,8 @@ export async function sha256(data: string | Uint8Array): Promise<string> {
  * Simplified JWE decryption (ECDH-ES + A256GCM)
  */
 export async function decryptJWE(
-    jwe: string,
-    privateKey: CryptoKey
+    _jwe: string,
+    _privateKey: CryptoKey
 ): Promise<string> {
     // Note: Full JWE implementation requires JOSE library
     // For PoC, we assume wallet sends simple base64-encoded encrypted data

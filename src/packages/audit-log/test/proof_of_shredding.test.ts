@@ -27,7 +27,7 @@ describe('Proof of Forgetting (Signed Audit Trace)', () => {
         console.log('🔥 Initiating Crypto-Shredding...');
         key.shred();
 
-        const receipt = await auditLog.append('KEY_DESTROYED', keyId, {
+        const _receipt = await auditLog.append('KEY_DESTROYED', keyId, {
             reason: 'Session terminal',
             method: 'Hard reference drop'
         });

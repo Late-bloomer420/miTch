@@ -74,7 +74,7 @@ app.post('/credential', async (req, res) => {
         return res.status(503).json({ error: 'keys_not_initialized' });
     }
 
-    const { credential_definition, proof } = req.body as CredentialRequest; // Simplified request parsing
+    const { credential_definition: _credential_definition, proof: _proof } = req.body as CredentialRequest; // Simplified request parsing
 
     console.log('📝 Received Credential Request');
 

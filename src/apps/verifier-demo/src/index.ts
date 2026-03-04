@@ -1,6 +1,5 @@
 import express from 'express';
 import { VerifierSDK } from '@mitch/verifier-sdk';
-import { generateKeyPair } from '@mitch/shared-crypto';
 
 const app = express();
 const port = 3001;
