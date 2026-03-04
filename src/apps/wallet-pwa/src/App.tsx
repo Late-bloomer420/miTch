@@ -502,6 +502,7 @@ export default function App() {
                 <ConsentModal
                     capsule={evaluationResult.decisionCapsule}
                     reasonCodes={evaluationResult.reasonCodes}
+                    timeoutMinutes={currentPolicy?.globalSettings?.requireConsentTimeoutMinutes}
                     onApprove={(presenceProof) => {
                         setShowConsent(false);
                         proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);

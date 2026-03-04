@@ -267,10 +267,37 @@ export class WebAuthnService {
    * Wie provePresence(), gibt aber das vollständige PresenceProof-Objekt zurück.
    * Verwende diese Variante wenn du authenticatorData etc. brauchst.
    */
-  static async provePresenceDetailed(decisionId: string): Promise<PresenceProof> {
-
+  static async provePresenceDetailed(decisionId: string, timeoutMinutes: number = 0): Promise<PresenceProof> {
     if (!isWebAuthnAvailable()) {
       return SoftwareFallback.sign(decisionId);
+    }
+
+    // Check Cache if timeout is configured
+    if (timeoutMinutes > 0) {
+      const cachedSessionRaw = sessionStorage.getItem('mitch_webauthn_session');
+      if (cachedSessionRaw) {
+        try {
+          const cachedSession = JSON.parse(cachedSessionRaw);
+          const ageMinutes = (Date.now() - cachedSession.timestamp) / (1000 * 60);
+          if (ageMinutes <= timeoutMinutes) {
+            console.log(`[WebAuthn] ⚡ Using cached biometric session (age: ${ageMinutes.toFixed(1)}m / ${timeoutMinutes}m limit)`);
+            return {
+              signature: cachedSession.signature,
+              credentialId: cachedSession.credentialId,
+              challenge: decisionId, // Update challenge to match current request context
+              authenticatorData: cachedSession.authenticatorData,
+              verifiedAt: cachedSession.verifiedAt,
+              method: 'webauthn'
+            };
+          } else {
+            console.log(`[WebAuthn] 🕰️ Cached session expired (${ageMinutes.toFixed(1)}m > ${timeoutMinutes}m). Asking again.`);
+            sessionStorage.removeItem('mitch_webauthn_session');
+          }
+        } catch (e) {
+          // invalid cache
+          sessionStorage.removeItem('mitch_webauthn_session');
+        }
+      }
     }
 
     // Challenge = decisionId → bindet Biometrie direkt an die Policy (T-24)
@@ -308,11 +335,18 @@ export class WebAuthnService {
       if (errName === 'SecurityError') {
         throw new Error('WEBAUTHN_SECURITY_ERROR: rpId mismatch or insecure context.');
       }
-      if (errName === 'InvalidStateError') {
-        // Kein Passkey registriert → Auto-Register
-        console.warn('[WebAuthn] No passkey found. Triggering registration first...');
-        await this.registerPasskey();
-        return this.provePresenceDetailed(decisionId); // Retry
+      if (errName === 'InvalidStateError' || errName === 'NotSupportedError') {
+        // Falls der registrierte Passkey hier nicht greift (z.b. Cross-Device Versuch
+        // von einem iPad, das den lokalen IndexedDB Passkey vom iPhone nicht hat),
+        // probieren wir es nochmal OHNE Einschränkung (allowCredentials: []),
+        // damit das OS den QR-Code Dialog für Cross-Device Auth anbietet.
+        console.warn('[WebAuthn] Local passkey failed or not supported. Falling back to cross-device (QR) flow...');
+        try {
+          return await this.provePresenceCrossDeviceFallback(decisionId, rpId, challengeBytes);
+        } catch (fallbackErr) {
+          console.error('[WebAuthn] Cross-device fallback also failed:', fallbackErr);
+          throw new Error('WEBAUTHN_CROSS_DEVICE_FAILED: Could not authenticate via cross-device flow.');
+        }
       }
 
       // Fallback: Software-Signatur (degraded mode)
@@ -331,7 +365,44 @@ export class WebAuthnService {
       method: 'webauthn',
     };
 
+    // Save to session cache
+    if (timeoutMinutes > 0) {
+      sessionStorage.setItem('mitch_webauthn_session', JSON.stringify({
+        ...proof,
+        timestamp: Date.now()
+      }));
+    }
+
     console.log(`[WebAuthn] ✅ Presence proven for decision: ${decisionId.substring(0, 8)}...`);
+    return proof;
+  }
+
+  /**
+   * Fallback for Cross-Device Flow (e.g. scanning QR code with iPad)
+   * Omits allowCredentials so the OS prompts for any available authenticator.
+   */
+  static async provePresenceCrossDeviceFallback(decisionId: string, rpId: string, challengeBytes: BufferSource): Promise<PresenceProof> {
+    const getOptions: PublicKeyCredentialRequestOptions = {
+      rpId,
+      challenge: challengeBytes,
+      allowCredentials: [], // Crucial: empty array allows cross-device / any passkey
+      userVerification: 'required',
+      timeout: 60_000,
+    };
+
+    const assertion = await navigator.credentials.get({ publicKey: getOptions }) as PublicKeyCredential;
+    const response = assertion.response as AuthenticatorAssertionResponse;
+
+    const proof: PresenceProof = {
+      signature: bufferToBase64(response.signature),
+      credentialId: bufferToBase64url(assertion.rawId),
+      challenge: decisionId,
+      authenticatorData: bufferToBase64(response.authenticatorData),
+      verifiedAt: new Date().toISOString(),
+      method: 'webauthn',
+    };
+
+    console.log(`[WebAuthn] ✅ Cross-Device Presence proven for decision: ${decisionId.substring(0, 8)}...`);
     return proof;
   }
 

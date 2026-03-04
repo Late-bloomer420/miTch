@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
 
 export default defineConfig({
@@ -34,6 +35,7 @@ export default defineConfig({
     server: {
         port: 5173,
         strictPort: false, // Allow fallback if port used
-        host: true // Expose to network
+        host: true, // Expose to network
+        allowedHosts: true, // Allow ngrok/localtunnel/serveo hosts
     },
 });

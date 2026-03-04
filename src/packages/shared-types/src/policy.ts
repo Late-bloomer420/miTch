@@ -111,6 +111,8 @@ export interface GlobalPolicySettings {
     denySecondaryUse?: boolean;
     /** EHDS: Deny secondary use for specific countries (ISO 3166-1 alpha-2) */
     denySecondaryUseCountries?: string[];
+    /** Time in minutes before a cached WebAuthn session expires (0 = ask every time) */
+    requireConsentTimeoutMinutes?: number;
 }
 
 /**

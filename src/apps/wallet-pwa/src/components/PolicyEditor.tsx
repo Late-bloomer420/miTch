@@ -151,7 +151,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
             </div>
 
             {/* Global Settings */}
-            <div style={{ marginBottom: '25px', padding: '16px', background: '#1f2937', borderRadius: '16px', border: '1px solid #374151' }}>
+            <div style={{ marginBottom: '25px', padding: '16px', background: '#1f2937', borderRadius: '16px', border: '1px solid #374151', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <div style={{ fontWeight: '600', fontSize: '14px' }}>Block Unknown Verifiers</div>
@@ -181,6 +181,123 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             transition: 'left 0.2s'
                         }} />
                     </button>
+                </div>
+
+                <div style={{ height: '1px', background: '#374151', margin: '4px 0' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#fca5a5' }}>Deny Secondary Use (EHDS)</div>
+                        <div style={{ fontSize: '11px', color: '#6b7280' }}>Global Opt-Out for research, statistics, and policy assessments.</div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setPolicy({
+                                ...policy,
+                                globalSettings: {
+                                    ...policy.globalSettings,
+                                    denySecondaryUse: !policy.globalSettings?.denySecondaryUse
+                                }
+                            });
+                            setIsSaved(false);
+                        }}
+                        style={{
+                            width: '44px',
+                            height: '24px',
+                            borderRadius: '12px',
+                            background: policy.globalSettings?.denySecondaryUse ? '#ef4444' : '#374151',
+                            border: 'none',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            transition: 'background 0.2s'
+                        }}
+                    >
+                        <div style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            position: 'absolute',
+                            top: '3px',
+                            left: policy.globalSettings?.denySecondaryUse ? '23px' : '3px',
+                            transition: 'left 0.2s'
+                        }} />
+                    </button>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#fcd34d' }}>Third-Country Block (Non-EU)</div>
+                        <div style={{ fontSize: '11px', color: '#6b7280' }}>Deny secondary use data export to countries outside the EU/EEA.</div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            const current = policy.globalSettings?.denySecondaryUseCountries || [];
+                            const isBlocked = current.includes('*');
+                            setPolicy({
+                                ...policy,
+                                globalSettings: {
+                                    ...policy.globalSettings,
+                                    denySecondaryUseCountries: isBlocked ? [] : ['*']
+                                }
+                            });
+                            setIsSaved(false);
+                        }}
+                        style={{
+                            width: '44px',
+                            height: '24px',
+                            borderRadius: '12px',
+                            background: (policy.globalSettings?.denySecondaryUseCountries || []).includes('*') ? '#f59e0b' : '#374151',
+                            border: 'none',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            transition: 'background 0.2s'
+                        }}
+                    >
+                        <div style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            position: 'absolute',
+                            top: '3px',
+                            left: (policy.globalSettings?.denySecondaryUseCountries || []).includes('*') ? '23px' : '3px',
+                            transition: 'left 0.2s'
+                        }} />
+                    </button>
+                </div>
+
+                <div style={{ height: '1px', background: '#374151', margin: '4px 0' }} />
+
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div>
+                            <div style={{ fontWeight: '600', fontSize: '14px', color: '#60a5fa' }}>Biometric Session Timeout</div>
+                            <div style={{ fontSize: '11px', color: '#6b7280' }}>How long Face ID/Touch ID remains valid before asking again.</div>
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#60a5fa' }}>
+                            {policy.globalSettings?.requireConsentTimeoutMinutes === 0 ? 'Always ask' :
+                                `${policy.globalSettings?.requireConsentTimeoutMinutes || 5} min`}
+                        </div>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="60"
+                        step="5"
+                        value={policy.globalSettings?.requireConsentTimeoutMinutes ?? 5}
+                        onChange={(e) => {
+                            setPolicy({
+                                ...policy,
+                                globalSettings: {
+                                    ...policy.globalSettings,
+                                    requireConsentTimeoutMinutes: parseInt(e.target.value)
+                                }
+                            });
+                            setIsSaved(false);
+                        }}
+                        style={{ width: '100%', accentColor: '#60a5fa' }}
+                    />
                 </div>
             </div>
 

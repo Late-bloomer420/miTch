@@ -37,12 +37,14 @@ import { DecisionCapsule } from '@mitch/shared-types';
 import { WebAuthnService } from '@mitch/shared-crypto';
 import { ReasonCode } from '@mitch/policy-engine';
 import { SecureZone } from './SecureZone';
+import { translateReason, translateClaim } from '../utils/i18n';
 
 // ── Typen ────────────────────────────────────────────────────────────────────
 
 interface ConsentModalProps {
   capsule: DecisionCapsule;
   reasonCodes: string[];
+  timeoutMinutes?: number;
   onApprove: (presenceProof?: string) => void;
   onReject: () => void;
   onLog?: (msg: string, type: 'info' | 'success' | 'warning' | 'error') => void;
@@ -52,15 +54,8 @@ type BiometricState = 'idle' | 'pending' | 'verified' | 'failed';
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
-const REASON_LABELS: Partial<Record<string, string>> = {
-  [ReasonCode.CONSENT_REQUIRED]: '✋ Explizite Zustimmung erforderlich',
-  [ReasonCode.SENSITIVE_CLAIM]: '⚠️  Enthält sensible Daten',
-  [ReasonCode.PRESENCE_REQUIRED]: '🔐 Biometrische Anwesenheit erforderlich',
-  'HIGH_RISK_VERIFIER': '🚨 Unbekannter / risikobehafteter Verifier',
-};
-
 function humanReadableReason(code: string): string {
-  return REASON_LABELS[code] ?? code;
+  return translateReason(code);
 }
 
 function riskColor(level: string | undefined): string {
@@ -73,7 +68,7 @@ function riskColor(level: string | undefined): string {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog }: ConsentModalProps) {
+export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, onReject, onLog }: ConsentModalProps) {
 
   const [biometricState, setBiometricState] = useState<BiometricState>('idle');
   const [presenceProof, setPresenceProof] = useState<string | undefined>(undefined);
@@ -89,14 +84,9 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
     onLog?.('👤 Starte biometrische Verifikation...', 'info');
 
     try {
-      // Sicherstellen dass Passkey registriert ist
-      const isRegistered = await WebAuthnService.isRegistered();
-      if (!isRegistered) {
-        onLog?.('📱 Registriere Passkey auf diesem Gerät...', 'info');
-        await WebAuthnService.registerPasskey();
-      }
-
-      const proof = await WebAuthnService.provePresenceDetailed(capsule.decision_id);
+      // Passkeys are now auto-registered at App launch.
+      // We assume it's there. If cross-device is used without a passkey on *this* device, it will fall back to QR/PIN automatically.
+      const proof = await WebAuthnService.provePresenceDetailed(capsule.decision_id, timeoutMinutes || 0);
       setPresenceProof(proof.signature);
       setBiometricState('verified');
       onLog?.('✅ Biometrie bestätigt — Anwesenheit kryptographisch gebunden', 'success');
@@ -203,7 +193,7 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
                   fontSize: 14, color: 'var(--accent-green)',
                   display: 'flex', alignItems: 'center', gap: 6
                 }}>
-                  ✅ NACHWEIS: {c}
+                  ✅ NACHWEIS: {translateClaim(c)}
                 </div>
               ))}
               {req.allowed_claims?.map((c: string) => (
@@ -211,7 +201,7 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
                   fontSize: 14, color: 'var(--accent-yellow)',
                   display: 'flex', alignItems: 'center', gap: 6
                 }}>
-                  ⚠️  ROHDATEN: {c}
+                  ⚠️  ROHDATEN: {translateClaim(c)}
                 </div>
               ))}
             </div>
@@ -221,12 +211,12 @@ export function ConsentModal({ capsule, reasonCodes, onApprove, onReject, onLog 
           {!(capsule as any).authorized_requirements && (<>
             {(capsule as any).proven_claims?.map((c: string) => (
               <div key={c} style={{ fontSize: 14, color: 'var(--accent-green)', marginBottom: 4 }}>
-                ✅ NACHWEIS: {c}
+                ✅ NACHWEIS: {translateClaim(c)}
               </div>
             ))}
             {(capsule as any).allowed_claims?.map((c: string) => (
               <div key={c} style={{ fontSize: 14, color: 'var(--accent-yellow)', marginBottom: 4 }}>
-                ⚠️  ROHDATEN: {c}
+                ⚠️  ROHDATEN: {translateClaim(c)}
               </div>
             ))}
           </>)}
