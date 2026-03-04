@@ -30,6 +30,7 @@ import type {
     Requirement
 } from '@mitch/shared-types';
 import { DenialResolver } from './catalog';
+import { extractCountryFromDid, isAllowedByGeoScope } from './geo-scope';
 import {
     ProtectionLayer,
     getMinimumLayerForData,
@@ -311,6 +312,34 @@ export class PolicyEngine {
             return this.result('DENY', [ReasonCode.SECONDARY_USE_DENIED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
         }
 
+        // 3b-ii. EHDS Secondary Use — Country-based denial
+        if (isSecondaryUse && policy.globalSettings?.denySecondaryUseCountries?.length) {
+            const verifierCountry = this.extractCountryFromDid(request.verifierId);
+            if (verifierCountry && policy.globalSettings.denySecondaryUseCountries
+                .map(c => c.toUpperCase()).includes(verifierCountry.toUpperCase())) {
+                return this.result('DENY', [ReasonCode.GEO_SCOPE_VIOLATION], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
+            }
+        }
+
+        // 3c. HDAB Permit Check
+        if (matchedRule.requiresHdabPermit) {
+            const hasHdabPermit = policy.trustedIssuers?.some(
+                ti => ti.issuerRole === 'hdab' &&
+                      this.matchesPattern(ti.did, request.verifierId)
+            );
+            if (!hasHdabPermit) {
+                return this.result('DENY', [ReasonCode.HDAB_PERMIT_REQUIRED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
+            }
+        }
+
+        // 3d. Geographic Scope Check
+        if (matchedRule.geoScope && matchedRule.geoScope !== 'global') {
+            const country = extractCountryFromDid(request.verifierId);
+            if (!isAllowedByGeoScope(matchedRule.geoScope, country)) {
+                return this.result('DENY', [ReasonCode.GEO_SCOPE_VIOLATION], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
+            }
+        }
+
         // 4. Consent & Presence Logic
         const requiresConsent = matchedRule.requiresUserConsent
             || policy.globalSettings?.requireConsentForAll;
@@ -416,6 +445,20 @@ export class PolicyEngine {
         }
 
         return rule;
+    }
+
+    /**
+     * Extract country code from a DID in the format `did:XX:...`
+     * Returns the two-letter segment as uppercase, or null if not parseable.
+     */
+    private extractCountryFromDid(did: string): string | null {
+        if (!did) return null;
+        const parts = did.split(':');
+        // did:XX:identifier — second segment is the country code if exactly 2 chars
+        if (parts.length >= 3 && parts[1].length === 2) {
+            return parts[1].toUpperCase();
+        }
+        return null;
     }
 
     private matchesPattern(pattern: string, value: string): boolean {

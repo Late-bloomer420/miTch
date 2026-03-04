@@ -25,6 +25,8 @@ export const DEMO_POLICY: PolicyManifest = {
     requireConsentForAll: false, // Per-Regel geregelt, nicht global (Performance)
     defaultFreshnessDays: 365,
     strictVerifierBinding: false, // für localhost-Demo relaxed
+    denySecondaryUse: false,                // Default: erlaubt, User entscheidet per Consent
+    denySecondaryUseCountries: ['US'],      // Beispiel: US-Verifier dürfen keine Sekundärnutzung
   },
 
   trustedIssuers: [
@@ -94,7 +96,24 @@ export const DEMO_POLICY: PolicyManifest = {
       priority: 100,                   // Höchste Prio
     },
 
-    // ── Rule 4: Apotheke / Rezept ──────────────────────────────────────────
+    // ── Rule 4: Sekundärnutzung — Forschungsinstitut ──────────────────────
+    // Anonymisiertes Subset, kein biometrisches Binding, aber User-Consent PFLICHT
+    {
+      id: 'rule-research-secondary-01',
+      context: 'Secondary Use — Research Institute',
+      verifierPattern: '*-research-*',
+      usagePurpose: 'researchSecondary',
+      allowedClaims: ['bloodGroup', 'allergies'],          // anonymisiertes Subset
+      provenClaims: [],
+      deniedClaims: ['emergencyContacts', 'insuranceId', 'geneticData', 'name', 'address'],
+      requiresUserConsent: true,       // ← PROMPT
+      requiresPresence: false,
+      requiresTrustedIssuer: true,
+      maxCredentialAgeDays: 730,
+      priority: 40,
+    },
+
+    // ── Rule 5: Apotheke / Rezept ──────────────────────────────────────────
     {
       id: 'rule-pharmacy-01',
       context: 'Rezept-Einlösung: Medikation, Dosierung',
