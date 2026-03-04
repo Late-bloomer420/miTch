@@ -14,6 +14,7 @@ export default defineConfig({
             '@mitch/audit-log': path.resolve(__dirname, '../../packages/audit-log/src'),
             '@mitch/secure-storage': path.resolve(__dirname, '../../packages/secure-storage/src'),
             '@mitch/predicates': path.resolve(__dirname, '../../packages/predicates/src'),
+            '@mitch/layer-resolver': path.resolve(__dirname, '../../packages/layer-resolver/src'),
         },
     },
 
@@ -26,6 +27,7 @@ export default defineConfig({
             '@mitch/audit-log',
             '@mitch/secure-storage',
             '@mitch/predicates',
+            '@mitch/layer-resolver',
         ],
     },
 
