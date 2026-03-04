@@ -375,13 +375,13 @@ Parallel (immer):
 
 | Task | Status | Prio |
 |------|--------|------|
-| T-A1 usagePurpose | ❌ Offen | 🔴 Kritisch |
-| T-A2 Secondary-Use Widerspruch | ❌ Offen | 🔴 Kritisch |
-| T-A3 HDAB-Permit | ❌ Offen | 🔴 Kritisch |
-| T-A4 geoScope | ❌ Offen | 🟡 Wichtig |
+| T-A1 usagePurpose | ✅ `cc344a4` | 🔴 Kritisch |
+| T-A2 Secondary-Use Widerspruch | ✅ `45691a1` | 🔴 Kritisch |
+| T-A3 HDAB-Permit | ✅ `f69b11c` | 🔴 Kritisch |
+| T-A4 geoScope | ✅ `e7b7ecb` | 🟡 Wichtig |
 | T-B1 Break-Glass Alert | ❌ Offen | 🔴 Kritisch |
 | T-B2 ePrescription Nullifier | ❌ Offen | 🟡 Wichtig |
-| T-B3 ReasonCodes | ❌ Offen | 🟡 Wichtig |
+| T-B3 ReasonCodes | ✅ `cc344a4` | 🟡 Wichtig |
 | T-C1 Forschungs-Demo | ❌ Offen | 🟢 Demo |
 | T-C2 Kontrollregister-UI | ❌ Offen | 🟢 Demo |
 | T-C3 Sprachlocale | ❌ Offen | 🟢 Demo |
