@@ -7,6 +7,8 @@
 
 ---
 
+> **Ops runbooks:** `docs/ops/RUNBOOKS_V1.md`
+
 ## G-01 — DID Resolution + Signature Verification
 
 **Status:** 🟩 Closed (Evidence-backed)  

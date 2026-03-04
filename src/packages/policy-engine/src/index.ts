@@ -20,3 +20,6 @@ export type {
 export * from './policy-validator';
 export * from './deny-reason-codes';
 export * from './conflict-resolver';
+
+export * from './capability-negotiation';
+export * from './audit-metadata';

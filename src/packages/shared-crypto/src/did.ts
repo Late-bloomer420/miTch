@@ -28,6 +28,8 @@ export interface DIDResolverOptions {
     fetchFn?: typeof fetch;
     /** Allow mock fallback for unknown DID methods (default: false — DENY) */
     allowMockFallback?: boolean;
+    /** Allow insecure did:web localhost/http resolution (default: false — DENY) */
+    allowInsecureLocalhostDidWeb?: boolean;
 }
 
 export interface CachedDIDDocument {
@@ -68,12 +70,14 @@ export class DIDResolver {
     private readonly fetchTimeoutMs: number;
     private readonly fetchFn: typeof fetch;
     private readonly allowMockFallback: boolean;
+    private readonly allowInsecureLocalhostDidWeb: boolean;
 
     constructor(options: DIDResolverOptions = {}) {
         this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
         this.fetchTimeoutMs = options.fetchTimeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
         this.fetchFn = options.fetchFn ?? globalThis.fetch.bind(globalThis);
         this.allowMockFallback = options.allowMockFallback ?? false;
+        this.allowInsecureLocalhostDidWeb = options.allowInsecureLocalhostDidWeb ?? false;
     }
 
     /**
@@ -200,6 +204,9 @@ export class DIDResolver {
 
     private async resolveDidWeb(did: string): Promise<DIDDocument> {
         const url = didWebToUrl(did);
+        if (!this.allowInsecureLocalhostDidWeb && isLocalhostDidWeb(did)) {
+            throw new DIDResolutionError(did, 'Insecure did:web localhost resolution is blocked');
+        }
 
         try {
             const controller = new AbortController();
@@ -261,7 +268,7 @@ export class DIDResolver {
  * 
  * did:web:example.com → https://example.com/.well-known/did.json
  * did:web:example.com:user:alice → https://example.com/user/alice/did.json
- * did:web:localhost%3A3002 → http://localhost:3002/.well-known/did.json
+ * did:web:localhost%3A3002 → http://localhost:3002/.well-known/did.json [BEST EFFORT: dev-only]
  */
 export function didWebToUrl(did: string): string {
     if (!did.startsWith('did:web:')) {
@@ -292,21 +299,31 @@ export function didWebToUrl(did: string): string {
     return `${protocol}://${hostWithPort}/.well-known/did.json`;
 }
 
+
+export function isLocalhostDidWeb(did: string): boolean {
+    if (!did.startsWith('did:web:')) return false;
+    const domain = decodeURIComponent(did.slice('did:web:'.length));
+    return domain.startsWith('localhost') || domain.startsWith('127.0.0.1');
+}
+
 // ─── Legacy API (backwards compatible) ──────────────────────────────────────
 
-/** Default resolver instance (allows mock fallback for backwards compat) */
+/** Default resolver instance (fail-closed for production parity) */
 let _defaultResolver: DIDResolver | null = null;
 
 function getDefaultResolver(): DIDResolver {
     if (!_defaultResolver) {
-        _defaultResolver = new DIDResolver({ allowMockFallback: true });
+        _defaultResolver = new DIDResolver({
+            allowMockFallback: false,
+            allowInsecureLocalhostDidWeb: false,
+        });
     }
     return _defaultResolver;
 }
 
 /**
  * @deprecated Use `new DIDResolver().resolve(did)` for fail-closed behavior.
- * This legacy function allows mock fallback for backwards compatibility.
+ * This legacy function now remains fail-closed (no mock fallback).
  */
 export async function resolveDID(did: string): Promise<DIDDocument> {
     return getDefaultResolver().resolve(did);

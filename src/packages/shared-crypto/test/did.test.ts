@@ -17,6 +17,8 @@ import {
     DIDResolutionError,
     DIDKeyExtractionError,
     didWebToUrl,
+    resolveDID,
+    isLocalhostDidWeb,
 } from '../src/did';
 import { DIDSignatureVerifier as DIDSigVerifier2 } from '../src/did-verification';
 
@@ -330,5 +332,49 @@ describe('DIDSignatureVerifier', () => {
         const result = await verifier.verifyPresentation('some.jwt', 'did:web:slow.com');
         expect(result.verified).toBe(false);
         expect(result.errorCode).toBe('RESOLUTION_FAILED');
+    });
+});
+
+
+describe('P0 hardening findings', () => {
+    it('DENY: did:web localhost is blocked by default', async () => {
+        const resolver = new DIDResolver({
+            fetchFn: vi.fn() as any,
+            allowMockFallback: false,
+        });
+
+        await expect(resolver.resolve('did:web:localhost%3A3002'))
+            .rejects.toThrow(/Insecure did:web localhost resolution is blocked/);
+    });
+
+    it('can explicitly allow localhost did:web only when configured', async () => {
+        const didDoc = {
+            '@context': ['https://www.w3.org/ns/did/v1'],
+            id: 'did:web:localhost%3A3002',
+            verificationMethod: [{
+                id: 'did:web:localhost%3A3002#key-1',
+                type: 'JsonWebKey2020',
+                controller: 'did:web:localhost%3A3002',
+                publicKeyJwk: { kty: 'EC', crv: 'P-256', x: 'test', y: 'test' },
+            }],
+        };
+        const fetchFn = vi.fn().mockResolvedValue({ ok: true, json: async () => didDoc });
+        const resolver = new DIDResolver({
+            fetchFn: fetchFn as any,
+            allowInsecureLocalhostDidWeb: true,
+        });
+
+        const result = await resolver.resolve('did:web:localhost%3A3002');
+        expect(result.id).toBe('did:web:localhost%3A3002');
+    });
+
+    it('DENY: legacy resolveDID no longer allows mock fallback', async () => {
+        await expect(resolveDID('did:key:z6MklegacyFallbackAttempt'))
+            .rejects.toThrow(/Unsupported DID method/);
+    });
+
+    it('detects localhost did:web identifiers', () => {
+        expect(isLocalhostDidWeb('did:web:localhost%3A3002')).toBe(true);
+        expect(isLocalhostDidWeb('did:web:example.com')).toBe(false);
     });
 });
