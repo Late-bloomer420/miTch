@@ -1,6 +1,6 @@
 # STATE.md — Current Operating State
 
-**Date:** 2026-03-04  
+**Date:** 2026-03-05
 **Branch:** `master` (default)  
 **Release tag:** `pilot-ready-p0`  
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -24,16 +24,18 @@
 
 ## Current status
 
-- **Tests:** 33/34 pass (only `secure-ui-test` needs Playwright browsers)
+- **Tests:** 34/34 turbo tasks pass; 155+ individual tests green
 - **Audit:** 0 npm vulnerabilities
 - **All P0 gaps (G-01 through G-06) closed** with evidence
-- **P1 open:** AI-02 (WebAuthn timeout codes), AI-04 (audit export schema)
-- **Lint:** 290 pre-existing issues (no regressions)
+- **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
+- **Lint:** 0 errors (pre-existing warnings only, no regressions)
 
-## Recent changes (2026-03-04)
+## Recent changes (2026-03-05)
 
-- Merged Codex Pilot Bundle v1 (DOCS_CANON, CAP_NEGOTIATION, METADATA_BUDGET, RUNBOOKS)
-- Added `DENY_DOWNGRADE_ATTACK` ReasonCode
-- ESLint 8→9 migration (12→0 audit vulns)
-- @simplewebauthn v9→v13
-- Removed unconfigured APIsec CI workflow
+- WebAuthn cross-device + ConsentModal EHDS + i18n: all committed
+- fix(policy-engine): missing workspace deps `@mitch/layer-resolver` + `@mitch/mock-issuer`
+- G-07: Key separation — ECDH-P256 encryption keys separated from ECDSA signing keys in KeyGuardian
+- G-08: JWE encrypted credentials at rest (jose CompactEncrypt, alg=dir enc=A256GCM)
+- G-09: L2/blockchain anchoring stubs — EthereumL2AnchorProvider + TransparencyLogAnchorProvider
+- AI-02/AI-04: marked closed in FINDINGS_BACKLOG (tests were already passing)
+- fix(lint): removed unused `receivedProof` state in VerifierPanel
