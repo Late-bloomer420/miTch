@@ -26,7 +26,7 @@
 
 - **Tests:** 34/34 turbo tasks pass; 155+ individual tests green
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
-- **All P0 gaps (G-01 through G-06) closed** with evidence
+- **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
 - **Lint:** 0 errors (pre-existing warnings only, no regressions)
 
