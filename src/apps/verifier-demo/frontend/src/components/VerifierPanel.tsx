@@ -10,13 +10,11 @@ interface VerifierPanelProps {
 
 export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelProps) {
     const [panelState, setPanelState] = useState<'waiting' | 'verified' | 'failed' | 'offline'>('waiting');
-    const [receivedProof, setReceivedProof] = useState<Record<string, unknown> | null>(null);
     const lastSeenProofHash = useRef<string | null>(null);
 
     // Reset when runNonce changes (scenario switch)
     useEffect(() => {
         setPanelState('waiting');
-        setReceivedProof(null);
         lastSeenProofHash.current = null;
     }, [runNonce]);
 
@@ -36,7 +34,6 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
                     const proofHash = JSON.stringify(data.lastProof);
                     if (proofHash !== lastSeenProofHash.current) {
                         lastSeenProofHash.current = proofHash;
-                        setReceivedProof(data.lastProof);
                         setPanelState('verified');
                     }
                 } else if (data.status === 'FAILED') {
