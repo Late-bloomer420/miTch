@@ -29,6 +29,7 @@
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
 - **Lint:** 0 errors (pre-existing warnings only, no regressions)
+- **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
 
 ## Recent changes (2026-03-05)
 
