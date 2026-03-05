@@ -2,7 +2,7 @@
     "name": "verifier-backend",
     "version": "0.0.1",
     "scripts": {
-        "dev": "nodemon --ignore verifier-key.json --ignore nonce-cache.json --exec tsx src/index.ts",
+        "dev": "tsx watch --ignore verifier-key.json --ignore nonce-cache.json src/index.ts",
         "start": "node dist/index.js",
         "build": "tsc",
         "test": "vitest run",

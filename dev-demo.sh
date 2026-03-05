@@ -87,7 +87,7 @@ sleep 0.5
 start_service "Verifier-Backend" "$COLOR_VERIFIER"        "verifier-backend"     "3004"
 sleep 0.5
 
-start_service "Wallet-PWA     " "$COLOR_WALLET"           "@mitch/wallet-pwa"    "5174"
+start_service "Wallet-PWA     " "$COLOR_WALLET"           "@mitch/wallet-pwa"    "5173"
 sleep 0.5
 
 # Verifier-Frontend (optional — eigenes package.json in src/apps/verifier-demo/frontend)
@@ -125,7 +125,7 @@ wait_for_service() {
 
 wait_for_service "Issuer-Mock"      "http://localhost:3005/health" "$COLOR_ISSUER"
 wait_for_service "Verifier-Backend" "http://localhost:3004/health" "$COLOR_VERIFIER"
-wait_for_service "Wallet-PWA"       "http://localhost:5174/"       "$COLOR_WALLET"
+wait_for_service "Wallet-PWA"       "http://localhost:5173/"       "$COLOR_WALLET"
 
 # ── Status-Übersicht ─────────────────────────────────────────
 echo ""
@@ -134,13 +134,13 @@ echo -e "${BOLD}🚀  miTch Services starting up:${RESET}"
 echo ""
 echo -e "  ${COLOR_ISSUER}●${RESET}  Issuer-Mock        →  http://localhost:3005"
 echo -e "  ${COLOR_VERIFIER}●${RESET}  Verifier-Backend   →  http://localhost:3004"
-echo -e "  ${COLOR_WALLET}●${RESET}  Wallet PWA         →  http://localhost:5174  ← Start here"
+echo -e "  ${COLOR_WALLET}●${RESET}  Wallet PWA         →  http://localhost:5173  ← Start here"
 if [ -f "src/apps/verifier-demo/frontend/package.json" ]; then
   echo -e "  ${COLOR_VERIFIER_FRONTEND}●${RESET}  Verifier-Frontend  →  http://localhost:5175"
 fi
 echo ""
 echo -e "${BOLD}🔄  E2E Flow:${RESET}"
-echo -e "   Wallet (5174) → 'Prove Age' → Issuer (3005) → JWT VC"
+echo -e "   Wallet (5173) → 'Prove Age' → Issuer (3005) → JWT VC"
 echo -e "   Wallet → Present → Verifier-Backend (3004/present)"
 echo ""
 echo -e "${BOLD}💡  WebAuthn:${RESET} Works on localhost without HTTPS ✓"
