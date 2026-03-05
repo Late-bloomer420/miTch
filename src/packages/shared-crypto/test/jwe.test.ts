@@ -1,0 +1,94 @@
+/**
+ * G-08: JWE encrypted credentials at rest.
+ * Tests for encryptCredentialJWE / decryptCredentialJWE using JWE compact serialization.
+ */
+import { describe, test, expect, beforeAll } from 'vitest';
+import { encryptCredentialJWE, decryptCredentialJWE, isJWEToken } from '../src/jwe';
+
+let cek: CryptoKey;
+
+beforeAll(async () => {
+  cek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+});
+
+describe('G-08: JWE credential encryption', () => {
+  test('encryptCredentialJWE produces a valid JWE compact token (5 segments)', async () => {
+    const payload = { credentialType: 'AgeCredential', age: 25 };
+    const token = await encryptCredentialJWE(payload, cek);
+
+    expect(typeof token).toBe('string');
+    const parts = token.split('.');
+    expect(parts).toHaveLength(5); // header.encKey.iv.ciphertext.tag
+    expect(isJWEToken(token)).toBe(true);
+  });
+
+  test('decryptCredentialJWE round-trips the original payload', async () => {
+    const payload = {
+      credentialType: 'HealthCredential',
+      subject: 'did:example:patient',
+      claims: { diagnosis: 'confidential' },
+    };
+
+    const token = await encryptCredentialJWE(payload, cek);
+    const decrypted = await decryptCredentialJWE(token, cek);
+
+    expect(decrypted).toEqual(payload);
+  });
+
+  test('JWE header declares alg=dir enc=A256GCM (self-describing)', async () => {
+    const token = await encryptCredentialJWE({ test: true }, cek);
+    const headerB64 = token.split('.')[0];
+    const header = JSON.parse(Buffer.from(headerB64, 'base64url').toString('utf8'));
+
+    expect(header.alg).toBe('dir');
+    expect(header.enc).toBe('A256GCM');
+    expect(header.typ).toBe('mitch-credential+jwe');
+  });
+
+  test('JWE ciphertext does not contain plaintext fields (no PII leakage)', async () => {
+    const payload = { subject: 'did:example:secret-patient', birthDate: '1990-01-01' };
+    const token = await encryptCredentialJWE(payload, cek);
+
+    // Raw token must not contain any plaintext PII values
+    expect(token).not.toContain('secret-patient');
+    expect(token).not.toContain('1990-01-01');
+    expect(token).not.toContain('birthDate');
+  });
+
+  test('decryptCredentialJWE throws on wrong key (tamper detection)', async () => {
+    const wrongKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    const token = await encryptCredentialJWE({ data: 'secret' }, cek);
+
+    await expect(decryptCredentialJWE(token, wrongKey)).rejects.toThrow();
+  });
+
+  test('decryptCredentialJWE throws on tampered ciphertext', async () => {
+    const token = await encryptCredentialJWE({ data: 'secret' }, cek);
+    const parts = token.split('.');
+    // Flip last char of ciphertext segment
+    parts[3] = parts[3].slice(0, -1) + (parts[3].slice(-1) === 'A' ? 'B' : 'A');
+    const tampered = parts.join('.');
+
+    await expect(decryptCredentialJWE(tampered, cek)).rejects.toThrow();
+  });
+
+  test('isJWEToken correctly identifies JWE vs plaintext', async () => {
+    const token = await encryptCredentialJWE({ x: 1 }, cek);
+    expect(isJWEToken(token)).toBe(true);
+    expect(isJWEToken('not-a-jwe')).toBe(false);
+    expect(isJWEToken('{"plain":"json"}')).toBe(false);
+    // 4 segments (JWS) is not JWE
+    expect(isJWEToken('a.b.c.d')).toBe(false);
+  });
+
+  test('each encryption produces a unique token (random IV)', async () => {
+    const payload = { data: 'same' };
+    const t1 = await encryptCredentialJWE(payload, cek);
+    const t2 = await encryptCredentialJWE(payload, cek);
+
+    expect(t1).not.toBe(t2); // different IV each time
+    // But both decrypt to same value
+    expect(await decryptCredentialJWE(t1, cek)).toEqual(payload);
+    expect(await decryptCredentialJWE(t2, cek)).toEqual(payload);
+  });
+});

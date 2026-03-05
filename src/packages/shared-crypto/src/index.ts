@@ -11,6 +11,7 @@ export * from './did';
 export * from './nonce-store';
 export * from './presentation-binding';
 export * from './did-verification';
+export * from './jwe'; // G-08: JWE-encrypted credentials at rest
 
 // Phase 0: KeyGuardian (replaces tee-attestation)
 export * from './types/KeyProtectionLevel.js';
