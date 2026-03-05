@@ -414,6 +414,9 @@ importers:
 
   src/packages/policy-engine:
     dependencies:
+      '@mitch/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../predicates
@@ -421,6 +424,9 @@ importers:
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@mitch/mock-issuer':
+        specifier: workspace:*
+        version: link:../mock-issuer
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.33

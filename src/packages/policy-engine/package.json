@@ -22,12 +22,14 @@
     },
     "dependencies": {
         "@mitch/shared-types": "workspace:*",
-        "@mitch/predicates": "workspace:*"
+        "@mitch/predicates": "workspace:*",
+        "@mitch/layer-resolver": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.0.0",
         "rimraf": "^5.0.0",
         "vitest": "^2.1.9",
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.0.0",
+        "@mitch/mock-issuer": "workspace:*"
     }
 }
