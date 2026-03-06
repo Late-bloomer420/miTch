@@ -1783,7 +1783,9 @@
           `CoolShop.at requests: ${checked.join(', ')}. This includes more than the minimum required data. Your explicit consent is needed.`;
         setStatus('Consent required — approve or reject');
       } else {
-        await completeVerification(checked);
+        // Auto-approve goes straight to biometric
+        _pendingChecked = checked;
+        startBiometric();
       }
     }
 
@@ -1795,8 +1797,11 @@
       document.getElementById('wallet-consent').style.display = 'none';
       const allClaims = Object.keys(CLAIMS);
       _pendingChecked = allClaims.filter(n => document.getElementById('c-' + n)?.checked);
+      startBiometric();
+    }
 
-      // Show biometric step
+    function startBiometric() {
+      setFlow('wallet'); // ensure wallet is active even on auto-approve
       document.getElementById('wallet-biometric').style.display = 'block';
       setStatus('Waiting for biometric verification...');
     }
