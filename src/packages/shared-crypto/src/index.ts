@@ -23,3 +23,5 @@ export * from './did-quorum';
 export * from './crypto-agility';
 export * from './sd-jwt-vc'; // E-10: SD-JWT VC Compliance (draft-ietf-oauth-sd-jwt-vc-11)
 export * from './dpop'; // E-05: DPoP (RFC 9449)
+export * from './brainpool'; // C-01: Brainpool Curves (BSI/SOG-IS)
+export * from './mac-verify'; // C-02: MAC-based Verification (ECDH + HMAC-SHA2)

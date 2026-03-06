@@ -160,7 +160,7 @@ export async function validateDPoPProof(
         if (!header.jwk) {
             return { ok: false, errors: ['Missing jwk in header'] };
         }
-        if ((header.jwk as Record<string, unknown>).d) {
+        if ((header.jwk as unknown as Record<string, unknown>).d) {
             return { ok: false, errors: ['jwk must not contain private key material (d)'] };
         }
 
@@ -297,7 +297,8 @@ function getRequiredJWKMembers(jwk: JWK): Record<string, unknown> {
     if (kty === 'EC') {
         return { crv: jwk.crv, kty, x: jwk.x, y: jwk.y };
     } else if (kty === 'RSA') {
-        return { e: (jwk as Record<string, unknown>).e, kty, n: (jwk as Record<string, unknown>).n };
+        const jwkRaw = jwk as unknown as Record<string, unknown>;
+        return { e: jwkRaw['e'], kty, n: jwkRaw['n'] };
     }
     return { kty };
 }

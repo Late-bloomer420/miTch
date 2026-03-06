@@ -94,10 +94,10 @@ export async function issueSDJWTVC(
 ): Promise<string> {
     validateIssuerClaims(payload);
 
-    const fullPayload: SDJWTVCPayload = {
+    const fullPayload = {
         _sd_alg: 'sha-256',
         ...payload,
-    };
+    } as SDJWTVCPayload;
 
     return new SignJWT(fullPayload as unknown as Record<string, unknown>)
         .setProtectedHeader({ alg: 'ES256', typ: 'vc+sd-jwt' })
