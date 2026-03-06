@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node dist/tests/core.js && node dist/tests/auth.js && node dist/tests/httpKeySourceQuorum.js",
+    "test": "vitest run",
     "evidence": "tsc && node dist/tests/evidence.js",
     "swarm:test": "tsc && node dist/tests/swarmAttack.js",
     "kpi:check": "tsc && node dist/tools/kpiCheckCli.js",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
   }
 }
