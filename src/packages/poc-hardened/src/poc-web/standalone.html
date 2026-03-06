@@ -1028,16 +1028,11 @@
 </head>
 
 <body>
-  <!-- Fake OS Biometric Prompt for file:// fallback (iOS Safari/Chrome) -->
-  <div id="os-bio-prompt"
-    style="display:none; position:fixed; inset:0; z-index:9999; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); transition:opacity 0.3s; opacity:0;">
-    <div
-      style="background:#1c1c1e; width:280px; border-radius:24px; display:flex; flex-direction:column; align-items:center; padding:1.5rem; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);">
-      <div id="os-bio-icon" style="font-size:3rem; margin-bottom:0.8rem; animation: pulse 2s infinite;">😎</div>
-      <div style="font-weight:600; font-size:1.1rem; margin-bottom:0.2rem">Face ID</div>
-      <div id="os-bio-text" style="color:#a1a1aa; font-size:0.85rem;">Authenticating...</div>
-    </div>
-  </div>
+  <!--
+    Testing with real WebAuthn / device authorization:
+    python -m http.server 8000
+    open http://localhost:8000/standalone.html
+  -->
 
   <div class="header">
     <h1>🔒 miTch — The Forgetting Layer</h1>
@@ -1129,19 +1124,72 @@
               </div>
             </div>
           </div>
-          <div id="wallet-biometric" style="display:none">
+          <div id="wallet-auth" style="display:none">
             <div
-              style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin:0.8rem 0;text-align:center">
-              <div style="font-size:2rem;margin-bottom:0.5rem">📱</div>
-              <div style="font-weight:700;margin-bottom:0.4rem" id="bio-title">Verify it's you</div>
-              <p class="dim" style="font-size:0.8rem;margin-bottom:1rem" id="bio-desc">To release the requested claims,
-                please authenticate using Face ID / Touch ID.</p>
-              <div class="btn-row" style="justify-content:center">
-                <button class="btn btn-primary" onclick="doBiometric()" id="btn-bio">🔐 Verify with Biometric</button>
+              style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin:0.8rem 0;text-align:left">
+
+              <!-- Environment & Passkey Status -->
+              <div id="auth-env-status" class="status-badge"
+                style="margin-bottom:1rem; display:inline-block; background:var(--surface); border:1px solid var(--border); color:var(--text-dim)">
+                🔍 Checking environment...
               </div>
-              <div style="margin-top:1rem">
-                <button class="btn btn-ghost" style="font-size:0.75rem;padding:0.4rem 0.8rem;min-height:auto"
-                  onclick="skipBiometric()" id="btn-skip-bio">Skip (Demo)</button>
+
+              <div style="font-weight:700;margin-bottom:0.4rem;font-size:1.1rem" id="auth-title">Local Device
+                Authorization</div>
+
+              <!-- Transaction Context Summary -->
+              <div id="auth-tx-summary"
+                style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px; margin-bottom:1rem; font-size:0.85rem; border-left:3px solid var(--accent)">
+                <div style="font-weight:600; color:var(--accent); margin-bottom:0.2rem">PROPRIETARY DISCLOSURE CONTEXT
+                </div>
+                <div id="auth-tx-content">Preparing context...</div>
+              </div>
+
+              <p class="dim" style="font-size:0.8rem;margin-bottom:1rem" id="auth-desc">
+                Authorization is required before any data is released. This process is handled locally by your device's
+                platform authenticator.
+              </p>
+
+              <div id="auth-passkey-info" class="dim"
+                style="font-size:0.75rem; margin-bottom:1rem; padding:0.5rem; background:var(--surface); border-radius:6px; display:none">
+                <!-- Fingerprint etc goes here -->
+              </div>
+
+              <div class="btn-row" id="auth-actions" style="flex-direction:column; gap:0.6rem">
+                <!-- Registration Button (conditional) -->
+                <button class="btn btn-primary" onclick="doRegister()" id="btn-register"
+                  style="display:none; width:100%">
+                  🔑 Register device passkey
+                </button>
+
+                <!-- Real Auth Button (conditional) -->
+                <button class="btn btn-primary" onclick="doRealAuth()" id="btn-real-auth"
+                  style="display:none; width:100%">
+                  🔐 Approve with device authorization
+                </button>
+
+                <!-- Simulation Button -->
+                <button class="btn btn-ghost" onclick="doSimAuth()" id="btn-sim-auth"
+                  style="width:100%; border:1px dashed var(--border)">
+                  ⚠️ Continue in simulation mode
+                </button>
+              </div>
+
+              <div
+                style="margin-top:1.2rem; border-top:1px solid var(--border); padding-top:0.8rem; display:flex; justify-content:space-between; align-items:center">
+                <div class="dim" style="font-size:0.7rem">
+                  No biometric data is shared with this page.
+                </div>
+                <button class="btn btn-ghost" style="font-size:0.65rem; padding:0.2rem 0.5rem; min-height:auto"
+                  onclick="resetPasskey()" id="btn-reset-pk">
+                  Reset State
+                </button>
+              </div>
+
+              <div
+                style="margin-top:0.8rem; font-size:0.7rem; color:var(--text-dim); font-style:italic; text-align:center"
+                id="auth-hint">
+                <!-- Localhost hint goes here -->
               </div>
             </div>
           </div>
@@ -1560,6 +1608,173 @@
     function ts() { return new Date().toISOString(); }
     function tsShort() { return new Date().toLocaleTimeString(); }
 
+    // ─── WebAuthn / Zero-Trust Local Authorization Helpers ───────────
+    //
+    // Testing with real WebAuthn / device authorization:
+    //   python -m http.server 8000
+    //   open http://localhost:8000/standalone.html
+    //
+    const WA = {
+      // ── Encoding ──
+      b64url(buf) {
+        const bytes = new Uint8Array(buf);
+        let s = '';
+        bytes.forEach(b => s += String.fromCharCode(b));
+        return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      },
+      fromB64url(s) {
+        s = s.replace(/-/g, '+').replace(/_/g, '/');
+        while (s.length % 4) s += '=';
+        const bin = atob(s);
+        const buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        return buf.buffer;
+      },
+
+      // ── Crypto ──
+      challenge() {
+        const buf = new Uint8Array(32);
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          crypto.getRandomValues(buf);
+        } else {
+          for (let i = 0; i < 32; i++) buf[i] = Math.floor(Math.random() * 256);
+        }
+        return buf;
+      },
+
+      // ── Environment Detection ──
+      isSecure() { return window.isSecureContext === true; },
+      isAvailable() { return typeof window.PublicKeyCredential !== 'undefined'; },
+      async canPlatform() {
+        try {
+          if (!this.isAvailable()) return false;
+          if (PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+            return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          }
+          return false;
+        } catch { return false; }
+      },
+
+      // ── LocalStorage Passkey State ──
+      _KEY: 'mitch_passkey',
+      hasPasskey() {
+        try { return !!localStorage.getItem(this._KEY); } catch { return false; }
+      },
+      getPasskey() {
+        try {
+          const raw = localStorage.getItem(this._KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+      },
+      savePasskey(credId) {
+        try {
+          localStorage.setItem(this._KEY, JSON.stringify({
+            credentialId: credId,
+            created: ts(),
+            fingerprint: credId.substring(0, 8)
+          }));
+        } catch (e) { console.warn('localStorage save failed', e); }
+      },
+      clear() {
+        try { localStorage.removeItem(this._KEY); } catch { }
+      },
+
+      // ── Registration ──
+      async register() {
+        const userId = new Uint8Array(16);
+        if (crypto.getRandomValues) crypto.getRandomValues(userId);
+        else for (let i = 0; i < 16; i++) userId[i] = Math.floor(Math.random() * 256);
+
+        const cred = await navigator.credentials.create({
+          publicKey: {
+            rp: { name: 'miTch Zero-Trust Demo', id: location.hostname || 'localhost' },
+            user: {
+              id: userId,
+              name: 'mitch-demo-user',
+              displayName: 'miTch Demo User'
+            },
+            challenge: this.challenge(),
+            pubKeyCredParams: [
+              { type: 'public-key', alg: -7 },   // ES256
+              { type: 'public-key', alg: -257 }   // RS256
+            ],
+            authenticatorSelection: {
+              authenticatorAttachment: 'platform',
+              userVerification: 'required',
+              residentKey: 'preferred'
+            },
+            attestation: 'none',
+            timeout: 60000
+          }
+        });
+        const credId = this.b64url(cred.rawId);
+        this.savePasskey(credId);
+        return credId;
+      },
+
+      // ── Assertion ──
+      async assert() {
+        const pk = this.getPasskey();
+        if (!pk) throw new Error('No passkey registered');
+        const result = await navigator.credentials.get({
+          publicKey: {
+            challenge: this.challenge(),
+            timeout: 60000,
+            rpId: location.hostname || 'localhost',
+            allowCredentials: [{
+              type: 'public-key',
+              id: this.fromB64url(pk.credentialId),
+              transports: ['internal']
+            }],
+            userVerification: 'required'
+          }
+        });
+        return { credentialId: this.b64url(result.rawId), fingerprint: pk.fingerprint };
+      },
+
+      // ── Environment Summary ──
+      async envSummary() {
+        const secure = this.isSecure();
+        const available = this.isAvailable();
+        const platform = await this.canPlatform();
+        const registered = this.hasPasskey();
+        const pk = this.getPasskey();
+        let status, mode;
+
+        if (!secure) {
+          status = '⚠️ Simulation only — WebAuthn requires localhost or HTTPS';
+          mode = 'simulation';
+        } else if (!available) {
+          status = '⚠️ WebAuthn API not available in this browser';
+          mode = 'simulation';
+        } else if (!platform) {
+          status = '⚠️ No platform authenticator detected on this device';
+          mode = 'simulation';
+        } else if (!registered) {
+          status = '🔑 Real local device authorization available — register a passkey first';
+          mode = 'register';
+        } else {
+          status = '🔐 Real local device authorization available — passkey ready';
+          mode = 'real';
+        }
+        return { secure, available, platform, registered, status, mode, fingerprint: pk?.fingerprint || null };
+      },
+
+      // ── Transaction Context ──
+      buildTxContext(verifier, requested, selected, policyDecision, mode) {
+        return {
+          action: 'approve_disclosure',
+          verifierName: verifier,
+          requestedClaims: requested,
+          selectedClaims: selected,
+          timestamp: ts(),
+          nonce: uuid(),
+          policyDecision,
+          mode
+        };
+      }
+    };
+
     function addAudit(action, evidence, color) {
       const prevHash = STATE.chainHash;
       const entry = { action, evidence, timestamp: ts(), previousHash: prevHash, entryHash: '' };
@@ -1810,111 +2025,126 @@
       document.getElementById('wallet-consent').style.display = 'none';
       const allClaims = Object.keys(CLAIMS);
       _pendingChecked = allClaims.filter(n => document.getElementById('c-' + n)?.checked);
-      await startBiometric();
+      await startLocalAuth();
     }
 
-    async function startBiometric() {
-      // Give user time to read the Engine OK/PROMPT result before sliding
-      await delay(1500);
-      setFlow('wallet'); // ensure wallet is active even on auto-approve
-      document.getElementById('wallet-biometric').style.display = 'block';
-      setStatus('Waiting for biometric verification...');
+    async function startLocalAuth() {
+      setFlow('wallet');
+      const authPanel = document.getElementById('wallet-auth');
+      authPanel.style.display = 'block';
+      setStatus('Waiting for local authorization...');
+
+      const env = await WA.envSummary();
+
+      // Update UI Header
+      const statusEl = document.getElementById('auth-env-status');
+      statusEl.textContent = env.status;
+      statusEl.style.color = env.mode === 'simulation' ? 'var(--orange)' : 'var(--green)';
+
+      // Update Passkey Info
+      const infoEl = document.getElementById('auth-passkey-info');
+      if (env.registered) {
+        infoEl.innerHTML = `✅ Passkey ready: <span style="font-family:var(--mono)">${env.fingerprint}...</span>`;
+        infoEl.style.display = 'block';
+      } else {
+        infoEl.style.display = 'none';
+      }
+
+      // Update Transaction Context Summary
+      const policyDecision = _pendingChecked.length === Object.keys(CLAIMS).length ? 'Full Disclosure (Allow)' : 'Partial (Allow)';
+      const tx = WA.buildTxContext('CoolShop.at', Object.keys(CLAIMS), _pendingChecked, policyDecision, env.mode);
+      document.getElementById('auth-tx-content').innerHTML = `
+        Release <strong>${tx.selectedClaims.length}</strong> attributes to <strong>${tx.verifierName}</strong>.
+        <div style="margin-top:0.3rem; opacity:0.8; font-size:0.7rem">Policy: ${tx.policyDecision} | Transaction: ${tx.nonce.substring(0, 8)}</div>
+      `;
+
+      // Update Buttons
+      document.getElementById('btn-register').style.display = env.mode === 'register' ? 'block' : 'none';
+      document.getElementById('btn-real-auth').style.display = env.mode === 'real' ? 'block' : 'none';
+      document.getElementById('btn-real-auth').disabled = false;
+      document.getElementById('btn-sim-auth').style.border = env.mode === 'simulation' ? '1px solid var(--orange)' : '1px dashed var(--border)';
+
+      document.getElementById('auth-hint').textContent = env.secure ? '' : 'For real device authorization, open via localhost.';
+
+      addAudit('disclosure_authorization_requested', { mode: env.mode, verifier: 'CoolShop.at' }, 'blue');
     }
 
-    async function doBiometric() {
-      const btn = document.getElementById('btn-bio');
-      const skipBtn = document.getElementById('btn-skip-bio');
+    async function doRegister() {
+      const btn = document.getElementById('btn-register');
       btn.disabled = true;
-      skipBtn.disabled = true;
-      btn.innerHTML = '⏳ Verifying...';
+      btn.innerHTML = '⏳ Registering...';
+      addAudit('passkey_registration_started', {}, 'blue');
 
-      let success = false;
-
-      // WebAuthn is blocked on file:// — use fake OS prompt for demo
-      if (window.location.protocol === 'file:') {
-        const prompt = document.getElementById('os-bio-prompt');
-        const icon = document.getElementById('os-bio-icon');
-        const text = document.getElementById('os-bio-text');
-
-        icon.textContent = '😎';
-        text.textContent = 'Authenticating...';
-        prompt.style.display = 'flex';
-        // Trigger reflow for fade-in
-        prompt.offsetHeight;
-        prompt.style.opacity = '1';
-
-        await delay(1200);
-
-        icon.textContent = '✅';
-        text.textContent = 'Verified';
-        success = true;
-
-        await delay(800);
-        prompt.style.opacity = '0';
-        await delay(300);
-        prompt.style.display = 'none';
-
-      } else {
-        // Try real WebAuthn on localhost / HTTPS
-        try {
-          await navigator.credentials.get({
-            publicKey: {
-              challenge: new Uint8Array(32),
-              timeout: 60000,
-              rpId: location.hostname || 'localhost',
-              allowCredentials: [],
-              userVerification: 'preferred'
-            }
-          });
-          success = true;
-        } catch (e) {
-          console.warn('WebAuthn failed', e);
-        }
-      }
-
-      if (success) {
-        document.getElementById('bio-title').textContent = '✅ Verified';
-        document.getElementById('bio-title').style.color = 'var(--green)';
-        document.getElementById('bio-desc').textContent = 'Platform authenticator confirmed.';
-        btn.innerHTML = '✅ Biometric verified';
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-success');
-        await delay(800);
-      } else {
-        document.getElementById('bio-title').textContent = '⚠️ Not available';
-        document.getElementById('bio-title').style.color = 'var(--yellow)';
-        document.getElementById('bio-desc').textContent = 'WebAuthn failed or cancelled. Continuing without (demo mode).';
-        btn.innerHTML = '⚠️ Skipped';
-        await delay(1200);
-      }
-
-      finishApprove();
-    }
-
-    function skipBiometric() {
-      finishApprove();
-    }
-
-    async function finishApprove() {
-      document.getElementById('wallet-biometric').style.display = 'none';
-
-      // Reset biometric UI for next time
-      setTimeout(() => {
-        const btn = document.getElementById('btn-bio');
+      try {
+        await WA.register();
+        addAudit('passkey_registered', {}, 'green');
+        await startLocalAuth(); // Refresh panel
+      } catch (e) {
+        console.error('Registration failed', e);
+        addAudit('passkey_registration_failed', { error: e.name }, 'red');
+        btn.innerHTML = '❌ Registration Failed (Retry)';
         btn.disabled = false;
-        document.getElementById('btn-skip-bio').disabled = false;
-        btn.innerHTML = '🔐 Verify with Biometric';
-        btn.className = 'btn btn-primary';
-        document.getElementById('bio-title').textContent = 'Verify it\'s you';
-        document.getElementById('bio-title').style.color = '';
-        document.getElementById('bio-desc').textContent = 'To release the requested claims, please authenticate using Face ID / Touch ID.';
-      }, 500);
+      }
+    }
+
+    async function doRealAuth() {
+      const btn = document.getElementById('btn-real-auth');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Waiting for OS...';
+
+      try {
+        const result = await WA.assert();
+        document.getElementById('auth-title').textContent = '✅ Authorized';
+        document.getElementById('auth-title').style.color = 'var(--green)';
+        btn.innerHTML = '✅ Authorization Confirmed';
+        btn.className = 'btn btn-success';
+
+        addAudit('local_device_authorization_succeeded', { fingerprint: result.fingerprint }, 'green');
+        await finishAuth('real');
+      } catch (e) {
+        console.warn('Assertion failed', e);
+        addAudit('local_device_authorization_failed', { error: e.name }, 'red');
+        btn.innerHTML = '❌ Authorization Failed (Retry)';
+        btn.disabled = false;
+      }
+    }
+
+    async function doSimAuth() {
+      const btn = document.getElementById('btn-sim-auth');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Processing simulation...';
+
+      // Brief visual flicker for simulation
+      await delay(800);
+
+      addAudit('simulation_authorization_used', { reason: 'manual_fallback_or_insecure_context' }, 'orange');
+      await finishAuth('simulation');
+    }
+
+    async function resetPasskey() {
+      if (confirm('Reset local passkey demo state?')) {
+        WA.clear();
+        addAudit('passkey_demo_state_reset', {}, 'blue');
+        await startLocalAuth();
+      }
+    }
+
+    async function finishAuth(mode) {
+      await delay(800);
+      document.getElementById('wallet-auth').style.display = 'none';
+
+      // Reset panel UI for next time
+      const btnReal = document.getElementById('btn-real-auth');
+      btnReal.innerHTML = '🔐 Approve with device authorization';
+      btnReal.className = 'btn btn-primary';
+      btnReal.disabled = false;
+      document.getElementById('btn-sim-auth').disabled = false;
+      document.getElementById('btn-sim-auth').innerHTML = '⚠️ Continue in simulation mode';
+      document.getElementById('auth-title').textContent = 'Local Device Authorization';
+      document.getElementById('auth-title').style.color = '';
 
       const allClaims = Object.keys(CLAIMS);
-      const hidden = allClaims.filter(n => !_pendingChecked.includes(n));
-      addConsent(_pendingChecked.length === allClaims.length ? 'approved' : 'partial', _pendingChecked, hidden, 'CoolShop.at');
-      addAudit('consent_given', { categories: _pendingChecked }, 'green');
-      await completeVerification(_pendingChecked);
+      await completeVerification(_pendingChecked, mode);
     }
 
     function doReject() {
@@ -1929,13 +2159,14 @@
     <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
     <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Cannot distinguish from "credential not available".</p></div>`;
       setStatus('Rejected by user'); setFlow('wallet');
+      addAudit('disclosure_blocked_or_aborted', { reason: 'user_denied_consent', verifier: 'CoolShop.at' }, 'red');
     }
 
     // ─── Step 4: Complete Verification ───────────────────────────────
 
-    async function completeVerification(disclosed) {
-      // Give user time to see the biometric success before jumping to verifier
-      await delay(1500);
+    async function completeVerification(disclosed, mode = 'simulation') {
+      // Give user time to see the success before jumping to verifier
+      await delay(1200);
       setFlow('verify'); setStatus('Generating proof...');
       await delay(800);
 
@@ -1944,52 +2175,62 @@
 
       // Wallet result
       document.getElementById('wallet-result').innerHTML = `
-    <div class="rb fi" style="margin-top:0.6rem">
-      <div><span class="k">disclosed:</span> <span class="vt">${disclosed.join(', ')}</span></div>
-      <div><span class="k">hidden:</span> <span class="hv">${hidden.join(', ')}</span></div>
-      <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim('coolshop' + Date.now()).substring(0, 16)}...</span></div>
-    </div>`;
+<div class="rb fi" style="margin-top:0.6rem">
+  <div style="margin-bottom:0.4rem">
+    <span class="tag ${mode === 'real' ? 'tag-green' : 'tag-orange'}">
+      ${mode === 'real' ? '✅ Passkey Authorized' : '⚠️ Simulation Approval'}
+    </span>
+  </div>
+  <div><span class="k">disclosed:</span> <span class="vt">${disclosed.join(', ')}</span></div>
+  <div><span class="k">hidden:</span> <span class="hv">${hidden.join(', ')}</span></div>
+  <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim('coolshop' + Date.now()).substring(0, 16)}...</span></div>
+</div>`;
 
       // Verifier result
       document.getElementById('verifier-ph').style.display = 'none';
       document.getElementById('verifier-result').innerHTML = `
-    <div class="fi">
-      <div style="margin-bottom:0.5rem">
-        <span class="tag tag-green">✅ PROOF VALID</span>
-        <span class="tag tag-blue" style="margin-left:4px">SD-JWT</span>
-      </div>
-      <div class="comparison">
-        <div class="cc sees"><h4>Verifier sees</h4><ul>${disclosed.map(c => `<li>${c}: ${CLAIMS[c]}</li>`).join('')}</ul></div>
-        <div class="cc doesnt"><h4>Verifier does NOT see</h4><ul>${hidden.map(c => `<li>${c}</li>`).join('')}<li>Name</li><li>Birthdate</li><li>Address</li></ul></div>
-      </div>
-    </div>`;
+<div class="fi">
+  <div style="margin-bottom:0.8rem">
+    <span class="tag tag-green">✅ PROOF VALID</span>
+    <span class="tag tag-blue" style="margin-left:4px">SD-JWT</span>
+    <span class="tag-blue" style="font-size:0.7rem; margin-left:8px; opacity:0.7">Auth Mode: ${mode}</span>
+  </div>
+  <div class="comparison">
+    <div class="cc sees"><h4>Verifier sees</h4><ul>${disclosed.map(c => `<li>${c}: ${CLAIMS[c]}</li>`).join('')}</ul></div>
+    <div class="cc doesnt"><h4>Verifier does NOT see</h4><ul>${hidden.map(c => `<li>${c}</li>`).join('')}<li>Name</li><li>Birthdate</li><li>Address</li></ul></div>
+  </div>
+</div>`;
 
       // Network observer
       const actualBytes = JSON.stringify(disclosed.map(c => [c, CLAIMS[c]])).length;
       document.getElementById('network-ph').style.display = 'none';
       document.getElementById('network-result').innerHTML = `
-    <div class="fi">
-      <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
-      <div class="rb" style="margin-top:0.5rem">
-        <div><span class="k">payload:</span> <span class="hv">4096 bytes padded encrypted blob</span></div>
-        <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B</div>
-        <div><span class="k">can_identify_user:</span> <span class="vf">false</span> (pairwise DID)</div>
-        <div><span class="k">can_infer_claims:</span> <span class="vf">false</span> (fixed padding)</div>
-        <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter applied</span></div>
-      </div>
-      <p class="dim" style="margin-top:0.5rem">Observer sees a fixed-size blob. Can't determine claims, identity, or decisions.</p>
-    </div>`;
+<div class="fi">
+  <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
+  <div class="rb" style="margin-top:0.5rem">
+    <div><span class="k">payload:</span> <span class="hv">4096 bytes padded encrypted blob</span></div>
+    <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B</span></div>
+    <div><span class="k">can_identify_user:</span> <span class="vf">false</span> (pairwise DID)</div>
+    <div><span class="k">can_infer_claims:</span> <span class="vf">false</span> (fixed padding)</div>
+    <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter applied</span></div>
+  </div>
+</div>`;
 
       hl('p-verifier', 'green'); hl('p-network', 'red');
-      addAudit('verification_allowed', { categories: disclosed, verifier: sha256Sim('coolshop').substring(0, 12) }, 'green');
+
+      addAudit('disclosure_released', {
+        claims: disclosed,
+        verifier: 'CoolShop.at',
+        mode: mode
+      }, mode === 'real' ? 'green' : 'orange');
 
       // Step 5: Shred
-      await delay(500);
+      await delay(800);
       setFlow('shred'); setStatus('Session key shredded ✅');
 
       addAudit('session_key_shredded', { categories: ['ephemeral_session_material'] }, 'orange');
 
-      // Update costs to verification
+      // Update costs
       renderCosts('verification');
 
       // Show wallet start again for next round
