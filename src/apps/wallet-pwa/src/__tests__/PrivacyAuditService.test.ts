@@ -5,6 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PrivacyAuditService } from '../services/PrivacyAuditService';
 
+// Speed up the 800ms delay in the service
 vi.useFakeTimers();
 
 describe('G-02 — PrivacyAuditService.auditTransaction', () => {
@@ -32,6 +33,7 @@ describe('G-02 — PrivacyAuditService.auditTransaction', () => {
 
     it('detectedTrackers is a non-empty array', async () => {
         const ctx = await runAudit('test-verifier');
+        // At minimum the ISP tracker is always added
         expect(ctx.detectedTrackers.length).toBeGreaterThan(0);
     });
 
@@ -70,6 +72,7 @@ describe('G-02 — PrivacyAuditService.auditTransaction', () => {
     });
 
     it('Windows user-agent detected as MEDIUM risk OS', async () => {
+        // jsdom defaults to a browser-like UA — spy on navigator.userAgent
         Object.defineProperty(navigator, 'userAgent', {
             value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             configurable: true,

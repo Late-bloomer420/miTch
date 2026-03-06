@@ -5,9 +5,13 @@
 import { describe, it, expect } from 'vitest';
 import { DocumentService } from '../services/DocumentService';
 
+// ─── helpers ────────────────────────────────────────────────────────────────
+
 function makeFile(content: string, name = 'test.txt', type = 'text/plain'): File {
     return new File([content], name, { type });
 }
+
+// ─── DocumentService.hashFile ────────────────────────────────────────────────
 
 describe('G-01 — DocumentService.hashFile', () => {
     it('returns a 64-char hex SHA-256 hash', async () => {
@@ -36,13 +40,15 @@ describe('G-01 — DocumentService.hashFile', () => {
         expect(hash).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
     });
 
-    it('binary content hashes without error', async () => {
+    it('binary content (non-text) hashes without error', async () => {
         const bytes = new Uint8Array([0x00, 0xff, 0xab, 0xcd]);
         const file = new File([bytes], 'binary.bin', { type: 'application/octet-stream' });
         const hash = await DocumentService.hashFile(file);
         expect(hash).toHaveLength(64);
     });
 });
+
+// ─── DocumentService.createProofOfExistence ──────────────────────────────────
 
 describe('G-01 — DocumentService.createProofOfExistence', () => {
     it('returns correct structural shape', () => {
@@ -53,7 +59,7 @@ describe('G-01 — DocumentService.createProofOfExistence', () => {
         expect(proof.hashAlg).toBe('SHA-256');
         expect(proof.mediaType).toBe('text/plain');
         expect(proof.description).toBe('My Document');
-        expect(proof.byteLength).toBe(12);
+        expect(proof.byteLength).toBe(12); // 'test content'.length
         expect(proof.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
@@ -77,7 +83,7 @@ describe('G-01 — DocumentService.createProofOfExistence', () => {
         const after = Date.now();
         const ts = new Date(proof.createdAt).getTime();
         expect(ts).toBeGreaterThanOrEqual(before);
-        expect(ts).toBeLessThanOrEqual(after + 5);
+        expect(ts).toBeLessThanOrEqual(after + 5); // 5ms tolerance
     });
 
     it('round-trip: hash file then create proof', async () => {

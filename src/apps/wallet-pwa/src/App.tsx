@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
+import './wallet.css';
 
 import {
     type EvaluationContext
@@ -18,7 +19,7 @@ import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     {
         id: 1,
-        scenario: '🍺 Liquor Store',
+        scenario: '🍺 Age Check',
         title: 'Age Verification — Zero Knowledge',
         description:
             'A liquor store scans your wallet QR. miTch evaluates the request against ' +
@@ -44,7 +45,7 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     },
     {
         id: 3,
-        scenario: '🚑 EHDS Emergency Room',
+        scenario: '🚑 EHDS Emergency',
         title: 'Health Data — Biometric Binding Required',
         description:
             'A Spanish ER requests your patient summary (blood group, allergies). ' +
@@ -77,14 +78,17 @@ export default function App() {
     const [evaluationResult, setEvaluationResult] = useState<PolicyEvaluationResult | null>(null);
     const [showConsent, setShowConsent] = useState(false);
     const [currentPolicy, setCurrentPolicy] = useState<PolicyManifest | null>(null);
-    const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null); // T-28: Store pending request for override
+    const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
     const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
     const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
     const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
         () => !sessionStorage.getItem('guidedDemoCompleted')
     );
+    const [showSecondary, setShowSecondary] = useState(false);
+    const [flashAllow, setFlashAllow] = useState(false);
+    const [copyLabel, setCopyLabel] = useState('Copy Log');
 
-    // Service Instance
+    const logContainerRef = useRef<HTMLDivElement>(null);
     const walletRef = useRef<WalletService>(new WalletService());
 
     const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
@@ -92,17 +96,22 @@ export default function App() {
         setLogs(prev => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
     };
 
+    // Auto-scroll Audit Log (UX-05)
+    useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+    }, [logs]);
+
     // Auto-init for Demo
     useEffect(() => {
         const init = async () => {
             addLog('🔐 Initializing Wallet Service...', 'info');
             try {
-                // In production, this PIN comes from user input
                 await walletRef.current.initialize("123456");
                 addLog('🔓 Wallet Decrypted & Ready', 'success');
                 setCurrentPolicy(walletRef.current.getPolicy());
 
-                // --- WebAuthn Auto-Registration Hook ---
                 try {
                     const isAvailable = await WebAuthnService.isAvailable();
                     const isRegistered = await WebAuthnService.isRegistered();
@@ -114,7 +123,6 @@ export default function App() {
                 } catch (authError) {
                     addLog(`⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`, 'warning');
                 }
-                // ----------------------------------------
 
                 setStatus('IDLE');
             } catch (e) {
@@ -130,24 +138,23 @@ export default function App() {
         setStatus('EVALUATING');
         setLogs([]);
         setEvaluationResult(null);
+        setFlashAllow(false);
 
-        // 1. Prepare Request
         addLog(`📥 Received request from: did:mitch:verifier-liquor-store`, 'info');
         const request: VerifierRequest = {
             verifierId: 'did:mitch:verifier-liquor-store',
-            requestedClaims: [], // No raw claims requested anymore (T-14)
-            requestedProvenClaims: ['age >= 18'], // Simulated ZKP Request
+            requestedClaims: [],
+            requestedProvenClaims: ['age >= 18'],
             origin: CONFIG.VERIFIER_ENDPOINT.replace(/\/present$/, ''),
             serviceEndpoint: CONFIG.VERIFIER_ENDPOINT
         };
-        setCurrentRequest(request); // T-28: Store for potential override
+        setCurrentRequest(request);
 
         const context: EvaluationContext = {
             timestamp: Date.now(),
             userDID: 'did:example:wallet-user'
         };
 
-        // 2. Evaluate via Service
         addLog('⚖️ Evaluating Policy...', 'info');
         try {
             const result = await walletRef.current.evaluateRequest(request, context);
@@ -167,6 +174,8 @@ export default function App() {
 
             // ALLOW
             addLog(`✅ Policy ALLOWED. Auto-issuing...`, 'success');
+            setFlashAllow(true);
+            setTimeout(() => setFlashAllow(false), 900);
             await proceedWithProof(result, undefined, request.serviceEndpoint);
         } catch (e) {
             console.error(e);
@@ -174,10 +183,6 @@ export default function App() {
             setStatus('IDLE');
         }
     };
-
-
-
-
 
     const proceedWithProof = async (policyResult?: PolicyEvaluationResult, targetKey?: CryptoKey, endpoint?: string) => {
         const result = policyResult || evaluationResult;
@@ -187,7 +192,6 @@ export default function App() {
             return;
         }
 
-        // Smart Endpoint Resolution
         const targetEndpoint =
             endpoint ||
             (result.decisionCapsule as any).service_endpoint ||
@@ -235,7 +239,6 @@ export default function App() {
         }
     };
 
-    // Privacy Audit acceptance
     const handlePrivacyAuditAccept = (context: PrivacyContext) => {
         const consent: PrivacyConsent = {
             status: 'ACCEPT',
@@ -249,8 +252,6 @@ export default function App() {
         proceedWithProof(evaluationResult || undefined);
     };
 
-    // --- Production Cleanup: Lab/Debug functions removed ---
-
     const handleMultiProofDemo = async () => {
         addLog('🏥 DEMO: Doctor Login (Multi-VC Bundle)...', 'warning');
         addLog('📥 Request: "Provide ID (Age>=18) AND Medical License"', 'info');
@@ -260,12 +261,12 @@ export default function App() {
             origin: 'https://portal.st-mary.med',
             requirements: [
                 {
-                    credentialType: 'AgeCredential', // Proof of Identity
+                    credentialType: 'AgeCredential',
                     requestedClaims: [],
                     requestedProvenClaims: ['age >= 18']
                 },
                 {
-                    credentialType: 'EmploymentCredential', // Proof of Profession
+                    credentialType: 'EmploymentCredential',
                     requestedClaims: ['role', 'licenseId'],
                     requestedProvenClaims: []
                 }
@@ -288,7 +289,6 @@ export default function App() {
             addLog(`🚫 Policy BLOCKED Multi-VC Request: ${result.reasonCodes.join(', ')}`, 'error');
         }
     };
-
 
     const handleWebAuthnDemo = async () => {
         addLog('🔐 DEMO: Simulating High-Risk Request (Requires Presence)...', 'warning');
@@ -319,12 +319,12 @@ export default function App() {
         addLog('📥 Request: "Provide Blood Type & Allergies"', 'info');
 
         const request: VerifierRequest = {
-            verifierId: 'hospital-madrid-er-1', // Matches T-30 policy rule
+            verifierId: 'hospital-madrid-er-1',
             origin: 'https://er.madrid.health',
             requirements: [
                 {
-                    credentialType: 'PatientSummary', // Updated to match T-30a Schema
-                    requestedClaims: ['bloodGroup', 'allergies'], // Updated to match T-30a Schema
+                    credentialType: 'PatientSummary',
+                    requestedClaims: ['bloodGroup', 'allergies'],
                     requestedProvenClaims: []
                 }
             ]
@@ -352,11 +352,11 @@ export default function App() {
         addLog('📥 Request: "Provide Medication & Dosage"', 'info');
 
         const request: VerifierRequest = {
-            verifierId: 'pharmacy-berlin-center', // Matches T-30b policy rule
+            verifierId: 'pharmacy-berlin-center',
             origin: 'https://pharmacy.berlin.health',
             requirements: [
                 {
-                    credentialType: 'Prescription', // Specific resource type
+                    credentialType: 'Prescription',
                     requestedClaims: ['medication', 'dosageInstruction'],
                     requestedProvenClaims: []
                 }
@@ -448,55 +448,100 @@ export default function App() {
         }
     };
 
+    // UX-05: Render log with slide-in animation (key includes index for animation re-trigger)
     const renderLogLine = (l: string, i: number) => {
-        if (l.startsWith('DONE')) return <div key={i} style={{ marginTop: 10, borderTop: '1px solid #333', paddingTop: 5, color: '#888' }}>{l.split('|')[1]}</div>;
+        if (l.startsWith('DONE')) return (
+            <div key={i} className="audit-log-done">{l.split('|')[1]}</div>
+        );
         const parts = l.split('|');
         if (parts.length < 3) return <div key={i}>{l}</div>;
 
         const type = parts[0];
         const time = parts[1];
         const msg = parts.slice(2).join('|');
-        const className = `audit-${type.toLowerCase()}`;
+        const className = `audit-${type.toLowerCase()} audit-log-entry`;
 
         return (
-            <div key={i} className={className} style={{ marginBottom: 4, display: 'flex', gap: '8px' }}>
-                <span style={{ color: '#666', minWidth: '60px' }}>{time}</span>
-                <span>{msg}</span>
+            <div key={i} className={className}>
+                <span className="audit-log-time">{time}</span>
+                <span className="audit-log-msg">{msg}</span>
             </div>
         );
     };
 
-    return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            minHeight: '100vh',
-            padding: 20
-        }}>
-            <h1 style={{ marginBottom: 10 }}>miTch <span style={{ fontWeight: 800, color: '#0070f3' }}>Smart Wallet</span></h1>
+    // UX-05: Copy log to clipboard
+    const handleCopyLog = () => {
+        const text = logs.map(l => {
+            const parts = l.split('|');
+            return parts.length >= 3
+                ? `[${parts[1]}] ${parts.slice(2).join('|')}`
+                : l;
+        }).join('\n');
+        navigator.clipboard.writeText(text).then(() => {
+            setCopyLabel('Copied!');
+            setTimeout(() => setCopyLabel('Copy Log'), 2000);
+        });
+    };
 
-            <div style={{
-                background: '#1a1a1a',
-                padding: 20,
-                borderRadius: 16,
-                border: '1px solid #333',
-                width: '100%',
-                maxWidth: 400,
-                marginBottom: 30
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <span style={{ color: '#888', fontSize: 12 }}>Active Credential</span>
-                    <span style={{ background: '#2e7d32', padding: '2px 6px', borderRadius: 4, fontSize: 10 }}>TRUSTED</span>
+    // UX-02: primary button classes
+    const getPrimaryBtnClass = () => {
+        const base = 'btn-primary';
+        const stateClass = {
+            IDLE: 'btn-primary--idle',
+            LOCKED: 'btn-primary--idle',
+            EVALUATING: 'btn-primary--evaluating',
+            PROVING: 'btn-primary--proving',
+            SHREDDED: 'btn-primary--shredded',
+            DENIED: 'btn-primary--denied',
+        }[status] ?? 'btn-primary--idle';
+        const flash = flashAllow ? ' btn-primary--flash-allow' : '';
+        return `${base} ${stateClass}${flash}`;
+    };
+
+    const getPrimaryBtnLabel = () => {
+        switch (status) {
+            case 'LOCKED': return '🔒 Unlocking...';
+            case 'EVALUATING': return <><span className="evaluating-spinner" />Judging...</>;
+            case 'PROVING': return '🔐 Generating Proof...';
+            case 'SHREDDED': return '✓ Done — Data Forgotten';
+            case 'DENIED': return '🚫 Access Denied';
+            default: return '🔞 Prove Age & Forget';
+        }
+    };
+
+    return (
+        <div className="wallet-app">
+            <h1 className="wallet-title">
+                miTch <span className="wallet-title-accent">Smart Wallet</span>
+            </h1>
+
+            {/* UX-03: Credential Card */}
+            <div className="credential-card">
+                <div className="credential-card-header">
+                    <span className="credential-card-label">Active Credentials</span>
+                    <span className="credential-trust-badge">✓ Trusted</span>
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 600 }}>Age Credential (GovID)</div>
-                <div style={{ color: '#00bfff', fontSize: 14 }}>Issued by: did:example:gov-issuer</div>
-                <div style={{ height: 10 }}></div>
-                <div style={{ fontSize: 18, fontWeight: 600 }}>Hospital ID</div>
-                <div style={{ color: '#00bfff', fontSize: 14 }}>Issued by: did:example:st-mary-hospital</div>
+
+                <div className="credential-item">
+                    <span className="credential-icon">🪪</span>
+                    <div>
+                        <div className="credential-name">Age Credential (GovID)</div>
+                        <div className="credential-issuer">did:example:gov-issuer</div>
+                    </div>
+                </div>
+
+                <div className="credential-divider" />
+
+                <div className="credential-item">
+                    <span className="credential-icon">🏥</span>
+                    <div>
+                        <div className="credential-name">Hospital ID</div>
+                        <div className="credential-issuer">did:example:st-mary-hospital</div>
+                    </div>
+                </div>
             </div>
 
-            {/* T-24: Secure Decision Boundary (Human-in-the-Loop) */}
+            {/* ConsentModal */}
             {showConsent && evaluationResult?.decisionCapsule && (
                 <ConsentModal
                     capsule={evaluationResult.decisionCapsule}
@@ -515,7 +560,7 @@ export default function App() {
                 />
             )}
 
-            {/* T-28: Smart Denial & Recovery Modal */}
+            {/* Smart Denial Modal */}
             {status === 'DENIED' && evaluationResult?.denialResolution && (
                 <div className="secure-backdrop">
                     <div className="secure-prompt" style={{ borderTop: `4px solid ${evaluationResult.denialResolution.severity === 'CRITICAL' ? '#E53935' : '#F57C00'}` }}>
@@ -543,8 +588,6 @@ export default function App() {
                                             addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
 
                                             if (action.type === 'OVERRIDE_WITH_CONSENT') {
-                                                // Re-evaluate the original request with override context
-                                                // This generates a valid decisionCapsule
                                                 addLog('🔄 Re-evaluating with override permission...', 'info');
 
                                                 if (!currentRequest) {
@@ -566,7 +609,6 @@ export default function App() {
                                                     setStatus('DENIED');
                                                 }
                                             } else {
-                                                // Auto-recovery to IDLE after successful action
                                                 setTimeout(() => {
                                                     setStatus('IDLE');
                                                     addLog('🔄 Wallet ready for new transaction', 'info');
@@ -574,19 +616,7 @@ export default function App() {
                                             }
                                         }
                                     }}
-                                    style={{
-                                        padding: 14,
-                                        background: action.type === 'OVERRIDE_WITH_CONSENT' ? '#E53935' : '#333',
-                                        border: '1px solid #444',
-                                        borderRadius: 8,
-                                        color: '#fff',
-                                        cursor: 'pointer',
-                                        fontSize: 14,
-                                        fontWeight: 600,
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
-                                    }}
+                                    className={`denial-action-btn${action.type === 'OVERRIDE_WITH_CONSENT' ? ' denial-action-btn--override' : ''}`}
                                 >
                                     <span>{action.label}</span>
                                     {action.type === 'LEARN_MORE' && <span>↗</span>}
@@ -594,14 +624,7 @@ export default function App() {
                             ))}
                             <button
                                 onClick={() => setStatus('IDLE')}
-                                style={{
-                                    padding: 14,
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: '#666',
-                                    cursor: 'pointer',
-                                    fontSize: 14
-                                }}
+                                className="denial-close-btn"
                             >
                                 Close
                             </button>
@@ -610,20 +633,20 @@ export default function App() {
                 </div>
             )}
 
-            {/* Privacy Audit / Transparency Layer */}
+            {/* Privacy Audit */}
             {showPrivacyAudit && evaluationResult && (
                 <PrivacyAuditModal
                     verifierName={evaluationResult.decisionCapsule?.verifier_did || 'Unknown Verifier'}
                     onAccept={(context) => handlePrivacyAuditAccept(context)}
                     onCancel={() => {
                         setShowPrivacyAudit(false);
-                        // Re-open Consent to prevent lost state
                         setShowConsent(true);
-                        addLog('� Privacy Audit cancelled, returning to Consent', 'warning');
+                        addLog('🔙 Privacy Audit cancelled, returning to Consent', 'warning');
                     }}
                 />
             )}
 
+            {/* UX-02: Primary CTA Button */}
             <button
                 id="btn-liquor-store"
                 onClick={() => {
@@ -637,45 +660,30 @@ export default function App() {
                     }
                 }}
                 disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
-                style={{
-                    width: '100%', maxWidth: 400,
-                    padding: 18,
-                    background: status === 'DENIED' ? '#ff4444' : (status === 'SHREDDED' ? '#333' : 'linear-gradient(135deg, #0070f3 0%, #00a6ed 100%)'),
-                    color: '#fff', border: 'none', borderRadius: 12,
-                    fontSize: 18, fontWeight: 600,
-                    cursor: 'pointer',
-                    opacity: status === 'LOCKED' ? 0.7 : 1
-                }}
+                className={getPrimaryBtnClass()}
             >
-                {status === 'LOCKED' ? '🔒 Unlocking...' :
-                    status === 'EVALUATING' ? '⚖️ Judging...' :
-                        status === 'PROVING' ? '🔐 Generating...' :
-                            status === 'SHREDDED' ? 'Done (Forgotten)' :
-                                status === 'DENIED' ? '🚫 Access Denied' :
-                                    '🔞 Prove Age & Forget'}
+                {getPrimaryBtnLabel()}
             </button>
 
-            {evaluationResult && (
-                <div className='policy-debug'>
-                    <h4>🧠 Policy Engine Debug</h4>
-                    <pre>
-                        {JSON.stringify(evaluationResult, null, 2)}
-                    </pre>
+            {/* UX-02: Progress bar during PROVING */}
+            {status === 'PROVING' && (
+                <div className="proving-progress wallet-section">
+                    <div className="proving-progress-bar" />
                 </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: 400, marginTop: 20 }}>
-                <h3 style={{ fontSize: 14, color: '#666', borderBottom: '1px solid #333', paddingBottom: 8 }}>Immutable Audit Trace</h3>
-                <div style={{
-                    fontFamily: 'monospace', fontSize: 12,
-                    background: '#0a0a0a', padding: 15, borderRadius: 8,
-                    border: '1px solid #222', minHeight: 150
-                }}>
+            {/* UX-05: Audit Log */}
+            <div className="audit-section">
+                <div className="audit-header">
+                    <h3 className="audit-title">Immutable Audit Trace</h3>
+                    <button className="audit-copy-btn" onClick={handleCopyLog}>{copyLabel}</button>
+                </div>
+                <div className="audit-log-container" ref={logContainerRef}>
                     {logs.map(renderLogLine)}
                 </div>
             </div>
 
-            <div style={{ width: '100%', maxWidth: 400 }}>
+            <div className="wallet-section" style={{ marginTop: 20 }}>
                 <ComplianceDashboard
                     onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
                     onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
@@ -684,7 +692,7 @@ export default function App() {
                 />
             </div>
 
-            <div style={{ width: '100%', maxWidth: 400, marginBottom: 20 }}>
+            <div className="wallet-section" style={{ marginBottom: 20 }}>
                 {currentPolicy && (
                     <PolicyEditor
                         policy={currentPolicy}
@@ -697,82 +705,94 @@ export default function App() {
                 )}
             </div>
 
-            <div style={{
-                width: '100%', maxWidth: 400, marginBottom: 50, padding: 20,
-                background: '#111', borderRadius: 24, border: '1px solid #333'
-            }}>
-                <h3 style={{ margin: '0 0 15px 0', fontSize: 16, color: '#fff' }}>🚀 Advanced Feature Demos</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {/* UX-04: Demo Section with Primary / Secondary Button Hierarchy */}
+            <div className="demo-section">
+                <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
+
+                {/* Primary scenarios — bigger, prominent */}
+                <div className="demo-primary-grid">
                     <button
                         id="btn-doctor-login"
                         onClick={handleMultiProofDemo}
-                        style={{ padding: 12, background: '#0891b2', border: '1px solid #0e7490', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', gridColumn: 'span 2' }}
+                        className="btn-demo-primary btn-demo-primary--full"
+                        style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
                     >
-                        Dr. Login (High Assurance Multi-VC)
+                        🏥 Doctor Login
+                        <br />
+                        <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>High Assurance Multi-VC</span>
                     </button>
-                    <button
-                        onClick={handleWebAuthnDemo}
-                        style={{ padding: 12, background: '#a21caf', border: '1px solid #c026d3', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
-                    >
-                        Biometric Presence (T-23)
-                    </button>
-                    <button
-                        onClick={handleRecoveryTest}
-                        style={{ padding: 12, background: '#065f46', border: '1px solid #047857', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
-                    >
-                        Social Recovery (T-28)
-                    </button>
+
                     <button
                         id="btn-ehds-er"
                         onClick={handleHealthAccessDemo}
-                        style={{ padding: 12, background: '#be123c', border: '1px solid #fb7185', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
+                        className="btn-demo-primary"
+                        style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
                     >
-                        EHDS: ER (T-30a)
+                        🚑 ER Access
+                        <br />
+                        <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>EHDS Emergency</span>
                     </button>
+
                     <button
                         id="btn-pharmacy"
                         onClick={handlePharmacyDemo}
-                        style={{ padding: 12, background: '#059669', border: '1px solid #10b981', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer' }}
+                        className="btn-demo-primary"
+                        style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
                     >
-                        EHDS: Pharmacy (T-30b)
+                        💊 Pharmacy
+                        <br />
+                        <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>ePrescription</span>
                     </button>
-                    <div style={{ width: '100%', gridColumn: 'span 2', marginTop: 10, marginBottom: 5, color: '#888', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        EHDS Scenarios
-                    </div>
+                </div>
+
+                {/* Secondary — collapsible */}
+                <button
+                    className="demo-secondary-toggle"
+                    onClick={() => setShowSecondary(s => !s)}
+                    aria-expanded={showSecondary}
+                >
+                    {showSecondary ? '▲ Hide' : '▼ More Demos'}
+                </button>
+
+                <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
+                    <button
+                        onClick={handleWebAuthnDemo}
+                        className="btn-demo-secondary"
+                        style={{ borderColor: '#a21caf44', color: '#d8b4fe' }}
+                    >
+                        🔐 Biometric (WebAuthn)
+                    </button>
+                    <button
+                        onClick={handleRecoveryTest}
+                        className="btn-demo-secondary"
+                        style={{ borderColor: '#06474444', color: '#86efac' }}
+                    >
+                        🛡️ Social Recovery
+                    </button>
                     <button
                         onClick={handleResearchDemo}
                         disabled={status !== 'IDLE'}
-                        style={{ padding: 12, background: '#7B1FA2', border: 'none', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+                        className="btn-demo-secondary"
                     >
-                        🔬 Research: Patient Data
+                        🔬 Research Data
                     </button>
                     <button
                         onClick={handleCrossBorderDemo}
                         disabled={status !== 'IDLE'}
-                        style={{ padding: 12, background: '#00695C', border: 'none', borderRadius: 12, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+                        className="btn-demo-secondary"
                     >
-                        🇪🇸 Cross-Border: Barcelona ER
+                        🇪🇸 Cross-Border
                     </button>
                 </div>
             </div>
 
+            {/* Start Guided Demo button */}
             {status === 'IDLE' && !guidedDemoActive && (
                 <button
+                    className="btn-start-demo"
                     onClick={() => {
                         sessionStorage.removeItem('guidedDemoCompleted');
                         setGuidedDemoActive(true);
-                    }}
-                    style={{
-                        width: '100%',
-                        maxWidth: 400,
-                        padding: '10px 18px',
-                        marginBottom: 12,
-                        background: 'transparent',
-                        border: '1px solid #333',
-                        borderRadius: 10,
-                        color: '#666',
-                        cursor: 'pointer',
-                        fontSize: 13
                     }}
                 >
                     ▶ Start Guided Demo
