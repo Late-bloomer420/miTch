@@ -6,6 +6,7 @@
  * Implements:
  * - did:web resolution (Production-Standard, HTTPS)
  * - did:mitch resolution (Demo Backend)
+ * - did:peer:0 resolution (U-02: Inline, no network — Spec 111)
  * - Verification key extraction from DID Documents
  * - Configurable TTL cache with fail-closed semantics
  * - Mock fallback (Development only)
@@ -16,6 +17,7 @@
 import { DIDDocument } from '@mitch/shared-types';
 import { importJWK } from 'jose';
 import type { KeyLike } from 'jose';
+import { resolveDidPeer0 } from './pairwise-did';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -106,6 +108,9 @@ export class DIDResolver {
             document = await this.resolveDidWeb(did);
         } else if (did.startsWith('did:mitch:')) {
             document = await this.resolveDidMitch(did);
+        } else if (did.startsWith('did:peer:0z')) {
+            // U-02: Inline resolution — no network needed, public key is embedded
+            document = await resolveDidPeer0(did);
         } else if (this.allowMockFallback) {
             document = generateMockDIDDocument(did);
         } else {

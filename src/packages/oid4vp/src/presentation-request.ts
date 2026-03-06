@@ -53,6 +53,9 @@ export function parseAuthorizationRequest(raw: unknown): ValidationResult<Author
             response_mode: typeof r['response_mode'] === 'string'
                 ? r['response_mode'] as AuthorizationRequest['response_mode']
                 : 'direct_post',
+            client_metadata: r['client_metadata'] && typeof r['client_metadata'] === 'object'
+                ? r['client_metadata'] as AuthorizationRequest['client_metadata']
+                : undefined,
         },
     };
 }
