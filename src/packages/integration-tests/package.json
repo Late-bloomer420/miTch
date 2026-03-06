@@ -15,7 +15,8 @@
     "@mitch/eid-issuer-connector": "workspace:*",
     "@mitch/webauthn-verifier": "workspace:*",
     "@mitch/shared-types": "workspace:*",
-    "@mitch/shared-crypto": "workspace:*"
+    "@mitch/shared-crypto": "workspace:*",
+    "@mitch/oid4vp": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
