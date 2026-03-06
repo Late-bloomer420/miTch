@@ -57,3 +57,4 @@ blob-report/
 # src/**/data/   ← Quellcode! (DemoPolicy.ts, Seed-Credentials)
 # docs/          ← Dokumentation
 # archive/       ← Git-Bundles
+.claude/
