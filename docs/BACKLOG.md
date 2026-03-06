@@ -1,5 +1,5 @@
 # miTch — Master Backlog
-**Stand:** 2026-03-06  
+**Stand:** 2026-03-06 (Session 6 Update)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -33,15 +33,15 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 ---
 
-## Phase 1 — Unlinkability ("Alle sind miTch") 🔴
+## Phase 1 — Unlinkability ("Alle sind miTch") ✅
 
 ### 1.1 Pairwise-Ephemeral DIDs (Spec 111)
 | ID | Prio | Beschreibung | Spec |
 |---|---|---|---|
-| U-01 | 🔴 | `pairwise-did.ts` — did:peer Generation + HKDF Derivation | Spec 111 |
-| U-02 | 🔴 | did:peer Resolution in `did.ts` (inline, kein Netzwerk) | Spec 111 |
-| U-03 | 🔴 | Unlinkability Tests (Cross-Verifier, Cross-Session, Anti-Korrelation) | Spec 111 |
-| U-04 | 🔴 | Key Shredding nach Interaktion (EphemeralKey Integration) | Spec 111 |
+| U-01 | ✅ | `pairwise-did.ts` — did:peer Generation + HKDF Derivation | Spec 111 |
+| U-02 | ✅ | did:peer Resolution in `did.ts` (inline, kein Netzwerk) | Spec 111 |
+| U-03 | ✅ | Unlinkability Tests (Cross-Verifier, Cross-Session, Anti-Korrelation) | Spec 111 |
+| U-04 | ✅ | Key Shredding nach Interaktion (EphemeralKey Integration) | Spec 111 |
 | U-05 | ✅ | Policy Engine: Pairwise DID in Proof-Generierung einbinden | Spec 111 |
 
 ### 1.2 Randomisierte Proofs (Phase 2)
@@ -67,8 +67,8 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.1 OpenID-Protokolle
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
-| E-01 | 🔴 | OID4VP (OpenID for Verifiable Presentations) | OIDF.OID4VP |
-| E-02 | 🔴 | OID4VCI (OpenID for Verifiable Credential Issuance) | OIDF.OID4VCI |
+| E-01 | ✅ | OID4VP (OpenID for Verifiable Presentations) — E-01a–E-01d complete | OIDF.OID4VP |
+| E-02 | ✅ | OID4VCI (OpenID for Verifiable Credential Issuance) — 32 tests | OIDF.OID4VCI |
 | E-03 | 🟡 | SIOPv2 (Self-Issued OpenID Provider v2) | OIDF.SIOPv2 |
 | E-04 | 🟡 | OAuth 2.0 Attestation-Based Client Auth (draft 7) | RFC6749 ext |
 | E-05 | 🟡 | DPoP (Demonstrating Proof-of-Possession) | RFC 9449 |
@@ -135,13 +135,13 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 
 | ID | Prio | Beschreibung |
 |---|---|---|
-| H-01 | 🟡 | ESLint Sweep: 290 pre-existing Warnings fixen |
+| H-01 | ✅ | ESLint Sweep: 0 errors, 0 warnings (war 170 warnings + 2 errors) |
 | H-02 | 🟢 | `mitch-temp` Repo archivieren |
 | H-03 | 🟢 | `miTch---Policy-Enforcement-Layer` Repo löschen |
 | H-04 | ✅ | GitHub `main` Branch löschen (nur `master` behalten) — war bereits gelöscht |
 | H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
-| H-06 | 🟢 | Demo E2E Flow testen (4 Szenarien) |
-| H-07 | 🟢 | Uni-Präsentation vorbereiten |
+| H-06 | ✅ | Demo E2E Flow testen (4 Szenarien) — D-01: 17 E2E tests |
+| H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
 
 ---
 

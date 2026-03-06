@@ -24,18 +24,31 @@
 
 ## Current status
 
-- **Tests:** 38/38 turbo tasks pass; **734 individual tests** green (Session 5: +71)
+- **Tests:** 38/38 turbo tasks pass; **760+ individual tests** green (Session 6: +26)
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
-- **Lint:** 0 errors, 0 regressions (all package `lint` tasks green)
+- **Lint:** 0 errors, **0 warnings** (H-01b complete — was 170 warnings / 2 errors)
 - **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
 - **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
 - **Phase 3 Security Hardening:** S-01–S-05 ✅
 - **OID4VP:** E-01a–E-01d ✅ complete (Parser, VP Token Builder, Verifier, Policy Bridge)
 - **OID4VCI:** E-02 ✅ 32 comprehensive tests (createOffer, issueCredential, policy, audit)
 - **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
-- **Working directory:** `D:/Mensch/miTch-master` (git worktree on master)
+- **Demo:** D-01 ✅ (17 E2E scenario tests), D-02 ✅ (docs/DEMO_SCRIPT.md)
+- **Working directory:** `D:/Mensch/miTch` (master branch)
+
+## Recent changes (2026-03-06 Session 6)
+
+- D-01: 4 E2E demo scenario tests — Liquor Store, Hospital, EHDS Emergency, Pharmacy (17 tests)
+- D-02: docs/DEMO_SCRIPT.md — full demo walkthrough, troubleshooting, Q&A talking points
+- H-01b: ESLint `no-explicit-any` eliminated across ALL packages (0 warnings, was 170)
+  - Source packages: shared-crypto, policy-engine, predicates, verifier-sdk, oid4vci,
+    eid-issuer-connector, verifier-browser, mock-issuer, anchor-service, audit-log, catalog
+  - Apps: wallet-pwa (WalletService, ConsentModal, App, AuditReportPanel), verifier-demo
+  - Tests: file-level eslint-disable for legitimate browser-API mock patterns
+  - 2 errors fixed: unused imports/params in revocation-statuslist
+- Presentation: docs/presentation/OUTLINE.md + ARCHITECTURE.md (Mermaid diagrams)
 
 ## Recent changes (2026-03-06 Session 5)
 
