@@ -1,7 +1,7 @@
 # miTch — The Forgetting Layer
 
-[![Tests](https://img.shields.io/badge/tests-760%2B%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-845%2B%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GDPR](https://img.shields.io/badge/GDPR-Art.%2025%20compliant-blue)](docs/ops/EVIDENCE_PACK_P0.md)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
@@ -21,7 +21,7 @@ pnpm dev        # starts wallet-pwa (5174), verifier-demo (3004), issuer-mock (3
 ```
 
 ```bash
-pnpm test       # 760+ tests, 38/38 turbo tasks
+pnpm test       # 845+ tests, 38/38 turbo tasks
 pnpm lint       # 0 errors, 0 warnings
 pnpm build      # compile all packages
 ```

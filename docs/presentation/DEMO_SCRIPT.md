@@ -79,4 +79,23 @@ Willkommen zur Live-Demonstration von **miTch — The Forgetting Layer**. Wir ze
 - Die Apotheke weiß, dass das Rezept gültig und ungenutzt ist, muss aber nicht zwingend erfahren, wer der Patient ist. 
 
 ---
+
+## Technischer Stack (für Rückfragen)
+
+Die Demo basiert auf dem vollständigen EUDI/eIDAS 2.0 Protokoll-Stack:
+
+- **Credential Format:** SD-JWT VC (draft-ietf-oauth-sd-jwt-vc-11) mit `vct`, `cnf.jwk`, Key Binding JWT
+- **Issuance:** OID4VCI (OpenID for Verifiable Credential Issuance)
+- **Presentation:** OID4VP (OpenID for Verifiable Presentations) + SIOPv2
+- **Proof-of-Possession:** DPoP (RFC 9449) — Token-bound, replay-safe
+- **Client Auth:** OAuth 2.0 Attestation-Based Client Authentication
+- **Interoperability:** HAIP (High Assurance Interoperability Profile) — `direct_post.jwt`
+- **Crypto:** ECDSA P-256, brainpoolP256r1 (BSI TR-03116), ECDH + HMAC-SHA-256 MAC
+- **Revocation:** StatusList2021 (W3C) — privacy-preserving, issuer learns nothing
+- **Unlinkability:** Pairwise Ephemeral DIDs (HKDF-derived `did:peer:0z...`)
+- **Biometric Gate:** WebAuthn Platform Authenticator (Face ID / Touch ID)
+
+**Live Demo (kein Server nötig):** https://late-bloomer420.github.io/miTch/
+
+---
 *Ende der Demo.*

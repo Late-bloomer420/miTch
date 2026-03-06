@@ -1,5 +1,5 @@
 # miTch — Master Backlog
-**Stand:** 2026-03-06 (Session 6 Update)
+**Stand:** 2026-03-06 (Session 8 Update)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -69,25 +69,25 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 |---|---|---|---|
 | E-01 | ✅ | OID4VP (OpenID for Verifiable Presentations) — E-01a–E-01d complete | OIDF.OID4VP |
 | E-02 | ✅ | OID4VCI (OpenID for Verifiable Credential Issuance) — 32 tests | OIDF.OID4VCI |
-| E-03 | 🟡 | SIOPv2 (Self-Issued OpenID Provider v2) | OIDF.SIOPv2 |
-| E-04 | 🟡 | OAuth 2.0 Attestation-Based Client Auth (draft 7) | RFC6749 ext |
-| E-05 | 🟡 | DPoP (Demonstrating Proof-of-Possession) | RFC 9449 |
+| E-03 | ✅ | SIOPv2 (Self-Issued OpenID Provider v2) — 15 tests | OIDF.SIOPv2 |
+| E-04 | ✅ | OAuth 2.0 Attestation-Based Client Auth — attestation+pop chain | RFC6749 ext |
+| E-05 | ✅ | DPoP (Demonstrating Proof-of-Possession) — 13 tests | RFC 9449 |
 
 ### 2.2 Credential-Formate
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
-| E-10 | 🟡 | SD-JWT VC Compliance (draft 11) — Gap-Check gegen offizielle Spec | I-D.ietf-oauth-sd-jwt-vc |
+| E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
 | E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
-| E-13 | 🟡 | High Assurance Interoperability Profile (SD-JWT VC + mdoc, draft 4) | OpenID4VC HAIP |
+| E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
 ### 2.3 Kryptographie (BSI/SOG-IS Konformität)
 | ID | Prio | Beschreibung |
 |---|---|---|
-| E-20 | 🟡 | brainpoolP256r1 Support (Issuer Signatures) |
-| E-21 | 🟡 | brainpoolP384r1 Support (Key Binding) |
+| E-20 | ✅ | brainpoolP256r1 Support (noble-curves, RFC 5639 §3.4) — 10 tests |
+| E-21 | 🟡 | brainpoolP384r1 Support (stub — BSI param verification pending) |
 | E-22 | 🟢 | brainpoolP512r1 Support (optional, höchste Sicherheit) |
-| E-23 | 🟡 | ECDH secp256r1 + HMAC-SHA2 (MAC-basierte Verifikation) |
+| E-23 | ✅ | ECDH secp256r1 + HMAC-SHA2 MAC Verification — 10 tests |
 
 ### 2.4 Regulatory Compliance
 | ID | Prio | Beschreibung | Referenz |

@@ -24,7 +24,7 @@
 
 ## Current status
 
-- **Tests:** 38/38 turbo tasks pass; **760+ individual tests** green (Session 6: +26)
+- **Tests:** 38/38 turbo tasks pass; **845+ individual tests** green (Session 8: +85)
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
@@ -36,6 +36,26 @@
 - **OID4VCI:** E-02 ✅ 32 comprehensive tests (createOffer, issueCredential, policy, audit)
 - **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
 - **Demo:** D-01 ✅ (17 E2E scenario tests), D-02 ✅ (docs/DEMO_SCRIPT.md)
+- **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+
+### Session 7 (2026-03-06)
+- GitHub Pages deployment workflow (`.github/workflows/pages.yml`)
+- OpenGraph / Twitter Card meta tags for link previews
+- README rewrite (badges, quick start, live demo link)
+- Stale file cleanup (task files → `docs/archive/`)
+
+### Session 8 — EUDI/eIDAS 2.0 Compliance Sprint (2026-03-06)
+- **E-10** SD-JWT VC Compliance (draft-ietf-oauth-sd-jwt-vc-11) — 17 tests
+- **E-05** DPoP (RFC 9449) — 13 tests
+- **E-03** SIOPv2 (Self-Issued OpenID Provider v2) — 15 tests
+- **E-04** OAuth 2.0 Attestation-Based Client Auth — attestation+pop chain
+- **E-13** HAIP (High Assurance Interoperability Profile) — direct_post.jwt, verifier attestation
+- **C-01** Brainpool P256r1 (noble-curves, RFC 5639 §3.4) — 10 tests
+- **C-02** ECDH + HMAC-SHA-256 MAC Verification — 10 tests
+- **L-01** CIR Compliance Matrix (82% coverage: 2977/2979/2982)
+- **L-02** Architecture Decision Records (ADR-001 to ADR-004)
+
+- **CIR Compliance:** 82% ✅ → remaining 🟡: status endpoint deploy, brainpoolP384r1, batch_credential
 - **Working directory:** `D:/Mensch/miTch` (master branch)
 
 ## Recent changes (2026-03-06 Session 6)
