@@ -24,25 +24,26 @@
 
 ## Current status
 
-- **Tests:** 38/38 turbo tasks pass; **663 individual tests** green (Session 4: +24)
+- **Tests:** 38/38 turbo tasks pass; **734 individual tests** green (Session 5: +71)
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
-- **Lint:** 0 errors (pre-existing warnings only, no regressions)
+- **Lint:** 0 errors, 0 regressions (all package `lint` tasks green)
 - **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
 - **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
 - **Phase 3 Security Hardening:** S-01–S-05 ✅
-- **OID4VP Policy Bridge:** E-04 ✅ (executeOID4VPFlow, mapRequestToPolicyInput, validateRequestCompatibility)
-- **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App component)
+- **OID4VP:** E-01a–E-01d ✅ complete (Parser, VP Token Builder, Verifier, Policy Bridge)
+- **OID4VCI:** E-02 ✅ 32 comprehensive tests (createOffer, issueCredential, policy, audit)
+- **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
 - **Working directory:** `D:/Mensch/miTch-master` (git worktree on master)
 
-## Recent changes (2026-03-06 Session 4)
+## Recent changes (2026-03-06 Session 5)
 
-- U-01: generatePairwiseDIDFromMasterKey — HKDF-SHA-256 wallet master key derivation
-- U-02: resolveDidPeer0 — inline did:peer:0z resolution (P-256 pub key, no network)
-- U-03/U-04: 23 unlinkability tests (cross-verifier isolation, key shredding, HKDF recovery)
-- E-04: OID4VP Policy Bridge — executeOID4VPFlow + 19 tests
-- G-01–G-03: Wallet PWA vitest setup + 24 tests (DocumentService, PrivacyAuditService, App)
-- fix: tsc strict Uint8Array<ArrayBuffer> cast in pairwise-did.ts
-- fix: pairwise-did.test.ts 1000-DID timeout 30s→60s (parallel turbo load)
-- fix: parseAuthorizationRequest passes client_metadata through
+- G-02: WalletService unit tests — 12 tests (init, credential eval, AES-256-GCM, policy, audit chain, key split/recovery)
+- G-03: ConsentModal (12 tests) + PolicyEditor (10 tests) component tests
+- E-02: OID4VCI expanded tests — 29 new tests (32 total): offer, issuance, validation, policy, audit log
+- H-01: Fixed all ESLint errors in policy-engine, oid4vp, wallet-pwa (0 errors remaining)
+- fix: IndexedDB mock — added getAll/getAllKeys/clear methods (SecureStorage.getAllMetadata)
+- fix: document.elementFromPoint stub for jsdom (SecureZone component)
+- fix: config-profiles.test.ts manifestId→trustedIssuers (TS type error)
+- fix: jurisdiction.ts unused purpose param, proof-fatigue.ts let→const
