@@ -1028,6 +1028,16 @@
 </head>
 
 <body>
+  <!-- Fake OS Biometric Prompt for file:// fallback (iOS Safari/Chrome) -->
+  <div id="os-bio-prompt"
+    style="display:none; position:fixed; inset:0; z-index:9999; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); transition:opacity 0.3s; opacity:0;">
+    <div
+      style="background:#1c1c1e; width:280px; border-radius:24px; display:flex; flex-direction:column; align-items:center; padding:1.5rem; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);">
+      <div id="os-bio-icon" style="font-size:3rem; margin-bottom:0.8rem; animation: pulse 2s infinite;">😎</div>
+      <div style="font-weight:600; font-size:1.1rem; margin-bottom:0.2rem">Face ID</div>
+      <div id="os-bio-text" style="color:#a1a1aa; font-size:0.85rem;">Authenticating...</div>
+    </div>
+  </div>
 
   <div class="header">
     <h1>🔒 miTch — The Forgetting Layer</h1>
@@ -1818,16 +1828,51 @@
       skipBtn.disabled = true;
       btn.innerHTML = '⏳ Verifying...';
 
-      try {
-        await navigator.credentials.get({
-          publicKey: {
-            challenge: new Uint8Array(32),
-            timeout: 60000,
-            rpId: location.hostname || 'localhost',
-            allowCredentials: [],
-            userVerification: 'preferred'
-          }
-        });
+      let success = false;
+
+      // WebAuthn is blocked on file:// — use fake OS prompt for demo
+      if (window.location.protocol === 'file:') {
+        const prompt = document.getElementById('os-bio-prompt');
+        const icon = document.getElementById('os-bio-icon');
+        const text = document.getElementById('os-bio-text');
+
+        icon.textContent = '😎';
+        text.textContent = 'Authenticating...';
+        prompt.style.display = 'flex';
+        // Trigger reflow for fade-in
+        prompt.offsetHeight;
+        prompt.style.opacity = '1';
+
+        await delay(1200);
+
+        icon.textContent = '✅';
+        text.textContent = 'Verified';
+        success = true;
+
+        await delay(800);
+        prompt.style.opacity = '0';
+        await delay(300);
+        prompt.style.display = 'none';
+
+      } else {
+        // Try real WebAuthn on localhost / HTTPS
+        try {
+          await navigator.credentials.get({
+            publicKey: {
+              challenge: new Uint8Array(32),
+              timeout: 60000,
+              rpId: location.hostname || 'localhost',
+              allowCredentials: [],
+              userVerification: 'preferred'
+            }
+          });
+          success = true;
+        } catch (e) {
+          console.warn('WebAuthn failed', e);
+        }
+      }
+
+      if (success) {
         document.getElementById('bio-title').textContent = '✅ Verified';
         document.getElementById('bio-title').style.color = 'var(--green)';
         document.getElementById('bio-desc').textContent = 'Platform authenticator confirmed.';
@@ -1835,7 +1880,7 @@
         btn.classList.remove('btn-primary');
         btn.classList.add('btn-success');
         await delay(800);
-      } catch (e) {
+      } else {
         document.getElementById('bio-title').textContent = '⚠️ Not available';
         document.getElementById('bio-title').style.color = 'var(--yellow)';
         document.getElementById('bio-desc').textContent = 'WebAuthn failed or cancelled. Continuing without (demo mode).';
