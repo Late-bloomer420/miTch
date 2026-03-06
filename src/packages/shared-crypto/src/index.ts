@@ -22,3 +22,4 @@ export * from './SoftwareKeyGuardian.js';
 export * from './did-quorum';
 export * from './crypto-agility';
 export * from './sd-jwt-vc'; // E-10: SD-JWT VC Compliance (draft-ietf-oauth-sd-jwt-vc-11)
+export * from './dpop'; // E-05: DPoP (RFC 9449)
