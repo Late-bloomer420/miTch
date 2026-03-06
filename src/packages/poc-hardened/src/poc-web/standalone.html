@@ -1,0 +1,2104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>miTch — The Forgetting Layer | Interactive Demo</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --surface: #131a2b;
+      --surface2: #1a2340;
+      --border: #2a3555;
+      --text: #e2e8f0;
+      --text-dim: #8892a8;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --yellow: #eab308;
+      --yellow-dim: rgba(234, 179, 8, 0.15);
+      --blue: #3b82f6;
+      --blue-dim: rgba(59, 130, 246, 0.15);
+      --orange: #f97316;
+      --orange-dim: rgba(249, 115, 22, 0.15);
+      --radius: 14px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 2.5rem 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+
+    .header h1 {
+      font-size: clamp(1.5rem, 5vw, 2.4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .header .tagline {
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      font-size: 1rem;
+    }
+
+    /* ── Sticky Flow Bar ── */
+    .flow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.9rem 0.8rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(10, 14, 23, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+      gap: 0;
+    }
+
+    .flow::-webkit-scrollbar {
+      display: none;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .flow-step.active {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(99, 102, 241, 0.12);
+      box-shadow: 0 0 16px var(--accent-glow);
+      transform: scale(1.06);
+    }
+
+    .flow-step.done {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .flow-connector {
+      width: 20px;
+      height: 2px;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.35s;
+      position: relative;
+    }
+
+    .flow-connector::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-left-color: var(--border);
+      transition: border-left-color 0.35s;
+    }
+
+    .flow-connector.done {
+      background: var(--green);
+    }
+
+    .flow-connector.done::after {
+      border-left-color: var(--green);
+    }
+
+    /* ── Grid / Carousel ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) and (min-width: 769px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        display: block;
+        padding: 0;
+      }
+
+      #cards-track {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 0;
+      }
+
+      #cards-track::-webkit-scrollbar {
+        display: none;
+      }
+
+      #cards-track .panel {
+        flex: 0 0 100vw;
+        scroll-snap-align: start;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        min-height: 62vh;
+      }
+
+      .carousel-nav {
+        display: flex !important;
+      }
+
+      .grid>.panel.full {
+        margin: 0.75rem 0.75rem 0;
+        border-radius: var(--radius);
+      }
+    }
+
+    .carousel-nav {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .carousel-dots {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .carousel-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .carousel-dot.active {
+      background: var(--accent);
+      width: 20px;
+      border-radius: 4px;
+    }
+
+    .carousel-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .carousel-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.35s, box-shadow 0.35s, transform 0.3s;
+    }
+
+    @media (min-width: 769px) {
+      .panel:not(.full):hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .panel.hl-green {
+      border-color: var(--green);
+      box-shadow: 0 0 28px rgba(34, 197, 94, 0.15);
+    }
+
+    .panel.hl-red {
+      border-color: var(--red);
+      box-shadow: 0 0 28px rgba(239, 68, 68, 0.15);
+    }
+
+    .panel.hl-blue {
+      border-color: var(--accent);
+      box-shadow: 0 0 28px var(--accent-glow);
+    }
+
+    .panel.hl-orange {
+      border-color: var(--orange);
+      box-shadow: 0 0 28px rgba(249, 115, 22, 0.15);
+    }
+
+    /* ── Panel Header/Body ── */
+    .ph {
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 0.92rem;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent);
+    }
+
+    .ph .icon {
+      font-size: 1.3rem;
+    }
+
+    .pb {
+      padding: 1.1rem;
+      min-height: 150px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.65rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-height: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn:active::after {
+      opacity: 1;
+    }
+
+    .btn:hover:not(:disabled) {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+      filter: brightness(0.95);
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      color: white;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: white;
+      box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, #f97316, #c2410c);
+      color: white;
+      box-shadow: 0 4px 18px rgba(249, 115, 22, 0.35);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+
+    /* ── Claims ── */
+    .claims-list {
+      list-style: none;
+      margin: 0.6rem 0;
+    }
+
+    .claims-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      margin-bottom: 0.25rem;
+      transition: background 0.18s;
+    }
+
+    .claims-list li:hover {
+      background: var(--surface2);
+    }
+
+    .claims-list input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .claims-list label {
+      cursor: pointer;
+      flex: 1;
+      font-size: 0.92rem;
+    }
+
+    /* ── Code Block ── */
+    .rb {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin: 0.5rem 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .k {
+      color: var(--accent);
+    }
+
+    .vt {
+      color: var(--green);
+    }
+
+    .vf {
+      color: var(--red);
+    }
+
+    .vs {
+      color: var(--yellow);
+    }
+
+    .hv {
+      color: var(--red);
+      font-style: italic;
+    }
+
+    /* ── Tags ── */
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .tag-green {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .tag-red {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    .tag-yellow {
+      background: var(--yellow-dim);
+      color: var(--yellow);
+    }
+
+    .tag-blue {
+      background: var(--blue-dim);
+      color: var(--blue);
+    }
+
+    .tag-orange {
+      background: var(--orange-dim);
+      color: var(--orange);
+    }
+
+    /* ── Comparison ── */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin: 0.7rem 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .cc {
+      padding: 0.8rem;
+    }
+
+    .cc.sees {
+      background: var(--green-dim);
+    }
+
+    .cc.doesnt {
+      background: var(--red-dim);
+    }
+
+    .cc h4 {
+      font-size: 0.75rem;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 700;
+    }
+
+    .cc.sees h4 {
+      color: var(--green);
+    }
+
+    .cc.doesnt h4 {
+      color: var(--red);
+    }
+
+    .cc ul {
+      list-style: none;
+      font-size: 0.82rem;
+    }
+
+    .cc li {
+      padding: 0.12rem 0;
+    }
+
+    .cc.sees li::before {
+      content: "✅ ";
+    }
+
+    .cc.doesnt li::before {
+      content: "🚫 ";
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .placeholder {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.88rem;
+    }
+
+    .placeholder .emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .dim {
+      color: var(--text-dim);
+      font-size: 0.87rem;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fi {
+      animation: fadeIn 0.35s ease-out;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .pulsing {
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -500px 0;
+      }
+
+      100% {
+        background-position: 500px 0;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Status Bar ── */
+    .status-bar {
+      padding: 0.65rem 1.2rem;
+      background: rgba(19, 26, 43, 0.97);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .status-bar-text {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .status-badge {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      color: white;
+      padding: 0.22rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.4s;
+    }
+
+    .progress-track {
+      width: 70px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: 0.6rem 1.1rem;
+      font-size: 0.83rem;
+      cursor: pointer;
+      color: var(--text-dim);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ── Audit Chain ── */
+    .chain-entry {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.82rem;
+    }
+
+    .chain-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .chain-dot.green {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .chain-dot.red {
+      background: var(--red);
+      box-shadow: 0 0 6px var(--red);
+    }
+
+    .chain-dot.blue {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    .chain-dot.orange {
+      background: var(--orange);
+      box-shadow: 0 0 6px var(--orange);
+    }
+
+    /* ── GDPR Badge ── */
+    .gdpr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.22rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--green-dim);
+      color: var(--green);
+      margin: 0.18rem;
+    }
+
+    /* ── Engine Steps ── */
+    .engine-step {
+      padding: 0.55rem 0.9rem;
+      margin: 0.3rem 0;
+      border-radius: 10px;
+      font-size: 0.83rem;
+      border-left: 3px solid var(--border);
+      opacity: 0.25;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .engine-step.active {
+      opacity: 1;
+      border-left-color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .engine-step.pass {
+      opacity: 1;
+      border-left-color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .engine-step.fail {
+      opacity: 1;
+      border-left-color: var(--red);
+      background: var(--red-dim);
+    }
+
+    /* ── Credential ID Card ── */
+    #issuer-result .rb {
+      background: linear-gradient(135deg, #1a2d50 0%, #1a2340 50%, #2a1a55 100%);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      border-radius: 16px;
+      padding: 1.2rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #issuer-result .rb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.07) 50%, transparent 65%);
+      background-size: 500px 100%;
+      animation: shimmer 3.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    #issuer-result .k {
+      color: #93c5fd;
+    }
+
+    /* ── Cost Big Numbers ── */
+    #cost-savings .cost-num {
+      font-size: clamp(1.3rem, 3.5vw, 2rem);
+      font-weight: 900;
+      font-family: var(--mono);
+      display: inline-block;
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .count-animate {
+      animation: countUp 0.5s ease-out both;
+    }
+
+    /* ── DPIA Overlay ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.87);
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .overlay.visible {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .overlay-inner {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .overlay-inner h2 {
+      font-size: 1.3rem;
+      margin: 2rem 0 0.8rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .overlay-inner h3 {
+      font-size: 1.05rem;
+      color: var(--accent);
+      margin: 1.2rem 0 0.5rem;
+    }
+
+    .overlay-inner table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+    }
+
+    .overlay-inner th {
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .overlay-inner td {
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .overlay-inner ul {
+      margin: 0.5rem 0 0.8rem 1.5rem;
+    }
+
+    .overlay-inner li {
+      margin-bottom: 0.3rem;
+    }
+
+    .overlay-inner .card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin: 1rem 0;
+    }
+
+    .risk-high {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .risk-med {
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    .risk-low {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* ── DPIA Popup ── */
+    #dpia-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #dpia-popup.show {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    #dpia-popup>div {
+      animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Wallet Consent Box ── */
+    #wallet-consent>div {
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.04));
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>🔒 miTch — The Forgetting Layer</h1>
+    <div class="tagline">Privacy Middleware for National Identity Wallets</div>
+    <div
+      style="margin-top:0.4rem;font-size:0.85rem;color:var(--text-dim);max-width:700px;margin-left:auto;margin-right:auto">
+      miTch is <strong style="color:var(--text)">not</strong> a replacement for national ID systems — it's the <strong
+        style="color:var(--accent)">privacy &amp; policy layer</strong> that sits between them and the services
+      requesting your data.
+    </div>
+    <div style="margin-top:0.6rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.3rem">
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇪🇺 EUDI Wallet</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇦🇹 ID Austria</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇩🇪 Smart-eID</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇫🇷 CNIe / France Identité</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇬🇧 GOV.UK Wallet</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇨🇭 E-ID</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇳🇴 🇸🇪 Nordic eID</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">eIDAS 2.0</span>
+    </div>
+    <div style="margin-top:0.5rem">
+      <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
+      <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
+      <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
+      <span class="gdpr-badge">✅ Art. 7 Consent</span>
+      <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
+      <span class="gdpr-badge">✅ Art. 32 Security</span>
+    </div>
+  </div>
+
+  <div class="flow" id="flow">
+    <div class="flow-step" id="fs-issue"><span>①</span> Issue</div>
+    <div class="flow-connector" id="fc-1"></div>
+    <div class="flow-step" id="fs-engine"><span>②</span> Policy</div>
+    <div class="flow-connector" id="fc-2"></div>
+    <div class="flow-step" id="fs-wallet"><span>③</span> Consent</div>
+    <div class="flow-connector" id="fc-3"></div>
+    <div class="flow-step" id="fs-verify"><span>④</span> Verify</div>
+    <div class="flow-connector" id="fc-4"></div>
+    <div class="flow-step" id="fs-shred"><span>⑤</span> Forget</div>
+  </div>
+
+  <div class="grid" id="grid-main">
+
+    <!-- ISSUER -->
+    <div class="panel" id="p-issuer">
+      <div class="ph"><span class="icon">🏛️</span> Issuer (National ID System) <span class="tag tag-blue"
+          style="margin-left:auto">e.g. ID Austria / EUDI Wallet</span></div>
+      <div class="pb" id="issuer-body">
+        <p class="dim">Your government issues a credential via the <strong>national eID system</strong> (ID Austria,
+          Smart-eID, EUDI Wallet, etc.). miTch receives only signed predicates — raw PII is
+          <strong>crypto-shredded</strong> and never stored.
+        </p>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="doIssue()" id="btn-issue">🔏 Issue Credential</button>
+          <button class="btn btn-ghost" onclick="doReset()">↺ Reset All</button>
+        </div>
+        <div id="issuer-result"></div>
+      </div>
+    </div>
+
+    <!-- POLICY ENGINE -->
+    <div class="panel" id="p-engine">
+      <div class="ph"><span class="icon">⚖️</span> Policy Engine <span class="tag tag-yellow"
+          style="margin-left:auto">miTch Core</span></div>
+      <div class="pb">
+        <div class="placeholder" id="engine-ph"><span class="emoji">⚖️</span>Waiting for verification request...</div>
+        <div id="engine-steps" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="panel" id="p-wallet">
+      <div class="ph"><span class="icon">📱</span> Wallet (Your Device) <span class="tag tag-yellow"
+          style="margin-left:auto">User-Controlled</span></div>
+      <div class="pb" id="wallet-body">
+        <div class="placeholder" id="wallet-ph"><span class="emoji">📱</span>Issue a credential first</div>
+        <div id="wallet-ctrl" style="display:none">
+          <p class="dim">Select which claims to reveal. <strong>Only checked claims</strong> reach the verifier.</p>
+          <ul class="claims-list" id="claims-list"></ul>
+          <div id="wallet-consent" style="display:none">
+            <div
+              style="background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:1rem;margin:0.8rem 0">
+              <div style="font-weight:700;margin-bottom:0.5rem">🛡️ Consent Required</div>
+              <div class="dim" id="consent-reason"></div>
+              <div class="btn-row">
+                <button class="btn btn-success" onclick="doApprove()">✅ Approve & Sign</button>
+                <button class="btn btn-danger" onclick="doReject()">❌ Reject</button>
+              </div>
+            </div>
+          </div>
+          <div id="wallet-start" style="display:none">
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="startVerification()">🏪 Start Verification →</button>
+            </div>
+          </div>
+        </div>
+        <div id="wallet-result"></div>
+      </div>
+    </div>
+
+    <!-- VERIFIER -->
+    <div class="panel" id="p-verifier">
+      <div class="ph"><span class="icon">🏪</span> Verifier <span class="tag tag-green" style="margin-left:auto"
+          id="verifier-name">CoolShop.at</span></div>
+      <div class="pb">
+        <div class="placeholder" id="verifier-ph"><span class="emoji">🏪</span>Waiting for presentation...</div>
+        <div id="verifier-result"></div>
+      </div>
+    </div>
+
+    <!-- NETWORK OBSERVER -->
+    <div class="panel" id="p-network">
+      <div class="ph"><span class="icon">👁️</span> Network Observer <span class="tag tag-red"
+          style="margin-left:auto">Adversary</span></div>
+      <div class="pb">
+        <div class="placeholder" id="network-ph"><span class="emoji">👁️</span>Monitoring traffic...</div>
+        <div id="network-result"></div>
+      </div>
+    </div>
+
+    <!-- COST COMPARISON -->
+    <div class="panel full" id="p-cost">
+      <div class="ph"><span class="icon">💰</span> Cost Comparison <span class="tag tag-green"
+          style="margin-left:auto">Real-World Estimates</span></div>
+      <div class="pb">
+        <div class="placeholder" id="cost-ph"><span class="emoji">💰</span>Costs appear as you interact</div>
+        <div id="cost-result" style="display:none">
+          <div class="comparison" style="grid-template-columns:1fr 1fr">
+            <div class="cc doesnt" style="background:var(--red-dim)">
+              <h4 style="color:var(--red)">Traditional ID Verification</h4>
+              <ul id="cost-traditional" style="list-style:none;font-size:0.82rem"></ul>
+              <div
+                style="margin-top:0.6rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.1);font-weight:700;font-size:0.95rem"
+                id="cost-trad-total"></div>
+            </div>
+            <div class="cc sees" style="background:var(--green-dim)">
+              <h4 style="color:var(--green)">miTch Verification</h4>
+              <ul id="cost-mitch" style="list-style:none;font-size:0.82rem"></ul>
+              <div
+                style="margin-top:0.6rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.1);font-weight:700;font-size:0.95rem"
+                id="cost-mitch-total"></div>
+            </div>
+          </div>
+          <div class="rb" id="cost-savings" style="margin-top:0.5rem;text-align:center"></div>
+          <div class="dim" style="margin-top:0.5rem;font-size:0.75rem" id="cost-sources"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRYPTO-SHREDDING -->
+    <div class="panel full" id="p-shred">
+      <div class="ph"><span class="icon">🔥</span> Crypto-Shredding (GDPR Art. 17) <span class="tag tag-orange"
+          style="margin-left:auto">Provable Deletion</span></div>
+      <div class="pb">
+        <div class="placeholder" id="shred-ph"><span class="emoji">🔥</span>Issue a credential to see crypto-shredding
+          in action</div>
+        <div id="shred-result"></div>
+      </div>
+    </div>
+
+    <!-- REVOCATION -->
+    <div class="panel full" id="p-revoke">
+      <div class="ph"><span class="icon">🔄</span> Revocation (StatusList2021) <span class="tag tag-blue"
+          style="margin-left:auto">Privacy-Preserving</span></div>
+      <div class="pb">
+        <p class="dim">Issuer publishes a compressed bitstring. Verifier downloads the <strong>entire list</strong> and
+          checks locally. Issuer <strong>cannot tell</strong> which credential was checked.</p>
+        <div class="btn-row">
+          <button class="btn btn-danger" onclick="doRevoke()" id="btn-rev" disabled>⛔ Revoke</button>
+          <button class="btn btn-success" onclick="doUnrevoke()" id="btn-unrev" disabled>✅ Unrevoke</button>
+        </div>
+        <div id="revoke-result"></div>
+      </div>
+    </div>
+
+    <!-- AUDIT LOG -->
+    <div class="panel full" id="p-audit">
+      <div class="ph"><span class="icon">📋</span> Audit & Compliance <span class="tag tag-green"
+          style="margin-left:auto">GDPR Ready</span></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'audit-chain')">🔗 Audit Chain</div>
+        <div class="tab" onclick="switchTab(this,'consent-log')">📝 Consent Log</div>
+        <div class="tab" onclick="switchTab(this,'dpia-tab')">📋 DPIA (Art. 35)</div>
+      </div>
+      <div class="pb">
+        <div id="tc-audit-chain" class="tab-content active">
+          <div class="placeholder" id="audit-ph"><span class="emoji">🔗</span>Audit entries appear as you interact</div>
+          <div id="audit-chain-content"></div>
+        </div>
+        <div id="tc-consent-log" class="tab-content">
+          <div class="placeholder" id="consent-ph"><span class="emoji">📝</span>Consent receipts appear after
+            presentations</div>
+          <div id="consent-content"></div>
+        </div>
+        <div id="tc-dpia-tab" class="tab-content">
+          <div style="text-align:center;padding:1rem">
+            <button class="btn btn-primary" onclick="showDpia()">📋 Open Full DPIA & Compliance Framework</button>
+            <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment — GDPR Article 35</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DPIA Completion Popup -->
+  <div id="dpia-popup">
+    <div
+      style="background:var(--surface); border:1px solid var(--accent); border-radius:16px; padding:2rem; max-width:500px; width:90%; text-align:center; box-shadow:0 0 40px var(--accent-glow);">
+      <div style="font-size:2.5rem; margin-bottom:0.8rem;">✅🔒</div>
+      <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete — Data Forgotten</h2>
+      <p class="dim" style="margin-bottom:1rem;">The verifier confirmed your claim without seeing any personal data. The
+        session key has been destroyed — this interaction is now mathematically irrecoverable.</p>
+      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Want to see how we meet every GDPR requirement?</p>
+      <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showDpia()">📋 Read DPIA & Compliance Framework</button>
+        <button class="btn btn-ghost" onclick="closeDpiaPopup()">Close & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DPIA Full Document Overlay -->
+  <div class="overlay" id="dpia-overlay">
+    <div class="overlay-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h1
+          style="font-size:1.5rem;background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+          📋 Data Protection Impact Assessment</h1>
+        <button class="btn btn-ghost" onclick="hideDpia()">✕ Close</button>
+      </div>
+      <p class="dim">GDPR Article 35 — miTch Identity Verification Infrastructure</p>
+      <div style="margin:1rem 0">
+        <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
+        <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
+        <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
+        <span class="gdpr-badge">✅ Art. 7 Consent</span>
+        <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
+        <span class="gdpr-badge">✅ Art. 32 Security</span>
+        <span class="gdpr-badge">✅ Art. 35 DPIA</span>
+      </div>
+
+      <h2>1. Description of Processing</h2>
+      <h3>1.1 What We Do</h3>
+      <p>miTch is a <strong>privacy middleware layer</strong> for national digital identity systems (EUDI Wallet, ID
+        Austria, Smart-eID, GOV.UK Wallet, France Identité, Swiss E-ID, Nordic eIDs, and all future eIDAS 2.0 wallets).
+        It enables users to prove attributes (e.g., "I am over 18") without revealing raw personal data — acting as a
+        <strong>policy engine and forgetting layer</strong> between government-issued credentials and the services that
+        request them.
+      </p>
+      <p class="dim">miTch does not replace national ID systems. It uses their signed credentials and adds: selective
+        disclosure, consent management, crypto-shredding, unlinkability (pairwise DIDs), and a tamper-evident audit
+        chain.</p>
+      <h3>1.2 Roles</h3>
+      <table>
+        <tr>
+          <th>Role</th>
+          <th>Entity</th>
+          <th>Responsibility</th>
+        </tr>
+        <tr>
+          <td><strong>Data Subject</strong></td>
+          <td>User (Holder)</td>
+          <td>Controls all disclosure decisions via wallet</td>
+        </tr>
+        <tr>
+          <td><strong>Data Controller</strong></td>
+          <td>Verifier (e.g., shop)</td>
+          <td>Requests specific claims, processes result</td>
+        </tr>
+        <tr>
+          <td><strong>Data Processor</strong></td>
+          <td>miTch Infrastructure</td>
+          <td>Facilitates verification without accessing personal data</td>
+        </tr>
+        <tr>
+          <td><strong>Issuer</strong></td>
+          <td>State Provider</td>
+          <td>Signs credentials based on verified identity</td>
+        </tr>
+      </table>
+
+      <h3>1.3 Processing Flow</h3>
+      <div class="card">
+        <p><strong>Step 1 — Issuance:</strong> Raw PII encrypted with ephemeral key, predicates derived, credential
+          signed, key destroyed. Raw PII is mathematically irrecoverable.</p>
+        <p><strong>Step 2 — Presentation:</strong> User selects which claims to disclose. Only selected claims sent as
+          SD-JWT proof.</p>
+        <p><strong>Step 3 — Verification:</strong> Verifier validates proof. Receives only disclosed predicates. Issuer
+          is never contacted.</p>
+      </div>
+
+      <h2>2. Necessity & Proportionality</h2>
+      <table>
+        <tr>
+          <th>Traditional Approach</th>
+          <th>miTch Approach</th>
+        </tr>
+        <tr>
+          <td>Upload photo ID → name, birthdate, address collected</td>
+          <td>Prove <code>over_18: true</code> → one boolean, nothing else</td>
+        </tr>
+        <tr>
+          <td>Data stored in verifier's database → breach risk</td>
+          <td>No data stored → nothing to breach</td>
+        </tr>
+        <tr>
+          <td>Identity provider tracks every verification</td>
+          <td>Issuer doesn't know when/where credentials are used</td>
+        </tr>
+        <tr>
+          <td>Delete request = hope they actually delete</td>
+          <td>Crypto-shredding = mathematical guarantee</td>
+        </tr>
+      </table>
+
+      <h2>3. Risk Assessment</h2>
+      <table>
+        <tr>
+          <th>Risk</th>
+          <th>Severity</th>
+          <th>Likelihood</th>
+          <th>Mitigation</th>
+          <th>Residual</th>
+        </tr>
+        <tr>
+          <td>Verifier correlation across sessions</td>
+          <td class="risk-med">Medium</td>
+          <td class="risk-med">Medium</td>
+          <td>Pairwise DIDs, timing jitter, response padding</td>
+          <td class="risk-low">Low</td>
+        </tr>
+        <tr>
+          <td>Device compromise</td>
+          <td class="risk-high">High</td>
+          <td class="risk-low">Low</td>
+          <td>Secure enclave, biometric unlock, credential expiry</td>
+          <td class="risk-low">Low</td>
+        </tr>
+        <tr>
+          <td>Issuer tracking</td>
+          <td class="risk-med">Medium</td>
+          <td class="risk-low">Low</td>
+          <td>Pre-issued credentials, issuer never contacted</td>
+          <td class="risk-low">Low</td>
+        </tr>
+        <tr>
+          <td>Network traffic analysis</td>
+          <td class="risk-med">Medium</td>
+          <td class="risk-med">Medium</td>
+          <td>Response padding (4KB), timing jitter (50-200ms)</td>
+          <td class="risk-low">Low</td>
+        </tr>
+        <tr>
+          <td>Credential replay</td>
+          <td class="risk-high">High</td>
+          <td class="risk-low">Low</td>
+          <td>Nonce binding, holder key binding, expiry</td>
+          <td class="risk-low">Low</td>
+        </tr>
+      </table>
+
+      <h2>4. Technical Safeguards</h2>
+      <div class="card">
+        <h3>🔐 Cryptographic</h3>
+        <ul>
+          <li><strong>SD-JWT Selective Disclosure:</strong> Only chosen claims revealed</li>
+          <li><strong>Crypto-Shredding:</strong> Ephemeral keys encrypt PII → key destruction = provable data
+            destruction</li>
+          <li><strong>StatusList2021:</strong> Privacy-preserving revocation — issuer can't identify which credential
+            was checked</li>
+          <li><strong>Pairwise Ephemeral DIDs:</strong> Fresh DID per interaction — unlinkable across verifiers</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🛡️ Metadata Minimization</h3>
+        <ul>
+          <li><strong>Response Padding:</strong> All responses padded to 4KB</li>
+          <li><strong>Timing Jitter:</strong> 50-200ms random delay</li>
+          <li><strong>Per-Session Identifiers:</strong> HMAC-derived, unlinkable across verifiers</li>
+        </ul>
+      </div>
+
+      <h2>5. GDPR Compliance Matrix</h2>
+      <table>
+        <tr>
+          <th>Article</th>
+          <th>Requirement</th>
+          <th>Status</th>
+          <th>Implementation</th>
+        </tr>
+        <tr>
+          <td>Art. 5(1)(c)</td>
+          <td>Data minimization</td>
+          <td><span class="gdpr-badge">✅</span></td>
+          <td>Selective disclosure — only requested predicates</td>
+        </tr>
+        <tr>
+          <td>Art. 5(1)(e)</td>
+          <td>Storage limitation</td>
+          <td><span class="gdpr-badge">✅</span></td>
+          <td>Crypto-shredding — data self-destructs</td>
+        </tr>
+        <tr>
+          <td>Art. 7</td>
+          <td>Consent conditions</td>
+          <td><span class="gdpr-badge">✅</span></td>
+          <td>Informed, specific, freely given, withdrawable</td>
+        </tr>
+        <tr>
+          <td>Art. 17</td>
+          <td>Right to erasure</td>
+          <td><span class="gdpr-badge">✅✅</span></td>
+          <td>Crypto-shredding provides mathematical proof of destruction</td>
+        </tr>
+        <tr>
+          <td>Art. 25</td>
+          <td>Privacy by design</td>
+          <td><span class="gdpr-badge">✅✅</span></td>
+          <td>Core architecture — not an add-on</td>
+        </tr>
+        <tr>
+          <td>Art. 30</td>
+          <td>Processing records</td>
+          <td><span class="gdpr-badge">✅</span></td>
+          <td>ROPA with aggregate counts, no PII</td>
+        </tr>
+        <tr>
+          <td>Art. 35</td>
+          <td>DPIA</td>
+          <td><span class="gdpr-badge">✅</span></td>
+          <td>This document</td>
+        </tr>
+      </table>
+
+      <h2>6. What miTch Structurally Cannot Do</h2>
+      <div class="card">
+        <p>These are <strong>architectural guarantees</strong>, not policy promises:</p>
+        <ul>
+          <li>🚫 <strong>Cannot store raw PII</strong> — ephemeral keys destroyed after issuance</li>
+          <li>🚫 <strong>Cannot track credential usage</strong> — issuer never contacted during verification</li>
+          <li>🚫 <strong>Cannot see what users share</strong> — selective disclosure happens on-device</li>
+          <li>🚫 <strong>Cannot correlate users across verifiers</strong> — pairwise ephemeral DIDs</li>
+          <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
+        </ul>
+        <p class="dim" style="margin-top:0.8rem"><em>"miTch works not because it knows everything — but because it
+            structurally cannot know anything."</em></p>
+      </div>
+
+      <div style="text-align:center;margin-top:2rem;padding:1.5rem;background:var(--surface2);border-radius:12px">
+        <p style="font-size:1.1rem;font-weight:600">miTch — The Forgetting Layer</p>
+        <p class="dim">DPIA Version 1.0 — March 2026</p>
+        <button class="btn btn-ghost" onclick="hideDpia()" style="margin-top:1rem">← Back to Demo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-bar-text">miTch — Privacy Middleware · SD-JWT + Crypto-Shredding · <strong
+        style="color:var(--text)">No Server Required</strong></div>
+    <span class="status-badge" id="status-text">Ready</span>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Inline Crypto Simulation ────────────────────────────────────
+    // All logic runs in the browser. No server needed.
+
+    const STATE = {
+      credential: null,
+      revoked: false,
+      auditChain: [],
+      consents: [],
+      ephemeralKeyId: null,
+      chainHash: '0000000000000000',
+    };
+
+    const CLAIMS = {
+      over_18: true, over_16: true, over_21: false,
+      email_verified: true, jurisdiction: 'AT',
+    };
+
+    function sha256Sim(input) {
+      // Simple hash simulation for demo (not cryptographic)
+      let h = 0x811c9dc5;
+      for (let i = 0; i < input.length; i++) {
+        h ^= input.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return ('00000000' + (h >>> 0).toString(16)).slice(-8) +
+        ('00000000' + (Math.imul(h, 0x5bd1e995) >>> 0).toString(16)).slice(-8);
+    }
+
+    function genId() { return 'urn:uuid:' + crypto.randomUUID(); }
+    function genKeyId() { return 'ek-' + crypto.randomUUID().split('-')[0]; }
+    function ts() { return new Date().toISOString(); }
+    function tsShort() { return new Date().toLocaleTimeString(); }
+
+    function addAudit(action, evidence, color) {
+      const prevHash = STATE.chainHash;
+      const entry = { action, evidence, timestamp: ts(), previousHash: prevHash, entryHash: '' };
+      entry.entryHash = sha256Sim(prevHash + action + JSON.stringify(evidence) + entry.timestamp);
+      STATE.chainHash = entry.entryHash;
+      STATE.auditChain.push({ ...entry, _color: color || 'blue' });
+      renderAuditChain();
+    }
+
+    function addConsent(action, disclosed, hidden, verifier) {
+      STATE.consents.push({
+        id: genId(), action, verifier, timestamp: ts(),
+        claims: [
+          ...disclosed.map(n => ({ name: n, disclosed: true })),
+          ...hidden.map(n => ({ name: n, disclosed: false })),
+        ],
+      });
+      renderConsents();
+    }
+
+    // ─── Rendering ───────────────────────────────────────────────────
+
+    function setStatus(t) { document.getElementById('status-text').textContent = t; }
+
+    function setFlow(step) {
+      ['issue', 'engine', 'wallet', 'verify', 'shred'].forEach(s => {
+        document.getElementById('fs-' + s).classList.remove('active', 'done');
+      });
+      const order = ['issue', 'engine', 'wallet', 'verify', 'shred'];
+      const idx = order.indexOf(step);
+      for (let i = 0; i < idx; i++) document.getElementById('fs-' + order[i]).classList.add('done');
+      if (idx >= 0) document.getElementById('fs-' + order[idx]).classList.add('active');
+    }
+
+    function hl(id, color) {
+      const p = document.getElementById(id);
+      p.classList.remove('hl-green', 'hl-red', 'hl-blue', 'hl-orange');
+      if (color) p.classList.add('hl-' + color);
+      setTimeout(() => p.classList.remove('hl-green', 'hl-red', 'hl-blue', 'hl-orange'), 2500);
+    }
+
+    function switchTab(el, name) {
+      el.closest('.panel').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.closest('.panel').querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('tc-' + name).classList.add('active');
+    }
+
+    function renderAuditChain() {
+      if (!STATE.auditChain.length) return;
+      document.getElementById('audit-ph').style.display = 'none';
+      document.getElementById('audit-chain-content').innerHTML = STATE.auditChain.map(e => `
+    <div class="chain-entry fi">
+      <div class="chain-dot ${e._color}"></div>
+      <div>
+        <div><strong>${e.action}</strong> <span class="dim">— ${new Date(e.timestamp).toLocaleTimeString()}</span></div>
+        <div class="dim" style="font-family:var(--mono);font-size:0.72rem">hash: ${e.entryHash}... → prev: ${e.previousHash.substring(0, 12)}...</div>
+        ${e.evidence.categories ? `<div class="dim">categories: ${e.evidence.categories.join(', ')}</div>` : ''}
+        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof} destroyed</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function renderConsents() {
+      if (!STATE.consents.length) return;
+      document.getElementById('consent-ph').style.display = 'none';
+      const icons = { approved: '🟢', declined: '🔴', partial: '🟡' };
+      document.getElementById('consent-content').innerHTML = STATE.consents.map(r => `
+    <div class="chain-entry fi">
+      <div>${icons[r.action] || '⚪'}</div>
+      <div style="flex:1">
+        <div><strong>${r.verifier}</strong> <span class="dim">— ${new Date(r.timestamp).toLocaleTimeString()}</span></div>
+        <div>${r.claims.map(c => c.disclosed
+        ? `<span class="tag tag-green" style="margin:1px">${c.name}</span>`
+        : `<span class="tag tag-red" style="margin:1px">${c.name}</span>`).join(' ')}</div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ─── DPIA Overlay ────────────────────────────────────────────────
+
+    function showDpia() { document.getElementById('dpia-overlay').classList.add('visible'); }
+    function hideDpia() { document.getElementById('dpia-overlay').classList.remove('visible'); }
+    function showDpiaPopup() { document.getElementById('dpia-popup').style.display = 'flex'; }
+    function closeDpiaPopup() { document.getElementById('dpia-popup').style.display = 'none'; }
+
+    // ─── Step 1: Issue ───────────────────────────────────────────────
+
+    async function doIssue() {
+      document.getElementById('btn-issue').disabled = true;
+      setStatus('Issuing credential...'); setFlow('issue'); hl('p-issuer', 'blue');
+
+      // Simulate processing delay
+      await delay(600);
+
+      STATE.ephemeralKeyId = genKeyId();
+      const credId = genId();
+      const expires = new Date(Date.now() + 90 * 24 * 3600 * 1000).toISOString();
+
+      STATE.credential = { id: credId, claims: { ...CLAIMS }, expires };
+
+      document.getElementById('issuer-result').innerHTML = `
+    <div class="rb fi" style="margin-top:0.8rem">
+      <div><span class="k">credential_id:</span> ${credId.split(':').pop().substring(0, 8)}...</div>
+      <div><span class="k">type:</span> age_verification</div>
+      <div><span class="k">issuer:</span> https://eid.example.at</div>
+      <div><span class="k">claims:</span> ${Object.keys(CLAIMS).length} (hashed in SD-JWT)</div>
+      <div><span class="k">expires:</span> ${expires.split('T')[0]}</div>
+      <div><span class="k">holder_bound:</span> <span class="vt">true</span> (Ed25519)</div>
+    </div>`;
+
+      // Crypto-shred display
+      document.getElementById('shred-ph').style.display = 'none';
+      document.getElementById('shred-result').innerHTML = `
+    <div class="fi">
+      <div class="comparison">
+        <div class="cc sees">
+          <h4>Before Shredding</h4>
+          <ul>
+            <li>Raw PII: name, birthdate, email</li>
+            <li>Encrypted with key: ${STATE.ephemeralKeyId}</li>
+            <li>Ciphertext: a7f3b2e1c9d8...</li>
+          </ul>
+        </div>
+        <div class="cc doesnt">
+          <h4>After Shredding</h4>
+          <ul>
+            <li>Key zeroed & destroyed</li>
+            <li>Method: overwrite + deref</li>
+            <li>Decryption: IMPOSSIBLE ✅</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rb">
+        <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} shredded — raw PII is mathematically irrecoverable</div>
+        <div><span class="k">destroyed_at:</span> ${ts()}</div>
+      </div>
+    </div>`;
+      hl('p-shred', 'orange');
+
+      addAudit('credential_issued', { categories: ['age_predicate', 'email_status', 'jurisdiction'] }, 'blue');
+      addAudit('crypto_shred', { shredProof: STATE.ephemeralKeyId, categories: ['raw_personal_data'] }, 'orange');
+
+      // Show issuance costs
+      renderCosts('issuance');
+
+      // Show wallet with claims
+      document.getElementById('wallet-ph').style.display = 'none';
+      document.getElementById('wallet-ctrl').style.display = 'block';
+      document.getElementById('wallet-start').style.display = 'block';
+      document.getElementById('wallet-consent').style.display = 'none';
+      document.getElementById('wallet-result').innerHTML = '';
+      document.getElementById('claims-list').innerHTML = Object.keys(CLAIMS).map(name => `
+    <li><input type="checkbox" id="c-${name}" value="${name}" ${name === 'over_18' ? 'checked' : ''}>
+    <label for="c-${name}">${name}: <span style="color:${CLAIMS[name] ? 'var(--green)' : 'var(--red)'}">${CLAIMS[name]}</span></label></li>
+  `).join('');
+
+      document.getElementById('btn-rev').disabled = false;
+      document.getElementById('btn-unrev').disabled = false;
+      document.getElementById('btn-issue').disabled = false;
+
+      setFlow('wallet'); setStatus('Credential issued — select claims & start verification');
+    }
+
+    // ─── Step 2: Start Verification → Policy Engine ──────────────────
+
+    async function startVerification() {
+      const allClaims = Object.keys(CLAIMS);
+      const checked = allClaims.filter(n => document.getElementById('c-' + n)?.checked);
+      if (!checked.length) { alert('Select at least one claim.'); return; }
+
+      document.getElementById('wallet-start').style.display = 'none';
+      setFlow('engine'); setStatus('Policy Engine evaluating...');
+
+      // Show engine steps animated
+      document.getElementById('engine-ph').style.display = 'none';
+      const steps = document.getElementById('engine-steps');
+      steps.style.display = 'block';
+
+      const engineChecks = [
+        { label: '🔍 Verifier identity check (did:mitch:verifier-coolshop)', delay: 400 },
+        { label: '📋 Matching policy rule: "age_verification" → CoolShop.at', delay: 500 },
+        { label: `📊 Claims requested: ${checked.join(', ')}`, delay: 400 },
+        { label: '🛡️ Data minimization check — no excess claims', delay: 500 },
+        {
+          label: checked.length === 1 && checked[0] === 'over_18'
+            ? '✅ Single predicate, trusted verifier → ALLOW (auto-approve)'
+            : '⚠️ Multiple claims or sensitive data → PROMPT (consent required)', delay: 600
+        },
+      ];
+
+      const needsConsent = !(checked.length === 1 && checked[0] === 'over_18');
+      const verdict = STATE.revoked ? 'DENY (revoked)' : needsConsent ? 'PROMPT' : 'ALLOW';
+
+      steps.innerHTML = engineChecks.map((s, i) => `<div class="engine-step" id="estep-${i}">${s.label}</div>`).join('') +
+        `<div class="engine-step" id="estep-verdict" style="font-weight:700"></div>`;
+
+      // Animate steps
+      for (let i = 0; i < engineChecks.length; i++) {
+        await delay(engineChecks[i].delay);
+        document.getElementById('estep-' + i).classList.add('active');
+        await delay(200);
+        document.getElementById('estep-' + i).classList.remove('active');
+        document.getElementById('estep-' + i).classList.add('pass');
+      }
+
+      await delay(300);
+      const verdictEl = document.getElementById('estep-verdict');
+      if (STATE.revoked) {
+        verdictEl.textContent = '⛔ VERDICT: DENY — credential revoked';
+        verdictEl.classList.add('fail');
+        hl('p-engine', 'red');
+        setStatus('Denied — credential revoked');
+        addAudit('verification_denied', { reason: 'revoked', categories: checked }, 'red');
+        return;
+      }
+
+      verdictEl.textContent = needsConsent
+        ? `⚠️ VERDICT: PROMPT — user consent required for: ${checked.join(', ')}`
+        : `✅ VERDICT: ALLOW — auto-approved (minimal disclosure)`;
+      verdictEl.classList.add(needsConsent ? 'active' : 'pass');
+      hl('p-engine', needsConsent ? 'orange' : 'green');
+
+      if (needsConsent) {
+        setFlow('wallet');
+        document.getElementById('wallet-consent').style.display = 'block';
+        document.getElementById('consent-reason').textContent =
+          `CoolShop.at requests: ${checked.join(', ')}. This includes more than the minimum required data. Your explicit consent is needed.`;
+        setStatus('Consent required — approve or reject');
+      } else {
+        await completeVerification(checked);
+      }
+    }
+
+    // ─── Step 3: Consent ─────────────────────────────────────────────
+
+    async function doApprove() {
+      document.getElementById('wallet-consent').style.display = 'none';
+      const allClaims = Object.keys(CLAIMS);
+      const checked = allClaims.filter(n => document.getElementById('c-' + n)?.checked);
+      const hidden = allClaims.filter(n => !checked.includes(n));
+      addConsent(checked.length === allClaims.length ? 'approved' : 'partial', checked, hidden, 'CoolShop.at');
+      addAudit('consent_given', { categories: checked }, 'green');
+      await completeVerification(checked);
+    }
+
+    function doReject() {
+      document.getElementById('wallet-consent').style.display = 'none';
+      document.getElementById('wallet-start').style.display = 'block';
+      const allClaims = Object.keys(CLAIMS);
+      addConsent('declined', [], allClaims, 'CoolShop.at');
+      addAudit('verification_denied', { reason: 'user_rejected', categories: [] }, 'red');
+      hl('p-wallet', 'red'); hl('p-verifier', 'red');
+      document.getElementById('verifier-ph').style.display = 'none';
+      document.getElementById('verifier-result').innerHTML = `
+    <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
+    <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Cannot distinguish from "credential not available".</p></div>`;
+      setStatus('Rejected by user'); setFlow('wallet');
+    }
+
+    // ─── Step 4: Complete Verification ───────────────────────────────
+
+    async function completeVerification(disclosed) {
+      setFlow('verify'); setStatus('Generating proof...');
+      await delay(800);
+
+      const allClaims = Object.keys(CLAIMS);
+      const hidden = allClaims.filter(n => !disclosed.includes(n));
+
+      // Wallet result
+      document.getElementById('wallet-result').innerHTML = `
+    <div class="rb fi" style="margin-top:0.6rem">
+      <div><span class="k">disclosed:</span> <span class="vt">${disclosed.join(', ')}</span></div>
+      <div><span class="k">hidden:</span> <span class="hv">${hidden.join(', ')}</span></div>
+      <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim('coolshop' + Date.now()).substring(0, 16)}...</span></div>
+    </div>`;
+
+      // Verifier result
+      document.getElementById('verifier-ph').style.display = 'none';
+      document.getElementById('verifier-result').innerHTML = `
+    <div class="fi">
+      <div style="margin-bottom:0.5rem">
+        <span class="tag tag-green">✅ PROOF VALID</span>
+        <span class="tag tag-blue" style="margin-left:4px">SD-JWT</span>
+      </div>
+      <div class="comparison">
+        <div class="cc sees"><h4>Verifier sees</h4><ul>${disclosed.map(c => `<li>${c}: ${CLAIMS[c]}</li>`).join('')}</ul></div>
+        <div class="cc doesnt"><h4>Verifier does NOT see</h4><ul>${hidden.map(c => `<li>${c}</li>`).join('')}<li>Name</li><li>Birthdate</li><li>Address</li></ul></div>
+      </div>
+    </div>`;
+
+      // Network observer
+      const actualBytes = JSON.stringify(disclosed.map(c => [c, CLAIMS[c]])).length;
+      document.getElementById('network-ph').style.display = 'none';
+      document.getElementById('network-result').innerHTML = `
+    <div class="fi">
+      <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
+      <div class="rb" style="margin-top:0.5rem">
+        <div><span class="k">payload:</span> <span class="hv">4096 bytes padded encrypted blob</span></div>
+        <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B</div>
+        <div><span class="k">can_identify_user:</span> <span class="vf">false</span> (pairwise DID)</div>
+        <div><span class="k">can_infer_claims:</span> <span class="vf">false</span> (fixed padding)</div>
+        <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter applied</span></div>
+      </div>
+      <p class="dim" style="margin-top:0.5rem">Observer sees a fixed-size blob. Can't determine claims, identity, or decisions.</p>
+    </div>`;
+
+      hl('p-verifier', 'green'); hl('p-network', 'red');
+      addAudit('verification_allowed', { categories: disclosed, verifier: sha256Sim('coolshop').substring(0, 12) }, 'green');
+
+      // Step 5: Shred
+      await delay(500);
+      setFlow('shred'); setStatus('Session key shredded ✅');
+
+      addAudit('session_key_shredded', { categories: ['ephemeral_session_material'] }, 'orange');
+
+      // Update costs to verification
+      renderCosts('verification');
+
+      // Show wallet start again for next round
+      document.getElementById('wallet-start').style.display = 'block';
+
+      // Show DPIA popup
+      setTimeout(showDpiaPopup, 800);
+    }
+
+    // ─── Cost Simulation ─────────────────────────────────────────────
+    // Based on real-world pricing from identity verification providers (2024/2025)
+
+    const COSTS = {
+      traditional: {
+        // Sources: Jumio, Onfido, IDnow, Veriff public pricing / industry reports
+        // ISSUANCE (onboarding a new user)
+        idDocScan: { label: 'ID Document Scan + OCR', avg: 1.50, phase: 'issuance', source: 'Jumio/Onfido volume pricing 2024' },
+        remoteBiometric: { label: 'Remote Biometric Match (Cloud)', avg: 0.80, phase: 'issuance', source: 'IDnow/Veriff — NOT local Face ID (that\'s free)' },
+        databaseCheck: { label: 'PEP/Sanctions DB Lookup', avg: 0.25, phase: 'issuance', source: 'Refinitiv World-Check / Dow Jones' },
+        onboardStore: { label: 'User Record Creation (DB)', avg: 0.02, phase: 'issuance', source: 'AWS RDS + KMS encryption' },
+        // VERIFICATION (each time a user proves something)
+        apiCall: { label: 'API Call (Gateway + Auth)', avg: 0.008, phase: 'verification', source: 'AWS API GW + Cognito' },
+        dbLookup: { label: 'PII Database Lookup', avg: 0.005, phase: 'verification', source: 'RDS read replica query' },
+        dataStorage: { label: 'PII Storage (ongoing)', avg: 0.03, phase: 'both', source: 'AWS RDS + KMS: ~€0.03/record/month' },
+        compliance: { label: 'GDPR Compliance (DPO, audits)', avg: 0.20, phase: 'both', source: 'DLA Piper GDPR survey: avg. €1.3M/yr ÷ ~6.5M tx' },
+        breachRisk: { label: 'Data Breach Risk Reserve', avg: 0.12, phase: 'both', source: 'IBM Cost of Data Breach 2024: €4.45M avg ÷ ~37k records' },
+        consentMgmt: { label: 'Consent Management Platform', avg: 0.04, phase: 'both', source: 'OneTrust/Cookiebot enterprise tier' },
+      },
+      mitch: {
+        // ISSUANCE
+        eidAuth: { label: 'eID Authentication (one-time)', avg: 0.15, phase: 'issuance', source: 'A-Trust Handy-Signatur / ID Austria' },
+        credSigning: { label: 'Credential Signing (HSM)', avg: 0.01, phase: 'issuance', source: 'AWS CloudHSM: €1.40/hr ÷ ~150 ops/s' },
+        // VERIFICATION
+        statusList: { label: 'StatusList CDN (revocation)', avg: 0.0003, phase: 'verification', source: 'CloudFront: €0.085/GB, bitstring ~1KB' },
+        clientCrypto: { label: 'Client-Side Crypto (SD-JWT)', avg: 0, phase: 'verification', source: 'WebCrypto API on user device — free' },
+        localBiometric: { label: 'Biometric (Face ID / Touch ID)', avg: 0, phase: 'verification', source: 'Device-local WebAuthn — free (Apple/Google provide it)' },
+        pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', source: 'Derived on-device, no network call' },
+        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Crypto-shredded at issuance — nothing to store' },
+        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'No PII retained → no breach vector → €0' },
+        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Automated audit chain replaces manual DPO review' },
+        consentMgmt: { label: 'Consent Management', avg: 0, phase: 'both', source: 'Built into wallet UI — no external CMP needed' },
+      }
+    };
+
+    // Track cumulative costs across the session
+    const SESSION_COSTS = { traditional: 0, mitch: 0, steps: [] };
+
+    function renderCosts(phase) {
+      // phase: 'issuance' or 'verification'
+      document.getElementById('cost-ph').style.display = 'none';
+      document.getElementById('cost-result').style.display = 'block';
+
+      // Get items for this phase
+      const tradKeys = Object.keys(COSTS.traditional).filter(k => {
+        const p = COSTS.traditional[k].phase;
+        return p === phase || p === 'both';
+      });
+      const mitchKeys = Object.keys(COSTS.mitch).filter(k => {
+        const p = COSTS.mitch[k].phase;
+        return p === phase || p === 'both';
+      });
+
+      const tradPhaseTotal = tradKeys.reduce((s, k) => s + COSTS.traditional[k].avg, 0);
+      const mitchPhaseTotal = mitchKeys.reduce((s, k) => s + COSTS.mitch[k].avg, 0);
+
+      // Add to session cumulative
+      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, mitch: mitchPhaseTotal });
+      SESSION_COSTS.traditional = SESSION_COSTS.steps.reduce((s, x) => s + x.trad, 0);
+      SESSION_COSTS.mitch = SESSION_COSTS.steps.reduce((s, x) => s + x.mitch, 0);
+
+      // Render current phase items
+      document.getElementById('cost-traditional').innerHTML = tradKeys.map(k => {
+        const c = COSTS.traditional[k];
+        return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
+      <span>${c.label}</span>
+      <span style="font-family:var(--mono);color:var(--red);white-space:nowrap">€${c.avg.toFixed(3)}</span>
+    </li>`;
+      }).join('');
+
+      document.getElementById('cost-mitch').innerHTML = mitchKeys.map(k => {
+        const c = COSTS.mitch[k];
+        return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
+      <span>${c.label}</span>
+      <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+        ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+      </span>
+    </li>`;
+      }).join('');
+
+      // Phase subtotals
+      const phaseLabel = phase === 'issuance' ? '① Issuance' : '② Verification';
+      document.getElementById('cost-trad-total').innerHTML =
+        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--red);font-family:var(--mono)">€${tradPhaseTotal.toFixed(3)}</span>`;
+      document.getElementById('cost-mitch-total').innerHTML =
+        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--green);font-family:var(--mono)">€${mitchPhaseTotal.toFixed(3)}</span>`;
+
+      // Session total summary (always visible)
+      const savingsPct = SESSION_COSTS.traditional > 0
+        ? ((1 - SESSION_COSTS.mitch / SESSION_COSTS.traditional) * 100).toFixed(0)
+        : '0';
+      const savedPerYear = ((SESSION_COSTS.traditional - SESSION_COSTS.mitch) * 1000000).toFixed(0);
+
+      const stepsHtml = SESSION_COSTS.steps.map(s =>
+        `<span class="dim">${s.phase === 'issuance' ? '①' : '②'} ${s.phase}:</span> ` +
+        `<span style="color:var(--red)">€${s.trad.toFixed(3)}</span> vs <span style="color:var(--green)">€${s.mitch.toFixed(3)}</span>`
+      ).join(' &nbsp;│&nbsp; ');
+
+      document.getElementById('cost-savings').innerHTML = `
+    <div style="margin-bottom:0.5rem;font-size:0.8rem">${stepsHtml}</div>
+    <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO USER (Issuance + Verification)</div>
+      <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
+        <div>
+          <div style="font-size:0.7rem;color:var(--red)">Traditional</div>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:var(--mono)">€${SESSION_COSTS.traditional.toFixed(3)}</div>
+        </div>
+        <div style="font-size:1.5rem">→</div>
+        <div>
+          <div style="font-size:0.7rem;color:var(--green)">miTch</div>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)">€${SESSION_COSTS.mitch.toFixed(3)}</div>
+        </div>
+        <div style="padding:0.4rem 0.8rem;background:var(--green-dim);border-radius:8px">
+          <div style="font-size:0.7rem;color:var(--green)">Savings</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${savingsPct}%</div>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)">
+        Bei 1M Users/Jahr: <strong style="color:var(--green)">€${Number(savedPerYear).toLocaleString('de-DE')}</strong> gespart
+      </div>
+    </div>
+  `;
+
+      // Sources
+      const allSources = [...new Set([
+        ...tradKeys.map(k => COSTS.traditional[k].source),
+        ...mitchKeys.map(k => COSTS.mitch[k].source),
+      ].filter(Boolean))];
+      document.getElementById('cost-sources').innerHTML =
+        '📎 ' + allSources.join(' · ');
+    }
+
+    // ─── Revocation ──────────────────────────────────────────────────
+
+    function doRevoke() {
+      STATE.revoked = true;
+      document.getElementById('revoke-result').innerHTML = `<div class="rb fi"><span class="vf">⛔ Credential #42 revoked</span> <span class="dim">— start verification to see effect</span></div>`;
+      hl('p-revoke', 'red'); setStatus('Revoked');
+      addAudit('credential_revoked', { categories: ['age_predicate'] }, 'red');
+    }
+
+    function doUnrevoke() {
+      STATE.revoked = false;
+      document.getElementById('revoke-result').innerHTML = `<div class="rb fi"><span class="vt">✅ Credential #42 unrevoked</span></div>`;
+      hl('p-revoke', 'green'); setStatus('Unrevoked');
+      addAudit('credential_unrevoked', { categories: ['age_predicate'] }, 'green');
+    }
+
+    // ─── Reset ───────────────────────────────────────────────────────
+
+    function doReset() {
+      STATE.credential = null; STATE.revoked = false;
+      STATE.auditChain = []; STATE.consents = []; STATE.chainHash = '0000000000000000';
+      ['issuer-result', 'wallet-result', 'verifier-result', 'network-result', 'revoke-result', 'shred-result', 'audit-chain-content', 'consent-content'].forEach(id => document.getElementById(id).innerHTML = '');
+      ['wallet-ph', 'verifier-ph', 'network-ph', 'shred-ph', 'audit-ph', 'consent-ph', 'engine-ph', 'cost-ph'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+      document.getElementById('cost-result').style.display = 'none';
+      SESSION_COSTS.traditional = 0; SESSION_COSTS.mitch = 0; SESSION_COSTS.steps = [];
+      document.getElementById('wallet-ctrl').style.display = 'none';
+      document.getElementById('engine-steps').style.display = 'none';
+      ['btn-rev', 'btn-unrev'].forEach(id => document.getElementById(id).disabled = true);
+      document.getElementById('btn-issue').disabled = false;
+      setFlow('issue'); setStatus('Ready');
+    }
+
+    // ─── Utils ───────────────────────────────────────────────────────
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ─── UI Enhancements (non-breaking additions) ───────────────────
+
+    // Progress mapping per flow step
+    const FLOW_PCT = { issue: 10, engine: 38, wallet: 55, verify: 80, shred: 100 };
+
+    // Wrap original setFlow to also drive connectors + progress bar
+    (function () {
+      const _orig = setFlow;
+      setFlow = function (step) {
+        _orig(step);
+        const fill = document.getElementById('progress-fill');
+        if (fill) fill.style.width = (FLOW_PCT[step] ?? 0) + '%';
+        const order = ['issue', 'engine', 'wallet', 'verify', 'shred'];
+        const idx = order.indexOf(step);
+        for (let i = 1; i <= 4; i++) {
+          const fc = document.getElementById('fc-' + i);
+          if (fc) fc.classList.toggle('done', i <= idx);
+        }
+      };
+    })();
+
+    // Wrap showDpiaPopup / closeDpiaPopup for CSS-class animation
+    (function () {
+      const _show = showDpiaPopup;
+      showDpiaPopup = function () {
+        const el = document.getElementById('dpia-popup');
+        el.classList.add('show');
+      };
+      const _close = closeDpiaPopup;
+      closeDpiaPopup = function () {
+        document.getElementById('dpia-popup').classList.remove('show');
+      };
+    })();
+
+    // Carousel — wraps the 5 regular panels in a swipeable track on mobile
+    function initCarousel() {
+      const grid = document.getElementById('grid-main');
+      if (!grid) return;
+      const regularPanels = Array.from(grid.children).filter(
+        el => el.classList.contains('panel') && !el.classList.contains('full')
+      );
+      if (!regularPanels.length) return;
+
+      const track = document.createElement('div');
+      track.id = 'cards-track';
+      grid.insertBefore(track, regularPanels[0]);
+      regularPanels.forEach(p => track.appendChild(p));
+
+      const nav = document.createElement('div');
+      nav.className = 'carousel-nav';
+      nav.innerHTML =
+        '<button class="carousel-btn" onclick="carMove(-1)" aria-label="Previous">‹</button>' +
+        '<div class="carousel-dots" id="carousel-dots">' +
+        regularPanels.map((_, i) =>
+          '<button class="carousel-dot' + (i === 0 ? ' active' : '') + '" onclick="carGoTo(' + i + ')" aria-label="Panel ' + (i + 1) + '"></button>'
+        ).join('') +
+        '</div>' +
+        '<button class="carousel-btn" onclick="carMove(1)" aria-label="Next">›</button>';
+      grid.insertBefore(nav, track.nextSibling);
+
+      // Touch swipe
+      let _startX = 0;
+      track.addEventListener('touchstart', e => { _startX = e.touches[0].clientX; }, { passive: true });
+      track.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - _startX;
+        if (Math.abs(dx) > 40) carMove(dx < 0 ? 1 : -1);
+      }, { passive: true });
+
+      // Sync dots on scroll
+      track.addEventListener('scroll', () => {
+        const idx = Math.round(track.scrollLeft / Math.max(track.offsetWidth, 1));
+        _updateDots(idx);
+      }, { passive: true });
+    }
+
+    let _carIdx = 0;
+    function carMove(dir) {
+      const track = document.getElementById('cards-track');
+      if (!track) return;
+      const count = track.querySelectorAll('.panel').length;
+      _carIdx = Math.max(0, Math.min(count - 1, _carIdx + dir));
+      track.scrollTo({ left: _carIdx * track.offsetWidth, behavior: 'smooth' });
+      _updateDots(_carIdx);
+    }
+    function carGoTo(idx) {
+      _carIdx = idx;
+      const track = document.getElementById('cards-track');
+      if (track) track.scrollTo({ left: idx * track.offsetWidth, behavior: 'smooth' });
+      _updateDots(idx);
+    }
+    function _updateDots(idx) {
+      _carIdx = idx;
+      document.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+
+    // Auto-focus active panel in carousel when flow step changes (mobile)
+    (function () {
+      const _orig = setFlow;
+      const PANEL_ORDER = ['p-issuer', 'p-engine', 'p-wallet', 'p-verifier', 'p-network'];
+      setFlow = function (step) {
+        _orig(step);
+        if (window.innerWidth <= 768) {
+          const map = { issue: 0, engine: 1, wallet: 2, verify: 3, shred: 2 };
+          const idx = map[step];
+          if (idx !== undefined) carGoTo(idx);
+        } else {
+          const map = { issue: 'p-issuer', engine: 'p-engine', wallet: 'p-wallet', verify: 'p-verifier', shred: 'p-shred' };
+          const elId = map[step];
+          if (elId) {
+            const el = document.getElementById(elId);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      };
+    })();
+
+    // Init
+    initCarousel();
+  </script>
+</body>
+
+</html>
