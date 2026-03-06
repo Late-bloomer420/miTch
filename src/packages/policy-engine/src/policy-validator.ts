@@ -33,6 +33,20 @@ export function validatePolicy(policy: PolicyManifest): ValidationResult {
         errors.push(`SYNTAX: Invalid version format: ${policy.version}`);
     }
 
+    // S-02: manifest_version (monotonic counter)
+    if (policy.manifest_version === undefined) {
+        errors.push('S-02: Missing manifest_version (monotonic counter required).');
+    } else if (!Number.isInteger(policy.manifest_version) || policy.manifest_version < 1) {
+        errors.push(`S-02: manifest_version must be a positive integer, got: ${policy.manifest_version}`);
+    }
+
+    // S-02: manifest_hash (tamper detection)
+    if (!policy.manifest_hash) {
+        errors.push('S-02: Missing manifest_hash (SHA-256 of manifest content required).');
+    } else if (!/^[0-9a-f]{64}$/.test(policy.manifest_hash)) {
+        errors.push(`S-02: manifest_hash must be a 64-char lowercase hex string.`);
+    }
+
     if (!Array.isArray(policy.rules)) {
         errors.push('SYNTAX: Rules must be an array.');
     }
@@ -113,6 +127,31 @@ function validateIssuer(issuer: TrustedIssuer, index: number, errors: string[]) 
             errors.push(`ISSUER[${index}]: Invalid validUntil date format.`);
         }
     }
+}
+
+// ─── S-02: Rollback Protection ────────────────────────────────────────────────
+
+/**
+ * Rollback-Schutz: Prüft ob ein neues Manifest gültig ist verglichen mit der
+ * zuletzt akzeptierten Version.
+ *
+ * Returns { ok: true } if the new manifest is accepted.
+ * Returns { ok: false, reason } if the new manifest is rejected (rollback attempt).
+ */
+export function checkManifestRollback(
+    incoming: PolicyManifest,
+    trustedVersion: number
+): { ok: boolean; reason?: string } {
+    if (incoming.manifest_version === undefined) {
+        return { ok: false, reason: 'S-02: Incoming manifest has no manifest_version — rejected.' };
+    }
+    if (incoming.manifest_version < trustedVersion) {
+        return {
+            ok: false,
+            reason: `S-02: Rollback attack detected — incoming v${incoming.manifest_version} < trusted v${trustedVersion}.`
+        };
+    }
+    return { ok: true };
 }
 
 function validateRule(rule: PolicyRule, index: number, errors: string[]) {

@@ -17,6 +17,18 @@ export interface PolicyManifest {
     rules: PolicyRule[];
     globalSettings?: GlobalPolicySettings;
     delegationRules?: DelegationRules;
+
+    /**
+     * S-02: Monotonisch aufsteigender Versionszähler (Integer ≥ 1).
+     * Rollback-Schutz: Manifest mit Version < gespeicherter Version wird abgelehnt.
+     */
+    manifest_version?: number;
+
+    /**
+     * S-02: SHA-256 des Manifest-Inhalts (ohne dieses Feld selbst), hex-kodiert.
+     * Ermöglicht Tamper-Erkennung beim Laden des Manifests.
+     */
+    manifest_hash?: string;
 }
 
 /**
