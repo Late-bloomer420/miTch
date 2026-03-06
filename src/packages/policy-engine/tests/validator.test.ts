@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest';
 import { validatePolicy, checkManifestRollback } from '../src/policy-validator';
 import { PolicyManifest } from '@mitch/shared-types';

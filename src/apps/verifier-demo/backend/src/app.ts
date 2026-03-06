@@ -97,12 +97,12 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
             console.log('?? Loading Verifier Keys from disk...');
             const data = JSON.parse(fs.readFileSync(KEY_FILE, 'utf-8'));
 
-            const publicKey = await (globalThis as any).crypto.subtle.importKey(
+            const publicKey = await globalThis.crypto.subtle.importKey(
                 'jwk', data.publicKey,
                 { name: 'RSA-OAEP', hash: 'SHA-256' },
                 true, ['encrypt', 'wrapKey']
             );
-            const privateKey = await (globalThis as any).crypto.subtle.importKey(
+            const privateKey = await globalThis.crypto.subtle.importKey(
                 'jwk', data.privateKey,
                 { name: 'RSA-OAEP', hash: 'SHA-256' },
                 true, ['decrypt', 'unwrapKey']
@@ -117,7 +117,7 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
 
     // 2. Generate New
     console.log('? Generating NEW Verifier Keys...');
-    verifierKeyPair = await (globalThis as any).crypto.subtle.generateKey(
+    verifierKeyPair = await globalThis.crypto.subtle.generateKey(
         {
             name: 'RSA-OAEP',
             modulusLength: 2048,
@@ -130,8 +130,8 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
 
     // 3. Save
     if (!verifierKeyPair) throw new Error('KeyGen failed');
-    const pubJwk = await (globalThis as any).crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey);
-    const privJwk = await (globalThis as any).crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey);
+    const pubJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey);
+    const privJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey);
 
     fs.writeFileSync(KEY_FILE, JSON.stringify({ publicKey: pubJwk, privateKey: privJwk }, null, 2));
     console.log(`?? Saved stable keys to ${KEY_FILE}`);
@@ -165,7 +165,7 @@ app.get('/health', (req, res) => {
         metrics: metrics.get(),
         system: {
             rate_limiter: rateLimiter.size(),
-            nonce_store_entries: (nonceStore as any).entries?.size || 0
+            nonce_store_entries: (nonceStore as { entries?: { size: number } }).entries?.size || 0
         }
     });
 });
@@ -174,7 +174,7 @@ app.get('/health', (req, res) => {
 // Supports both raw /did.json (did:mitch) and standard /.well-known/did.json (did:web)
 app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
     const keys = await getVerifierKeys();
-    const publicKeyJwk = await (globalThis as any).crypto.subtle.exportKey('jwk', keys.publicKey);
+    const publicKeyJwk = await globalThis.crypto.subtle.exportKey('jwk', keys.publicKey);
     const baseUrl = process.env.VERIFIER_BASE_URL || `${req.protocol}://${req.get('host')}`;
 
     // Minimal DID Document
@@ -234,7 +234,7 @@ app.post('/present', async (req, res) => {
 
         // The Magic: SDK handles unwrapping, AAD re-binding, Proof-Boundary Check, and Decryption
         // Returns VerificationResult { vp, aad, proof, timestamp }
-        const result = await sdk.verifyPresentation<any>(JSON.stringify(req.body));
+        const result = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
         const presentation = result.vp; // Extract the actual VC bundle
 
         console.log('?? Decrypted Presentation Payload:', JSON.stringify(presentation, null, 2));
@@ -268,12 +268,12 @@ app.post('/present', async (req, res) => {
 
                 // 3. Verify Signature (Real ECDSA P-256)
                 const verifyFn = async (data: string, sig: string) => {
-                    const identityKeyJwk = (zkpProof as any).publicKeyJwk;
+                    const identityKeyJwk = (zkpProof as Record<string, unknown>).publicKeyJwk;
                     if (!identityKeyJwk) {
                         console.warn('? Missing Public Key in Proof');
                         return false;
                     }
-                    const key = await (globalThis as any).crypto.subtle.importKey(
+                    const key = await globalThis.crypto.subtle.importKey(
                         'jwk', identityKeyJwk,
                         { name: 'ECDSA', namedCurve: 'P-256' },
                         true, ['verify']
@@ -320,19 +320,20 @@ app.post('/present', async (req, res) => {
             console.log('? VERIFICATION FAILED: minor detected or proof invalid');
             res.status(403).json({ ok: false, error: 'AGE_NOT_VERIFIED' });
         }
-    } catch (e: any) {
-        console.error('?? Verification/Decryption Error:', e.message);
+    } catch (e: unknown) {
+        console.error('?? Verification/Decryption Error:', e instanceof Error ? e.message : String(e));
 
         let status = 400;
         let errorKey = 'VERIFICATION_FAILED';
 
         // Map SDK Errors to HTTP Status
-        if (e.name === 'ReplayDetectedError') { status = 409; errorKey = 'REPLAY_DETECTED'; }
-        else if (e.name === 'TokenExpiredError') { status = 410; errorKey = 'TOKEN_EXPIRED'; }
-        else if (e.name === 'ProofSignatureError') { status = 401; errorKey = 'INVALID_SIGNATURE'; }
+        const errName = e instanceof Error ? e.name : '';
+        if (errName === 'ReplayDetectedError') { status = 409; errorKey = 'REPLAY_DETECTED'; }
+        else if (errName === 'TokenExpiredError') { status = 410; errorKey = 'TOKEN_EXPIRED'; }
+        else if (errName === 'ProofSignatureError') { status = 401; errorKey = 'INVALID_SIGNATURE'; }
 
         lastVerificationStatus = 'FAILED';
-        res.status(status).json({ ok: false, error: errorKey, details: e.message });
+        res.status(status).json({ ok: false, error: errorKey, details: e instanceof Error ? e.message : String(e) });
     }
 });
 

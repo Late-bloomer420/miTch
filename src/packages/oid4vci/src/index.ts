@@ -101,7 +101,7 @@ export class OID4VCIIssuer {
      * Emits a structured audit log entry.
      * In a real system, this would write to a WORM storage or Merkle Log.
      */
-    private emitAudit(type: string, status: 'SUCCESS' | 'FAILURE', details: Record<string, any>) {
+    private emitAudit(type: string, status: 'SUCCESS' | 'FAILURE', details: Record<string, unknown>) {
         const entry = {
             timestamp: new Date().toISOString(),
             type,
@@ -119,7 +119,7 @@ export class OID4VCIIssuer {
         console.log(`[AUDIT] ${JSON.stringify(entry)}`);
     }
 
-    private async signCredential(_credential: any): Promise<string> {
+    private async signCredential(_credential: unknown): Promise<string> {
         // Placeholder for actual crypto signing
         // Should use @mitch/shared-crypto
         return "mock_signature_" + Date.now();

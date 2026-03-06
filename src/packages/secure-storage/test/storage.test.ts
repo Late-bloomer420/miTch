@@ -1,4 +1,3 @@
-
 import { describe, test, expect, beforeAll } from 'vitest';
 import { SecureStorage } from '../src/index';
 import type { StoredCredentialMetadata } from '@mitch/shared-types';
@@ -57,7 +56,7 @@ describe('SecureStorage', () => {
         expect(item).toBeDefined();
         expect(item?.issuer).toBe('did:example:issuer');
         // valid check implies we didn't get the cipher text back, just the metadata
-        expect((item as any).ciphertext).toBeUndefined();
+        expect((item as Record<string, unknown>).ciphertext).toBeUndefined();
     });
 
     test('load non-existent returns null', async () => {

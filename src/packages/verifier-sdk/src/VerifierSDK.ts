@@ -3,6 +3,21 @@ import {
     decrypt,
     canonicalStringify
 } from '@mitch/shared-crypto';
+
+interface DecryptedArtifact {
+    proof: {
+        signature: string;
+        public_key: JsonWebKey;
+    };
+    vp: {
+        metadata: {
+            decision_id: string;
+            nonce: string;
+            timestamp: number;
+        };
+        validUntil?: number;
+    };
+}
 import {
     VerifierRequest
 } from '@mitch/shared-types';
@@ -56,7 +71,7 @@ export class VerifierSDK {
      * 3. Replay Protection (via callback)
      * 4. Proof Signature Validation
      */
-    async verifyPresentation<T = any>(input: string | TransportPackage): Promise<VerificationResult<T>> {
+    async verifyPresentation<T = unknown>(input: string | TransportPackage): Promise<VerificationResult<T>> {
         let pkg: TransportPackage;
 
         // 1. Parsing & Validation
@@ -84,19 +99,19 @@ export class VerifierSDK {
             const wrappedKeyBuffer = wrappedKeyBytes.buffer.slice(
                 wrappedKeyBytes.byteOffset,
                 wrappedKeyBytes.byteOffset + wrappedKeyBytes.byteLength
-            );
+            ) as ArrayBuffer;
 
-            ephemeralKey = await (globalThis as any).crypto.subtle.unwrapKey(
+            ephemeralKey = await globalThis.crypto.subtle.unwrapKey(
                 'raw',
                 wrappedKeyBuffer,
                 this.config.privateKey,
-                { name: 'RSA-OAEP', hash: 'SHA-256' },
+                { name: 'RSA-OAEP' } as RsaOaepParams,
                 { name: 'AES-GCM', length: 256 },
                 false,
                 ['decrypt']
             );
-        } catch (e: any) {
-            throw new KeyUnwrapError(e.message || 'Check Private Key and Recipient Key Format');
+        } catch (e: unknown) {
+            throw new KeyUnwrapError(e instanceof Error ? e.message : 'Check Private Key and Recipient Key Format');
         }
 
         // 3. AAD Binding Check (Address Verification)
@@ -123,15 +138,15 @@ export class VerifierSDK {
         );
 
         // 6. Decrypt Content (Authenticated Encryption)
-        let artifact: any;
+        let artifact: DecryptedArtifact;
         try {
             const plaintext = await decrypt(ciphertext, ephemeralKey, aadBytes);
-            artifact = JSON.parse(plaintext);
-        } catch (e: any) {
-            if (e.message.includes('JSON')) {
+            artifact = JSON.parse(plaintext) as DecryptedArtifact;
+        } catch (e: unknown) {
+            if (e instanceof Error && e.message.includes('JSON')) {
                 throw new DecryptError('Decrypted payload is not valid JSON');
             }
-            throw new DecryptError(e.message || 'Tag mismatch or AAD failure');
+            throw new DecryptError(e instanceof Error ? e.message : 'Tag mismatch or AAD failure');
         }
 
         // 7. Verify Artifact Structure
@@ -142,10 +157,10 @@ export class VerifierSDK {
         // 8. Verify Proof Signature (ECDSA)
         try {
             const signatureBytes = new Uint8Array(
-                artifact.proof.signature.match(/.{1,2}/g).map((byte: string) => parseInt(byte, 16))
+                (artifact.proof.signature.match(/.{1,2}/g) ?? []).map((byte: string) => parseInt(byte, 16))
             );
 
-            const proofPublicKey = await (globalThis as any).crypto.subtle.importKey(
+            const proofPublicKey = await globalThis.crypto.subtle.importKey(
                 'jwk',
                 artifact.proof.public_key,
                 { name: 'ECDSA', namedCurve: 'P-256' },
@@ -156,7 +171,7 @@ export class VerifierSDK {
             // Canonicalize the VP part of the artifact
             const payloadString = canonicalStringify(artifact.vp);
 
-            const isAuthentic = await (globalThis as any).crypto.subtle.verify(
+            const isAuthentic = await globalThis.crypto.subtle.verify(
                 { name: 'ECDSA', hash: { name: 'SHA-256' } },
                 proofPublicKey,
                 signatureBytes,
@@ -166,8 +181,8 @@ export class VerifierSDK {
             if (!isAuthentic) {
                 throw new ProofSignatureError('ECDSA verification returned false');
             }
-        } catch (e: any) {
-            throw new ProofSignatureError(e.message || 'Crypto operation failed');
+        } catch (e: unknown) {
+            throw new ProofSignatureError(e instanceof Error ? e.message : 'Crypto operation failed');
         }
 
         // 9. Cross-Binding Check (Outer AAD vs Inner VP)
@@ -201,7 +216,7 @@ export class VerifierSDK {
         }
 
         return {
-            vp: artifact.vp,
+            vp: artifact.vp as T,
             aad: aad_context,
             proof: {
                 verified: true,

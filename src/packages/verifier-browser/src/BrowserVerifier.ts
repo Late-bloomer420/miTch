@@ -282,7 +282,7 @@ export class BrowserVerifier {
      * Periodic cleanup of expired sessions
      */
     private startCleanupTimer(): void {
-        const storage = this.sessionStorage as any;
+        const storage = this.sessionStorage as { cleanup?: () => void };
         if (typeof storage.cleanup === 'function') {
             setInterval(() => {
                 storage.cleanup();

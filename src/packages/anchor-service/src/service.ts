@@ -11,7 +11,7 @@ export class InMemoryAnchorService extends EventEmitter {
     // T-41: Map-based Promise completion to prevent EventEmitter memory leak
     private pendingSubmissions = new Map<string, {
         resolve: (proof: AnchorBatchReceipt) => void;
-        reject: (reason: any) => void;
+        reject: (reason: unknown) => void;
         timeout: NodeJS.Timeout;
     }>();
 

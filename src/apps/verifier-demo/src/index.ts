@@ -29,7 +29,7 @@ app.post('/present', async (req, res) => {
     try {
         if (!verifierKeys) {
             // Lazy-init keys for PoC. In production, these are persistent.
-            verifierKeys = await (globalThis as any).crypto.subtle.generateKey(
+            verifierKeys = await globalThis.crypto.subtle.generateKey(
                 {
                     name: "RSA-OAEP",
                     modulusLength: 2048,
@@ -47,7 +47,7 @@ app.post('/present', async (req, res) => {
         });
 
         // The Magic: SDK handles unwrapping, AAD re-binding, and Decryption
-        const presentation = await sdk.verifyPresentation<any>(JSON.stringify(req.body));
+        const presentation = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
 
         console.log('🔓 Decrypted Presentation Payload:', presentation);
 
@@ -61,10 +61,10 @@ app.post('/present', async (req, res) => {
             console.log('❌ VERIFICATION FAILED: minor detected');
             res.status(403).json({ ok: false, error: 'AGE_NOT_VERIFIED' });
         }
-    } catch (e: any) {
-        console.error('🔥 Critical Decryption Error:', e.message);
+    } catch (e: unknown) {
+        console.error('🔥 Critical Decryption Error:', e instanceof Error ? e.message : String(e));
         lastVerificationStatus = 'FAILED';
-        res.status(400).json({ ok: false, error: 'DECRYPTION_FAILED', details: e.message });
+        res.status(400).json({ ok: false, error: 'DECRYPTION_FAILED', details: e instanceof Error ? e.message : String(e) });
     }
 });
 

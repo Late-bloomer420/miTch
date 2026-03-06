@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * G-09: L2/Blockchain anchoring provider stubs.
  */

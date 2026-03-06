@@ -61,8 +61,8 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
             setStatus(report.chainIntegrity.valid
                 ? "✅ Chain Integrity Verified"
                 : "⚠️ Chain Integrity Compromised!");
-        } catch (e: any) {
-            setStatus(`❌ Export failed: ${e?.message ?? String(e)}`);
+        } catch (e: unknown) {
+            setStatus(`❌ Export failed: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setIsExporting(false);
         }
@@ -201,8 +201,8 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                             try {
                                 const receipt = await onSyncL2();
                                 setStatus(`✅ L2 Anchor Successful: ${receipt.l2TransactionId.substring(0, 10)}...`);
-                            } catch (e: any) {
-                                setStatus(`❌ L2 Sync Failed: ${e?.message ?? String(e)}`);
+                            } catch (e: unknown) {
+                                setStatus(`❌ L2 Sync Failed: ${e instanceof Error ? e.message : String(e)}`);
                             } finally {
                                 setIsExporting(false);
                             }

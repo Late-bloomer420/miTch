@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, beforeAll } from 'vitest';
 import { SoftwareKeyGuardian } from '../src/SoftwareKeyGuardian';
 import { KeyProtectionLevel } from '../src/types/KeyProtectionLevel';

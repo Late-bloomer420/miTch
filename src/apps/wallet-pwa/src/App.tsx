@@ -194,7 +194,7 @@ export default function App() {
 
         const targetEndpoint =
             endpoint ||
-            (result.decisionCapsule as any).service_endpoint ||
+            (result.decisionCapsule as Record<string, unknown>).service_endpoint as string | undefined ||
             CONFIG.VERIFIER_ENDPOINT;
 
         setShowConsent(false);
@@ -387,7 +387,7 @@ export default function App() {
         const request: VerifierRequest = {
             verifierId: 'did:eu:research-institute-fhi',
             origin: 'https://research.fhi.eu',
-            usagePurpose: 'researchSecondary' as any,
+            usagePurpose: 'researchSecondary',
             requirements: [{
                 credentialType: 'PatientSummary',
                 requestedClaims: ['bloodGroup', 'allergies'],

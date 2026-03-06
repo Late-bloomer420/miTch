@@ -1928,7 +1928,7 @@
       document.getElementById('wallet-ctrl').style.display = 'block';
       document.getElementById('wallet-start').style.display = 'block';
       document.getElementById('wallet-consent').style.display = 'none';
-      document.getElementById('wallet-biometric').style.display = 'none';
+      document.getElementById('wallet-auth').style.display = 'none';
       document.getElementById('wallet-result').innerHTML = '';
       document.getElementById('claims-list').innerHTML = Object.keys(CLAIMS).map(name => `
     <li><input type="checkbox" id="c-${name}" value="${name}" ${name === 'over_18' ? 'checked' : ''}>
@@ -2013,7 +2013,7 @@
       } else {
         // Auto-approve goes straight to biometric
         _pendingChecked = checked;
-        await startBiometric();
+        await startLocalAuth();
       }
     }
 

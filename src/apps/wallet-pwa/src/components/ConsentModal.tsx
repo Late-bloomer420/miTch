@@ -130,7 +130,7 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
   const [presenceProof, setPresenceProof] = useState<string | undefined>(undefined);
   const promptRef = useRef<HTMLDivElement>(null);
 
-  const requiresPresence = (capsule as any).requires_presence === true
+  const requiresPresence = capsule.requires_presence === true
     || capsule.risk_level === 'HIGH';
 
   const canApprove = !requiresPresence || biometricState === 'verified';
@@ -176,14 +176,14 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
   const provenClaims: string[] = [];
   const rawClaims: string[] = [];
 
-  if ((capsule as any).authorized_requirements) {
-    for (const req of (capsule as any).authorized_requirements) {
+  if (capsule.authorized_requirements) {
+    for (const req of capsule.authorized_requirements) {
       (req.proven_claims || []).forEach((c: string) => provenClaims.push(c));
       (req.allowed_claims || []).forEach((c: string) => rawClaims.push(c));
     }
   } else {
-    ((capsule as any).proven_claims || []).forEach((c: string) => provenClaims.push(c));
-    ((capsule as any).allowed_claims || []).forEach((c: string) => rawClaims.push(c));
+    (capsule.proven_claims || []).forEach((c: string) => provenClaims.push(c));
+    (capsule.allowed_claims || []).forEach((c: string) => rawClaims.push(c));
   }
 
   const hasNoClaims = provenClaims.length === 0 && rawClaims.length === 0;
@@ -250,7 +250,7 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
             WOULD BE DISCLOSED (strictly limited)
           </div>
 
-          {(capsule as any).authorized_requirements?.map((req: any, i: number) => (
+          {capsule.authorized_requirements?.map((req, i: number) => (
             <div key={i} style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 10, color: '#444', marginBottom: 6 }}>
                 {req.credential_type}
@@ -260,7 +260,7 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
             </div>
           ))}
 
-          {!(capsule as any).authorized_requirements && (
+          {!capsule.authorized_requirements && (
             <>
               <ClaimChips claims={provenClaims} variant="allowed" />
               <ClaimChips claims={rawClaims} variant="raw" />

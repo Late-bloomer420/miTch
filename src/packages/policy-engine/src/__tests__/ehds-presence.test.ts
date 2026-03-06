@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Test: EHDS Emergency Room — requiresPresence flow
  * Verifies that hospital-*-er-* triggers PROMPT + PRESENCE_REQUIRED

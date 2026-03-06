@@ -296,11 +296,11 @@ export class EIDIssuerConnector {
 
     // Add age predicate as non-disclosable claim if available
     if (isOver18 !== undefined) {
-      (payload as any).age_over_18 = isOver18;
+      payload.age_over_18 = isOver18;
     }
 
     // Sign JWT part
-    const jwt = await new SignJWT(payload as any)
+    const jwt = await new SignJWT(payload as Record<string, unknown>)
       .setProtectedHeader({
         alg: 'ES256',
         typ: 'vc+sd-jwt',
@@ -352,7 +352,7 @@ export class EIDIssuerConnector {
     });
 
     // Verify disclosure hashes match _sd array
-    const sdArray = (payload as any)._sd as string[] | undefined;
+    const sdArray = (payload as Record<string, unknown>)._sd as string[] | undefined;
     if (sdArray) {
       for (const dp of disclosureParts) {
         const hash = hashDisclosure(dp);
@@ -365,7 +365,7 @@ export class EIDIssuerConnector {
     return {
       payload: payload as unknown as SDJWTVCPayload,
       disclosures,
-      isOver18: (payload as any).age_over_18,
+      isOver18: payload.age_over_18 as boolean | undefined,
     };
   }
 
@@ -400,7 +400,7 @@ export class EIDIssuerConnector {
     return {
       payload: payload as unknown as SDJWTVCPayload,
       disclosures,
-      isOver18: (payload as any).age_over_18,
+      isOver18: (payload as SDJWTVCPayload).age_over_18 as boolean | undefined,
     };
   }
 
@@ -459,7 +459,7 @@ export class EIDIssuerConnector {
       documentNumber: 'T22000001',
     };
 
-    const claims: Record<string, any> = {
+    const claims: Record<string, unknown> = {
       iss: this.issuerDID,
       sub: request.userDID,
       iat: now,

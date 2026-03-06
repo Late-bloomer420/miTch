@@ -97,8 +97,8 @@ export async function verifyPredicateResult(
         if (!signatureValid) {
             errors.push('Invalid signature');
         }
-    } catch (e: any) {
-        errors.push(`Signature verification error: ${e.message}`);
+    } catch (e: unknown) {
+        errors.push(`Signature verification error: ${e instanceof Error ? e.message : String(e)}`);
     }
 
     return {

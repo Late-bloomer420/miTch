@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { EIDIssuerConnector, computeAge, isOver18 } from '../index';
 import type { EIDIssuanceRequest } from '../types';

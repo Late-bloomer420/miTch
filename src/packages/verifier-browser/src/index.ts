@@ -92,7 +92,7 @@ export class VerifierClient {
     public async verifyResponse(
         encryptedPackage: string,
         session: VerifierSession
-    ): Promise<any> {
+    ): Promise<unknown> {
         // 1. Parse JWE Compact Serialization (header.encryptedKey.iv.ciphertext.tag)
         const parts = encryptedPackage.split('.');
         if (parts.length !== 5) {

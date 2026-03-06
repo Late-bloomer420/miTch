@@ -11,7 +11,7 @@ export class DenialResolver {
     /**
      * Resolve a raw ReasonCode into a structured User Experience object.
      */
-    static resolve(reason: string, context: Record<string, any> = {}): PolicyDenialResolution {
+    static resolve(reason: string, context: Record<string, unknown> = {}): PolicyDenialResolution {
         // Default Fallback
         const code = this.mapReasonToDenialCode(reason);
         const resolution = this.CATALOG[code] || this.CATALOG['NO_MATCHING_RULE'];
@@ -27,8 +27,8 @@ export class DenialResolver {
         };
     }
 
-    private static interpolate(template: string, context: Record<string, any>): string {
-        return template.replace(/{(\w+)}/g, (_, key) => context[key] || '?');
+    private static interpolate(template: string, context: Record<string, unknown>): string {
+        return template.replace(/{(\w+)}/g, (_, key) => String(context[key] ?? '?'));
     }
 
     private static mapReasonToDenialCode(reason: string): PolicyDenialCode {

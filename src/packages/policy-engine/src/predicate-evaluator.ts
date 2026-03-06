@@ -23,7 +23,7 @@ export class PredicateEvaluator {
      * @param request - Legacy constraint-based request
      */
     static async evaluate(
-        userData: Record<string, any>,
+        userData: Record<string, unknown>,
         request: LegacyPredicateRequest,
         signer: (data: string) => Promise<string> // T-73: Injected Signer (Required)
     ): Promise<LegacyDecisionProof> {

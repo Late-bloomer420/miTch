@@ -88,7 +88,7 @@ export class MockGovernmentIssuer {
     };
 
     // Create JWT with JOSE
-    const jwt = await new SignJWT(claims as any)
+    const jwt = await new SignJWT(claims as unknown as Record<string, unknown>)
       .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
       .setIssuedAt(now)
       .setExpirationTime(claims.exp)

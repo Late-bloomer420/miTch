@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { VerifierSDK } from '../src/VerifierSDK';

@@ -144,7 +144,7 @@ const localStoreShim: Storage = (() => {
 })();
 
 // Helper for typed crypto access
-const getSubtle = () => ((globalThis as any).crypto?.subtle ?? crypto.subtle) as SubtleCrypto;
+const getSubtle = () => (globalThis.crypto?.subtle ?? crypto.subtle) as SubtleCrypto;
 
 function constantTimeCompare(a: string, b: string): boolean {
     if (a.length !== b.length) return false;
@@ -290,7 +290,7 @@ export class WalletService {
                     console.log('✨ Creating SESSION-SCOPED Identity Keypair (RAM only)...');
                     step = 'generateIdentityKeys';
 
-                    const keys = await (globalThis as any).crypto.subtle.generateKey(
+                    const keys = await globalThis.crypto.subtle.generateKey(
                         { name: 'ECDSA', namedCurve: 'P-256' },
                         false, // extractable: false (Secure Execution Environment emulation)
                         ['sign', 'verify']
@@ -328,8 +328,8 @@ export class WalletService {
                     retried = true;
                     console.warn('[WalletService] Init failed. Resetting storage and retrying...', err);
                     try {
-                        if (typeof (SecureStorage as any).reset === 'function') {
-                            await (SecureStorage as any).reset();
+                        if (typeof (SecureStorage as unknown as { reset?: () => Promise<void> }).reset === 'function') {
+                            await (SecureStorage as unknown as { reset: () => Promise<void> }).reset();
                         }
                     } catch (resetErr) {
                         console.warn('[WalletService] Storage reset failed. Retrying without reset...', resetErr);
@@ -494,7 +494,7 @@ export class WalletService {
     async corruptCredential() {
         if (!this.storage) throw new Error('Storage not ready');
         // Corrupt the 'vc-age-789' entry in the underlying storage (simulated bypass)
-        (this.storage as any).corruptEntry(SEED_CREDENTIAL.id);
+        (this.storage as unknown as { corruptEntry: (id: string) => void }).corruptEntry(SEED_CREDENTIAL.id);
     }
 
     /**
@@ -655,7 +655,7 @@ export class WalletService {
         if (capsule.requires_presence) {
             logs.push('👤 Biometric Presence Required. Triggering WebAuthn Ceremony...');
             const presenceProof = await WebAuthnService.provePresence(capsule.decision_id);
-            (capsule as any).presence_proof = presenceProof;
+            capsule.presence_proof = presenceProof;
             logs.push('✅ WebAuthn Signature Bound to Decision ID');
         }
 
@@ -664,7 +664,7 @@ export class WalletService {
             credentialType: string;
             disclosure: Record<string, unknown>;
             provenClaims: Record<string, boolean>;
-            zkpProofs?: Record<string, any>; // Full cryptographic proofs
+            zkpProofs?: Record<string, unknown>; // Full cryptographic proofs
             // credentialId removed to prevent discovery
         }> = [];
 
@@ -673,8 +673,8 @@ export class WalletService {
             credential_type: '*',
             allowed_claims: capsule.allowed_claims || [],
             proven_claims: capsule.proven_claims || [],
-            selected_credential_id: (capsule as any).selected_credential_id,
-            issuer_trust_refs: (capsule as any).issuer_trust_refs || []
+            selected_credential_id: capsule.selected_credential_id,
+            issuer_trust_refs: capsule.issuer_trust_refs || []
         }];
 
         for (const req of requirements) {
@@ -707,7 +707,7 @@ export class WalletService {
             // Selective Disclosure & ZKP
             const disclosure: Record<string, unknown> = {};
             const provenClaims: Record<string, boolean> = {};
-            const zkpProofs: Record<string, any> = {};
+            const zkpProofs: Record<string, unknown> = {};
 
             for (const claim of req.allowed_claims) {
                 if (credentialData[claim] !== undefined) disclosure[claim] = credentialData[claim];
@@ -733,7 +733,7 @@ export class WalletService {
                     const signFn = async (d: string) => signData(d, this.policyPrivateKey!);
 
                     try {
-                        const predicateCredential = (credentialData as any).credentialSubject
+                        const predicateCredential = (credentialData as Record<string, unknown>).credentialSubject
                             ? (credentialData as Record<string, unknown>)
                             : { credentialSubject: credentialData };
                         const result = await evaluatePredicates(predicateCredential, predReq, signFn);
@@ -770,7 +770,7 @@ export class WalletService {
 
         // 3. Generate Ephemeral Proof Key (Asymmetric ECDSA)
         const proofKeys = await generateKeyPair();
-        const proofPublicJWK = await (globalThis as any).crypto.subtle.exportKey('jwk', proofKeys.publicKey);
+        const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
 
         await this.auditLog.append('KEY_CREATED', 'ephemeral-proof-key', {
             alg: 'ECDSA-P256',
@@ -799,7 +799,7 @@ export class WalletService {
 
         // 4. Sign the Payload
         const payloadString = canonicalStringify(vpPayload);
-        const signature = await (globalThis as any).crypto.subtle.sign(
+        const signature = await globalThis.crypto.subtle.sign(
             { name: 'ECDSA', hash: { name: 'SHA-256' } },
             proofKeys.privateKey,
             new TextEncoder().encode(payloadString)
@@ -813,7 +813,7 @@ export class WalletService {
                 alg: 'ES256',
                 signature: signatureHex,
                 public_key: proofPublicJWK,
-                presence_proof: (capsule as any).presence_proof
+                presence_proof: capsule.presence_proof
             }
         };
 
@@ -848,7 +848,7 @@ export class WalletService {
             logs.push('⚡ Using Ephemeral Session Key from Decision Capsule.');
 
             try {
-                const alg = mapJwkToAlgorithm(capsule.ephemeral_key as any);
+                const alg = mapJwkToAlgorithm(capsule.ephemeral_key as JsonWebKey);
                 targetPubKey = await getSubtle().importKey(
                     'jwk',
                     capsule.ephemeral_key,
@@ -896,7 +896,7 @@ export class WalletService {
 
         // 7. Crypto-Shredding (Double Shred)
         ephemeralKey.shred();
-        (proofKeys as any).privateKey = null;
+        (proofKeys as unknown as { privateKey: CryptoKey | null }).privateKey = null;
 
         await this.auditLog.append('KEY_DESTROYED', 'ephemeral-session-key', {
             decision_id: capsule.decision_id,
@@ -1032,8 +1032,9 @@ export class WalletService {
 
         // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
         // TODO: Separate identity signing key from audit key (see security review)
-        const auditKeys = (this.auditLog as any).privateKey ?
-            { privateKey: (this.auditLog as any).privateKey, publicKey: (this.auditLog as any).publicKey } :
+        const auditLogInternal = this.auditLog as unknown as { privateKey?: CryptoKey; publicKey?: CryptoKey };
+        const auditKeys = auditLogInternal.privateKey ?
+            { privateKey: auditLogInternal.privateKey, publicKey: auditLogInternal.publicKey } :
             null;
 
         if (!auditKeys?.privateKey) throw new Error('Identity keys not available');

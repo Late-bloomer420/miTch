@@ -12,7 +12,7 @@ export interface TransportPackage {
     };
 }
 
-export interface VerificationResult<T = any> {
+export interface VerificationResult<T = unknown> {
     vp: T;
     aad: TransportPackage['aad_context'];
     proof: {

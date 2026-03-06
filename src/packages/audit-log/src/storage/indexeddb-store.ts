@@ -154,13 +154,13 @@ export class IndexedDBAuditStore {
             const request = index.getAll(action);
 
             request.onsuccess = () => {
-                const entries = request.result as (AuditLogEntry & { walletId: string })[];
+                const entries = request.result as (AuditLogEntry & { walletId: string; storedAt: string })[];
 
                 // Filter by wallet ID
                 const walletEntries = entries.filter(e => e.walletId === this.walletId);
 
                 // Remove internal fields
-                const cleanEntries = walletEntries.map(({ walletId: _walletId, storedAt: _storedAt, ...entry }: any) => entry);
+                const cleanEntries = walletEntries.map(({ walletId: _walletId, storedAt: _storedAt, ...entry }) => entry);
                 resolve(cleanEntries);
             };
 

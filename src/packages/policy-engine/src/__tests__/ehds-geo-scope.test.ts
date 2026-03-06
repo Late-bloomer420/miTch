@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * T-A4: GeoScope enforcement tests
  * Tests geographic scope checks in policy engine evaluation and helper functions.
