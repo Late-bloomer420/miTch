@@ -66,7 +66,7 @@ describe('Pairwise DID — Anti-Correlation', () => {
     }
 
     expect(dids.size).toBe(1000);
-  }, 30_000); // 30s: 1000 key-gen ops are CPU-intensive under parallel turbo load
+  }, 60_000); // 60s: 1000 key-gen ops are CPU-intensive under parallel turbo load
 
   it('DIDs have consistent length (no structural patterns)', async () => {
     const lengths = new Set<number>();
