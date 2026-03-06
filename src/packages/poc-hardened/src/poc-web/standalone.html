@@ -169,13 +169,14 @@
 
     #cards-track .panel {
       flex-shrink: 0;
-      margin: 0 1vw;
+      margin: 0 -2vw;
+      /* Negative margin pulls adjacent cards closer into view on desktop */
       border-radius: var(--radius);
       overflow-y: auto;
       max-height: 75vh;
       transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-      opacity: 0.5;
-      transform: scale(0.92);
+      opacity: 0.35;
+      transform: scale(0.85);
       box-shadow: none;
       pointer-events: none;
     }
@@ -206,13 +207,30 @@
       }
 
       #cards-track .panel {
-        width: calc(100vw - 2rem);
-        margin: 0 1rem;
+        width: calc(100vw - 2.5rem);
+        margin: 0 0.5rem;
         min-height: 55vh;
+        transform: scale(0.92);
+        opacity: 0.5;
       }
 
-      #cards-track .panel.is-active:hover {
+      #cards-track .panel.is-active {
         transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .grid>.panel.full {
+      margin: 1.5rem auto;
+      width: 100%;
+      max-width: 1200px;
+      border-radius: var(--radius);
+    }
+
+    @media (max-width: 768px) {
+      .grid>.panel.full {
+        margin: 1rem 0.5rem;
+        width: calc(100% - 1rem);
       }
     }
 
@@ -2126,15 +2144,19 @@
       };
     })();
 
-    // Carousel — global for all devices
-    const CAR_LABELS = ['🏛️ Issuer', '⚖️ Engine', '📱 Wallet', '🏪 Verifier', '👁️ Observer', '💰 Costs & Impact', '🔥 Shredding/Art 17', '🔄 Revocation', '📋 Audit Chain & DPIA'];
+    // Carousel — global for all devices (Primary Flow Only)
+    const CAR_LABELS = ['🏛️ Issuer', '⚖️ Engine', '📱 Wallet', '🏪 Verifier', '👁️ Observer'];
     let _carIdx = 0;
     let _carCount = 0;
 
     function initCarousel() {
       const grid = document.getElementById('grid-main');
       if (!grid) return;
-      const panels = Array.from(grid.children).filter(el => el.classList.contains('panel'));
+
+      // Select ONLY the first 5 steps (not .full or others)
+      const panels = Array.from(grid.children).filter(el =>
+        el.classList.contains('panel') && !el.classList.contains('full')
+      );
       if (!panels.length) return;
       _carCount = panels.length;
 
@@ -2200,10 +2222,8 @@
       // Calculate offset based on active panel width and window width
       if (panels[_carIdx]) {
         const pw = panels[_carIdx].offsetWidth;
-        const margin = window.innerWidth > 768 ? window.innerWidth * 0.01 : 16;
-        // Distance from left edge of track to center of active panel
-        // (idx * (width + 2*margin)) + (width/2) + margin
-        const itemCenter = (_carIdx * (pw + margin * 2)) + (pw / 2) + margin;
+        const marginPx = window.innerWidth > 768 ? window.innerWidth * -0.02 : 8; // Match -2vw margin on desktop
+        const itemCenter = (_carIdx * (pw + marginPx * 2)) + (pw / 2) + marginPx;
         const trackCenter = track.offsetWidth / 2;
         const targetOffset = trackCenter - itemCenter;
         track.style.transform = 'translateX(' + targetOffset + 'px)';
@@ -2221,8 +2241,14 @@
       setFlow = function (step) {
         _orig(step);
         // Map flow step to panel index
-        const map = { issue: 0, engine: 1, wallet: 2, verify: 3, shred: 6 };
+        const map = { issue: 0, engine: 1, wallet: 2, verify: 3 };
         if (map[step] !== undefined && _carCount > 0) carGoTo(map[step]);
+
+        // If it's shredding/revocation etc, scroll the whole page down
+        if (['shred', 'revoke'].includes(step)) {
+          const el = document.getElementById(step === 'shred' ? 'p-shred' : `p-${step}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       };
     })();
 
