@@ -13,7 +13,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SignJWT, generateKeyPair, exportJWK } from 'jose';
 import {
     DIDResolver,
-    DIDSignatureVerifier,
     DIDResolutionError,
     DIDKeyExtractionError,
     didWebToUrl,

@@ -131,7 +131,7 @@ const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 const localStoreShim: Storage = (() => {
     try {
         if (typeof localStorage !== 'undefined') return localStorage;
-    } catch (_: unknown) { }
+    } catch (_: unknown) { /* no localStorage — fallback to in-memory */ }
     const mem = new Map<string, string>();
     return {
         getItem: (k: string) => (mem.has(k) ? mem.get(k)! : null),
@@ -253,8 +253,6 @@ export class WalletService {
                     // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
                     step = 'initAuditKeys';
                     const AUDIT_KEY_STORAGE_ID = '__mitch_audit_keys_v1';
-                    let auditKeys: CryptoKeyPair;
-
                     // Try to load persisted audit keys
                     try {
                         const storedAuditKeys = await this.storage!.load<{ created: string }>(AUDIT_KEY_STORAGE_ID);
@@ -269,7 +267,7 @@ export class WalletService {
                         // Storage error or first run — will generate fresh keys
                     }
 
-                    auditKeys = await generateKeyPair();
+                    const auditKeys = await generateKeyPair();
                     this.auditLog.setAuditKeys(auditKeys.privateKey, auditKeys.publicKey);
 
                     // Persist audit key marker (for future key-wrapping implementation)

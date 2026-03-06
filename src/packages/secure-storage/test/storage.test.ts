@@ -7,7 +7,7 @@ import type { StoredCredentialMetadata } from '@mitch/shared-types';
 // This is a minimal implementation to make the tests pass in a raw Node environment.
 // In a real setup, we should use 'fake-indexeddb' or 'vitest-environment-jsdom'.
 if (typeof indexedDB === 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports
     (global as any).indexedDB = require('fake-indexeddb');
     // If fake-indexeddb is not installed, this will fail. 
     // We should rely on the environment being set up correctly or mock it manually.

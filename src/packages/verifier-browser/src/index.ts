@@ -12,9 +12,9 @@ export class VerifierClient {
      * Keys are held in memory and lost on refresh (Privacy Feature: "Crypto-Shredding by Default").
      */
     public async generateSession(
-        baseUrl: string = 'http://localhost:3000',
-        reason: string = 'Age Verification',
-        verifierDid: string = 'did:mitch:verifier-liquor-store'
+        _baseUrl: string = 'http://localhost:3000',
+        _reason: string = 'Age Verification',
+        _verifierDid: string = 'did:mitch:verifier-liquor-store'
     ): Promise<VerifierSession> {
         // 1. Generate Ephemeral Key Pair (RSA-OAEP-256)
         const keyPair = await window.crypto.subtle.generateKey(
@@ -99,7 +99,7 @@ export class VerifierClient {
             throw new Error("Invalid JWE format");
         }
 
-        const [b64Header, b64EncKey, b64Iv, b64Ciphertext, b64Tag] = parts;
+        const [_b64Header, b64EncKey, b64Iv, b64Ciphertext, b64Tag] = parts;
 
         // Helper: Base64Url to Uint8Array
         const b64UrlToBuffer = (b64: string) => {

@@ -111,10 +111,6 @@ function bufferToBase64url(buffer: ArrayBuffer): string {
   return bufferToBase64(buffer).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-function stringToBuffer(str: string): ArrayBuffer {
-  return new TextEncoder().encode(str).buffer;
-}
-
 /** Prüft ob echter WebAuthn verfügbar ist */
 function isWebAuthnAvailable(): boolean {
   return (
@@ -293,7 +289,7 @@ export class WebAuthnService {
             console.log(`[WebAuthn] 🕰️ Cached session expired (${ageMinutes.toFixed(1)}m > ${timeoutMinutes}m). Asking again.`);
             sessionStorage.removeItem('mitch_webauthn_session');
           }
-        } catch (e) {
+        } catch (_e) {
           // invalid cache
           sessionStorage.removeItem('mitch_webauthn_session');
         }

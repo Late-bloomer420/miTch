@@ -9,7 +9,9 @@ import type { PolicyRule } from '@mitch/shared-types';
 describe('E2E: Full Credential Lifecycle', () => {
   let mockIssuer: MockGovernmentIssuer;
   let eidConnector: EIDIssuerConnector;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let policyEngine: PolicyEngine;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let revocationChecker: StatusListRevocationChecker;
 
   beforeEach(async () => {

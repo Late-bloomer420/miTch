@@ -39,10 +39,6 @@ import {
     generateNonce,
     generateSessionId,
     exportPublicKeyJWK,
-    importPublicKeyJWK,
-    verifySignature,
-    sha256,
-    base64UrlToBuffer
 } from './crypto.js';
 
 import { DIDSignatureVerifier } from '@mitch/shared-crypto';

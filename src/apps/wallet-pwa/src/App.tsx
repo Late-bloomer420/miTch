@@ -8,7 +8,6 @@ import type { VerifierRequest, PolicyEvaluationResult, PolicyManifest } from '@m
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
-import { SecureZone } from './components/SecureZone';
 import { WebAuthnService } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
@@ -503,7 +502,7 @@ export default function App() {
                     capsule={evaluationResult.decisionCapsule}
                     reasonCodes={evaluationResult.reasonCodes}
                     timeoutMinutes={currentPolicy?.globalSettings?.requireConsentTimeoutMinutes}
-                    onApprove={(presenceProof) => {
+                    onApprove={(_presenceProof) => {
                         setShowConsent(false);
                         proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
                     }}

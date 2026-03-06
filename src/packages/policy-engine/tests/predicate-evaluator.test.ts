@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { PredicateEvaluator } from '../src/predicate-evaluator';
 import {
     LegacyPredicateRequest as PredicateRequest, // Alias for refactoring
-    LegacyDecisionProof as DecisionProof
 } from '@mitch/shared-types';
 
 /**

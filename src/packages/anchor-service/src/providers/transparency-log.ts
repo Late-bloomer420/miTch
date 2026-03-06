@@ -75,7 +75,7 @@ export class TransparencyLogAnchorProvider implements AnchorProvider {
    */
   private _simulateLogEntry(
     root: Hex32,
-    meta: { batchId: string; count: number }
+    _meta: { batchId: string; count: number }
   ): { entryUUID: string; logIndex: number; integratedTime: number } {
     const logIndex = this.logIndex++;
     const integratedTime = Math.floor(Date.now() / 1000);

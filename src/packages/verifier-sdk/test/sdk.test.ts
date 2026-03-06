@@ -2,9 +2,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { VerifierSDK } from '../src/VerifierSDK';
 import {
-    VerifierError,
-    TransportParseError,
-    KeyUnwrapError,
     DecryptError,
     AADValidationError,
     ReplayDetectedError,
@@ -12,10 +9,8 @@ import {
 } from '../src/types';
 import {
     generateKeyPair,
-    generateSymmetricKey,
     EphemeralKey,
     canonicalStringify,
-    encrypt
 } from '@mitch/shared-crypto';
 
 // Polyfill for Node environment if needed (Vitest usually handles this but explicit is safe)

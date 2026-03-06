@@ -4,8 +4,6 @@ import {
     generateKeyPair,
     EphemeralKey,
     canonicalStringify,
-    encrypt,
-    wrapKeyForRecipient
 } from '@mitch/shared-crypto';
 
 describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {

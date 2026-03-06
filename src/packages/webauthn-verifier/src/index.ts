@@ -214,6 +214,7 @@ export class WebAuthnNativeVerifier {
       crypto.getRandomValues(buffer);
     } else {
       // Fallback for Node.js without webcrypto
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const nodeCrypto = require('crypto');
       nodeCrypto.randomFillSync(buffer);
     }

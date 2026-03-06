@@ -2,7 +2,6 @@ import {
     LegacyPredicateRequest,
     LegacyDecisionProof,
     legacyToDSL,
-    PredicateErrorCode
 } from '@mitch/shared-types';
 import { evaluatePredicates, hashRequest } from '@mitch/predicates';
 

@@ -10,6 +10,7 @@ export const crypto: Crypto = (() => {
         return globalThis.crypto;
     }
      
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const nodeCrypto = require('crypto').webcrypto;
     return nodeCrypto;
 })();

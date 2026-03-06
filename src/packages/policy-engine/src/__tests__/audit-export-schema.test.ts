@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { DenyReasonCode } from '../deny-reason-codes';
 import {
   type AuditExportRecord,
-  type AuditExportBundle,
   AUDIT_EXPORT_RECORD_JSON_SCHEMA,
   AUDIT_EXPORT_BUNDLE_JSON_SCHEMA,
   FORBIDDEN_EXPORT_FIELDS,

@@ -35,7 +35,6 @@
 import { useState, useCallback } from 'react';
 import { DecisionCapsule } from '@mitch/shared-types';
 import { WebAuthnService } from '@mitch/shared-crypto';
-import { ReasonCode } from '@mitch/policy-engine';
 import { SecureZone } from './SecureZone';
 import { translateReason, translateClaim } from '../utils/i18n';
 
