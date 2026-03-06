@@ -9,7 +9,9 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*"
+        "@mitch/shared-types": "workspace:*",
+        "@mitch/shared-crypto": "workspace:*",
+        "jose": "^5.2.0"
     },
     "devDependencies": {
         "@types/node": "^25.3.5",
