@@ -24,7 +24,7 @@
 
 ## Current status
 
-- **Tests:** 34/34 turbo tasks pass; 190+ individual tests green
+- **Tests:** 37/37 turbo tasks pass; **639 individual tests** green (Session 3: +449)
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
