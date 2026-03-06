@@ -357,7 +357,7 @@ export async function generatePairwiseDIDFromMasterKey(
 
   // Step 5: Build P-256 PKCS8-encoded private key from raw bytes
   const signingPKCS8 = buildP256PKCS8(signingPrivBytes);
-  const encPKCS8 = buildP256PKCS8(encPrivBytes);
+  const _encPKCS8 = buildP256PKCS8(encPrivBytes);
 
   // Step 6: Import as ECDSA signing key pair
   const signingCryptoKey = await crypto.subtle.importKey(

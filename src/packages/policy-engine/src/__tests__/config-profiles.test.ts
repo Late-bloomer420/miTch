@@ -71,8 +71,8 @@ describe('validateConfig', () => {
 describe('isManifestCompatible', () => {
     const manifest: PolicyManifest = {
         version: 'v1',
-        manifestId: 'test-manifest',
         rules: [],
+        trustedIssuers: [],
         manifest_version: 1,
         manifest_hash: 'a'.repeat(64),
     };
