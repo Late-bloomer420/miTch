@@ -16,7 +16,7 @@
 
 import { DIDDocument } from '@mitch/shared-types';
 import { importJWK } from 'jose';
-import type { KeyLike } from 'jose';
+import type { KeyLike, JWK } from 'jose';
 import { resolveDidPeer0 } from './pairwise-did';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ export class DIDResolver {
         }
 
         try {
-            return await importJWK(method.publicKeyJwk as any);
+            return await importJWK(method.publicKeyJwk as unknown as JWK);
         } catch (e) {
             throw new DIDKeyExtractionError(
                 doc.id,

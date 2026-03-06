@@ -141,15 +141,15 @@ function calculateAgeFromBirthDate(birthDateStr: string): number {
  * Supports array indexing, e.g., "items[0].value".
  */
 const ARRAY_INDEX_REGEX = /\[(\d+)\]/g;
-function getValueAtPath(obj: Record<string, any>, path: string): unknown {
+function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
     // Replace array indices [0] -> .0 to canonicalize and split only once
     const normalizedPath = path.replace(ARRAY_INDEX_REGEX, '.$1');
     const parts = normalizedPath.split('.');
 
-    let current: any = obj;
+    let current: unknown = obj;
     for (const part of parts) {
-        if (current && (typeof current === 'object' || Array.isArray(current)) && part in current) {
-            current = current[part];
+        if (current !== null && typeof current === 'object' && part in current) {
+            current = (current as Record<string, unknown>)[part];
         } else {
             return undefined;
         }
@@ -165,7 +165,7 @@ function getValueAtPath(obj: Record<string, any>, path: string): unknown {
  * @param credential - The data source
  * @returns Result with pass/fail status and optional failure reason
  */
-function evaluateClause(clause: PredicateClause, credential: Record<string, any>): ClauseResult {
+function evaluateClause(clause: PredicateClause, credential: Record<string, unknown>): ClauseResult {
     const value = getValueAtPath(credential, clause.path);
 
     // Implement 'exists' operator logic
@@ -314,7 +314,7 @@ function evaluateClause(clause: PredicateClause, credential: Record<string, any>
  * @param credential - The data source
  * @returns Aggregated result
  */
-function evaluateExpression(expr: PredicateExpression, credential: Record<string, any>): ClauseResult {
+function evaluateExpression(expr: PredicateExpression, credential: Record<string, unknown>): ClauseResult {
     const results = expr.clauses.map(clause => {
         if ('logic' in clause) {
             return evaluateExpression(clause as PredicateExpression, credential);
@@ -353,7 +353,7 @@ function evaluateExpression(expr: PredicateExpression, credential: Record<string
  * Returns only boolean results, never raw PII.
  */
 export async function evaluatePredicates(
-    credential: Record<string, any>,
+    credential: Record<string, unknown>,
     request: PredicateRequest,
     signFn: (data: string) => Promise<string>
 ): Promise<PredicateResult> {

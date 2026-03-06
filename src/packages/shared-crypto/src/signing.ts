@@ -36,7 +36,7 @@ export async function signVC<T = Record<string, unknown>>(
     const jwt = await new SignJWT({ vc })
         .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
         .setIssuedAt()
-        .setIssuer((vc.issuer as any).id ?? vc.issuer)
+        .setIssuer(typeof vc.issuer === 'object' && vc.issuer !== null ? (vc.issuer as { id: string }).id : (vc.issuer as string))
         .setSubject(vc.credentialSubject.id)
         .sign(privateKey);
 
@@ -48,7 +48,7 @@ export async function signVC<T = Record<string, unknown>>(
         jwt,
     };
 
-    return { ...vc, proof } as any;
+    return { ...vc, proof } as VerifiableCredential<T> & { proof: Proof };
 }
 
 /**
@@ -66,23 +66,25 @@ export async function verifyVC<T = Record<string, unknown>>(
         throw new Error('VC does not contain a JWT proof');
     }
 
-    const key = publicKey instanceof Uint8Array ? await importJWK(JSON.parse(new TextDecoder().decode(publicKey))) : await exportKeyToJWK(publicKey);
+    // Pass CryptoKey directly (jose accepts it); for Uint8Array, parse+import as JWK
+    const key = publicKey instanceof Uint8Array
+        ? await importJWK(JSON.parse(new TextDecoder().decode(publicKey)))
+        : publicKey;
 
     const { payload } = await jwtVerify(vc.proof.jwt, key);
     // The payload contains `{ vc: <original VC without proof> }`
-    return (payload as any).vc as VerifiableCredential<T>;
+    return (payload as Record<string, unknown>).vc as VerifiableCredential<T>;
 }
 
 /**
  * Helper to export a CryptoKey (public or private) to a JWK compatible with `jose`.
  * For non‑extractable private keys this will only export the public part.
  */
-export async function exportKeyToJWK(key: CryptoKey): Promise<any> {
+export async function exportKeyToJWK(key: CryptoKey): Promise<JsonWebKey> {
     // In Node we can use `crypto.subtle.exportKey`. In the browser the same works
     // for extractable keys. For the PoC we generate keys as non‑extractable, but the
     // public part is always exportable.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const jwk = await (globalThis as any).crypto.subtle.exportKey('jwk', key);
+    const jwk = await globalThis.crypto.subtle.exportKey('jwk', key) as JsonWebKey;
     return jwk;
 }
 
@@ -92,10 +94,10 @@ export async function exportKeyToJWK(key: CryptoKey): Promise<any> {
  */
 export async function signData(data: string, privateKey: CryptoKey): Promise<string> {
     const enc = new TextEncoder();
-    const signature = await (globalThis as any).crypto.subtle.sign(
+    const signature = await globalThis.crypto.subtle.sign(
         { name: 'ECDSA', hash: { name: 'SHA-256' } },
         privateKey,
-        enc.encode(data)
+        new Uint8Array(enc.encode(data))
     );
     return toHex(new Uint8Array(signature));
 }
@@ -106,11 +108,11 @@ export async function signData(data: string, privateKey: CryptoKey): Promise<str
 export async function verifyData(data: string, signatureHex: string, publicKey: CryptoKey): Promise<boolean> {
     const enc = new TextEncoder();
     const signature = fromHex(signatureHex);
-    return await (globalThis as any).crypto.subtle.verify(
+    return await globalThis.crypto.subtle.verify(
         { name: 'ECDSA', hash: { name: 'SHA-256' } },
         publicKey,
         signature,
-        enc.encode(data)
+        new Uint8Array(enc.encode(data))
     );
 }
 
@@ -120,7 +122,7 @@ function toHex(bytes: Uint8Array): string {
         .join('');
 }
 
-function fromHex(hex: string): Uint8Array {
+function fromHex(hex: string): Uint8Array<ArrayBuffer> {
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < bytes.length; i++) {
         bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);

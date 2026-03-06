@@ -319,7 +319,7 @@ export class PolicyEngine {
         }
 
         // 3b. EHDS Secondary Use Check
-        const declaredPurpose = (request as any).usagePurpose || matchedRule.usagePurpose || 'primaryCare';
+        const declaredPurpose = request.usagePurpose || matchedRule.usagePurpose || 'primaryCare';
         const isSecondaryUse = declaredPurpose !== 'primaryCare';
         if (isSecondaryUse && policy.globalSettings?.denySecondaryUse) {
             return this.result('DENY', [ReasonCode.SECONDARY_USE_DENIED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
@@ -368,7 +368,7 @@ export class PolicyEngine {
         // 4. Consent & Presence Logic
         const requiresConsent = matchedRule.requiresUserConsent
             || policy.globalSettings?.requireConsentForAll;
-        const requiresPresence = (matchedRule as any).requiresPresence === true
+        const requiresPresence = matchedRule.requiresPresence === true
             || context.interaction?.accessibilityActive === true;
 
         let verdict: 'ALLOW' | 'DENY' | 'PROMPT' = 'ALLOW';
@@ -629,7 +629,7 @@ export class PolicyEngine {
 
             // T-88: Ephemeral Key Propagation
             if (request.ephemeralResponseKey) {
-                const _key = request.ephemeralResponseKey as any; // WebCrypto Key
+                const _key = request.ephemeralResponseKey as CryptoKey; // WebCrypto Key
                 // We can't synchronously export here if it's a CryptoKey.
                 // Ideally, the Request should have the JWK if it came from the parser?
                 // No, WalletService parsed it to CryptoKey.
@@ -654,9 +654,9 @@ export class PolicyEngine {
 
             // Let's assume we can export it here.
             try {
-                if (request.ephemeralResponseKey && (globalThis as any).crypto) {
+                if (request.ephemeralResponseKey && globalThis.crypto) {
                     // We need to await export.
-                    const jwk = await (globalThis as any).crypto.subtle.exportKey('jwk', request.ephemeralResponseKey);
+                    const jwk = await globalThis.crypto.subtle.exportKey('jwk', request.ephemeralResponseKey);
                     decisionCapsule.ephemeral_key = jwk;
                 }
             } catch (e) {

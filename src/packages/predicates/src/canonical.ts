@@ -26,7 +26,7 @@ import {
 export function canonicalStringify(value: unknown): string {
     const seen = new Set<object>();
 
-    const helper = (v: any, inArray: boolean): string | undefined => {
+    const helper = (v: unknown, inArray: boolean): string | undefined => {
         // JSON.stringify semantics for "non-serializable"
         if (v === undefined || typeof v === 'function' || typeof v === 'symbol') {
             return inArray ? 'null' : undefined; // skip in objects, null in arrays
@@ -42,32 +42,34 @@ export function canonicalStringify(value: unknown): string {
             return JSON.stringify(v.toISOString());
         }
 
-        if (seen.has(v)) throw new Error('CANONICAL_STRINGIFY_CYCLE');
-        seen.add(v);
+        const obj = v as object;
+        if (seen.has(obj)) throw new Error('CANONICAL_STRINGIFY_CYCLE');
+        seen.add(obj);
 
         if (Array.isArray(v)) {
-            const items = v.map((item) => {
+            const items = (v as unknown[]).map((item) => {
                 const s = helper(item, true);
                 return s ?? 'null';
             });
-            seen.delete(v);
+            seen.delete(obj);
             return `[${items.join(',')}]`;
         }
 
         // Plain object: sort keys, skip undefined-like
-        const keys = Object.keys(v).sort();
+        const rec = v as Record<string, unknown>;
+        const keys = Object.keys(rec).sort();
         const parts: string[] = [];
         for (const k of keys) {
-            const sv = helper(v[k], false);
+            const sv = helper(rec[k], false);
             if (sv === undefined) continue; // omit key
             // JSON.stringify the key to ensure proper escaping of quotes/controls
             parts.push(`${JSON.stringify(k)}:${sv}`);
         }
-        seen.delete(v);
+        seen.delete(obj);
         return `{${parts.join(',')}}`;
     };
 
-    const out = helper(value as any, false);
+    const out = helper(value, false);
     // Top-level undefined becomes undefined in JSON.stringify; for signing we fail logic
     if (out === undefined) {
         throw new Error('CANONICAL_STRINGIFY_TOPLEVEL_UNDEFINED');

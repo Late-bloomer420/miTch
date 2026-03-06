@@ -116,7 +116,7 @@ function isWebAuthnAvailable(): boolean {
   return (
     typeof navigator !== 'undefined' &&
     typeof navigator.credentials !== 'undefined' &&
-    typeof (navigator.credentials as any).get === 'function' &&
+    typeof navigator.credentials.get === 'function' &&
     typeof PublicKeyCredential !== 'undefined'
   );
 }

@@ -38,7 +38,7 @@ export class EphemeralKey {
     static async create(): Promise<EphemeralKey> {
         // Direct generation to ensure proper flags (must be extractable to be wrapped)
         // We bypass the helper to avoid any ambiguity or build staleness.
-        const key = await (globalThis as any).crypto.subtle.generateKey(
+        const key = await globalThis.crypto.subtle.generateKey(
             { name: 'AES-GCM', length: 256 },
             true, // extractable
             ['encrypt', 'decrypt']

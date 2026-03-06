@@ -326,6 +326,9 @@ importers:
       '@mitch/mock-issuer':
         specifier: workspace:*
         version: link:../mock-issuer
+      '@mitch/oid4vp':
+        specifier: workspace:*
+        version: link:../oid4vp
       '@mitch/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine

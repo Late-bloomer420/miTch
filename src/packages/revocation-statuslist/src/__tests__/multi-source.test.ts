@@ -96,7 +96,7 @@ describe('MultiSourceStatusResolver (Spec 62)', () => {
         };
 
         let callCount = 0;
-        const mockFetch = async (url: string, init?: RequestInit) => {
+        const mockFetch = async (url: string, _init?: RequestInit) => {
             callCount++;
             if (callCount === 1) return failFetch() as any;
             return okFetch(url) as any;
