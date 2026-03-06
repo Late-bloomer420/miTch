@@ -223,6 +223,11 @@ export interface DecisionCapsule {
     /** T-88: Ephemeral Key (JWK) for Zero-Backend sessions */
     ephemeral_key?: JsonWebKey;
 
+    /** Spec 111: Pairwise ephemeral did:peer:0 for this interaction (unlinkability) */
+    pairwise_did?: string;
+    /** Spec 111: ECDSA signature of decision_id by pairwise key (hex) */
+    pairwise_proof?: string;
+
     /**
      * Per-requirement authorization results
      */

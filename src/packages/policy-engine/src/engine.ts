@@ -37,6 +37,7 @@ import {
     includesLayer,
     getLayerName
 } from '@mitch/layer-resolver';
+import { generatePairwiseDID } from '@mitch/shared-crypto';
 
 /**
  * Context for policy evaluation.
@@ -650,6 +651,33 @@ export class PolicyEngine {
             } catch (e) {
                 console.error('[PolicyEngine] CRITICAL: Failed to export ephemeral key for capsule', e);
                 throw new Error(`SECURITY_ERROR: Could not bind ephemeral key to decision: ${(e as Error).message}`);
+            }
+
+            // Spec 111: Pairwise Ephemeral DID — attach a fresh did:peer:0 for unlinkability
+            // Only for decisions that produce a proof (ALLOW / PROMPT), not DENY.
+            if (verdict !== 'DENY') {
+                try {
+                    const pairwiseDID = await generatePairwiseDID({
+                        verifierOrigin: request.verifierId,
+                        sessionNonce: request.nonce || decisionCapsule.decision_id,
+                    });
+
+                    decisionCapsule.pairwise_did = pairwiseDID.did;
+
+                    // Sign decision_id to bind the ephemeral DID to this specific decision
+                    const encoder = new TextEncoder();
+                    const sigBytes = await pairwiseDID.sign(
+                        encoder.encode(decisionCapsule.decision_id)
+                    );
+                    decisionCapsule.pairwise_proof = Array.from(sigBytes)
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+
+                    // Shred ephemeral key material immediately after signing
+                    pairwiseDID.destroy();
+                } catch (e) {
+                    console.error('[PolicyEngine] Failed to generate pairwise DID — continuing without it', e);
+                }
             }
 
             if (this.signer) {

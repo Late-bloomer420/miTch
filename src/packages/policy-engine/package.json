@@ -23,7 +23,8 @@
     "dependencies": {
         "@mitch/shared-types": "workspace:*",
         "@mitch/predicates": "workspace:*",
-        "@mitch/layer-resolver": "workspace:*"
+        "@mitch/layer-resolver": "workspace:*",
+        "@mitch/shared-crypto": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.0.0",

@@ -420,6 +420,9 @@ importers:
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../predicates
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types
