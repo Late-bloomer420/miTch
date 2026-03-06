@@ -89,7 +89,7 @@ export async function computeMAC(message: string | Uint8Array, hmacKey: CryptoKe
         ? new TextEncoder().encode(message)
         : message;
 
-    const macBuffer = await crypto.subtle.sign('HMAC', hmacKey, data);
+    const macBuffer = await crypto.subtle.sign('HMAC', hmacKey, data as Uint8Array<ArrayBuffer>);
     const macHex = Array.from(new Uint8Array(macBuffer))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
@@ -120,7 +120,7 @@ export async function verifyMAC(
     );
 
     try {
-        const isValid = await crypto.subtle.verify('HMAC', hmacKey, macBytes, data);
+        const isValid = await crypto.subtle.verify('HMAC', hmacKey, macBytes as Uint8Array<ArrayBuffer>, data as Uint8Array<ArrayBuffer>);
         return isValid
             ? { ok: true }
             : { ok: false, error: 'MAC verification failed: digest mismatch' };
