@@ -1,153 +1,108 @@
 # miTch — The Forgetting Layer
 
+[![Tests](https://img.shields.io/badge/tests-760%2B%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GDPR](https://img.shields.io/badge/GDPR-Art.%2025%20compliant-blue)](docs/ops/EVIDENCE_PACK_P0.md)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
-miTch is **privacy-preserving compliance middleware** — a proof mediation layer where verifiers receive minimal cryptographic proofs instead of raw PII. Data is encrypted with ephemeral keys that are destroyed after each transaction (crypto-shredding), so forgetting is structural, not optional. The system is fail-closed and deny-biased: if anything is ambiguous, access is denied.
+Privacy-preserving compliance middleware for digital identity wallets. Verifiers receive minimal cryptographic proofs instead of raw PII. Ephemeral keys are destroyed after each transaction (crypto-shredding). The system is **fail-closed** and deny-biased: ambiguity → deny.
+
+**[Live Demo](https://late-bloomer420.github.io/miTch/)** — no server, no data collection, runs entirely in your browser.
 
 ---
 
-## Architecture
-
-miTch is a **pnpm monorepo** (Turborepo) with **22 packages + 3 apps = 25 workspaces**.
-
-```
-miTch/
-├── docs/                          # Specifications & design docs
-│   ├── 00-welt/                  # Layer 0: Universal principles
-│   ├── 01-grundversorgung/       # Layer 1: Children + essential services
-│   ├── 02-erwachsene-vulnerable/ # Layer 2: Health, elderly, finance
-│   ├── 03-architecture/          # Technical architecture & ADRs
-│   ├── 04-legal/                 # GDPR, compliance
-│   └── 05-business/              # Business model
-├── src/
-│   ├── apps/                     # 3 applications
-│   │   ├── wallet-pwa/          # Holder wallet (Vite PWA)
-│   │   ├── issuer-mock/         # Mock credential issuer
-│   │   └── verifier-demo/       # Demo verifier service
-│   └── packages/                 # 22 library packages
-└── archive/                      # Historical repos & prototypes
-```
-
-### Protection Layers
-
-Higher layers inherit all protections from lower layers:
-
-| Layer | Name | Scope |
-|-------|------|-------|
-| 0 | WELT | Universal principles, non-linkability, data minimization |
-| 1 | GRUNDVERSORGUNG | Children + essential services, mandatory crypto-shredding |
-| 2 | ERWACHSENE-VULNERABLE | Health, finance, elderly — GDPR Art. 9 |
-
-### Packages
-
-**Core (depended on by most other packages):**
-| Package | Purpose |
-|---------|---------|
-| `@mitch/shared-types` | Shared TypeScript types (12 dependents) |
-| `@mitch/shared-crypto` | Cryptographic primitives, ephemeral keys |
-
-**Mid-level:**
-| Package | Purpose |
-|---------|---------|
-| `@mitch/policy-engine` | Rule-based policy evaluation, layer enforcement |
-| `@mitch/audit-log` | Immutable hash-chain audit log |
-| `@mitch/predicates` | Predicate evaluation (e.g., age >= 18) |
-| `@mitch/secure-storage` | Encrypted credential storage |
-| `@mitch/layer-resolver` | Protection layer resolution |
-| `@mitch/mock-issuer` | Mock credential issuer library |
-| `@mitch/verifier-sdk` | Server-side verifier library |
-| `@mitch/verifier-browser` | Client-side verifier (zero-backend) |
-| `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
-| `@mitch/anchor-service` | Merkle/blockchain anchor (stubs) |
-
-**Standalone / experimental:**
-| Package | Purpose |
-|---------|---------|
-| `@mitch/eid-issuer-connector` | eID/eIDAS issuer integration (stub) |
-| `@mitch/revocation-statuslist` | StatusList2021 revocation (early) |
-| `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
-| `@mitch/secure-memory` | Secure memory handling |
-| `@mitch/phase0-security` | Security hardening experiments |
-| `@mitch/poc-hardened` | Hardened proof-of-concept server |
-
-**Test & tooling:**
-| Package | Purpose |
-|---------|---------|
-| `@mitch/integration-tests` | Cross-package integration tests |
-| `@mitch/benchmarks` | Performance benchmarks |
-| `@mitch/demo-liquor-store` | E2E demo: age-gated purchase |
-| `@mitch/secure-ui-test` | UI security testing |
-
----
-
-## Getting Started
-
-**Prerequisites:** Node.js 18+, pnpm 9.0.0+
+## Quick Start
 
 ```bash
 git clone https://github.com/Late-bloomer420/miTch.git
 cd miTch
 pnpm install
-pnpm build
-pnpm test
+pnpm dev        # starts wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
 ```
-
-Other commands:
-```bash
-pnpm dev:wallet    # Run wallet PWA in dev mode
-pnpm lint          # Lint all packages
-pnpm format        # Format with Prettier
-pnpm clean         # Clean build artifacts
-```
-
----
-
-## Fail-Closed Golden Tests (Merge-Blocking)
-
-The `test:golden` script runs fail-closed regression tests that enforce three invariants:
-
-1. **Unknown verifier / DID resolution fails → DENY**
-2. **Revocation status unknown/unreachable → DENY** (for configured risk layers)
-3. **Policy ambiguity / purpose mismatch → DENY or PROMPT, never ALLOW**
-
-These tests are **merge-blocking** in CI. A refactor that reintroduces an "ALLOW on failure" bug will fail the build immediately.
 
 ```bash
-pnpm test:golden
+pnpm test       # 760+ tests, 38/38 turbo tasks
+pnpm lint       # 0 errors, 0 warnings
+pnpm build      # compile all packages
 ```
 
-Includes a specific regression test for the 2026-03-03 bug where StatusList fetch failure returned ALLOW instead of DENY.
+---
+
+## How It Works
+
+```
+Issuer (eID/gov)  →  Wallet (Edge)  →  Verifier (shop/hospital)
+                         ↑
+                    Policy Engine
+                    (Fail-Closed)
+```
+
+1. **Issuance** — Government issues credential once (SD-JWT VC, OID4VCI)
+2. **Storage** — Credential stored locally, AES-256-GCM encrypted (never leaves device)
+3. **Presentation** — Policy Engine evaluates request; if allowed, generates minimal proof
+4. **Proof** — ECDSA-signed, AAD-bound, RSA-OAEP wrapped, delivered via OID4VP
+5. **Shredding** — Ephemeral keys destroyed; verifier has proof, no PII
 
 ---
 
-## Current Status (2026-03-04)
+## Architecture
 
-**Single source of truth:**
-- P0 evidence and closure status: [`docs/ops/EVIDENCE_PACK_P0.md`](docs/ops/EVIDENCE_PACK_P0.md)
-- Latest pilot dry run record: [`docs/pilot/PILOT_DRY_RUN_01.md`](docs/pilot/PILOT_DRY_RUN_01.md)
+pnpm monorepo (Turborepo) — 22 packages + 3 apps.
 
-**Pilot path (fixed minimal scenario):**
-- **Altersverifikation (18+)** as the single validation use-case for current pilot execution.
+| Package | Purpose |
+|---|---|
+| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · pairwise DID derivation |
+| `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny reason codes |
+| `@mitch/predicates` | ZK-style predicates (isOver18, hasLicense, …) |
+| `@mitch/verifier-sdk` | Server-side: decrypt · verify · replay-check |
+| `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
+| `@mitch/secure-storage` | AES-256-GCM credential store (IndexedDB) |
+| `@mitch/audit-log` | WORM append-only audit log (GDPR Art. 32) |
+| `@mitch/anchor-service` | Merkle batch anchoring + L2 stubs |
+| `@mitch/revocation-statuslist` | StatusList2021 — fail-closed revocation check |
 
-See docs canon map: [`docs/DOCS_CANON.md`](docs/DOCS_CANON.md).
+Apps: `wallet-pwa` (React PWA) · `verifier-demo` (Express API + frontend) · `issuer-mock` (OID4VCI server)
+
+Full diagram: [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md)
 
 ---
 
-## Key Design Principles
+## Key Properties
 
-1. **Fail-closed** — ambiguity → deny
-2. **Rule over authority** — trust from rules, not central power
-3. **Data minimization by construction** — built-in, not bolted-on
-4. **User sovereignty** — user controls all data releases
-5. **No central identity custody** — ever
+| Property | Implementation |
+|---|---|
+| Fail-Closed | Every ambiguous state → DENY (no silent allow) |
+| Unlinkability | HKDF pairwise DIDs per verifier session (Spec 111) |
+| Data Minimization | Only proven claims leave the device, never raw attributes |
+| WORM Audit | Append-only IndexedDB log, integrity-chained |
+| Replay Protection | Nonce + decision_id + verifier_did AAD binding |
+| Zero Identity Custody | No PII on any server — miTch infrastructure is blind |
+
+---
+
+## Compliance
+
+- **GDPR Art. 25** — Privacy by Design, Data Minimization by Construction
+- **GDPR Art. 32** — WORM audit log, AES-256-GCM at rest
+- **eIDAS 2.0 / EUDI Wallet** — OID4VP + OID4VCI protocol stack
+- **EHDS** — Break-glass WebAuthn step-up for health data (Art. 9 GDPR)
+
+---
+
+## Docs
+
+| Document | Link |
+|---|---|
+| Architecture Diagrams | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
+| Presentation Outline | [docs/presentation/OUTLINE.md](docs/presentation/OUTLINE.md) |
+| Demo Script | [docs/presentation/DEMO_SCRIPT.md](docs/presentation/DEMO_SCRIPT.md) |
+| P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
+| Pilot Dry Run | [docs/pilot/PILOT_DRY_RUN_01.md](docs/pilot/PILOT_DRY_RUN_01.md) |
+| Master Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |
+| Unlinkability Spec 111 | [docs/specs/111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md](docs/specs/111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md) |
 
 ---
 
 ## License
 
-[MIT](LICENSE)
-
----
-
-**Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
+[MIT](LICENSE) — **Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
