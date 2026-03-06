@@ -1,0 +1,19 @@
+{
+    "name": "@mitch/oid4vp-verifier",
+    "version": "0.1.0",
+    "description": "OpenID for Verifiable Presentations 1.0 — Verifier-side implementation",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@mitch/oid4vp": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.5",
+        "typescript": "^5.3.3",
+        "vitest": "^2.1.9"
+    }
+}

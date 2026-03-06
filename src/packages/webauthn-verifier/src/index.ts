@@ -224,3 +224,4 @@ export class WebAuthnNativeVerifier {
 }
 
 export * from './types';
+export * from './step-up-auth';

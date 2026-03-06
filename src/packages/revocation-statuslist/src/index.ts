@@ -317,3 +317,4 @@ export class StatusListRevocationChecker {
 }
 
 export * from './types';
+export * from './multi-source';

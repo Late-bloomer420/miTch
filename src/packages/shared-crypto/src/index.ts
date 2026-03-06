@@ -18,3 +18,6 @@ export * from './pairwise-did'; // Spec 111: Pairwise Ephemeral DIDs
 export * from './types/KeyProtectionLevel.js';
 export * from './interfaces/KeyGuardian.js';
 export * from './SoftwareKeyGuardian.js';
+
+export * from './did-quorum';
+export * from './crypto-agility';
