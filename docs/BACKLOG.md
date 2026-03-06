@@ -113,7 +113,7 @@ Basierend auf: `memory/miTch_security_patterns_memory.md`
 | S-02 | ✅ | `manifest_version` Monotonic Counter + `manifest_hash` | Manifest Rollback |
 | S-03 | ✅ | Input Validation Schema (Whitelist-basiert) für Policy Parser | Claim-Name Injection |
 | S-04 | ✅ | Komponenten-Isolations-Modell (Engine/Consent/Audit) | Internal Privilege Escalation |
-| S-05 | 🟡 | Zero Trust intern dokumentieren + implementieren | Chained Attacks |
+| S-05 | ✅ | Zero Trust intern dokumentieren + implementieren | Chained Attacks |
 
 ---
 
