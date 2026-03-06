@@ -148,6 +148,72 @@
 
 ---
 
+---
+
+## Tier 4 — Unterschätzt aber real
+
+### 21. Wohnungsmarkt / Mietbewerbung
+**Problem:** Vermieter verlangen: Schufa, Gehaltsnachweis, Arbeitgeberbescheinigung, Personalausweis. Komplette finanzielle Entblößung für eine Wohnungsbesichtigung.  
+**miTch:** "Einkommen > 3x Kaltmiete, keine negativen Schufa-Einträge, unbefristetes Arbeitsverhältnis" — ohne Kontoauszüge, ohne Gehaltszahl, ohne Arbeitgeber-Name.  
+**Machbarkeit:** ⭐⭐⭐⭐ — Schufa/Creditreform müssten als Issuer fungieren.  
+**Markt:** Jede Mietbewerbung in Deutschland. Millionen/Jahr.
+
+### 22. Anti-Diskriminierung bei Bewerbungen
+**Problem:** Anonymisierte Bewerbungen scheitern in der Praxis. Arbeitgeber sehen Foto, Name, Alter, Geschlecht — und diskriminieren (bewusst oder unbewusst).  
+**miTch:** "Hat Qualifikation X, Y Jahre Erfahrung in Bereich Z" — ohne Name, Alter, Geschlecht, Herkunft, Foto. Erst nach Einladung zum Gespräch wird mehr geteilt.  
+**Machbarkeit:** ⭐⭐⭐ — Technisch trivial, kulturell schwer.  
+**Markt:** Jedes Unternehmen das AGG-konform sein will.
+
+### 23. Dating / Social Matching
+**Problem:** Dating-Apps wissen alles: Standort, Präferenzen, Chatverläufe, Gesundheitsstatus. Profile sind oft gefälscht.  
+**miTch:** Verifiziert: "Ist reale Person, Altersbereich 25-35, keine Vorstrafen" — ohne echten Namen bis zum Match.  
+**Machbarkeit:** ⭐⭐ — Dating-Apps verdienen an Daten, wenig Anreiz.  
+**Markt:** $6B+ global. Tinder, Bumble, Hinge.
+
+### 24. Klinische Studien / Pharma
+**Problem:** Patienten für Studien rekrutieren erfordert medizinische Vorab-Screening mit sensiblen Daten. Viele melden sich nicht aus Angst vor Datenmissbrauch.  
+**miTch:** "Patient hat Diagnose X, Altersgruppe Y, keine Kontraindikation Z" — Pharmafirma sieht genug für Einschluss, aber nicht die Identität.  
+**Machbarkeit:** ⭐⭐⭐ — Passt perfekt zu EHDS Secondary Use.  
+**Markt:** Pharma-Industrie: $1.5T global. Klinische Studien: $80B+.
+
+### 25. Parkausweise / Behindertenausweis / Sozialleistungen
+**Problem:** Behindertenausweis zeigt: Name, Foto, Art der Behinderung, Grad. Beim Parken auf Behindertenparkplatz sieht jeder Passant alles.  
+**miTch:** "Hat Berechtigung für Behindertenparkplatz" — ohne Art oder Grad der Behinderung.  
+**Machbarkeit:** ⭐⭐⭐⭐ — Einfacher Use Case, hoher gesellschaftlicher Wert.  
+**Markt:** 7.8M Schwerbehinderte allein in Deutschland.
+
+### 26. Energie / Smart Grid / Einspeisevergütung
+**Problem:** Solaranlagen-Besitzer müssen sich gegenüber Netzbetreiber komplett identifizieren für Einspeisevergütung. Smart Meter senden Verbrauchsprofile.  
+**miTch:** "Anlage X produziert Y kWh" — ohne Haushalts-Verbrauchsprofil offenzulegen.  
+**Machbarkeit:** ⭐⭐ — IoT-Credential + Energieregulierung.  
+**Markt:** Jeder Prosumer in der EU. Millionen Solaranlagen.
+
+### 27. Kinderschutz / Elterliche Zustimmung
+**Problem:** DSGVO Art. 8: Unter-16-Jährige brauchen Elternzustimmung für Online-Dienste. Aktuell: "Klick hier dass du 16 bist" — wirkungslos.  
+**miTch:** Proof: "Elternteil hat Zustimmung für Kind erteilt für Dienst X" — ohne Identität des Kindes an den Dienst.  
+**Machbarkeit:** ⭐⭐⭐ — Delegation-Credential (Eltern→Kind).  
+**Markt:** Jedes Kind mit Smartphone in der EU.
+
+### 28. Treueprogramme ohne Tracking
+**Problem:** Payback, Miles & More, etc. = totale Verhaltensüberwachung im Tausch gegen Punkte.  
+**miTch:** "Dieser Nutzer hat 10 Käufe getätigt" — Punkte ohne Verhaltensprofil. Unlinkable Loyalty.  
+**Machbarkeit:** ⭐⭐ — Loyalty-Programme SIND das Tracking. Business Model Conflict.  
+**Markt:** $200B+ Loyalty-Industrie.
+
+### 29. Physischer Zugang / Gebäude / Events
+**Problem:** Konzert-Ticket = Name + oft Ausweis am Eingang. Fitnessstudio = Foto + Adresse + Bankverbindung.  
+**miTch:** "Hat gültiges Ticket für Event X" oder "Hat aktive Mitgliedschaft" — ohne Identität.  
+**Machbarkeit:** ⭐⭐⭐ — NFC/QR + Selective Disclosure.  
+**Markt:** Jedes Konzert, jedes Stadion, jedes Fitnessstudio.
+
+### 30. Digitaler Nachlass / Erbschaft
+**Problem:** Wenn jemand stirbt: Wer hat Zugang zu den digitalen Konten? Erben müssen Sterbeurkunde + Erbschein + Vollmacht an jeden einzelnen Dienst schicken.  
+**miTch:** "Person X ist berechtigter Erbe für Konto Y" — ausgestellt vom Nachlassgericht, verifizierbar ohne den ganzen Erbschein.  
+**Machbarkeit:** ⭐⭐ — Juristisch komplex, aber technisch direkt machbar.  
+**Markt:** Wächst mit der Digitalisierung. Jeder Todesfall betrifft dutzende Online-Konten.
+
+---
+
 ## Zusammenfassung
 
 | Tier | Bereiche | Gemeinsamer Nenner |
@@ -155,6 +221,7 @@
 | 1 (Now) | Alter, Gesundheit, Führerschein, Bildung, KYC, E-Gov | Person → Verifier: "Ich beweise X ohne Y zu zeigen" |
 | 2 (Next) | Arbeit, Supply Chain, IoT, Voting, Versicherung, Reisen, Signaturen | Erweitertes Trust-Modell: B2B, Devices, Gruppen |
 | 3 (Future) | Social Media, Sharing, Journalismus, Gaming, Humanitär, Forschung, Telco | Ökosystem-Adoption nötig, gesellschaftlicher Impact |
+| 4 (Unterschätzt) | Wohnung, Anti-Diskriminierung, Dating, Pharma, Behindertenausweis, Energie, Kinderschutz, Loyalty, Events, Nachlass | Alltagsprobleme wo Overidentification Standard ist |
 
 **Das Muster:** Überall wo heute jemand sagt "Zeig mir deinen Ausweis" kann miTch sagen "Ich beweise dir was du brauchst — aber du erfährst nicht wer ich bin."
 
