@@ -1,0 +1,972 @@
+/* ==========================================================================
+   wallet.css — miTch Wallet PWA UX Polish
+   UX-01: CSS Classes replacing inline styles
+   UX-02: State transitions & animations
+   UX-03: Credential card design
+   UX-04: Button hierarchy
+   UX-05: Audit log
+   UX-06: ConsentModal polish
+   UX-07: GuidedDemo storytelling
+   UX-08: Mobile polish
+   ========================================================================== */
+
+/* ── UX-01: Layout & Container ─────────────────────────────────────────── */
+
+.wallet-app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    padding-top: env(safe-area-inset-top, 20px);
+    box-sizing: border-box;
+}
+
+.wallet-title {
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.wallet-title-accent {
+    font-weight: 800;
+    color: #0070f3;
+}
+
+.wallet-section {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* ── UX-03: Credential Card ─────────────────────────────────────────────── */
+
+.credential-card {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 191, 255, 0.2);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(0, 191, 255, 0.05);
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.credential-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 191, 255, 0.15);
+}
+
+/* Hologramm Shimmer Effect */
+.credential-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(0, 191, 255, 0.04) 38%,
+        rgba(255, 255, 255, 0.08) 42%,
+        rgba(0, 191, 255, 0.04) 46%,
+        transparent 54%
+    );
+    animation: hologramShimmer 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes hologramShimmer {
+    0%   { transform: translateX(-100%) rotate(-15deg); }
+    100% { transform: translateX(100%) rotate(-15deg); }
+}
+
+/* Decorative corner glow */
+.credential-card::after {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(0, 191, 255, 0.15), transparent 70%);
+    pointer-events: none;
+}
+
+.credential-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.credential-card-label {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.credential-trust-badge {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    color: #a5d6a7;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: 1px solid rgba(46, 125, 50, 0.5);
+    box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+}
+
+.credential-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.credential-item:last-child {
+    margin-bottom: 0;
+}
+
+.credential-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.credential-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.credential-issuer {
+    color: var(--accent-blue);
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.credential-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 10px 0;
+}
+
+/* ── UX-01: Status Indicator ─────────────────────────────────────────────── */
+
+.status-bar {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 16px;
+}
+
+/* ── UX-02: State Transitions ────────────────────────────────────────────── */
+
+/* Main CTA Button */
+.btn-primary {
+    width: 100%;
+    max-width: 400px;
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 44px;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 112, 243, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-primary:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 3px;
+}
+
+.btn-primary:disabled {
+    cursor: not-allowed;
+}
+
+.btn-primary--idle {
+    background: linear-gradient(135deg, #0070f3 0%, #00a6ed 100%);
+    color: #fff;
+}
+
+.btn-primary--evaluating {
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+    color: rgba(255,255,255,0.7);
+}
+
+.btn-primary--proving {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    color: rgba(255,255,255,0.9);
+}
+
+.btn-primary--shredded {
+    background: #1a1a1a;
+    color: #555;
+    border: 1px solid #2a2a2a;
+}
+
+.btn-primary--denied {
+    background: linear-gradient(135deg, #c62828, #b71c1c);
+    color: #fff;
+}
+
+/* DENIED shake animation */
+.btn-primary--denied {
+    animation: btnShake 0.5s ease-in-out;
+}
+
+@keyframes btnShake {
+    0%, 100% { transform: translateX(0); }
+    15%       { transform: translateX(-6px) rotate(-0.5deg); }
+    35%       { transform: translateX(6px) rotate(0.5deg); }
+    55%       { transform: translateX(-4px); }
+    75%       { transform: translateX(4px); }
+}
+
+/* ALLOW green flash */
+@keyframes allowFlash {
+    0%   { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.8); }
+    50%  { box-shadow: 0 0 30px 12px rgba(0, 230, 118, 0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+}
+
+.btn-primary--flash-allow {
+    animation: allowFlash 0.8s ease-out forwards;
+}
+
+/* SHREDDED dissolve transition */
+@keyframes shreddedAppear {
+    from { opacity: 0; filter: blur(4px); }
+    to   { opacity: 1; filter: blur(0); }
+}
+
+.btn-primary--shredded {
+    animation: shreddedAppear 0.4s ease-out forwards;
+}
+
+/* ── Progress bar during PROVING ─────────────────────────────────────────── */
+
+.proving-progress {
+    width: 100%;
+    max-width: 400px;
+    height: 3px;
+    background: rgba(0, 191, 255, 0.15);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.proving-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #0070f3, #00bfff, #0070f3);
+    background-size: 200% 100%;
+    border-radius: 2px;
+    animation: provingProgress 1.5s linear infinite;
+    width: 60%;
+}
+
+@keyframes provingProgress {
+    0%   { background-position: 100% 0; transform: translateX(-100%); }
+    100% { background-position: -100% 0; transform: translateX(250%); }
+}
+
+/* EVALUATING pulse spinner */
+.evaluating-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── UX-04: Button Grid — Hierarchy ─────────────────────────────────────── */
+
+.demo-section {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 50px;
+    padding: 20px;
+    background: #111;
+    border-radius: 24px;
+    border: 1px solid #222;
+    box-sizing: border-box;
+}
+
+.demo-section-title {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.demo-primary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.btn-demo-primary {
+    padding: 16px 12px;
+    border-radius: 14px;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.4;
+    text-align: center;
+    min-height: 44px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-demo-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.15s;
+}
+
+.btn-demo-primary:hover:not(:disabled)::after {
+    background: rgba(255,255,255,0.07);
+}
+
+.btn-demo-primary:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.btn-demo-primary:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.btn-demo-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(40%);
+}
+
+/* Span full width (Doctor Login) */
+.btn-demo-primary--full {
+    grid-column: span 2;
+}
+
+/* Secondary collapsible buttons */
+.demo-secondary-toggle {
+    width: 100%;
+    padding: 9px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #555;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-height: 44px;
+}
+
+.demo-secondary-toggle:hover {
+    border-color: #444;
+    color: #888;
+}
+
+.demo-secondary-toggle:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.demo-secondary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.3s ease, margin 0.3s ease;
+}
+
+.demo-secondary-grid--open {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 10px;
+}
+
+.btn-demo-secondary {
+    padding: 11px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #ccc;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.03);
+    min-height: 44px;
+}
+
+.btn-demo-secondary:hover:not(:disabled) {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    transform: scale(1.02);
+}
+
+.btn-demo-secondary:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.btn-demo-secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-demo-secondary:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* ── UX-05: Audit Log ────────────────────────────────────────────────────── */
+
+.audit-section {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
+.audit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.audit-title {
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+}
+
+.audit-copy-btn {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    color: #555;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 28px;
+}
+
+.audit-copy-btn:hover {
+    border-color: #444;
+    color: #aaa;
+}
+
+.audit-copy-btn:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.audit-log-container {
+    font-family: 'Courier New', Monaco, monospace;
+    font-size: 12px;
+    background: #080808;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #1a1a1a;
+    max-height: 220px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.audit-log-container::-webkit-scrollbar {
+    width: 3px;
+}
+
+.audit-log-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.audit-log-container::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.audit-log-entry {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 5px;
+    animation: logSlideIn 0.25s ease-out both;
+    transform-origin: left center;
+}
+
+@keyframes logSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.audit-log-time {
+    color: #444;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.audit-log-msg {
+    line-height: 1.5;
+}
+
+.audit-log-done {
+    margin-top: 10px;
+    border-top: 1px solid #1e1e1e;
+    padding-top: 6px;
+    color: #444;
+    font-style: italic;
+    animation: logSlideIn 0.25s ease-out both;
+}
+
+/* ── UX-06: ConsentModal Polish ──────────────────────────────────────────── */
+
+/* Entry animation from below (mobile-native pattern) */
+.consent-sheet-enter {
+    animation: consentSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes consentSlideUp {
+    from {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Risk Level Banner */
+.consent-risk-banner {
+    padding: 8px 14px;
+    border-radius: 8px;
+    margin: -20px -20px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.consent-risk-banner--high {
+    background: rgba(229, 57, 53, 0.15);
+    color: #ef9a9a;
+    border-bottom: 1px solid rgba(229, 57, 53, 0.3);
+}
+
+.consent-risk-banner--medium {
+    background: rgba(245, 124, 0, 0.15);
+    color: #ffcc80;
+    border-bottom: 1px solid rgba(245, 124, 0, 0.3);
+}
+
+.consent-risk-banner--low {
+    background: rgba(46, 125, 50, 0.15);
+    color: #a5d6a7;
+    border-bottom: 1px solid rgba(46, 125, 50, 0.3);
+}
+
+/* Claim Chips */
+.consent-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.consent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.consent-chip--allowed {
+    background: rgba(0, 230, 118, 0.12);
+    color: #a5d6a7;
+    border-color: rgba(0, 230, 118, 0.2);
+}
+
+.consent-chip--raw {
+    background: rgba(255, 215, 64, 0.1);
+    color: #ffe082;
+    border-color: rgba(255, 215, 64, 0.2);
+}
+
+.consent-chip--blocked {
+    background: rgba(255, 82, 82, 0.1);
+    color: #ef9a9a;
+    border-color: rgba(255, 82, 82, 0.2);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* Pulsing WebAuthn button */
+@keyframes webAuthnPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(57, 73, 171, 0.7); }
+    70%  { box-shadow: 0 0 0 10px rgba(57, 73, 171, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(57, 73, 171, 0); }
+}
+
+.btn-webauthn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1a237e, #283593);
+    border: 1px solid #3949ab;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    animation: webAuthnPulse 2s ease-out infinite;
+    transition: all 0.2s;
+    min-height: 44px;
+}
+
+.btn-webauthn:hover {
+    background: linear-gradient(135deg, #283593, #3949ab);
+    transform: scale(1.01);
+}
+
+.btn-webauthn:active {
+    transform: scale(0.97);
+}
+
+.btn-webauthn:focus-visible {
+    outline: 2px solid #7986cb;
+    outline-offset: 2px;
+}
+
+/* Countdown ring */
+.consent-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #888;
+}
+
+.countdown-ring {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.countdown-ring svg {
+    transform: rotate(-90deg);
+}
+
+.countdown-ring-circle {
+    stroke-dasharray: 88;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.countdown-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+/* Reject link style (less prominent) */
+.btn-reject-link {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 12px 16px;
+    border-radius: 10px;
+    transition: color 0.2s;
+    min-height: 44px;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+}
+
+.btn-reject-link:hover {
+    color: #888;
+    text-decoration-color: #555;
+}
+
+.btn-reject-link:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.btn-approve {
+    flex: 1;
+    padding: 14px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(0, 191, 255, 0.25);
+    min-height: 44px;
+}
+
+.btn-approve:hover:not(:disabled) {
+    background: #29d4ff;
+    box-shadow: 0 10px 28px rgba(0, 191, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-approve:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-approve:disabled {
+    background: #2a2a2a;
+    color: #555;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-approve:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* ── UX-07: GuidedDemoMode ───────────────────────────────────────────────── */
+
+/* Step slide transitions */
+.step-content {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.step-content--enter {
+    opacity: 0;
+    transform: translateX(16px);
+}
+
+.step-content--exit {
+    opacity: 0;
+    transform: translateX(-16px);
+}
+
+/* Confetti burst (canvas overlay for JS animation) */
+.confetti-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Start Guided Demo button */
+.btn-start-demo {
+    width: 100%;
+    max-width: 400px;
+    padding: 11px 18px;
+    margin-bottom: 12px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    color: #555;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    min-height: 44px;
+}
+
+.btn-start-demo:hover {
+    border-color: #444;
+    color: #888;
+    background: rgba(255,255,255,0.02);
+}
+
+.btn-start-demo:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* ── UX-08: Mobile / Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .wallet-app {
+        padding: 12px;
+    }
+
+    .wallet-title {
+        font-size: 24px;
+    }
+
+    .btn-primary {
+        font-size: 16px;
+        padding: 16px;
+    }
+
+    .credential-card {
+        border-radius: 16px;
+    }
+
+    .demo-section {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .audit-log-container {
+        font-size: 11px;
+    }
+}
+
+/* Landscape split on wider screens */
+@media (min-width: 640px) and (max-height: 500px) {
+    .wallet-app {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .wallet-title {
+        width: 100%;
+        text-align: center;
+        font-size: 22px;
+        margin-bottom: 4px;
+    }
+
+    .credential-card,
+    .btn-primary,
+    .audit-section,
+    .demo-section,
+    .wallet-section {
+        max-width: 340px;
+    }
+}
+
+/* ── Denial Resolution Modal ─────────────────────────────────────────────── */
+
+.denial-action-btn {
+    width: 100%;
+    padding: 14px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    min-height: 44px;
+}
+
+.denial-action-btn:hover {
+    background: #2a2a2a;
+    border-color: #444;
+}
+
+.denial-action-btn--override {
+    background: rgba(229, 57, 53, 0.12);
+    border-color: #c62828;
+    color: #ef9a9a;
+}
+
+.denial-action-btn--override:hover {
+    background: rgba(229, 57, 53, 0.2);
+}
+
+.denial-action-btn:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.denial-close-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s;
+    min-height: 44px;
+}
+
+.denial-close-btn:hover {
+    color: #888;
+}
+
+/* ── Misc Utilities ──────────────────────────────────────────────────────── */
+
+/* Smooth color transitions for status-dependent elements */
+.status-transition {
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
