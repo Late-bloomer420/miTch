@@ -24,24 +24,25 @@
 
 ## Current status
 
-- **Tests:** 37/37 turbo tasks pass; **639 individual tests** green (Session 3: +449)
+- **Tests:** 38/38 turbo tasks pass; **663 individual tests** green (Session 4: +24)
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
 - **Lint:** 0 errors (pre-existing warnings only, no regressions)
 - **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
-- **Phase 1 Unlinkability:** U-01–U-05 ✅ (Pairwise Ephemeral DIDs + Policy Engine Integration)
-- **Phase 3 Security Hardening:** S-01–S-05 ✅ (Fingerprint, Rollback, Input Validation, Isolation, Zero Trust)
-- **.gitattributes:** Line endings normalized (LF)
+- **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
+- **Phase 3 Security Hardening:** S-01–S-05 ✅
+- **OID4VP Policy Bridge:** E-04 ✅ (executeOID4VPFlow, mapRequestToPolicyInput, validateRequestCompatibility)
+- **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App component)
+- **Working directory:** `D:/Mensch/miTch-master` (git worktree on master)
 
-## Recent changes (2026-03-06)
+## Recent changes (2026-03-06 Session 4)
 
-- U-05: Policy Engine generates pairwise DID (did:peer:0z) per ALLOW/PROMPT decision
-- S-01: verifier_fingerprint in PolicyRule — Fake Verifier Spoofing defense
-- S-02: manifest_version (monotonic) + manifest_hash — Manifest Rollback protection
-- S-03: Whitelist-based Input Validation (claim names, DID format, path traversal)
-- S-04: Spec 112 — Komponenten-Isolations-Modell (Engine/Consent/Audit boundaries)
-- S-05: docs/ARCHITECTURE_ZERO_TRUST.md — Zero Trust intern verankert
-- H-04: main branch was already deleted on GitHub (confirmed)
-- H-05: .gitattributes created (text=auto eol=lf)
-- fix: pairwise-did.test.ts — 30s timeout for 1000-DID collision test (parallel turbo load)
+- U-01: generatePairwiseDIDFromMasterKey — HKDF-SHA-256 wallet master key derivation
+- U-02: resolveDidPeer0 — inline did:peer:0z resolution (P-256 pub key, no network)
+- U-03/U-04: 23 unlinkability tests (cross-verifier isolation, key shredding, HKDF recovery)
+- E-04: OID4VP Policy Bridge — executeOID4VPFlow + 19 tests
+- G-01–G-03: Wallet PWA vitest setup + 24 tests (DocumentService, PrivacyAuditService, App)
+- fix: tsc strict Uint8Array<ArrayBuffer> cast in pairwise-did.ts
+- fix: pairwise-did.test.ts 1000-DID timeout 30s→60s (parallel turbo load)
+- fix: parseAuthorizationRequest passes client_metadata through
