@@ -78,13 +78,13 @@ describe('isManifestCompatible', () => {
     };
 
     it('strict profile rejects manifest without version', () => {
-        const { manifest_version, ...noVersion } = manifest;
+        const { manifest_version: _mv1, ...noVersion } = manifest;
         const result = isManifestCompatible(noVersion as PolicyManifest, getConfig('strict'));
         expect(result).toBe(false);
     });
 
     it('default profile accepts manifest without version', () => {
-        const { manifest_version, ...noVersion } = manifest;
+        const { manifest_version: _mv2, ...noVersion } = manifest;
         const result = isManifestCompatible(noVersion as PolicyManifest, getConfig('default'));
         expect(result).toBe(true);
     });

@@ -25,7 +25,7 @@ export interface VPTokenBuildOptions {
  * For SD-JWT credentials, each credential is mapped to its descriptor.
  */
 export function buildVPToken(opts: VPTokenBuildOptions): VPToken {
-    const { holder, credentials, definition, format = 'sd-jwt' } = opts;
+    const { holder: _holder, credentials, definition, format = 'sd-jwt' } = opts;
 
     const submissionId = `sub-${randomBytes(8).toString('hex')}`;
 

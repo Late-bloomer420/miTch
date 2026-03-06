@@ -51,7 +51,7 @@ export class ProofFatigueTracker {
         const now = Date.now();
         const cutoff = now - this.config.windowMs;
 
-        let state = this.states.get(userId) ?? { userId, promptTimestamps: [], fatigued: false };
+        const state = this.states.get(userId) ?? { userId, promptTimestamps: [], fatigued: false };
 
         // Prune old timestamps
         state.promptTimestamps = state.promptTimestamps.filter(ts => ts >= cutoff);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { JurisdictionGate, JURISDICTION_EU_EEA, GDPR_ADEQUATE_COUNTRIES } from '../jurisdiction';
+import { JurisdictionGate, JURISDICTION_EU_EEA, GDPR_ADEQUATE_COUNTRIES as _GDPR_ADEQUATE_COUNTRIES } from '../jurisdiction';
 
 describe('JurisdictionGate', () => {
     it('allows EU/EEA countries unconditionally', () => {

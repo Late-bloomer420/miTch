@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 // Mock IndexedDB for jsdom environment
-import { vi } from 'vitest';
+// vitest setup — no direct imports needed (globals: true in vitest.config.ts)
 
 // Minimal IndexedDB shim — enough for WalletService.initialize() + getAllMetadata() to work
 if (typeof globalThis.indexedDB === 'undefined') {

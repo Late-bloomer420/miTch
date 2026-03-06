@@ -5,7 +5,7 @@ import {
     extractRequestedPaths,
     requiresSelectiveDisclosure,
 } from '../presentation-request';
-import { buildVPToken, buildVerifiablePresentation, parseVPToken, validateSubmission } from '../vp-token';
+import { buildVPToken, buildVerifiablePresentation as _buildVerifiablePresentation, parseVPToken as _parseVPToken, validateSubmission } from '../vp-token';
 import { buildAuthorizationResponse, encodeDirectPost, decodeDirectPost } from '../response-builder';
 import type { PresentationDefinition, AuthorizationRequest } from '../types';
 
@@ -55,7 +55,7 @@ describe('parseAuthorizationRequest', () => {
     });
 
     it('rejects missing client_id', () => {
-        const { client_id, ...rest } = REQUEST;
+        const { client_id: _client_id, ...rest } = REQUEST;
         const r = parseAuthorizationRequest(rest);
         expect(r.ok).toBe(false);
         if (!r.ok) expect(r.code).toBe('MISSING_CLIENT_ID');

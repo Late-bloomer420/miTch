@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KPIEngine, computeSecurityScore, DEFAULT_ALERT_THRESHOLDS } from '../kpi';
+import { KPIEngine, computeSecurityScore, DEFAULT_ALERT_THRESHOLDS as _DEFAULT_ALERT_THRESHOLDS } from '../kpi';
 
 function makeRecord(verdict: 'ALLOW' | 'DENY' | 'PROMPT', reasons: string[] = []) {
     return { verdict, reasons, verifierId: 'v1', timestamp: Date.now() };

@@ -60,7 +60,7 @@ export class JurisdictionGate {
     /**
      * Check if an operation is allowed for a given jurisdiction.
      */
-    check(jurisdiction: JurisdictionCode, purpose?: string): JurisdictionGateResult {
+    check(jurisdiction: JurisdictionCode, _purpose?: string): JurisdictionGateResult {
         // EU/EEA is always allowed (home jurisdiction)
         if (JURISDICTION_EU_EEA.has(jurisdiction)) {
             return { allowed: true };
