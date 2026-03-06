@@ -93,6 +93,13 @@ export interface PolicyRule {
     geoScope?: GeoScope;
     /** EHDS: Allow break-glass emergency access without prior consent */
     allowBreakGlass?: boolean;
+
+    /**
+     * S-01: Kryptografischer Verifier-Fingerprint (SHA-256 des Verifier-DID-Dokuments, hex).
+     * Wenn gesetzt: Request MUSS einen passenden fingerprint liefern.
+     * Bei Mismatch oder fehlendem Fingerprint → PROMPT (niemals auto-ALLOW).
+     */
+    verifier_fingerprint?: string;
 }
 
 /**
@@ -149,6 +156,13 @@ export interface VerifierRequest {
 
     /** T-88: Ephemeral Key for SME Kit (Client-Side Encryption) */
     ephemeralResponseKey?: CryptoKey;
+
+    /**
+     * S-01: Kryptografischer Fingerprint, den der Verifier von sich selbst präsentiert.
+     * (SHA-256 des Verifier-DID-Dokuments oder Public Key, hex).
+     * Wird gegen PolicyRule.verifier_fingerprint geprüft.
+     */
+    verifier_fingerprint?: string;
 }
 
 export interface PolicyEvaluationResult {

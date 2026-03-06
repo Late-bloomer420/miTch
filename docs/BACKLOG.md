@@ -42,7 +42,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | U-02 | 🔴 | did:peer Resolution in `did.ts` (inline, kein Netzwerk) | Spec 111 |
 | U-03 | 🔴 | Unlinkability Tests (Cross-Verifier, Cross-Session, Anti-Korrelation) | Spec 111 |
 | U-04 | 🔴 | Key Shredding nach Interaktion (EphemeralKey Integration) | Spec 111 |
-| U-05 | 🟡 | Policy Engine: Pairwise DID in Proof-Generierung einbinden | Spec 111 |
+| U-05 | ✅ | Policy Engine: Pairwise DID in Proof-Generierung einbinden | Spec 111 |
 
 ### 1.2 Randomisierte Proofs (Phase 2)
 | ID | Prio | Beschreibung |

@@ -81,6 +81,7 @@ export enum ReasonCode {
     CONSENT_REQUIRED = 'CONSENT_REQUIRED',
     SENSITIVE_CLAIM = 'SENSITIVE_CLAIM',
     PRESENCE_REQUIRED = 'PRESENCE_REQUIRED',
+    FINGERPRINT_MISMATCH = 'FINGERPRINT_MISMATCH',
 
     // EHDS Compliance
     SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
@@ -215,6 +216,16 @@ export class PolicyEngine {
             // High-risk verifier that would normally auto-allow is escalated to PROMPT
             reasonCodes.push('HIGH_RISK_VERIFIER');
             return this.result('PROMPT', [...reasonCodes, ReasonCode.SENSITIVE_CLAIM], context, policy, startTime, credentials, matchedRule);
+        }
+
+        // S-01: Verifier Fingerprint Check
+        // If the matched rule declares a verifier_fingerprint, the request MUST present
+        // a matching fingerprint. Mismatch or absence → PROMPT (never auto-ALLOW).
+        if (matchedRule.verifier_fingerprint) {
+            const presented = request.verifier_fingerprint;
+            if (!presented || presented !== matchedRule.verifier_fingerprint) {
+                return this.result('PROMPT', [ReasonCode.FINGERPRINT_MISMATCH], context, policy, startTime, credentials, matchedRule, undefined, request);
+            }
         }
 
         // --- Automatism Delegation Check ---
