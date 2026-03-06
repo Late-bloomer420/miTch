@@ -1714,7 +1714,10 @@
       document.getElementById('btn-unrev').disabled = false;
       document.getElementById('btn-issue').disabled = false;
 
-      setFlow('wallet'); setStatus('Credential issued — select claims & start verification');
+      setStatus('Credential issued — select claims & start verification');
+      // Give user time to read the success state before jumping to wallet
+      await delay(1500);
+      setFlow('wallet');
     }
 
     // ─── Step 2: Start Verification → Policy Engine ──────────────────
@@ -1785,7 +1788,7 @@
       } else {
         // Auto-approve goes straight to biometric
         _pendingChecked = checked;
-        startBiometric();
+        await startBiometric();
       }
     }
 
@@ -1797,10 +1800,12 @@
       document.getElementById('wallet-consent').style.display = 'none';
       const allClaims = Object.keys(CLAIMS);
       _pendingChecked = allClaims.filter(n => document.getElementById('c-' + n)?.checked);
-      startBiometric();
+      await startBiometric();
     }
 
-    function startBiometric() {
+    async function startBiometric() {
+      // Give user time to read the Engine OK/PROMPT result before sliding
+      await delay(1500);
       setFlow('wallet'); // ensure wallet is active even on auto-approve
       document.getElementById('wallet-biometric').style.display = 'block';
       setStatus('Waiting for biometric verification...');
@@ -1884,6 +1889,8 @@
     // ─── Step 4: Complete Verification ───────────────────────────────
 
     async function completeVerification(disclosed) {
+      // Give user time to see the biometric success before jumping to verifier
+      await delay(1500);
       setFlow('verify'); setStatus('Generating proof...');
       await delay(800);
 
