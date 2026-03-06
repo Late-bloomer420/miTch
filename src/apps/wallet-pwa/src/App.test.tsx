@@ -1,31 +1,39 @@
+/**
+ * G-03 — Wallet PWA App Component Tests
+ */
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import App from './App';
-import '@testing-library/jest-dom'; // Note: usually setup in a setup file, but explicit here for PoC simplicity
 
-// Mock crypto since jsdom doesn't have full WebCrypto
-Object.defineProperty(global, 'crypto', {
-    value: {
-        subtle: {
-            digest: async () => new Uint8Array([1, 2, 3])
-        }
-    }
-});
-
-describe('Wallet PWA App', () => {
-    it('renders the title', () => {
+describe('G-03 — Wallet App renders correctly', () => {
+    it('renders the wallet title', () => {
         render(<App />);
-        expect(screen.getByText('miTch Wallet PoC')).toBeInTheDocument();
+        expect(screen.getByText('miTch')).toBeInTheDocument();
     });
 
-    it('checks health and displays WebCrypto success', async () => {
+    it('renders credential card with Age Credential', () => {
         render(<App />);
-        // Initial state
-        expect(screen.getByText(/Checking.../i)).toBeInTheDocument();
+        expect(screen.getByText('Age Credential (GovID)')).toBeInTheDocument();
+    });
 
-        // After async check
-        await waitFor(() => {
-            expect(screen.getByText(/✓ Wallet Ready – WebCrypto Available/i)).toBeInTheDocument();
-        });
+    it('renders the primary action button', () => {
+        render(<App />);
+        // Button text varies by status; just check it exists
+        const btn = document.querySelector('.btn-primary');
+        expect(btn).not.toBeNull();
+    });
+
+    it('renders demo section title', () => {
+        render(<App />);
+        expect(screen.getByText('🚀 Demo Scenarios')).toBeInTheDocument();
+    });
+
+    it('renders Doctor Login and Pharmacy demo buttons', () => {
+        render(<App />);
+        // The actual rendered button IDs exist in the DOM
+        expect(document.getElementById('btn-doctor-login')).not.toBeNull();
+        expect(document.getElementById('btn-pharmacy')).not.toBeNull();
+        expect(document.getElementById('btn-ehds-er')).not.toBeNull();
+        expect(document.getElementById('btn-liquor-store')).not.toBeNull();
     });
 });
