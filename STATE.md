@@ -1,6 +1,6 @@
 # STATE.md — Current Operating State
 
-**Date:** 2026-03-05
+**Date:** 2026-03-06
 **Branch:** `master` (default)  
 **Release tag:** `pilot-ready-p0`  
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -24,22 +24,24 @@
 
 ## Current status
 
-- **Tests:** 34/34 turbo tasks pass; 155+ individual tests green
+- **Tests:** 34/34 turbo tasks pass; 190+ individual tests green
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
 - **Lint:** 0 errors (pre-existing warnings only, no regressions)
 - **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
+- **Phase 1 Unlinkability:** U-01–U-05 ✅ (Pairwise Ephemeral DIDs + Policy Engine Integration)
+- **Phase 3 Security Hardening:** S-01–S-05 ✅ (Fingerprint, Rollback, Input Validation, Isolation, Zero Trust)
+- **.gitattributes:** Line endings normalized (LF)
 
-## Recent changes (2026-03-05)
+## Recent changes (2026-03-06)
 
-- WebAuthn cross-device + ConsentModal EHDS + i18n: all committed
-- fix(policy-engine): missing workspace deps `@mitch/layer-resolver` + `@mitch/mock-issuer`
-- G-07: Key separation — ECDH-P256 encryption keys separated from ECDSA signing keys in KeyGuardian
-- G-08: JWE encrypted credentials at rest (jose CompactEncrypt, alg=dir enc=A256GCM)
-- G-09: L2/blockchain anchoring stubs — EthereumL2AnchorProvider + TransparencyLogAnchorProvider
-- AI-02/AI-04: marked closed in FINDINGS_BACKLOG (tests were already passing)
-- fix(lint): removed unused `receivedProof` state in VerifierPanel
-- chore: added `"type": "module"` to root package.json (fixes ESLint config Node.js warning)
-- chore: deleted all stale remote branches — `origin` has only `master`
-- chore: Dependabot alert #18 dismissed (covered by pnpm overrides)
+- U-05: Policy Engine generates pairwise DID (did:peer:0z) per ALLOW/PROMPT decision
+- S-01: verifier_fingerprint in PolicyRule — Fake Verifier Spoofing defense
+- S-02: manifest_version (monotonic) + manifest_hash — Manifest Rollback protection
+- S-03: Whitelist-based Input Validation (claim names, DID format, path traversal)
+- S-04: Spec 112 — Komponenten-Isolations-Modell (Engine/Consent/Audit boundaries)
+- S-05: docs/ARCHITECTURE_ZERO_TRUST.md — Zero Trust intern verankert
+- H-04: main branch was already deleted on GitHub (confirmed)
+- H-05: .gitattributes created (text=auto eol=lf)
+- fix: pairwise-did.test.ts — 30s timeout for 1000-DID collision test (parallel turbo load)

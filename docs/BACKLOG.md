@@ -138,8 +138,8 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-01 | 🟡 | ESLint Sweep: 290 pre-existing Warnings fixen |
 | H-02 | 🟢 | `mitch-temp` Repo archivieren |
 | H-03 | 🟢 | `miTch---Policy-Enforcement-Layer` Repo löschen |
-| H-04 | 🟢 | GitHub `main` Branch löschen (nur `master` behalten) |
-| H-05 | 🟢 | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
+| H-04 | ✅ | GitHub `main` Branch löschen (nur `master` behalten) — war bereits gelöscht |
+| H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
 | H-06 | 🟢 | Demo E2E Flow testen (4 Szenarien) |
 | H-07 | 🟢 | Uni-Präsentation vorbereiten |
 
