@@ -1,6 +1,6 @@
 # STATE.md — Current Operating State
 
-**Date:** 2026-03-06
+**Date:** 2026-03-07
 **Branch:** `master` (default)  
 **Release tag:** `pilot-ready-p0`  
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -24,7 +24,8 @@
 
 ## Current status
 
-- **Tests:** 38/38 turbo tasks pass; **845+ individual tests** green (Session 8: +85)
+- **Tests:** 38/38 turbo tasks pass; **855+ individual tests** green (Session 9: +10 E2E)
+- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
@@ -33,6 +34,8 @@
 - **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
 - **Phase 3 Security Hardening:** S-01–S-05 ✅
 - **OID4VP:** E-01a–E-01d ✅ complete (Parser, VP Token Builder, Verifier, Policy Bridge)
+- **Session 9 E2E Wiring:** W-01–W-05 ✅ (OID4VP request generation, wallet consent UI, SD-JWT VC issuance, KB-JWT, verifier validation, session cleanup, consent receipt)
+- **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
 - **OID4VCI:** E-02 ✅ 32 comprehensive tests (createOffer, issueCredential, policy, audit)
 - **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
 - **Demo:** D-01 ✅ (17 E2E scenario tests), D-02 ✅ (docs/DEMO_SCRIPT.md)
