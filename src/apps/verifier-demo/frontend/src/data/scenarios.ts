@@ -1,4 +1,4 @@
-export type ScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy';
+export type ScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy' | 'revoked';
 
 export interface CredentialField {
   key: string;
@@ -115,6 +115,24 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     blocked: ['diagnosis', 'geneticData', 'insuranceId'],
   },
 
+  'revoked': {
+    id: 'revoked',
+    label: 'Revoked Credential',
+    emoji: '🚫',
+    verdict: 'PROMPT' as ScenarioDefinition['verdict'],
+    detectionKeys: ['age'],
+    walletCredentials: [{
+      type: 'AgeCredential (REVOKED)',
+      issuer: 'did:example:gov-issuer',
+      fields: [
+        { key: 'age',    value: '24',        blocked: false },
+        { key: 'status', value: 'REVOKED ⛔', blocked: false },
+      ],
+    }],
+    verifierReceives: [],
+    blocked: ['age', 'status'],
+  },
+
   'pharmacy': {
     id: 'pharmacy',
     label: 'Pharmacy',
@@ -143,7 +161,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
 };
 
 export const SCENARIO_ORDER: ScenarioId[] = [
-  'liquor-store', 'doctor-login', 'ehds-er', 'pharmacy',
+  'liquor-store', 'doctor-login', 'ehds-er', 'pharmacy', 'revoked',
 ];
 
 export function detectScenario(

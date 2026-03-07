@@ -18,6 +18,8 @@ export function SplitScreen({ backendUrl }: SplitScreenProps) {
         setRunNonce((prev) => prev + 1);
     };
 
+    const handlePresented = () => setRunNonce((prev) => prev + 1);
+
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', height: '100vh',
@@ -61,7 +63,7 @@ export function SplitScreen({ backendUrl }: SplitScreenProps) {
                     }}>
                         📱 WALLET — YOUR DATA
                     </div>
-                    <WalletPanel scenario={scenario} />
+                    <WalletPanel scenario={scenario} backendUrl={backendUrl} onPresented={handlePresented} />
                 </div>
 
                 {/* Right: Verifier */}

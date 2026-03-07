@@ -192,7 +192,7 @@ export interface BuildPresentationOpts {
     /** Issuer's private ECDSA key (signs the SD-JWT VC) */
     issuerPrivateKey: CryptoKey;
     /** Holder's ECDSA key pair (public key bound in cnf; private key signs KB-JWT) */
-    holderKeyPair: CryptoKeyPair;
+    holderKeyPair: { privateKey: CryptoKey; publicKey: CryptoKey };
     /** Full credential claims available in the wallet */
     claims: Record<string, unknown>;
     /** Credential type URI (per SCENARIO_VCT) */

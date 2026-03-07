@@ -15,7 +15,8 @@
         "@mitch/shared-crypto": "workspace:*",
         "cors": "^2.8.5",
         "express": "^4.18.2",
-        "jose": "^5.2.0"
+        "jose": "^5.2.0",
+        "@mitch/oid4vp": "workspace:*"
     },
     "devDependencies": {
         "@types/cors": "^2.8.17",

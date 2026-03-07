@@ -12,6 +12,14 @@ import {
     type Predicate
 } from '@mitch/predicates';
 import { verifyData } from '@mitch/shared-crypto';
+import {
+    buildOID4VPRequest,
+    buildSDJWTPresentation,
+    validateSDJWTPresentation,
+    buildSessionCleanup,
+    SCENARIO_VCT,
+    SCENARIO_LABELS,
+} from '@mitch/oid4vp';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
@@ -57,6 +65,17 @@ const metrics = new SimpleMetrics();
 // Pilot State (In-memory for PoC)
 let lastVerificationStatus: 'WAITING' | 'VERIFIED' | 'FAILED' = 'WAITING';
 let lastIssuer: string | null = null;
+let lastDisclosedClaims: Record<string, unknown> | null = null;
+let lastConsentReceipt: Record<string, unknown> | null = null;
+
+// Scenario credential fixtures (wallet simulation claims)
+const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = {
+    'liquor-store':  { age: 24, birthDate: '2000-01-01', name: 'Max Mustermann', address: 'Zirl, AT', nationalId: 'AT-123456' },
+    'doctor-login':  { age: 35, role: 'Surgeon', licenseId: 'MED-998877', employer: 'St. Mary Hospital', salary: 'redacted', homeAddress: 'redacted' },
+    'ehds-er':       { bloodGroup: 'A+', allergies: 'Penicillin, Cashew nuts', emergencyContacts: 'Mother: +49-151-555-0100', activeProblems: 'Asthma', diagnosis: '[full history]', geneticData: '[genetic profile]', insuranceId: 'INS-redacted' },
+    'pharmacy':      { medication: 'Amoxicillin 500mg', dosageInstruction: '1 tablet every 8 hours', refillsRemaining: 2, diagnosis: '[prescribing diagnosis]', insuranceId: 'INS-redacted', geneticData: '[genetic markers]' },
+    'revoked':       { age: 24 },
+};
 
 const KEY_FILE = path.join(process.cwd(), 'verifier-key.json');
 const NONCE_STORE_FILE = path.join(process.cwd(), 'nonce-cache.json');
@@ -148,13 +167,113 @@ app.get('/status', (req, res) => {
     res.json({
         status: lastVerificationStatus,
         issuer: lastIssuer,
-        verifierDid: 'did:mitch:verifier-liquor-store'
+        verifierDid: 'did:mitch:verifier-liquor-store',
+        disclosedClaims: lastDisclosedClaims,
+        consentReceipt: lastConsentReceipt,
     });
 });
 
 // Basic root response to avoid "Cannot GET /" confusion in dev.
 app.get('/', (req, res) => {
     res.type('text/plain').send('miTch Verifier Backend OK. Try /status or open the verifier frontend.');
+});
+
+// ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
+app.get('/authorize', (req, res) => {
+    const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
+    const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
+
+    try {
+        const { request, nonce } = buildOID4VPRequest({
+            verifierClientId: 'did:mitch:verifier-liquor-store',
+            redirectUri: `${baseUrl}/present`,
+            scenarioId,
+            clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
+        });
+        nonceStore.add(nonce);
+        res.json({ authRequest: request, nonce, scenarioId });
+    } catch (e: unknown) {
+        res.status(400).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
+    }
+});
+
+// ─── W-02/W-03/W-04/W-05: Wallet-simulated Presentation Flow ─────────────────
+// Called by WalletPanel "Present" button. Runs the full protocol server-side:
+// issue SD-JWT VC → build KB-JWT → validate → cleanup.
+app.post('/wallet-present', async (req, res) => {
+    const scenarioId: string = (req.body as { scenarioId?: string }).scenarioId ?? 'liquor-store';
+    const isRevoked = scenarioId === 'revoked';
+
+    try {
+        // Fetch a fresh auth request (stores nonce internally)
+        const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
+        const { request } = buildOID4VPRequest({
+            verifierClientId: 'did:mitch:verifier-liquor-store',
+            redirectUri: `${baseUrl}/present`,
+            scenarioId,
+            clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
+        });
+
+        // Generate ephemeral issuer + holder key pairs for this presentation
+        const issuerKeys = await globalThis.crypto.subtle.generateKey(
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['sign', 'verify']
+        );
+        const holderKeys = await globalThis.crypto.subtle.generateKey(
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['sign', 'verify']
+        );
+
+        // W-03: Build SD-JWT VP Token
+        const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
+        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({
+            request,
+            issuerPrivateKey: issuerKeys.privateKey,
+            holderKeyPair: holderKeys,
+            claims,
+            vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
+            issuerDid: 'https://issuer.mitch.demo',
+            revoked: isRevoked,
+        });
+
+        // W-04: Validate VP Token (verifier side)
+        const validation = await validateSDJWTPresentation({
+            vpTokenString,
+            presentationSubmission,
+            request,
+            issuerPublicKey: issuerKeys.publicKey,
+            checkRevocation: true,
+        });
+
+        // W-05: Cleanup (ephemeral keys go out of scope here — GC'd)
+        const { consentReceipt, auditEntry } = buildSessionCleanup({
+            request,
+            disclosedClaims: validation.disclosedClaims ?? disclosedClaims,
+            outcome: validation.ok ? 'SUCCESS' : 'DENIED',
+        });
+
+        if (validation.ok) {
+            lastVerificationStatus = 'VERIFIED';
+            lastIssuer = 'https://issuer.mitch.demo';
+            lastDisclosedClaims = validation.disclosedClaims ?? null;
+            lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+            metrics.inc('oid4vp_success');
+            console.log(`[OID4VP] ✅ Presentation verified — scenario: ${scenarioId}`, auditEntry);
+            return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt, auditEntry });
+        } else {
+            lastVerificationStatus = 'FAILED';
+            lastDisclosedClaims = null;
+            metrics.inc('oid4vp_rejected');
+            console.warn(`[OID4VP] ❌ Presentation rejected — ${validation.errors.join(', ')}`);
+            return res.status(403).json({ ok: false, errors: validation.errors, consentReceipt, auditEntry });
+        }
+    } catch (e: unknown) {
+        lastVerificationStatus = 'FAILED';
+        console.error('[OID4VP] Error:', e instanceof Error ? e.message : String(e));
+        return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
+    }
 });
 
 // T-44: Public Health & Metrics Endpoint
@@ -165,7 +284,7 @@ app.get('/health', (req, res) => {
         metrics: metrics.get(),
         system: {
             rate_limiter: rateLimiter.size(),
-            nonce_store_entries: (nonceStore as { entries?: { size: number } }).entries?.size || 0
+            nonce_store_entries: (nonceStore as unknown as { entries?: { size: number } }).entries?.size || 0
         }
     });
 });
@@ -242,23 +361,25 @@ app.post('/present', async (req, res) => {
 
         // Pilot Logic: ZKP Range Proof Verification
         // The VP is structured as: { metadata, presentations: [{ proven_claims: {...}, zkp_proofs: {...} }] }
-        const firstPres = presentation.presentations?.[0];
+        const firstPres = (presentation as Record<string, unknown[]>).presentations?.[0] as Record<string, unknown> | undefined;
         const agePredicateId = 'age >= 18';
 
         // Check for ZKP Proof first
-        const zkpProof = firstPres?.zkp_proofs?.[agePredicateId];
+        const zkpProof = (firstPres?.zkp_proofs as Record<string, unknown> | undefined)?.[agePredicateId];
         let isVerified = false;
 
         if (zkpProof) {
             console.log('??? Verifying Cryptographic Predicate Proof...');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const zkpProofTyped = zkpProof as any;
             try {
                 // 1. Reconstruct what we expected (The Verifier knows its own requirements)
                 // Ideally this comes from a session store or policy config
                 const expectedRequest: PredicateRequest = {
                     verifierDid: 'did:mitch:verifier-liquor-store',
-                    nonce: zkpProof.binding.nonce, // For MVP, we use the nonce from the proof (replay checked by SDK)
+                    nonce: zkpProofTyped.binding.nonce, // For MVP, we use the nonce from the proof (replay checked by SDK)
                     purpose: 'Age Verification',
-                    timestamp: zkpProof.evaluatedAt,
+                    timestamp: zkpProofTyped.evaluatedAt,
                     predicates: [CommonPredicates.ageAtLeast(18)]
                 };
 
@@ -268,7 +389,7 @@ app.post('/present', async (req, res) => {
 
                 // 3. Verify Signature (Real ECDSA P-256)
                 const verifyFn = async (data: string, sig: string) => {
-                    const identityKeyJwk = (zkpProof as Record<string, unknown>).publicKeyJwk;
+                    const identityKeyJwk = zkpProofTyped.publicKeyJwk;
                     if (!identityKeyJwk) {
                         console.warn('? Missing Public Key in Proof');
                         return false;
@@ -283,13 +404,13 @@ app.post('/present', async (req, res) => {
 
                 // 4. Verify
                 const verification = await verifyPredicateResult(
-                    zkpProof,
+                    zkpProofTyped,
                     expectedRequest,
                     allowedHashes,
                     verifyFn // Now strict signature & timestamp verification (default 5m window)
                 );
 
-                if (verification.valid && zkpProof.proof.allPassed === true) {
+                if (verification.valid && zkpProofTyped.proof.allPassed === true) {
                     isVerified = true;
                     metrics.inc('zkp_success');
                     console.log('? ZKP PROOF VALIDATED!');
@@ -302,15 +423,16 @@ app.post('/present', async (req, res) => {
         } else {
             // Fallback to legacy trusted boolean (during migration)
             console.log('?? No ZKP Proof found, checking legacy claim...');
-            isVerified = firstPres?.proven_claims?.[agePredicateId] === true;
+            isVerified = (firstPres?.proven_claims as Record<string, unknown> | undefined)?.[agePredicateId] === true;
         }
 
         if (isVerified) {
             lastVerificationStatus = 'VERIFIED';
             // Link to ID verification (Extract the trusted issuer)
-            const issuerRef = presentation.metadata?.issuer_trust_refs?.[0];
+            const meta = presentation.metadata as Record<string, unknown[]> | undefined;
+            const issuerRef = meta?.issuer_trust_refs?.[0];
             // Format issuer for display (handle object or string)
-            lastIssuer = (typeof issuerRef === 'string' ? issuerRef : issuerRef?.issuer) || 'Unknown Trusted Issuer';
+            lastIssuer = (typeof issuerRef === 'string' ? issuerRef : (issuerRef as Record<string, string> | undefined)?.['issuer']) || 'Unknown Trusted Issuer';
 
             console.log(`? AGE VERIFIED (ZKP): Result = ALLOW (Issuer: ${lastIssuer})`);
             res.json({ ok: true, message: `Welcome! Verified via ${lastIssuer}` });
@@ -341,6 +463,8 @@ app.post('/present', async (req, res) => {
 app.post('/reset', (req, res) => {
     lastVerificationStatus = 'WAITING';
     lastIssuer = null;
+    lastDisclosedClaims = null;
+    lastConsentReceipt = null;
     nonceStore.clear();
     res.json({ ok: true });
 });
