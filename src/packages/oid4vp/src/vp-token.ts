@@ -2,7 +2,11 @@
  * OID4VP VP Token — Generation and parsing
  */
 
-import { randomBytes } from 'crypto';
+function randomHex(bytes: number): string {
+    const arr = new Uint8Array(bytes);
+    globalThis.crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+}
 import type {
     VerifiablePresentation,
     PresentationSubmission,
@@ -27,7 +31,7 @@ export interface VPTokenBuildOptions {
 export function buildVPToken(opts: VPTokenBuildOptions): VPToken {
     const { holder: _holder, credentials, definition, format = 'sd-jwt' } = opts;
 
-    const submissionId = `sub-${randomBytes(8).toString('hex')}`;
+    const submissionId = `sub-${randomHex(8)}`;
 
     const descriptorMap: DescriptorMapEntry[] = definition.input_descriptors.map((desc, i) => ({
         id: desc.id,

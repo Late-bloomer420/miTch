@@ -6,3 +6,4 @@ export * from './policy-bridge';
 export * from './siopv2'; // E-03: SIOPv2
 export * from './client-attestation'; // E-04: OAuth 2.0 Attestation-Based Client Auth
 export * from './haip'; // E-13: High Assurance Interoperability Profile
+export * from './demo-flow'; // Session 9: E2E Demo Flow Orchestrator (W-01–W-05)
