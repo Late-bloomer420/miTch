@@ -1060,6 +1060,272 @@
       border-radius: 12px;
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.04));
     }
+
+    /* ══════════════════════════════════════════════════════
+       NEW VISION SECTIONS
+    ══════════════════════════════════════════════════════ */
+
+    .vsec {
+      padding: 3rem 1.2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .vsec-divider {
+      text-align: center;
+      padding: 2.5rem 1rem 0;
+      position: relative;
+    }
+    .vsec-divider::before {
+      content: '';
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-bottom: 2.5rem;
+    }
+    .vsec-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .vsec-title {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+    .vsec-body {
+      color: var(--text-dim);
+      font-size: 1rem;
+      max-width: 680px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    /* ── Problem Section ── */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 750px) { .problem-grid { grid-template-columns: 1fr; } }
+
+    .problem-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .problem-card.bad { border-color: rgba(239,68,68,0.3); }
+    .problem-card.good { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.04); }
+    .problem-card.you { border-color: rgba(139,139,139,0.3); background: var(--surface2); }
+
+    .problem-card-hdr {
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .problem-card.bad .problem-card-hdr { color: var(--red); background: var(--red-dim); }
+    .problem-card.you .problem-card-hdr { color: var(--text-dim); }
+    .problem-card.good .problem-card-hdr { color: var(--accent); background: rgba(99,102,241,0.08); }
+
+    .problem-card-body { padding: 1rem; }
+    .problem-card-body ul { list-style: none; }
+    .problem-card-body ul li {
+      font-size: 0.83rem;
+      color: var(--text-dim);
+      padding: 0.3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+    .problem-card-body ul li::before { content: '·'; color: var(--red); flex-shrink: 0; margin-top: 1px; }
+    .problem-card.good .problem-card-body ul li::before { content: '✓'; color: var(--green); }
+    .problem-nothing {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.08);
+      text-align: center;
+      padding: 1.5rem 0 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .blind-banner {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(167,139,250,0.08));
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.6;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .blind-banner .accent { color: var(--accent); }
+    .blind-banner .dim-txt { display: block; font-size: 0.82rem; font-weight: 400; color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Daily Review Section ── */
+    .review-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .review-entries { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+    .review-entry {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.8rem;
+      align-items: start;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: var(--surface);
+      transition: background 0.15s;
+      cursor: default;
+    }
+    .review-entry:last-child { border-bottom: none; }
+    .review-entry:hover { background: var(--surface2); }
+    .review-entry.danger { background: rgba(239,68,68,0.04); border-left: 3px solid var(--red); }
+    .review-entry.warn { background: rgba(234,179,8,0.03); border-left: 3px solid var(--yellow); }
+
+    .danger-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .dot-green { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+    .dot-yellow { background: var(--yellow); box-shadow: 0 0 6px rgba(234,179,8,0.5); }
+    .dot-red { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.6); animation: pulse-red 2s infinite; }
+    @keyframes pulse-red {
+      0%,100% { box-shadow: 0 0 6px rgba(239,68,68,0.4); }
+      50% { box-shadow: 0 0 14px rgba(239,68,68,0.8); }
+    }
+    .review-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.2rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .review-time { font-size: 0.72rem; color: var(--text-dim); font-family: var(--mono); white-space: nowrap; margin-top: 3px; }
+    .shared-pill {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 999px; font-weight: 600;
+    }
+    .pill-green { background: var(--green-dim); color: var(--green); }
+    .pill-red { background: var(--red-dim); color: var(--red); }
+    .pill-yellow { background: var(--yellow-dim); color: var(--yellow); }
+
+    .escalation-box {
+      margin: 0.7rem 0 0;
+      padding: 0.7rem 0.9rem;
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .escalation-box strong { color: var(--red); }
+    .escalation-links { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .esc-btn {
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text-dim); cursor: pointer; font-family: var(--font);
+      transition: all 0.15s;
+    }
+    .esc-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Regulatory Timeline ── */
+    .reg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.8rem;
+    }
+    .reg-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      position: relative;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .reg-card:hover { transform: translateY(-2px); }
+    .reg-card.active { border-color: var(--green); }
+    .reg-card.soon { border-color: var(--yellow); }
+    .reg-card.future { border-color: rgba(99,102,241,0.4); }
+
+    .reg-status {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.15rem 0.5rem;
+      border-radius: 999px; display: inline-block; margin-bottom: 0.6rem;
+    }
+    .reg-status.active { background: var(--green-dim); color: var(--green); }
+    .reg-status.soon { background: var(--yellow-dim); color: var(--yellow); }
+    .reg-status.future { background: rgba(99,102,241,0.1); color: var(--accent); }
+
+    .reg-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .reg-date { font-size: 0.72rem; color: var(--text-dim); font-family: var(--mono); margin-bottom: 0.6rem; }
+    .reg-right { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+    .reg-right strong { color: var(--text); }
+
+    /* ── Roadmap ── */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 750px) { .roadmap-grid { grid-template-columns: 1fr; } }
+
+    .roadmap-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .roadmap-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .roadmap-card.built { border-color: rgba(34,197,94,0.35); }
+    .roadmap-card.built::before { background: var(--green); }
+    .roadmap-card.building { border-color: rgba(99,102,241,0.4); }
+    .roadmap-card.building::before { background: linear-gradient(90deg, var(--accent), var(--blue)); }
+    .roadmap-card.horizon { border-color: rgba(167,139,250,0.3); opacity: 0.85; }
+    .roadmap-card.horizon::before { background: linear-gradient(90deg, #a78bfa, #60a5fa); }
+
+    .roadmap-layer { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .roadmap-card.built .roadmap-layer { color: var(--green); }
+    .roadmap-card.building .roadmap-layer { color: var(--accent); }
+    .roadmap-card.horizon .roadmap-layer { color: #a78bfa; }
+
+    .roadmap-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .roadmap-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .roadmap-desc { font-size: 0.83rem; color: var(--text-dim); line-height: 1.55; }
+    .roadmap-features { list-style: none; margin-top: 0.8rem; }
+    .roadmap-features li {
+      font-size: 0.78rem; color: var(--text-dim); padding: 0.2rem 0;
+      display: flex; align-items: flex-start; gap: 0.4rem;
+    }
+    .roadmap-features li::before { content: '→'; color: var(--border); flex-shrink: 0; }
+    .roadmap-card.built .roadmap-features li::before { color: var(--green); content: '✓'; }
+    .roadmap-card.building .roadmap-features li::before { color: var(--accent); }
   </style>
 </head>
 
@@ -1097,6 +1363,60 @@
       <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
       <span class="gdpr-badge">✅ Art. 32 Security</span>
     </div>
+  </div>
+
+  <!-- ══ SECTION A: THE PROBLEM ══════════════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">The Problem</div>
+      <h2 class="vsec-title">Your data builds a picture of you.<br>You're the only one who can't see it.</h2>
+      <p class="vsec-body">Every institution that processes data about you has a complete profile. They score you, model you, and make decisions about you. You have no view into what they see — until now.</p>
+
+      <div class="problem-grid">
+        <div class="problem-card bad">
+          <div class="problem-card-hdr">🏦 What your bank sees</div>
+          <div class="problem-card-body">
+            <ul>
+              <li>Spending patterns → inferred lifestyle & habits</li>
+              <li>Income fluctuations → financial stress score</li>
+              <li>Donation history → inferred beliefs</li>
+              <li>Location patterns → where you live, work, travel</li>
+              <li>Credit risk score, updated continuously</li>
+            </ul>
+          </div>
+        </div>
+        <div class="problem-card bad">
+          <div class="problem-card-hdr">🏥 What your insurer sees</div>
+          <div class="problem-card-body">
+            <ul>
+              <li>Pharmacy purchases → inferred health conditions</li>
+              <li>Fitness data → activity, sleep & stress profile</li>
+              <li>BMI trend → projected healthcare costs</li>
+              <li>Behavioural patterns → mental health indicators</li>
+              <li>Lifetime risk score, never shown to you</li>
+            </ul>
+          </div>
+        </div>
+        <div class="problem-card you">
+          <div class="problem-card-hdr">👤 What you see</div>
+          <div class="problem-card-body">
+            <div class="problem-nothing">Nothing.</div>
+            <p style="font-size:0.83rem;color:var(--text-dim);text-align:center;line-height:1.5">You generate the data. Institutions accumulate it. You have no view into the picture they've built about you.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="blind-banner">
+        miTch is a <span class="accent">blind intermediary</span> — we never see your data, and neither does the verifier until you decide what to share.
+        <span class="dim-txt">miTch structurally cannot store, access, or retain any personal data. This is an architectural guarantee, not a policy promise.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sticky Demo Flow Bar ───────────────────────────────────────────── -->
+  <div style="text-align:center;padding:1.2rem 1rem 0.4rem;background:var(--bg)">
+    <div class="vsec-label" style="margin-bottom:0.3rem">Interactive Demo</div>
+    <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.2rem">See exactly how miTch handles a real verification — step by step.</p>
   </div>
 
   <div class="flow" id="flow">
@@ -1338,6 +1658,216 @@
             <button class="btn btn-primary" onclick="showDpia()">📋 Open Full DPIA & Compliance Framework</button>
             <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment — GDPR Article 35</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION B: DAILY REVIEW ═════════════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">Where We're Going</div>
+      <h2 class="vsec-title">Your data life, reviewed daily.<br>Like a bank statement — for your privacy.</h2>
+      <p class="vsec-body">Every transaction that touches your wallet is logged — what was shared, what was withheld, what was forgotten. At the end of the day, you review it. No pressure. No decision. Just clarity.</p>
+
+      <div class="review-day-header">
+        <span>📅 Monday, 9 March 2026 — 4 interactions</span>
+        <span style="display:flex;gap:0.4rem;align-items:center">
+          <span class="shared-pill pill-green">3 clean</span>
+          <span class="shared-pill pill-yellow">1 watch</span>
+          <span class="shared-pill pill-red">1 danger</span>
+        </span>
+      </div>
+      <div class="review-entries">
+
+        <div class="review-entry">
+          <div class="danger-dot dot-green"></div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:600">Rewe Supermarkt — Age Verification</div>
+            <div class="review-meta">
+              <span class="shared-pill pill-green">✓ Age confirmed</span>
+              <span class="shared-pill pill-red">✗ Name not shared</span>
+              <span class="shared-pill pill-red">✗ Address not shared</span>
+              <span class="shared-pill pill-red">✗ National ID not shared</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+          </div>
+          <div class="review-time">09:14</div>
+        </div>
+
+        <div class="review-entry">
+          <div class="danger-dot dot-green"></div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:600">Apotheke Innsbruck — Prescription Validation</div>
+            <div class="review-meta">
+              <span class="shared-pill pill-green">✓ Medication confirmed</span>
+              <span class="shared-pill pill-green">✓ Dosage confirmed</span>
+              <span class="shared-pill pill-red">✗ Diagnosis not shared</span>
+              <span class="shared-pill pill-red">✗ Insurance ID not shared</span>
+              <span class="shared-pill pill-red">✗ Genetic data not shared</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+          </div>
+          <div class="review-time">12:31</div>
+        </div>
+
+        <div class="review-entry warn">
+          <div class="danger-dot dot-yellow"></div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:600">CoolShop.at — Age + Address Requested</div>
+            <div class="review-meta">
+              <span class="shared-pill pill-green">✓ Age confirmed</span>
+              <span class="shared-pill pill-yellow">⚠ Address: shared (you approved)</span>
+              <span class="shared-pill pill-red">✗ National ID not shared</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--yellow);margin-top:0.3rem">⚠ Address was requested beyond what age verification requires. You chose to approve.</div>
+          </div>
+          <div class="review-time">15:47</div>
+        </div>
+
+        <div class="review-entry danger">
+          <div class="danger-dot dot-red"></div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:600">dataportal.io — Full Identity Requested</div>
+            <div class="review-meta">
+              <span class="shared-pill pill-red">✗ Transaction blocked</span>
+              <span style="font-size:0.7rem;background:var(--red-dim);color:var(--red);padding:0.1rem 0.5rem;border-radius:999px;font-weight:600">Verifier not in trusted registry</span>
+            </div>
+            <div class="escalation-box">
+              <strong>🔴 Danger detected:</strong> An unverified service requested your full name, address, and national ID number without a declared legal basis. This request was blocked.<br><br>
+              <strong>What you can do:</strong>
+              <div class="escalation-links">
+                <button class="esc-btn">📋 File GDPR complaint with DSB Austria</button>
+                <button class="esc-btn">⚖️ Find a data protection lawyer</button>
+                <button class="esc-btn">📦 Export your evidence</button>
+              </div>
+            </div>
+          </div>
+          <div class="review-time">18:22</div>
+        </div>
+
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;margin-top:1rem">This is a concept preview. The daily review is on the roadmap — see below.</p>
+    </div>
+  </div>
+
+  <!-- ══ SECTION C: REGULATORY TAILWIND ═══════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">Why Now</div>
+      <h2 class="vsec-title">The regulatory window is open.</h2>
+      <p class="vsec-body">A wave of EU legislation is creating legal rights for individuals to access their data — and compliance obligations for institutions that process it. miTch is built exactly at this intersection.</p>
+
+      <div class="reg-grid">
+        <div class="reg-card active">
+          <div class="reg-status active">Active Now</div>
+          <div class="reg-name">GDPR</div>
+          <div class="reg-date">In force since 2018</div>
+          <div class="reg-right">
+            <strong>Data minimisation.</strong> Institutions must collect only what is strictly necessary. miTch is the technical implementation of Art. 5(1)(c) and Art. 17 (right to erasure).
+          </div>
+        </div>
+
+        <div class="reg-card active">
+          <div class="reg-status active">Active Now</div>
+          <div class="reg-name">PSD2 Open Banking</div>
+          <div class="reg-date">EU-wide since 2019</div>
+          <div class="reg-right">
+            <strong>Your bank data is portable.</strong> EU banks must expose standardised APIs. You have the right to your own transaction history — in machine-readable form.
+          </div>
+        </div>
+
+        <div class="reg-card soon">
+          <div class="reg-status soon">August 2025</div>
+          <div class="reg-name">EU AI Act</div>
+          <div class="reg-date">High-risk AI enforcement begins</div>
+          <div class="reg-right">
+            <strong>Right to explanation.</strong> If a bank, insurer, or employer uses AI to make decisions about you, you can request a meaningful explanation of the logic involved.
+          </div>
+        </div>
+
+        <div class="reg-card soon">
+          <div class="reg-status soon">September 2025</div>
+          <div class="reg-name">EU Data Act</div>
+          <div class="reg-date">IoT data portability rights</div>
+          <div class="reg-right">
+            <strong>Your device data is yours.</strong> Data generated by connected devices — car, smart home, wearables — must be accessible to you. No negotiation with manufacturers needed.
+          </div>
+        </div>
+
+        <div class="reg-card future">
+          <div class="reg-status future">2025 – 2027</div>
+          <div class="reg-name">EHDS</div>
+          <div class="reg-date">European Health Data Space</div>
+          <div class="reg-right">
+            <strong>Your health records, accessible.</strong> EU regulation mandating electronic access to personal health data across all member states. Austria (Elga) is already ahead of schedule.
+          </div>
+        </div>
+      </div>
+
+      <div class="blind-banner" style="margin-top:2rem">
+        These regulations don't just create compliance burdens for institutions.<br>
+        <span class="dim-txt">They are the legal framework that gives you the right to your own data — and makes miTch's work legally grounded from day one.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION D: ROADMAP ════════════════════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">The Vision</div>
+      <h2 class="vsec-title">Three layers. One principle:<br>your data belongs to you.</h2>
+      <p class="vsec-body">miTch is built in three layers, each extending user control one step further — from what you share, to what you see, to what you can prove.</p>
+
+      <div class="roadmap-grid">
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Layer 1 — Built</div>
+          <div class="roadmap-icon">🔐</div>
+          <div class="roadmap-title">The Forgetting Layer</div>
+          <div class="roadmap-desc">Control exactly what leaves your wallet at every transaction. Everything else is cryptographically destroyed.</div>
+          <ul class="roadmap-features">
+            <li>Selective disclosure — share only what's needed</li>
+            <li>Crypto-shredding — session keys destroyed after use</li>
+            <li>Pairwise DIDs — unlinkable across verifiers</li>
+            <li>Signed consent receipts — portable evidence</li>
+            <li>Fail-closed policy engine — deny by default</li>
+          </ul>
+        </div>
+
+        <div class="roadmap-card building">
+          <div class="roadmap-layer">Layer 2 — Next</div>
+          <div class="roadmap-icon">👁️</div>
+          <div class="roadmap-title">The Visibility Layer</div>
+          <div class="roadmap-desc">See what institutions see about you. Your data, your picture — running locally on your device, never uploaded.</div>
+          <ul class="roadmap-features">
+            <li>Daily review — your data life, timestamped</li>
+            <li>Danger levels — 🟢 clean / 🟡 watch / 🔴 block</li>
+            <li>Escalation path — DPA, lawyers, specialists</li>
+            <li>Local insight — same models institutions use</li>
+            <li>Longitudinal picture — trends over time</li>
+          </ul>
+        </div>
+
+        <div class="roadmap-card horizon">
+          <div class="roadmap-layer">Layer 3 — Horizon</div>
+          <div class="roadmap-icon">🔭</div>
+          <div class="roadmap-title">The Proof Layer</div>
+          <div class="roadmap-desc">Prove things about yourself without revealing the underlying data. The conclusion, without the exposure.</div>
+          <ul class="roadmap-features">
+            <li>Range proofs — "income ≥ X" without showing income</li>
+            <li>Predicate proofs — "A1c below threshold" without medical record</li>
+            <li>No raw data ever leaves the device</li>
+            <li>Verifiable by any party, privacy preserved</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:2.5rem;padding:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:640px;margin-left:auto;margin-right:auto">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:0.4rem">miTch — The Forgetting Layer</div>
+        <div style="font-size:0.83rem;color:var(--text-dim);line-height:1.6">
+          Privacy middleware for the digital identity layer.<br>
+          Built for EUDI Wallet, ID Austria, eIDAS 2.0, and every national eID system that follows.<br>
+          <span style="color:var(--accent)">We never see your data. That's the point.</span>
         </div>
       </div>
     </div>
