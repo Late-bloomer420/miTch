@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- F-13: Content-Security-Policy — prevents XSS in a key-managing PWA -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   script-src 'self';
+                   style-src 'self' 'unsafe-inline';
+                   img-src 'self' data: blob:;
+                   connect-src 'self' https:;
+                   worker-src 'self' blob:;
+                   frame-ancestors 'none';
+                   form-action 'self';
+                   base-uri 'self';" />
     <title>miTch Wallet</title>
   </head>
   <body>

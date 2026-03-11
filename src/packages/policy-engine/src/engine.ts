@@ -458,15 +458,29 @@ export class PolicyEngine {
         // Implementing strict origin check if 'strictBinding' is enabled in global settings.
 
         if (policy.globalSettings?.strictVerifierBinding && request.origin) {
-            // For PoC: Start simple. If origin contains the verifierId (simplified), or vice versa.
-            // Real implementation: DNS-DID binding or .well-known/did-configuration.
-            // Failing that, we check if the pattern ALSO matches the origin host.
+            // F-09 Phase 1: Origin-vs-VerifierID check.
+            // Extracts the hostname from request.origin and verifies it is consistent
+            // with the verifierId. Accepts if the hostname appears as a substring of the
+            // verifierId (DID method path) or if the verifierId appears in the hostname.
+            // Phase 2 (planned): DNS-DID binding via .well-known/did-configuration.
+            let originHost: string;
+            try {
+                originHost = new URL(request.origin).hostname;
+            } catch {
+                // Unparseable origin — reject when strict binding is required
+                return null;
+            }
 
-            // const originHost = new URL(request.origin).hostname;
-            // if (!this.matchesPattern(rule.verifierPattern, originHost)) {
-            //    console.warn(`SECURITY WARNING: VerifierID ${request.verifierId} matched, but Origin ${originHost} did not.`);
-            //    return null; // Bind Failed
-            // }
+            // Derive a comparable token from the verifierId.
+            // For did:web:example.com → 'example.com'; for opaque IDs → full string.
+            const verifierToken = request.verifierId.startsWith('did:web:')
+                ? request.verifierId.slice('did:web:'.length).split(':').join('/')
+                : request.verifierId;
+
+            const hostMatchesId = verifierToken.includes(originHost) || originHost.includes(verifierToken);
+            if (!hostMatchesId) {
+                return null; // Origin–VerifierID mismatch — fail-closed
+            }
         }
 
         return rule;

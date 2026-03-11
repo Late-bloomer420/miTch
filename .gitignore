@@ -52,6 +52,10 @@ blob-report/
 *.tmp
 *.bak
 *.swp
+# Editor-crash lockfile artifacts (e.g. pnpm-lock.yaml.1184410667)
+pnpm-lock.yaml.*[0-9]
+# Binary context packs — never commit
+*.zip
 
 # ── EXPLIZIT NICHT IGNORIEREN ───────────────────────────────
 # src/**/data/   ← Quellcode! (DemoPolicy.ts, Seed-Credentials)

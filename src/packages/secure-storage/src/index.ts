@@ -262,8 +262,13 @@ export class SecureStorage {
     /**
      * Get raw encrypted document (for testing encryption-at-rest guarantees).
      * NOT for production use — exposed for test assertions only.
+     *
+     * @internal
      */
     async getRawDocument(id: string): Promise<EncryptedDocument | null> {
+        if ((globalThis as Record<string, unknown>)['__MITCH_ENV__'] === 'production') {
+            throw new Error('getRawDocument() is not available in production builds');
+        }
         const db = await this.dbPromise;
 
         return new Promise((resolve, reject) => {

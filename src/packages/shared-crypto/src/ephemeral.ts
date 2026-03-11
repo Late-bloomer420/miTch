@@ -40,7 +40,11 @@ export class EphemeralKey {
         // We bypass the helper to avoid any ambiguity or build staleness.
         const key = await globalThis.crypto.subtle.generateKey(
             { name: 'AES-GCM', length: 256 },
-            true, // extractable
+            true, // extractable — required for key-wrapping (export + AES-KW re-wrap)
+            // F-05 known limitation: an attacker with heap access could call exportKey('raw')
+            // before shred(). Acceptable for PoC. Long-term: TEE migration (T-31) will
+            // eliminate the need for extractable keys by using non-extractable keys wrapped
+            // inside a Trusted Execution Environment.
             ['encrypt', 'decrypt']
         );
         return new EphemeralKey(key as CryptoKey);
