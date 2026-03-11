@@ -75,6 +75,34 @@ they refer you. One lawyer who believes in what you're building reaches 50 insti
 **Ask:** "What GDPR issue is your clients asking about most right now? What would they pay
 to solve?"
 
+### 8. Tigewosi / NHT Tirol (Social Housing / Hausverwaltungen)
+**Who:** IT or compliance contact at Tigewosi (Tiroler Gemeinnützige Wohnungsbau- und
+Siedlungsgesellschaft) or NHT (Neue Heimat Tirol).
+**Why:** Housing companies collect enormous amounts of sensitive data: Lohnzettel (payslips),
+Meldezettel (registration documents), Mietverträge, bank statements.
+Under GDPR, they must justify every field they collect. If miTch acts as the forgetting layer,
+they get the verification result (e.g. "rent covered for 6 months") without storing the
+applicant's bank statements — zero breach liability for that data.
+The DSGVO argument is concrete and immediate: "You hold no Lohnzettel → smaller data risk."
+**Use case:** Tenant applies for a WG-Zimmer. miTch generates a PSD2-based proof:
+`Miete für 6 Monate gedeckt` — landlord gets the answer, never sees the account balance.
+**Ask:** "How long do you retain tenant income documents after a tenancy decision?
+What would it mean for your liability if you didn't need to retain them at all?"
+**How:** Email the Datenschutzbeauftragter listed in their GDPR privacy notice.
+
+### 9. Tourism / Ski Pass Verifier (Einheimischentarife)
+**Who:** Manager at a ski resort ticket office (e.g. Nordkette, Stubai, Axamer Lizum)
+or tourist information office (Innsbruck Tourismus).
+**Why:** "Einheimischentarife" (resident rates) require proof of local registration.
+Currently: show Meldezettel (registration document) — full home address, DOB, date of
+registration — just to get a cheaper lift ticket.
+miTch proof: `Registered in Innsbruck: ✓` — from ID Austria / Melderegister.
+No address, no DOB, no surname shared.
+**Use case:** Same flow as student discount — QR scan at the lift, single-use proof,
+session expires in minutes. No data retained at the resort.
+**Ask:** "How do you currently verify Einheimischen status? How many staff-minutes does it cost per day?"
+**How:** Walk in during off-peak hours. Ticket office staff see this daily — they know the friction.
+
 ---
 
 ## Tier 3 — Ecosystem & Support (less urgent but useful)

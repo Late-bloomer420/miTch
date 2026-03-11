@@ -146,6 +146,29 @@ Austria's data protection authority. Files GDPR complaints through them.
 The escalation path in the daily review links here for Austrian users.
 URL: dsb.gv.at
 
+**FMA (Finanzmarktaufsicht Österreich) — AISP Licensing**
+Austria's financial market regulator handles AISP (Account Information Service Provider) licences.
+This is the correct authority for PSD2 banking data connector licensing in Austria — NOT BaFin (German).
+
+Licensing path options:
+- **Aggregator-first (recommended for early stage):** Use a licensed intermediary — Klarna Kosma,
+  FinTecSystems (Tink), or finleap connect hold the AISP licence. miTch acts as technical provider.
+  Faster to market, lower upfront cost. Upgrade to own FMA licence when volume justifies it.
+- **Own FMA registration:** ~6–12 months, requires professional indemnity insurance, IT security
+  documentation (MaSI), fit-and-proper check for management. Worthwhile once volume is there.
+
+Note: Student discount and general credential verification do NOT require an AISP licence.
+AISP licensing is only needed if miTch pulls bank account/transaction data via PSD2 APIs.
+
+**Austrian PSD2 Banking APIs**
+Austrian banks use two primary API stacks (not the German Berlin Group standard):
+- **MBS (Multimedia Banking Service):** Used by Sparkasse Tirol, Raiffeisen Tirol.
+- **George API (Erste Group):** Used by Sparkasse Innsbruck-Hall and Erste Bank.
+
+Technical flow (Berlin Group / STET compatible): Consent object → SCA via bank app →
+AccessToken → `/accounts/{id}/transactions` JSON. Forgetting layer: raw JSON processed locally,
+predicate proof extracted, raw data destroyed, signed deletion log retained.
+
 **WKO Digital**
 The Austrian Chamber of Commerce runs digital transformation programs.
 Relevant for small business (pharmacy, retail) outreach and potential SME compliance tools.

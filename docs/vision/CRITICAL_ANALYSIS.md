@@ -303,6 +303,8 @@ Use what exists today. Don't wait for EUDIW to solve problems it hasn't solved y
 | Data ingestion strategy | ✅ RESOLVED | PSD2 open banking = first connector (EU banks have legal API obligation, OAuth2 auth, Nordigen/GoCardless free-tier aggregator). EHDS health data follows 2025–2027. Social media = skip for now. |
 | Module security design | 🟡 PARTIAL | Working answer: capability declaration at install, typed API, no raw credential access. Full design needed before build. |
 | Identity bridge / EUDIW dependency | ✅ RESOLVED | Do NOT depend on EUDIW. Use PSD2 OAuth2 today, national eIDs via OIDC for health. Design so EUDIW can replace the auth layer later without breaking the rest. |
+| Identity bridge (Austria specifically) | ✅ RESOLVED | ID Austria is already in mass-market deployment in Tyrol. Acts as the concrete identity bridge for Austrian users today — no EUDIW needed. miTch is a "smart layer" above ID Austria: uses the existing state signature to authorise data requests without building new identity infrastructure. |
+| Collective Signal Mechanism | ✅ NEW CONCEPT | When vendors request data beyond the stated purpose, users can flag them "overreaching" in one tap. Flags are aggregated locally; above a threshold (e.g. 500 students in Innsbruck), the vendor appears in a transparency feed. Creates systemic pressure without individual attribution. See `docs/modules/student-discount-ibk.md`. |
 | User acquisition cold start | ✅ RESOLVED | Two answers: (1) Daily review gives value on day one with zero verifier network — logs OS telemetry, app data access immediately. (2) Age verification at small local businesses is the network-effect wedge — business needs only a URL/QR on a tablet, no app install. |
 | Shadow profile problem | ✅ RESOLVED (as boundary) | Inferred data is the honest limit of what's possible today. Partial lever: AI Act (2025+) requires explanations for high-risk automated decisions. miTch helps users request + store those explanations, building a picture from the output side. Full profile access requires new regulation that doesn't exist yet. |
 | DPA directory maintenance | 🟡 PARTIAL | Links to official EU DPA register (edpb.europa.eu/about-edpb/board/members) — maintained by EDPB itself. National CERT/CSIRT links to ENISA directory. Low maintenance burden if pointing to authoritative sources. |
@@ -312,7 +314,7 @@ Use what exists today. Don't wait for EUDIW to solve problems it hasn't solved y
 ## What Remains Genuinely Open
 
 - **Module security design:** Full sandbox architecture needs a proper design doc before any build starts.
-- **AISP licence strategy:** Does miTch apply for its own licence or integrate with an existing aggregator (Nordigen)? Legal and cost implications differ significantly.
+- **AISP licence strategy (Austria):** FMA (Finanzmarktaufsicht Österreich) is the regulator — not BaFin (German). For Austria: own registration takes 6–12 months. Aggregator-first is the practical path: use Klarna Kosma, FinTecSystems (Tink), or finleap connect as the licensed intermediary. miTch acts as technical provider, aggregator holds the licence. Upgrade to own FMA registration when transaction volume justifies it.
 - **AI Act explanation requests:** What does the UX for requesting an AI Act explanation look like? How does miTch store it? This is a new feature category not yet in any existing component.
 - **First verifier partnership:** Who is the first institution that runs miTch's forgetting layer as compliance middleware? Healthcare or banking? Which specific organisation?
 
