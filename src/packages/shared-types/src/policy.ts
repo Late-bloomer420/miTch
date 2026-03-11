@@ -19,6 +19,26 @@ export interface PolicyManifest {
     delegationRules?: DelegationRules;
 
     /**
+     * ADR-ADTECH-004: User-controlled ad preferences.
+     * Defines limits, schedule, categories, and quiet periods.
+     * Quantized before sending to any verifier — full detail never transmitted.
+     */
+    adPreferences?: import('./ad-preferences').UserAdPreferences;
+
+    /**
+     * ADR-ADTECH-008: Minimum trust score required for ad-tech verifiers.
+     * Verifiers below this threshold are auto-denied.
+     * Default: 30
+     */
+    minVerifierTrustScore?: number;
+
+    /**
+     * ADR-ADTECH-008: Require domain attestation for all ad-tech verifiers.
+     * Default: true
+     */
+    requireDomainAttestation?: boolean;
+
+    /**
      * S-02: Monotonisch aufsteigender Versionszähler (Integer ≥ 1).
      * Rollback-Schutz: Manifest mit Version < gespeicherter Version wird abgelehnt.
      */
@@ -112,6 +132,21 @@ export interface PolicyRule {
      * Bei Mismatch oder fehlendem Fingerprint → PROMPT (niemals auto-ALLOW).
      */
     verifier_fingerprint?: string;
+
+    /**
+     * ADR-ADTECH-004/005: Ad-tech specific settings for this rule.
+     * Controls nullifier generation, allowed predicate types, and ad preferences.
+     */
+    adTechSettings?: {
+        /** Allow nullifier generation for frequency capping */
+        allowNullifier: boolean;
+        /** Which predicate types are permitted for ad verification */
+        allowedAdTechPredicates?: ('age_threshold' | 'region_match' | 'humanity_proof')[];
+        /** Per-rule override of the manifest-level ad preferences */
+        adPreferenceOverride?: Partial<import('./ad-preferences').UserAdPreferences>;
+        /** IAB category classification for this verifier (informational) */
+        verifierCategory?: string;
+    };
 }
 
 /**

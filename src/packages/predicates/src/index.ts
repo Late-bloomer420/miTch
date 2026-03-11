@@ -47,3 +47,7 @@ export {
     extractAndVerifyPredicates,
     buildAllowedPredicateSet
 } from './verify';
+
+// Ad-Tech Nullifier (ADR-ADTECH-001)
+export type { NullifierInput, NullifierOutput } from './nullifier';
+export { generateNullifier, verifyNullifierScope } from './nullifier';

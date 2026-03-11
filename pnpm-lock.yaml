@@ -514,6 +514,9 @@ importers:
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      '@noble/hashes':
+        specifier: ^2.0.1
+        version: 2.0.1
     devDependencies:
       '@types/node':
         specifier: ^20.0.0

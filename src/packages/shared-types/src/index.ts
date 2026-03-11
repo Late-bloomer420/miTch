@@ -23,6 +23,12 @@ export * from './predicates.js';
 
 // Anchor Service Types
 export * from './anchor.js';
+
+// Ad-Tech Blind Provider Types
+export * from './ad-preferences.js';
+export * from './ad-predicates.js';
+export * from './ad-response.js';
+export * from './verifier-trust.js';
 /**
  * Result type for operations that can fail
  */
