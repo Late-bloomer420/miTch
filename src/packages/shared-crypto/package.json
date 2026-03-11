@@ -26,6 +26,7 @@
         "@mitch/shared-types": "workspace:*",
         "@noble/curves": "^2.0.1",
         "@noble/hashes": "^2.0.1",
+        "@noble/post-quantum": "^0.5.4",
         "jose": "^5.2.0"
     },
     "devDependencies": {

@@ -25,3 +25,4 @@ export * from './sd-jwt-vc'; // E-10: SD-JWT VC Compliance (draft-ietf-oauth-sd-
 export * from './dpop'; // E-05: DPoP (RFC 9449)
 export * from './brainpool'; // C-01: Brainpool Curves (BSI/SOG-IS)
 export * from './mac-verify'; // C-02: MAC-based Verification (ECDH + HMAC-SHA2)
+export * from './pqc';        // Spec 93: PQC live — ML-DSA, ML-KEM, SLH-DSA, Hybrid
