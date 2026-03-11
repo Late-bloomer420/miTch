@@ -90,23 +90,74 @@ export class SplitKeyProtection {
      * Implementation should use a robust library like 'sss-wasm' or '@noble/curves'.
      * This defines the contract for Phase-1 implementation.
      */
-    static async splitKey(_secret: Uint8Array): Promise<Uint8Array[]> {
-        console.log('🔐 [Placeholder] Splitting Master Key (Shamir 2-of-3)...');
-        // TODO: Integrate 'sss-wasm' in Phase-1 build
-        // For Phase-0, we warn that this is a mocked interface
-        return [
-            new Uint8Array([1, 2, 3]), // Share A
-            new Uint8Array([4, 5, 6]), // Share B
-            new Uint8Array([7, 8, 9])  // Share C
-        ];
+    /**
+     * 2-of-3 Shamir's Secret Sharing over GF(2^8).
+     *
+     * Each share is `[x, y_0, y_1, ..., y_{n-1}]` where x ∈ {1,2,3}
+     * and y_i = secret[i] ⊕ (a1[i] · x)  (degree-1 polynomial per byte).
+     */
+    static async splitKey(secret: Uint8Array): Promise<Uint8Array[]> {
+        const n = secret.length;
+        const a1 = crypto.getRandomValues(new Uint8Array(n));
+        return [1, 2, 3].map(x => {
+            const share = new Uint8Array(n + 1);
+            share[0] = x;
+            for (let i = 0; i < n; i++) {
+                share[i + 1] = secret[i] ^ gf256Mul(a1[i], x);
+            }
+            return share;
+        });
     }
 
+    /**
+     * Reconstruct secret from any 2 shares via Lagrange interpolation over GF(2^8).
+     * Each share: share[0] = x-coordinate, share[1..] = y-values.
+     */
     static async reconstructKey(shares: Uint8Array[]): Promise<Uint8Array> {
         if (shares.length < 2) throw new Error('Need at least 2 shares');
-        console.log('🔓 [Placeholder] Reconstructing Master Key...');
-        return new Uint8Array([0, 0, 0]); // Mock result
+        const s0 = shares[0];
+        const s1 = shares[1];
+        const x0 = s0[0];
+        const x1 = s1[0];
+        const n = s0.length - 1;
+        const denom = x0 ^ x1;
+        const l0 = gf256Div(x1, denom);
+        const l1 = gf256Div(x0, denom);
+        const secret = new Uint8Array(n);
+        for (let i = 0; i < n; i++) {
+            secret[i] = gf256Mul(s0[i + 1], l0) ^ gf256Mul(s1[i + 1], l1);
+        }
+        return secret;
     }
 }
+
+// ─── GF(2^8) arithmetic (AES field, irreducible poly 0x11B) ─────────────────
+
+function gf256Mul(a: number, b: number): number {
+    let p = 0;
+    let hi: number;
+    for (let i = 0; i < 8; i++) {
+        if (b & 1) p ^= a;
+        hi = a & 0x80;
+        a = (a << 1) & 0xFF;
+        if (hi) a ^= 0x1B;
+        b >>= 1;
+    }
+    return p;
+}
+
+function gf256Inv(a: number): number {
+    if (a === 0) throw new RangeError('GF(2^8): inversion of zero');
+    let result = 1, base = a, exp = 254;
+    while (exp > 0) {
+        if (exp & 1) result = gf256Mul(result, base);
+        base = gf256Mul(base, base);
+        exp >>= 1;
+    }
+    return result;
+}
+
+function gf256Div(a: number, b: number): number { return gf256Mul(a, gf256Inv(b)); }
 
 export class GoogleAppleBypass {
     /**

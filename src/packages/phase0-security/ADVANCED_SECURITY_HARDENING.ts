@@ -131,20 +131,100 @@ class SplitKeyProtection {
     );
   }
 
-  // Simplified Shamir's Secret Sharing (use library in production)
+  /**
+   * Shamir's Secret Sharing over GF(2^8) — 2-of-3 threshold.
+   *
+   * For each secret byte s:
+   *   - Choose a random coefficient a1 ∈ GF(2^8)
+   *   - Polynomial: p(x) = s ⊕ (a1 · x)  [degree-1, threshold=2]
+   *   - Shares: (x=1, p(1)), (x=2, p(2)), (x=3, p(3))
+   *
+   * Share encoding: first byte = x-coordinate, remaining = y-values.
+   *
+   * Note: _threshold / _shares params are ignored; this implementation is
+   * hardwired to 2-of-3 matching the splitKey() caller above.
+   */
   private shamirSplit(secret: Uint8Array, _threshold: number, _shares: number): Uint8Array[] {
-    // TODO: Use @noble/curves or similar for production
-    return [secret, secret, secret]; // Placeholder
+    const n = secret.length;
+    const a1 = crypto.getRandomValues(new Uint8Array(n));
+
+    // Evaluate polynomial at x = 1, 2, 3
+    const xs = [1, 2, 3];
+    return xs.map(x => {
+      const share = new Uint8Array(n + 1);
+      share[0] = x; // x-coordinate prefix
+      for (let i = 0; i < n; i++) {
+        share[i + 1] = secret[i] ^ gf256Mul(a1[i], x);
+      }
+      return share;
+    });
   }
 
+  /**
+   * Lagrange interpolation over GF(2^8) using exactly 2 shares.
+   * Each share: share.data[0] = x-coordinate, share.data[1..] = y-values.
+   */
   private shamirReconstruct(shares: KeyShare[]): Uint8Array {
-    return shares[0].data; // Placeholder
+    if (shares.length < 2) throw new Error('Need at least 2 shares');
+    const d0 = shares[0].data;
+    const d1 = shares[1].data;
+    const x0 = d0[0];
+    const x1 = d1[0];
+    const n = d0.length - 1;
+
+    // Lagrange basis at x=0:
+    //   L0(0) = x1 / (x0 XOR x1)  [over GF(2^8), subtraction = XOR]
+    //   L1(0) = x0 / (x0 XOR x1)
+    const denom = x0 ^ x1;
+    const l0 = gf256Div(x1, denom);
+    const l1 = gf256Div(x0, denom);
+
+    const secret = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      secret[i] = gf256Mul(d0[i + 1], l0) ^ gf256Mul(d1[i + 1], l1);
+    }
+    return secret;
   }
 }
 
 interface KeyShare {
   id: string;
   data: Uint8Array;
+}
+
+// ─── GF(2^8) arithmetic (AES field, irreducible poly 0x11B) ─────────────────
+
+/** Multiply two elements in GF(2^8) using the Russian peasant algorithm. */
+function gf256Mul(a: number, b: number): number {
+  let p = 0;
+  let hi: number;
+  for (let i = 0; i < 8; i++) {
+    if (b & 1) p ^= a;
+    hi = a & 0x80;
+    a = (a << 1) & 0xFF;
+    if (hi) a ^= 0x1B; // x^4+x^3+x+1 reduction term
+    b >>= 1;
+  }
+  return p;
+}
+
+/** Invert an element in GF(2^8) via Fermat: a^(2^8 - 2) = a^254. */
+function gf256Inv(a: number): number {
+  if (a === 0) throw new RangeError('GF(2^8): inversion of zero');
+  let result = 1;
+  let base = a;
+  let exp = 254;
+  while (exp > 0) {
+    if (exp & 1) result = gf256Mul(result, base);
+    base = gf256Mul(base, base);
+    exp >>= 1;
+  }
+  return result;
+}
+
+/** Divide in GF(2^8): a / b = a * b^-1. */
+function gf256Div(a: number, b: number): number {
+  return gf256Mul(a, gf256Inv(b));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

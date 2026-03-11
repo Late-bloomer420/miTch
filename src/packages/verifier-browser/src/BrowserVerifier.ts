@@ -39,6 +39,7 @@ import {
     generateNonce,
     generateSessionId,
     exportPublicKeyJWK,
+    decryptJWE,
 } from './crypto.js';
 
 import { DIDSignatureVerifier } from '@mitch/shared-crypto';
@@ -191,12 +192,27 @@ export class BrowserVerifier {
             }
 
             // 4. Decrypt payload (JWE) with ephemeral private key
-            // TODO: Implement JWE decryption with ephemeral private key (requires JOSE CompactDecrypt)
-            // const decryptedPayload = await compactDecrypt(response.encryptedPayload, session._privateKey!);
-            // For now, extract claims from the verified JWT payload
-            const payload = verificationResult.payload ?? {};
-            const provenClaims = (payload.provenClaims as Record<string, boolean>) ?? {};
-            const disclosedClaims = (payload.disclosedClaims as Record<string, unknown>) ?? {};
+            let payload: Record<string, unknown> = {};
+            if (response.encryptedPayload && session._privateKey) {
+                try {
+                    const plaintext = await decryptJWE(response.encryptedPayload, session._privateKey);
+                    payload = JSON.parse(plaintext) as Record<string, unknown>;
+                } catch {
+                    // Fail-closed: decryption failure = deny
+                    await this.sessionStorage.delete(response.sessionId);
+                    return {
+                        success: false,
+                        timestamp: Date.now(),
+                        walletDid: response.walletDid,
+                        error: 'JWE decryption failed'
+                    };
+                }
+            } else {
+                // No encrypted payload — fall back to verified JWT claims
+                payload = verificationResult.payload ?? {};
+            }
+            const provenClaims = (payload['provenClaims'] as Record<string, boolean>) ?? {};
+            const disclosedClaims = (payload['disclosedClaims'] as Record<string, unknown>) ?? {};
 
             const verifiedResponse: VerifiedResponse = {
                 success: true,
@@ -285,7 +301,7 @@ export class BrowserVerifier {
         const storage = this.sessionStorage as { cleanup?: () => void };
         if (typeof storage.cleanup === 'function') {
             setInterval(() => {
-                storage.cleanup();
+                (storage as { cleanup: () => void }).cleanup();
             }, 60_000); // Every minute
         }
     }

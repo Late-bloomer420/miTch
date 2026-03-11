@@ -167,8 +167,8 @@ export class WalletDirectProtocol {
     // 3. Validate request structure
     this.validateRequest(payload);
 
-    // 4. Verify signature (fetch verifier's public key from DID)
-    // TODO: Implement DID resolution + signature verification
+    // 4. Resolve verifier DID and verify ES256 JWT signature
+    await this.verifyJwtSignature(encodedHeader, encodedPayload, encodedSignature, payload.verifierDID);
 
     console.info('[Wallet] Request parsed:', {
       verifierDID: payload.verifierDID,
@@ -214,6 +214,101 @@ export class WalletDirectProtocol {
     if (age > 300000) {
       throw new Error('Request expired (>5min old)');
     }
+  }
+
+  /**
+   * Resolve verifier DID and verify the ES256 JWT signature.
+   *
+   * Supports did:web (HTTPS resolution) and any DID method that embeds
+   * a `verificationMethod[0].publicKeyJwk` in its DID Document.
+   *
+   * Fail-closed: throws on any resolution or signature failure.
+   */
+  private async verifyJwtSignature(
+    encodedHeader: string,
+    encodedPayload: string,
+    encodedSignature: string,
+    verifierDID: string,
+  ): Promise<void> {
+    // Resolve DID Document
+    const didDoc = await this.resolveDidDocument(verifierDID);
+
+    // Extract first verificationMethod with a JWK public key
+    const vm = didDoc.verificationMethod?.find((m: { publicKeyJwk?: JsonWebKey }) => m.publicKeyJwk);
+    if (!vm?.publicKeyJwk) {
+      throw new Error(`DID_VERIFY_FAILED: no publicKeyJwk in ${verifierDID}`);
+    }
+
+    // Import the public key for ECDSA-P256 verification
+    const pubKey = await crypto.subtle.importKey(
+      'jwk',
+      vm.publicKeyJwk as JsonWebKey,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['verify'],
+    );
+
+    // JWT signing input = ASCII(BASE64URL(header) + '.' + BASE64URL(payload))
+    const signingInput = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
+
+    // Decode raw signature (base64url → r||s bytes, 64 bytes for P-256)
+    const sigBytes = this.base64urlToBytes(encodedSignature);
+
+    const valid = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      pubKey,
+      sigBytes,
+      signingInput,
+    );
+
+    if (!valid) {
+      throw new Error(`DID_VERIFY_FAILED: invalid signature from ${verifierDID}`);
+    }
+  }
+
+  /**
+   * Minimal DID Document resolution.
+   * Supports did:web via HTTPS fetch. Other methods throw — callers should
+   * use @mitch/shared-crypto DIDResolver for full multi-method support.
+   */
+  private async resolveDidDocument(did: string): Promise<{ verificationMethod?: Array<{ id: string; publicKeyJwk?: JsonWebKey }> }> {
+    if (did.startsWith('did:web:')) {
+      const url = this.didWebToUrl(did);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DID_RESOLVE_FAILED: HTTP ${response.status} for ${url}`);
+      }
+      return response.json();
+    }
+    throw new Error(`DID_RESOLVE_FAILED: unsupported DID method in ${did}`);
+  }
+
+  /** did:web → HTTPS URL  (RFC 7517 §3.2) */
+  private didWebToUrl(did: string): string {
+    let domain = did.slice('did:web:'.length);
+    domain = decodeURIComponent(domain);
+    const parts = domain.split(':');
+    const host = parts[0];
+    let hostWithPort = host;
+    let pathStart = 1;
+    if (parts.length > 1 && /^\d+$/.test(parts[1])) {
+      hostWithPort = `${host}:${parts[1]}`;
+      pathStart = 2;
+    }
+    const pathSegments = parts.slice(pathStart);
+    if (pathSegments.length > 0) {
+      return `https://${hostWithPort}/${pathSegments.join('/')}/did.json`;
+    }
+    return `https://${hostWithPort}/.well-known/did.json`;
+  }
+
+  private base64urlToBytes(data: string): Uint8Array {
+    const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
+    const padding = '='.repeat((4 - base64.length % 4) % 4);
+    const binary = atob(base64 + padding);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
   }
 
   private base64urlDecode(data: string): string {
