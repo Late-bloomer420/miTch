@@ -45,5 +45,9 @@
       "rollup@>=4.0.0 <4.59.0": ">=4.59.0",
       "esbuild@<=0.24.2": ">=0.25.0"
     }
+  },
+  "dependencies": {
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1"
   }
 }
