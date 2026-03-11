@@ -1326,6 +1326,104 @@
     .roadmap-features li::before { content: '→'; color: var(--border); flex-shrink: 0; }
     .roadmap-card.built .roadmap-features li::before { color: var(--green); content: '✓'; }
     .roadmap-card.building .roadmap-features li::before { color: var(--accent); }
+
+    /* ── Use Case Demo Wizard ─────────────────────────────────────────────── */
+    .uc-tabs { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .uc-tab {
+      padding:0.42rem 0.95rem; border-radius:999px; cursor:pointer;
+      border:1px solid var(--border); background:var(--surface2);
+      color:var(--text-dim); font-size:0.78rem; font-weight:600;
+      transition:all 0.2s; white-space:nowrap;
+    }
+    .uc-tab.active { border-color:var(--accent); color:var(--accent); background:rgba(99,102,241,0.12); box-shadow:0 0 10px var(--accent-glow); }
+    .uc-tab:hover:not(.active) { border-color:var(--text-dim); color:var(--text); }
+    .uc-pane { display:none; }
+    .uc-pane.is-active { display:block; }
+    .uc-wizard { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .uc-steps-nav {
+      display:flex; align-items:center; padding:0.85rem 1.2rem; gap:0;
+      border-bottom:1px solid var(--border); background:var(--surface2);
+      overflow-x:auto; scrollbar-width:none;
+    }
+    .uc-steps-nav::-webkit-scrollbar { display:none; }
+    .uc-snav-dot {
+      width:27px; height:27px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.68rem; font-weight:700;
+      border:2px solid var(--border); color:var(--text-dim); background:var(--surface);
+      transition:all 0.3s;
+    }
+    .uc-snav-dot.active { border-color:var(--accent); color:var(--accent); background:rgba(99,102,241,0.15); box-shadow:0 0 8px var(--accent-glow); }
+    .uc-snav-dot.done { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+    .uc-snav-label { font-size:0.67rem; color:var(--text-dim); margin-left:0.3rem; white-space:nowrap; }
+    .uc-snav-line { flex:1; height:2px; background:var(--border); min-width:14px; transition:background 0.3s; }
+    .uc-snav-line.done { background:var(--green); }
+    .uc-panel { display:none; padding:1.3rem 1.4rem; min-height:280px; }
+    .uc-panel.active { display:block; animation:ucFadeIn 0.3s ease; }
+    @keyframes ucFadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .uc-nav-row { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.2rem; border-top:1px solid var(--border); background:var(--surface2); }
+    .uc-step-count { font-size:0.72rem; color:var(--text-dim); font-weight:600; }
+    .uc-label-chip { display:inline-flex; align-items:center; padding:0.22rem 0.55rem; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.04em; background:rgba(99,102,241,0.15); color:var(--accent); margin-bottom:0.5rem; }
+    .uc-panel-title { font-weight:700; font-size:1rem; margin-bottom:0.9rem; }
+    .uc-sub-hdr { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); margin:0.85rem 0 0.4rem; }
+    .risk-row { display:flex; align-items:center; gap:0.6rem; padding:0.52rem 0.75rem; background:var(--surface2); border-radius:8px; margin-bottom:0.3rem; border:1px solid var(--border); }
+    .risk-row .rr-field { flex:1; font-size:0.84rem; font-weight:600; }
+    .risk-row .rr-val { font-size:0.77rem; color:var(--text-dim); font-family:var(--mono); flex-shrink:0; }
+    .risk-badge { padding:0.17rem 0.48rem; border-radius:999px; font-size:0.67rem; font-weight:700; white-space:nowrap; flex-shrink:0; }
+    .risk-badge.low { background:var(--green-dim); color:var(--green); }
+    .risk-badge.med { background:var(--yellow-dim); color:var(--yellow); }
+    .risk-badge.high { background:var(--red-dim); color:var(--red); }
+    .blocked-row { display:flex; align-items:center; gap:0.6rem; padding:0.42rem 0.75rem; border-radius:8px; margin-bottom:0.28rem; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.15); }
+    .blocked-row .br-field { flex:1; font-size:0.82rem; color:var(--text-dim); text-decoration:line-through; }
+    .blocked-row .br-reason { font-size:0.67rem; color:var(--red); font-weight:700; flex-shrink:0; }
+    .inference-box { margin-top:0.9rem; padding:0.65rem 0.85rem; background:var(--yellow-dim); border:1px solid rgba(234,179,8,0.3); border-radius:8px; }
+    .inference-box .ib-hdr { font-size:0.77rem; font-weight:700; color:var(--yellow); margin-bottom:0.25rem; }
+    .inference-box .ib-body { font-size:0.76rem; color:var(--text-dim); line-height:1.55; }
+    .split-screen { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-top:0.8rem; }
+    @media (max-width:580px) { .split-screen { grid-template-columns:1fr; } }
+    .ss-col { background:var(--surface2); border-radius:8px; padding:0.75rem; border:1px solid var(--border); }
+    .ss-col.verifier-col { border-color:rgba(239,68,68,0.35); }
+    .ss-col.user-col { border-color:rgba(34,197,94,0.35); }
+    .ss-col-title { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; }
+    .ss-col.verifier-col .ss-col-title { color:var(--red); }
+    .ss-col.user-col .ss-col-title { color:var(--green); }
+    .ss-row { font-size:0.78rem; padding:0.25rem 0; border-bottom:1px solid var(--border); display:flex; gap:0.4rem; align-items:baseline; }
+    .ss-row:last-child { border-bottom:none; }
+    .ss-row .ss-key { color:var(--text-dim); flex-shrink:0; }
+    .ss-row .ss-val { color:var(--green); font-family:var(--mono); }
+    .ss-row .ss-blocked { color:var(--text-dim); text-decoration:line-through; font-family:var(--mono); opacity:0.55; }
+    .proof-box { background:var(--surface2); border:1px solid rgba(34,197,94,0.25); border-radius:8px; padding:0.9rem; margin-top:0.8rem; font-family:var(--mono); font-size:0.72rem; line-height:1.8; white-space:pre-wrap; word-break:break-all; min-height:80px; color:var(--green); }
+    .proof-box.pending { color:var(--text-dim); }
+    .verifier-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin-bottom:0.8rem; }
+    .vc-hdr { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem; flex-wrap:wrap; }
+    .vc-name { font-weight:700; font-size:0.9rem; }
+    .vc-did { font-size:0.67rem; color:var(--text-dim); font-family:var(--mono); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .trust-chip { padding:0.17rem 0.48rem; border-radius:999px; font-size:0.67rem; font-weight:700; white-space:nowrap; }
+    .trust-chip.high { background:var(--green-dim); color:var(--green); }
+    .trust-chip.med { background:var(--yellow-dim); color:var(--yellow); }
+    .deny-banner { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:0.9rem; margin:0.8rem 0; }
+    .deny-banner .db-title { font-weight:700; font-size:0.95rem; color:var(--red); margin-bottom:0.3rem; }
+    .deny-banner .db-body { font-size:0.79rem; color:var(--text-dim); line-height:1.55; }
+    .allow-banner { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.4); border-radius:8px; padding:0.9rem; margin:0.8rem 0; }
+    .allow-banner .ab-title { font-weight:700; font-size:0.95rem; color:var(--green); margin-bottom:0.3rem; }
+    .allow-banner .ab-body { font-size:0.79rem; color:var(--text-dim); line-height:1.55; }
+    .collective-signal { background:var(--blue-dim); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:0.65rem 0.85rem; margin-top:0.8rem; font-size:0.78rem; color:var(--text-dim); line-height:1.5; }
+    .collective-signal strong { color:var(--blue); }
+    .receipt-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:0.8rem; margin-top:0.8rem; }
+    .receipt-row { display:flex; justify-content:space-between; align-items:baseline; padding:0.27rem 0; font-size:0.78rem; border-bottom:1px solid var(--border); }
+    .receipt-row:last-child { border-bottom:none; }
+    .receipt-row .rk { color:var(--text-dim); }
+    .receipt-row .rv { font-family:var(--mono); font-size:0.72rem; color:var(--text); text-align:right; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bg-log { font-family:var(--mono); font-size:0.72rem; background:var(--surface2); border-radius:8px; padding:0.8rem; border:1px solid var(--border); line-height:1.85; min-height:60px; }
+    .bg-log .bgl-ts { color:var(--text-dim); }
+    .bg-log .bgl-act { color:var(--orange); }
+    .bg-log .bgl-who { color:var(--accent); }
+    .overreach-row { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.75rem; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25); border-radius:8px; margin-bottom:0.32rem; }
+    .overreach-row .or-field { flex:1; font-size:0.83rem; font-weight:600; }
+    .overreach-row .or-status { font-size:0.67rem; font-weight:700; color:var(--red); background:var(--red-dim); padding:0.17rem 0.48rem; border-radius:999px; flex-shrink:0; }
+    .ok-row { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.75rem; background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.2); border-radius:8px; margin-bottom:0.32rem; }
+    .ok-row .or-field { flex:1; font-size:0.83rem; font-weight:600; }
+    .ok-row .or-status { font-size:0.67rem; font-weight:700; color:var(--green); background:var(--green-dim); padding:0.17rem 0.48rem; border-radius:999px; flex-shrink:0; }
   </style>
 </head>
 
@@ -1410,6 +1508,384 @@
         miTch is a <span class="accent">blind intermediary</span> — we never see your data, and neither does the verifier until you decide what to share.
         <span class="dim-txt">miTch structurally cannot store, access, or retain any personal data. This is an architectural guarantee, not a policy promise.</span>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION B: USE CASES ════════════════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">Live Demo</div>
+      <h2 class="vsec-title">Verifier fragt. miTch filtert. Du entscheidest.</h2>
+      <p class="vsec-body">Vier konkrete Szenarien — dieselbe Mechanik. Klick dich durch jeden Schritt und sieh genau was geteilt wird, was geblockt wird, und warum.</p>
+
+      <div class="uc-tabs">
+        <button class="uc-tab active" data-uc="adtech" onclick="switchUC('adtech')">🎯 Ad-Tech</button>
+        <button class="uc-tab" data-uc="student" onclick="switchUC('student')">🎓 Student Discount</button>
+        <button class="uc-tab" data-uc="hospital" onclick="switchUC('hospital')">🏥 Notaufnahme</button>
+        <button class="uc-tab" data-uc="ehds" onclick="switchUC('ehds')">🔬 EHDS Secondary</button>
+      </div>
+
+      <!-- ─── UC-1a: Ad-Tech ────────────────────────────────────────────── -->
+      <div class="uc-pane is-active" id="uc-adtech">
+        <div class="uc-wizard">
+          <div class="uc-steps-nav" id="snav-adtech">
+            <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Ergebnis</div>
+          </div>
+
+          <!-- Step 1: Verifier Request -->
+          <div class="uc-panel active" id="adtech-p0">
+            <div class="uc-label-chip">① Verifier Request</div>
+            <div class="uc-panel-title">ExampleAds GmbH möchte dich verifizieren</div>
+            <div class="verifier-card">
+              <div class="vc-hdr">
+                <span style="font-size:1.4rem">🎯</span>
+                <span class="vc-name">ExampleAds GmbH</span>
+                <span class="trust-chip high">Trust 91/100</span>
+              </div>
+              <div class="vc-did">did:mitch:exampleads-gmbh-at · OID4VP 1.0 · Registered AT-DSA</div>
+            </div>
+            <div class="uc-sub-hdr">Was wird angefragt?</div>
+            <div class="risk-row"><span class="rr-field">age_threshold</span><span class="rr-val">≥ 18</span><span class="risk-badge low">🟢 Predicate</span></div>
+            <div class="risk-row"><span class="rr-field">region_match</span><span class="rr-val">EU / EEA</span><span class="risk-badge low">🟢 Predicate</span></div>
+            <div class="risk-row"><span class="rr-field">humanity_proof</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Predicate</span></div>
+            <div class="risk-row"><span class="rr-field">frequency_cap</span><span class="rr-val">5 / day</span><span class="risk-badge low">🟢 Rate Limit</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Diese Anfrage wird als OID4VP Presentation Request übermittelt. Kein direkter Datenzugriff möglich.</p>
+          </div>
+
+          <!-- Step 2: Transparency Layer -->
+          <div class="uc-panel" id="adtech-p1">
+            <div class="uc-label-chip">② miTch Analyse</div>
+            <div class="uc-panel-title">Was bekommt der Verifier — und was nicht?</div>
+            <div class="uc-sub-hdr">Geteilte Attribute (minimaler Proof)</div>
+            <div class="risk-row"><span class="rr-field">age ≥ 18</span><span class="rr-val">true/false, kein Alter</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">region: EU</span><span class="rr-val">ja/nein, kein Land</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">humanity</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Strukturell nicht teilbar</div>
+            <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT IN PREDICATE</span></div>
+            <div class="blocked-row"><span class="br-field">Geburtsdatum</span><span class="br-reason">NOT IN PREDICATE</span></div>
+            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
+            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
+            <div class="inference-box">
+              <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
+              <div class="ib-body">Mit Alter ≥ 18 + Region EU + Zeitstempel kann der Verifier ein grobes demografisches Cluster bilden. Dein genaues Alter, Land oder Profil bleibt unbekannt. Budget-Signal ist auf 1.920 Slots quantisiert — kein kontinuierliches Fingerprinting möglich.</div>
+            </div>
+            <div class="uc-sub-hdr">Deine Ad-Preferences (bleiben lokal)</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
+              <tr><td style="color:var(--text-dim);padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">Max. Impressions/Tag</td><td style="font-family:var(--mono);color:var(--accent);text-align:right;padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">5</td></tr>
+              <tr><td style="color:var(--text-dim);padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">Quiet Period</td><td style="font-family:var(--mono);color:var(--accent);text-align:right;padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">22:00–07:00</td></tr>
+              <tr><td style="color:var(--text-dim);padding:0.25rem 0.4rem">Blocked Categories</td><td style="font-family:var(--mono);color:var(--accent);text-align:right;padding:0.25rem 0.4rem">IAB-7 (Health), IAB-14 (Religion)</td></tr>
+            </table>
+          </div>
+
+          <!-- Step 3: Proof Generation -->
+          <div class="uc-panel" id="adtech-p2">
+            <div class="uc-label-chip">③ Proof Generation</div>
+            <div class="uc-panel-title">Nullifier + Budget-Signal werden erzeugt</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Der Nullifier ist deterministisch: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Zwei Verifier mit gleichem Scope erhalten unterschiedliche Nullifier — kein Cross-Verifier Tracking möglich.</p>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Proof generieren</button>
+            </div>
+            <div class="proof-box pending" id="uc-adtech-proof-box">— Noch nicht generiert —</div>
+          </div>
+
+          <!-- Step 4: Split-Screen Result -->
+          <div class="uc-panel" id="adtech-p3">
+            <div class="uc-label-chip">④ Ergebnis</div>
+            <div class="uc-panel-title">Was sieht der Verifier — vs. was sieht der User?</div>
+            <div class="split-screen">
+              <div class="ss-col verifier-col">
+                <div class="ss-col-title">🔴 Verifier sieht</div>
+                <div class="ss-row"><span class="ss-key">age_gte_18:</span><span class="ss-val">true</span></div>
+                <div class="ss-row"><span class="ss-key">region_eu:</span><span class="ss-val">true</span></div>
+                <div class="ss-row"><span class="ss-key">humanity:</span><span class="ss-val">verified</span></div>
+                <div class="ss-row"><span class="ss-key">nullifier:</span><span class="ss-val">H(…4f2a)</span></div>
+                <div class="ss-row"><span class="ss-key">budget_slot:</span><span class="ss-val">847 / 1920</span></div>
+                <div class="ss-row"><span class="ss-key">name:</span><span class="ss-blocked">—</span></div>
+                <div class="ss-row"><span class="ss-key">dob:</span><span class="ss-blocked">—</span></div>
+                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">impossible</span></div>
+              </div>
+              <div class="ss-col user-col">
+                <div class="ss-col-title">🟢 Du siehst (Wallet)</div>
+                <div class="ss-row"><span class="ss-key">Verifier:</span><span class="ss-val">ExampleAds GmbH</span></div>
+                <div class="ss-row"><span class="ss-key">Zeitpunkt:</span><span class="ss-val" id="adtech-ts">—</span></div>
+                <div class="ss-row"><span class="ss-key">Geteilt:</span><span class="ss-val">3 Prädikate</span></div>
+                <div class="ss-row"><span class="ss-key">Geblockt:</span><span class="ss-val">4 Felder</span></div>
+                <div class="ss-row"><span class="ss-key">Budget:</span><span class="ss-val">4 / 5 verbleibend</span></div>
+                <div class="ss-row"><span class="ss-key">Basis:</span><span class="ss-val">GDPR Art. 6(1)(a)</span></div>
+                <div class="ss-row"><span class="ss-key">Receipt:</span><span class="ss-val">consent-…3c9f</span></div>
+              </div>
+            </div>
+            <div class="collective-signal" style="margin-top:0.9rem">
+              <strong>Sybil Prevention:</strong> Derselbe Nullifier für ExampleAds + campaign-summer25 kann nur einmal pro Frequenz-Fenster verwendet werden. 100 gefälschte Accounts → 100 verschiedene Nullifier, aber jeder wird vom Verifier getrackt und ab Limit geblockt.
+            </div>
+          </div>
+
+          <div class="uc-nav-row">
+            <button class="btn btn-ghost" id="uc-adtech-back" onclick="ucBack('adtech')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <span class="uc-step-count" id="uc-adtech-count">1 / 4</span>
+            <button class="btn btn-primary" id="uc-adtech-next" onclick="ucNext('adtech')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── UC-1b: Student Discount ───────────────────────────────────── -->
+      <div class="uc-pane" id="uc-student">
+        <div class="uc-wizard">
+          <div class="uc-steps-nav" id="snav-student">
+            <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Overreach</div>
+          </div>
+
+          <!-- Step 1: IVB Request -->
+          <div class="uc-panel active" id="student-p0">
+            <div class="uc-label-chip">① Verifier Request</div>
+            <div class="uc-panel-title">IVB Innsbruck fragt: Bist du Student?</div>
+            <div class="verifier-card">
+              <div class="vc-hdr">
+                <span style="font-size:1.4rem">🚌</span>
+                <span class="vc-name">IVB Innsbruck — Studententicket</span>
+                <span class="trust-chip high">Trust 88/100</span>
+              </div>
+              <div class="vc-did">did:mitch:ivb-innsbruck · Registered AT-DSA · Tirol</div>
+            </div>
+            <div class="uc-sub-hdr">Was wird angefragt?</div>
+            <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">is_student: true/false</span><span class="risk-badge low">🟢 Boolean</span></div>
+            <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende</span><span class="risk-badge low">🟢 Date</span></div>
+            <div class="allow-banner" style="margin-top:0.8rem">
+              <div class="ab-title">Anfrage sauber — keine sensitiven Daten</div>
+              <div class="ab-body">IVB fragt nur ob du Student bist und bis wann. Name, Matrikelnummer, Studiengang, Uni, Geburtsdatum — nichts davon ist Teil der Anfrage.</div>
+            </div>
+          </div>
+
+          <!-- Step 2: Analysis -->
+          <div class="uc-panel" id="student-p1">
+            <div class="uc-label-chip">② miTch Analyse</div>
+            <div class="uc-panel-title">Risikoanalyse: 🟢 Low — sicher zu teilen</div>
+            <div class="uc-sub-hdr">Was wird geteilt (minimaler Proof)</div>
+            <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende 23:59</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Strukturell nicht teilbar (nicht in Anfrage)</div>
+            <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Matrikelnummer</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Geburtsdatum</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Universität</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Studiengang</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="inference-box">
+              <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
+              <div class="ib-body">Student-Boolean + Semesterende geben keinen Rückschluss auf Identität. IVB erfährt nur: Dieser Wallet-User ist gültiger Student. Kein Profiling möglich.</div>
+            </div>
+          </div>
+
+          <!-- Step 3: Proof -->
+          <div class="uc-panel" id="student-p2">
+            <div class="uc-label-chip">③ Ephemeral Credential</div>
+            <div class="uc-panel-title">Kurzzeit-Credential wird ausgestellt</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Das Credential gilt nur für diese Session und verfällt automatisch um Mitternacht. Die Universität bestätigt den Status — IVB erfährt nie welche Uni.</p>
+            <div class="btn-row">
+              <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Studentenstatus bestätigen</button>
+            </div>
+            <div class="proof-box pending" id="uc-student-proof-box">— Noch nicht bestätigt —</div>
+          </div>
+
+          <!-- Step 4: Overreaching Demo -->
+          <div class="uc-panel" id="student-p3">
+            <div class="uc-label-chip">④ Overreach-Demo</div>
+            <div class="uc-panel-title">Was passiert wenn ein Vendor zu viel verlangt?</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">IVB+ (Pilotprogramm) stellt eine erweiterte Anfrage — zusätzlich zur Studentenverifizierung will der Vendor Matrikelnummer und Universitätsnamen.</p>
+            <div class="uc-sub-hdr">Anfrage von IVB+</div>
+            <div class="ok-row"><span class="or-field">student_status</span><span class="or-status">✓ OK</span></div>
+            <div class="ok-row"><span class="or-field">valid_until</span><span class="or-status">✓ OK</span></div>
+            <div class="overreach-row"><span class="or-field">matrikelnummer</span><span class="or-status">⛔ BLOCKED</span></div>
+            <div class="overreach-row"><span class="or-field">university_name</span><span class="or-status">⛔ BLOCKED</span></div>
+            <div class="deny-banner" style="margin-top:0.8rem">
+              <div class="db-title">⛔ Anfrage partiell abgelehnt</div>
+              <div class="db-body">Matrikelnummer und Universitätsname sind nicht Teil des genehmigten Predicate-Sets. miTch gibt nur die saubere Teilmenge frei — der Vendor erhält die anderen Felder nicht, kann aber die Studentenverifizierung trotzdem nutzen.</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-ghost" onclick="ucFlagVendor('student')" id="uc-student-flag-btn" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Vendor melden</button>
+            </div>
+            <div class="collective-signal" id="uc-student-collective">
+              <strong>423 Studenten</strong> haben IVB+ bereits als übergriffig gemeldet. Ab 500 Meldungen wird der Vendor automatisch dem AT-DSA gemeldet.
+            </div>
+          </div>
+
+          <div class="uc-nav-row">
+            <button class="btn btn-ghost" id="uc-student-back" onclick="ucBack('student')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <span class="uc-step-count" id="uc-student-count">1 / 4</span>
+            <button class="btn btn-primary" id="uc-student-next" onclick="ucNext('student')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── UC-2a: Notaufnahme ─────────────────────────────────────────── -->
+      <div class="uc-pane" id="uc-hospital">
+        <div class="uc-wizard">
+          <div class="uc-steps-nav" id="snav-hospital">
+            <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Risiko</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">3</div><div class="uc-snav-label">Consent</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Post-Session</div>
+          </div>
+
+          <!-- Step 1: Hospital Request -->
+          <div class="uc-panel active" id="hospital-p0">
+            <div class="uc-label-chip">① Verifier Request</div>
+            <div class="uc-panel-title">UKH Innsbruck — Notaufnahme</div>
+            <div class="verifier-card">
+              <div class="vc-hdr">
+                <span style="font-size:1.4rem">🏥</span>
+                <span class="vc-name">UKH Innsbruck — Notaufnahme</span>
+                <span class="trust-chip high">Trust 97/100</span>
+              </div>
+              <div class="vc-did">did:mitch:ukh-innsbruck · ELGA-zertifiziert · Art. 9 GDPR Basis</div>
+            </div>
+            <div class="uc-sub-hdr">Was wird angefragt?</div>
+            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">Liste</span><span class="risk-badge med">🟡 Medium</span></div>
+            <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">ABO+Rh</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">ÖGK/privat</span><span class="risk-badge low">🟢 Low</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Rechtsgrundlage: GDPR Art. 9(2)(c) — lebenswichtige Interessen. Ephemeral Credential, automatisch gelöscht bei Session-Ende.</p>
+          </div>
+
+          <!-- Step 2: Risk Analysis -->
+          <div class="uc-panel" id="hospital-p1">
+            <div class="uc-label-chip">② Risikoanalyse</div>
+            <div class="uc-panel-title">Per-Attribut Bewertung</div>
+            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">Penicillin, Latex</span><span class="risk-badge med">🟡 Medium — medizinisch notwendig</span></div>
+            <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">A+</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">ÖGK — aktiv</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Nicht angefragt — nicht teilbar</div>
+            <div class="blocked-row"><span class="br-field">Diagnose-History</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Medikamentenliste</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Psychische Erkrankungen</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
+            <div class="blocked-row"><span class="br-field">Genomdaten</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
+            <div class="inference-box">
+              <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
+              <div class="ib-body">Allergien + Blutgruppe + Versicherung erlauben dem KH keine weiteren Schlüsse über Identität, Wohnort oder Diagnosen. Die Kombination ist medizinisch notwendig und juristisch gedeckt.</div>
+            </div>
+          </div>
+
+          <!-- Step 3: Consent + Proof -->
+          <div class="uc-panel" id="hospital-p2">
+            <div class="uc-label-chip">③ Consent &amp; Ephemeral Proof</div>
+            <div class="uc-panel-title">Freigabe + Session-Key Generierung</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Nach Freigabe wird ein ephemeral Session-Key erzeugt. Die Daten sind mit diesem Key verschlüsselt — bei Session-Ende wird der Key automatisch gelöscht (Crypto-Shredding).</p>
+            <div class="btn-row">
+              <button class="btn btn-success" id="uc-hospital-prove-btn" onclick="ucRunHospitalProof()">✓ Notaufnahme freigeben</button>
+              <button class="btn btn-danger" onclick="ucDenyHospital()" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">✗ Ablehnen</button>
+            </div>
+            <div class="proof-box pending" id="uc-hospital-proof-box">— Warte auf Freigabe —</div>
+          </div>
+
+          <!-- Step 4: Post-Session -->
+          <div class="uc-panel" id="hospital-p3">
+            <div class="uc-label-chip">④ Post-Session</div>
+            <div class="uc-panel-title">Daten kryptografisch gelöscht — Consent Receipt ausgestellt</div>
+            <div class="allow-banner">
+              <div class="ab-title">✓ Session beendet — Crypto-Shredding aktiv</div>
+              <div class="ab-body">Der ephemeral Session-Key wurde gelöscht. Alle verschlüsselten Daten sind dauerhaft unlesbar — auch für miTch und UKH nach Session-Ende.</div>
+            </div>
+            <div class="uc-sub-hdr">Consent Receipt (in deinem Wallet gespeichert)</div>
+            <div class="receipt-box">
+              <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">UKH Innsbruck — Notaufnahme</span></div>
+              <div class="receipt-row"><span class="rk">Zeitpunkt</span><span class="rv" id="hospital-ts">—</span></div>
+              <div class="receipt-row"><span class="rk">Geteilt</span><span class="rv">allergies, blood_group, insurance</span></div>
+              <div class="receipt-row"><span class="rk">Basis</span><span class="rv">GDPR Art. 9(2)(c)</span></div>
+              <div class="receipt-row"><span class="rk">Session-Key</span><span class="rv">🗑 gelöscht</span></div>
+              <div class="receipt-row"><span class="rk">Daten verfügbar</span><span class="rv">❌ nein — shredded</span></div>
+            </div>
+          </div>
+
+          <div class="uc-nav-row">
+            <button class="btn btn-ghost" id="uc-hospital-back" onclick="ucBack('hospital')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <span class="uc-step-count" id="uc-hospital-count">1 / 4</span>
+            <button class="btn btn-primary" id="uc-hospital-next" onclick="ucNext('hospital')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── UC-2b: EHDS Secondary Use ─────────────────────────────────── -->
+      <div class="uc-pane" id="uc-ehds">
+        <div class="uc-wizard">
+          <div class="uc-steps-nav" id="snav-ehds">
+            <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Deny</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">3</div><div class="uc-snav-label">Break-Glass</div>
+          </div>
+
+          <!-- Step 1: University Request -->
+          <div class="uc-panel active" id="ehds-p0">
+            <div class="uc-label-chip">① Verifier Request</div>
+            <div class="uc-panel-title">MedUni Wien — Forschungsanfrage</div>
+            <div class="verifier-card">
+              <div class="vc-hdr">
+                <span style="font-size:1.4rem">🔬</span>
+                <span class="vc-name">MedUni Wien — Forschungsabteilung</span>
+                <span class="trust-chip med">Trust 74/100</span>
+              </div>
+              <div class="vc-did">did:mitch:meduni-wien-research · kein HDAB-Zertifikat erkannt</div>
+            </div>
+            <div class="uc-sub-hdr">Was wird angefragt?</div>
+            <div class="risk-row"><span class="rr-field">health_data_pseudonymized</span><span class="rr-val">Diabetes-Studie 2025</span><span class="risk-badge high">🔴 High</span></div>
+            <div class="risk-row"><span class="rr-field">diagnosis_codes</span><span class="rr-val">ICD-10 subset</span><span class="risk-badge high">🔴 High</span></div>
+            <div class="risk-row"><span class="rr-field">medication_history</span><span class="rr-val">letzte 24 Monate</span><span class="risk-badge high">🔴 High</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Erkannt: Sekundärnutzung von Gesundheitsdaten (EHDS Art. 33). Verifier hat kein HDAB-Zertifikat.</p>
+          </div>
+
+          <!-- Step 2: Deny -->
+          <div class="uc-panel" id="ehds-p1">
+            <div class="uc-label-chip">② Policy: DENY</div>
+            <div class="uc-panel-title">Anfrage automatisch abgelehnt</div>
+            <div class="deny-banner">
+              <div class="db-title">⛔ DENY_SECONDARY_USE_DIRECT</div>
+              <div class="db-body">Diese Anfrage zielt auf Sekundärnutzung von Gesundheitsdaten. Laut EHDS Regulation (EU) 2025/327, Art. 33, darf Sekundärnutzung <strong style="color:var(--text)">ausschließlich über einen Health Data Access Body (HDAB)</strong> erfolgen. Ein direkter Zugriff auf Wallets ist nicht zulässig — auch nicht mit Einwilligung des Nutzers.</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;font-size:0.79rem;color:var(--text-dim);line-height:1.6">
+              <strong style="color:var(--text)">Was muss MedUni Wien stattdessen tun?</strong><br>
+              1. Antrag beim österreichischen HDAB (Gesundheit Österreich GmbH / ELGA GmbH)<br>
+              2. Ethikvotum + Datenschutz-Folgenabschätzung einreichen<br>
+              3. Datenzugang über HDAB-Portal — nicht über individuelle Wallets
+            </div>
+            <div class="collective-signal" style="margin-top:0.8rem">
+              Diese Anfrage wurde automatisch protokolliert. Bei wiederholtem Muster: Meldung an Datenschutzbehörde (DSB) möglich.
+            </div>
+          </div>
+
+          <!-- Step 3: Break-Glass -->
+          <div class="uc-panel" id="ehds-p2">
+            <div class="uc-label-chip">③ Break-Glass Override</div>
+            <div class="uc-panel-title">Notfall-Override: Arzt überschreibt Policy</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">In echten Notfällen kann ein autorisierter Arzt die Policy überschreiben. Jeder Override wird <strong style="color:var(--text)">permanent im Audit-Trail</strong> gespeichert — keine Möglichkeit unbemerkt zu handeln.</p>
+            <div class="btn-row">
+              <button class="btn btn-orange" id="uc-ehds-bg-btn" onclick="ucRunBreakGlass()">🔓 Break-Glass aktivieren (Notfall)</button>
+            </div>
+            <div class="bg-log" id="uc-ehds-bg-log">— Noch kein Override —</div>
+            <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.7rem;line-height:1.5">⚠ Break-Glass gilt nur für unmittelbare Notfallbehandlung. Sekundärnutzung für Forschung ist auch via Break-Glass nicht zulässig — dieser Flow ist für Behandlungsnotfälle (Art. 9(2)(c) GDPR).</p>
+          </div>
+
+          <div class="uc-nav-row">
+            <button class="btn btn-ghost" id="uc-ehds-back" onclick="ucBack('ehds')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <span class="uc-step-count" id="uc-ehds-count">1 / 3</span>
+            <button class="btn btn-primary" id="uc-ehds-next" onclick="ucNext('ehds')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -3116,6 +3592,189 @@
       };
     })();
 
+
+    // ─── Use Case Wizard ──────────────────────────────────────────────────
+    const ucState = {
+      adtech:  { current: 0, total: 4 },
+      student: { current: 0, total: 4 },
+      hospital:{ current: 0, total: 4 },
+      ehds:    { current: 0, total: 3 },
+    };
+
+    function switchUC(id) {
+      document.querySelectorAll('.uc-pane').forEach(p => p.classList.remove('is-active'));
+      document.getElementById('uc-' + id).classList.add('is-active');
+      document.querySelectorAll('.uc-tab').forEach(t => t.classList.toggle('active', t.dataset.uc === id));
+    }
+
+    function ucGoTo(id, step) {
+      const s = ucState[id];
+      if (!s) return;
+      s.current = Math.max(0, Math.min(s.total - 1, step));
+      // Panels
+      document.querySelectorAll('#uc-' + id + ' .uc-panel').forEach((p, i) => {
+        p.classList.toggle('active', i === s.current);
+      });
+      // Step nav dots + lines
+      const dots = document.querySelectorAll('#snav-' + id + ' .uc-snav-dot');
+      const lines = document.querySelectorAll('#snav-' + id + ' .uc-snav-line');
+      dots.forEach((d, i) => {
+        d.classList.remove('active', 'done');
+        if (i < s.current) d.classList.add('done');
+        else if (i === s.current) d.classList.add('active');
+      });
+      lines.forEach((l, i) => l.classList.toggle('done', i < s.current));
+      // Counter + buttons
+      const cnt = document.getElementById('uc-' + id + '-count');
+      if (cnt) cnt.textContent = (s.current + 1) + ' / ' + s.total;
+      const back = document.getElementById('uc-' + id + '-back');
+      const next = document.getElementById('uc-' + id + '-next');
+      if (back) back.disabled = s.current === 0;
+      if (next) {
+        next.disabled = s.current === s.total - 1;
+        next.textContent = s.current === s.total - 1 ? 'Fertig ✓' : 'Weiter →';
+      }
+      // Stamp timestamp on result panels
+      if (id === 'adtech' && s.current === 3) {
+        const el = document.getElementById('adtech-ts');
+        if (el && el.textContent === '—') el.textContent = new Date().toLocaleTimeString('de-AT');
+      }
+      if (id === 'hospital' && s.current === 3) {
+        const el = document.getElementById('hospital-ts');
+        if (el && el.textContent === '—') el.textContent = new Date().toLocaleString('de-AT');
+      }
+    }
+
+    function ucNext(id) { ucGoTo(id, ucState[id].current + 1); }
+    function ucBack(id) { ucGoTo(id, ucState[id].current - 1); }
+
+    async function ucRunProof(id) {
+      const btn = document.getElementById('uc-' + id + '-prove-btn');
+      const box = document.getElementById('uc-' + id + '-proof-box');
+      if (!btn || !box) return;
+      btn.disabled = true;
+      btn.textContent = '⏳ Berechne…';
+      box.className = 'proof-box pending';
+      box.textContent = '⏳ Computing nullifier…';
+      await delay(420);
+      box.textContent = '⏳ Quantizing budget signal…';
+      await delay(380);
+      const seed = 'user-seed||' + id + '||campaign-' + Date.now().toString(36);
+      const nul = sha256Sim(seed).slice(0, 12);
+      const slot = Math.floor(Math.random() * 1920);
+      box.className = 'proof-box';
+      box.textContent =
+        '✓ nullifier:      H(…' + nul + ')\n' +
+        '✓ budget_signal:  slot_' + slot + ' (1 of 1920)\n' +
+        '✓ age_gte_18:     true\n' +
+        '✓ region_eu:      true\n' +
+        '✓ humanity:       verified\n' +
+        '✓ bound_to:       did:mitch:exampleads-gmbh-at\n' +
+        '✓ scope:          campaign-summer25\n' +
+        '─────────────────────────────────\n' +
+        '✗ name:           [not in predicate]\n' +
+        '✗ dob:            [not in predicate]\n' +
+        '✗ ip_address:     [structurally impossible]';
+      btn.textContent = 'Proof generiert ✓';
+      btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      await delay(700);
+      ucNext(id);
+    }
+
+    async function ucRunStudentProof() {
+      const btn = document.getElementById('uc-student-prove-btn');
+      const box = document.getElementById('uc-student-proof-box');
+      if (!btn || !box) return;
+      btn.disabled = true;
+      btn.textContent = '⏳ Ausstellend…';
+      box.className = 'proof-box pending';
+      box.textContent = '⏳ Issuing ephemeral credential…';
+      await delay(550);
+      const d = new Date(); d.setHours(23, 59, 0, 0);
+      box.className = 'proof-box';
+      box.textContent =
+        '✓ student_status:    true\n' +
+        '✓ valid_until:       ' + d.toLocaleDateString('de-AT') + ' 23:59\n' +
+        '─────────────────────────────────\n' +
+        '✗ name:              [not shared]\n' +
+        '✗ matrikelnummer:    [not shared]\n' +
+        '✗ geburtsdatum:      [not shared]\n' +
+        '✗ university:        [not shared]\n' +
+        '✗ study_program:     [not shared]';
+      btn.textContent = 'Credential ausgestellt ✓';
+      btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      await delay(700);
+      ucNext('student');
+    }
+
+    async function ucRunHospitalProof() {
+      const btn = document.getElementById('uc-hospital-prove-btn');
+      const box = document.getElementById('uc-hospital-proof-box');
+      if (!btn || !box) return;
+      btn.disabled = true;
+      btn.textContent = '⏳ Freigabe läuft…';
+      box.className = 'proof-box pending';
+      box.textContent = '⏳ Creating ephemeral session key…';
+      await delay(450);
+      box.textContent += '\n⏳ Encrypting credential…';
+      await delay(450);
+      const keyId = 'ek-' + Math.random().toString(36).slice(2, 8);
+      const sesId = 'ses-' + Date.now().toString(36);
+      box.className = 'proof-box';
+      box.textContent =
+        '✓ allergies:         Penicillin, Latex\n' +
+        '✓ blood_group:       A+\n' +
+        '✓ insurance:         ÖGK — aktiv\n' +
+        '─────────────────────────────────\n' +
+        '✗ diagnosis_history: [not requested]\n' +
+        '✗ medications:       [not requested]\n' +
+        '✗ mental_health:     [NOT REQUESTABLE]\n' +
+        '─────────────────────────────────\n' +
+        '✓ ephemeral_key:     ' + keyId + '\n' +
+        '✓ session_id:        ' + sesId + '\n' +
+        '✓ auto_shred_at:     session_end';
+      btn.textContent = 'Freigabe erteilt ✓';
+      btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      await delay(700);
+      ucNext('hospital');
+    }
+
+    function ucDenyHospital() {
+      const box = document.getElementById('uc-hospital-proof-box');
+      if (box) { box.className = 'proof-box'; box.textContent = '✗ Anfrage abgelehnt. Keine Daten geteilt.'; box.style.color = 'var(--red)'; }
+    }
+
+    async function ucRunBreakGlass() {
+      const btn = document.getElementById('uc-ehds-bg-btn');
+      const log = document.getElementById('uc-ehds-bg-log');
+      if (!btn || !log) return;
+      btn.disabled = true;
+      btn.textContent = '⏳ Override läuft…';
+      log.textContent = '';
+      const now = new Date().toISOString();
+      const entries = [
+        { ts: now, act: 'BREAK_GLASS_REQUESTED',     who: 'dr.mueller@ukh-ibk.at' },
+        { ts: now, act: 'REASON_RECORDED',            who: 'Notfallbehandlung ICU-3, Zimmer 12' },
+        { ts: now, act: 'DUAL_APPROVAL_REQUIRED',     who: 'chef-arzt@ukh-ibk.at' },
+        { ts: now, act: 'APPROVAL_GRANTED',           who: 'chef-arzt@ukh-ibk.at [biometric]' },
+        { ts: now, act: 'ACCESS_SCOPED',              who: 'EHDS-Scope: emergency_treatment_only' },
+        { ts: now, act: 'AUDIT_IMMUTABLE_WRITE',      who: 'audit-chain-node-7 · hash:3f9a…' },
+      ];
+      for (const e of entries) {
+        await delay(280);
+        log.innerHTML += '<div><span class="bgl-ts">' + e.ts.slice(11, 19) + '</span>  <span class="bgl-act">' + e.act + '</span>  <span class="bgl-who">← ' + e.who + '</span></div>';
+      }
+      await delay(200);
+      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ Dieser Override ist permanent im Audit-Trail — auch für Aufsichtsbehörden einsehbar.</div>';
+      btn.textContent = 'Override protokolliert ✓';
+    }
+
+    function ucFlagVendor(id) {
+      const btn = document.getElementById('uc-' + id + '-flag-btn');
+      const sig = document.getElementById('uc-' + id + '-collective');
+      if (btn) { btn.textContent = '✓ Gemeldet'; btn.disabled = true; btn.style.cssText += ';color:var(--orange)'; }
+      if (sig) sig.innerHTML = '<strong>424 Studenten</strong> haben IVB+ bereits als übergriffig gemeldet. Noch 76 Meldungen bis zur automatischen DSA-Meldung.';
+    }
 
     // Init
     initCarousel();
