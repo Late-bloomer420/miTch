@@ -209,8 +209,15 @@ export class DIDResolver {
 
     private async resolveDidWeb(did: string): Promise<DIDDocument> {
         const url = didWebToUrl(did);
-        if (!this.allowInsecureLocalhostDidWeb && isLocalhostDidWeb(did)) {
-            throw new DIDResolutionError(did, 'Insecure did:web localhost resolution is blocked');
+        // AI-01: Block did:web:localhost unconditionally in production, regardless of allowInsecureLocalhostDidWeb.
+        // In development, respect the flag so tests can resolve localhost DIDs.
+        if ((isProductionEnv() || !this.allowInsecureLocalhostDidWeb) && isLocalhostDidWeb(did)) {
+            throw new DIDResolutionError(
+                did,
+                isProductionEnv()
+                    ? 'Production environment: did:web:localhost is unconditionally blocked'
+                    : 'Insecure did:web localhost resolution is blocked',
+            );
         }
 
         try {
@@ -309,6 +316,19 @@ export function isLocalhostDidWeb(did: string): boolean {
     if (!did.startsWith('did:web:')) return false;
     const domain = decodeURIComponent(did.slice('did:web:'.length));
     return domain.startsWith('localhost') || domain.startsWith('127.0.0.1');
+}
+
+/**
+ * Returns true when running in a production environment.
+ * Checks NODE_ENV (Node.js / Vite SSR / bundlers that replace process.env).
+ * Safe to call in browser — catches any ReferenceError on missing globals.
+ */
+function isProductionEnv(): boolean {
+    try {
+        return typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'production';
+    } catch {
+        return false;
+    }
 }
 
 // ─── Legacy API (backwards compatible) ──────────────────────────────────────

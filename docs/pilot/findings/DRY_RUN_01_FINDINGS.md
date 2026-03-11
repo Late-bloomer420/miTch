@@ -59,9 +59,9 @@
 
 | ID | Finding | Owner | Status |
 |---|---|---|---|
-| AI-01 | Block `did:web:localhost` in production (F-02) | — | ⬜ TODO |
-| AI-02 | Remove legacy `resolveDID()` mock fallback (F-01) | — | ⬜ TODO |
-| AI-03 | Decide pilot risk tier for grace period (F-03) | — | ⬜ DECIDE |
-| AI-04 | Define WebAuthn timeout → deny code mapping (F-04) | — | ⬜ TODO |
-| AI-05 | Create `AuditRecord` type (F-05) | — | ⬜ TODO |
-| AI-06 | Test `POLICY_MISMATCH` vs `NO_MATCHING_RULE` independently (F-06) | — | ⬜ TODO |
+| AI-01 | Block `did:web:localhost` in production (F-02) | Claude | ✅ DONE — `isProductionEnv()` guard in `DIDResolver.resolveDidWeb()` unconditionally blocks localhost in NODE_ENV=production regardless of `allowInsecureLocalhostDidWeb` flag |
+| AI-02 | Remove legacy `resolveDID()` mock fallback (F-01) | Claude | ✅ DONE — `getDefaultResolver()` already uses `allowMockFallback: false`; `resolveDID()` marked `@deprecated` but fail-closed |
+| AI-03 | Decide pilot risk tier for grace period (F-03) | Jonas | ✅ DECIDED — pilot uses high-risk tier for ALL credentials (no grace period). Conservative choice: 1h stale cache is unacceptable for a qualified credential pilot. Revocation must be live. |
+| AI-04 | Define WebAuthn timeout → deny code mapping (F-04) | Claude | ✅ DONE — `policy-engine/src/webauthn-reason-map.ts` with full mapping + `webauthn-reason-map.test.ts` (7 tests) |
+| AI-05 | Create `AuditRecord` type (F-05) | Claude | ✅ DONE — `AuditRecord` in `audit-metadata.ts`, `AuditExportRecord` + JSON Schema in `audit-export-schema.ts`, tested in `audit-export-schema.test.ts` |
+| AI-06 | Test `POLICY_MISMATCH` vs `NO_MATCHING_RULE` independently (F-06) | Claude | ✅ DONE — `deny-code-disambiguation.test.ts` (5 tests): each code triggered by its specific condition, verified distinct |

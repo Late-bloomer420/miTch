@@ -49,8 +49,7 @@ ReasonCode mapping MUST use existing `DenyReasonCode` values only:
 
 - Version mismatch → `DENY_POLICY_UNSUPPORTED_VERSION`
 - Critical capability mismatch → `DENY_POLICY_MISMATCH`
-- Unsafe downgrade attempt → `DENY_BINDING_FAILED`
-  - `// TODO(reason-code-gap):` introduce dedicated downgrade-attack deny code in a future revision.
+- Unsafe downgrade attempt → `DENY_DOWNGRADE_ATTACK` (dedicated code added in `deny-reason-codes.ts`, tested in `capability-negotiation.test.ts`)
 
 ## Fail-Closed Rule
 
