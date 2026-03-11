@@ -86,7 +86,7 @@ export class InMemoryAnchorService extends EventEmitter {
             const receiptArgs: AnchorBatchReceipt = {
                 root: tree.root,
                 batchId: anchorRef.ref,
-                timestamp: anchorRef.timestamp,
+                timestamp: String(anchorRef.timestamp),
                 includedHashes: tree.orderedDecisionHashes
             };
             this.emit('batch_committed', receiptArgs);

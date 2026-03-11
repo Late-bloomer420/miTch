@@ -57,15 +57,13 @@ export class TransparencyLogAnchorProvider implements AnchorProvider {
     const entry = this._simulateLogEntry(root, meta);
 
     return {
+      provider: 'TRANSPARENCY_LOG' as const,
       ref: entry.entryUUID,
-      timestamp: entry.integratedTime * 1000, // convert Unix seconds → ms
-      ...({
-        logName: this.config.logName,
-        logIndex: entry.logIndex,
-        batchId: meta.batchId,
-        leafCount: meta.count,
-        // In production: signedEntryTimestamp (SET), inclusionProof, logID
-      } as Record<string, unknown>),
+      timestamp: entry.integratedTime * 1000,
+      logName: this.config.logName,
+      logIndex: entry.logIndex,
+      batchId: meta.batchId,
+      leafCount: meta.count,
     };
   }
 

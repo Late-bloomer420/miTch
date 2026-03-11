@@ -194,7 +194,7 @@ export default function App() {
 
         const targetEndpoint =
             endpoint ||
-            (result.decisionCapsule as Record<string, unknown>).service_endpoint as string | undefined ||
+            (result.decisionCapsule as unknown as Record<string, unknown>).service_endpoint as string | undefined ||
             CONFIG.VERIFIER_ENDPOINT;
 
         setShowConsent(false);

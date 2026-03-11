@@ -60,16 +60,13 @@ export class EthereumL2AnchorProvider implements AnchorProvider {
     const blockTimestamp = Date.now();
 
     return {
+      provider: 'PUBLIC_LEDGER' as const,
       ref: txHash,
       timestamp: blockTimestamp,
-      // Extra metadata for audit trail (not part of base AnchorRef)
-      ...({
-        network: this.config.network,
-        contractAddress: this.config.contractAddress,
-        batchId: meta.batchId,
-        leafCount: meta.count,
-        // In production: blockNumber, gasUsed, l1BatchIndex
-      } as Record<string, unknown>),
+      network: this.config.network,
+      contractAddress: this.config.contractAddress,
+      batchId: meta.batchId,
+      leafCount: meta.count,
     };
   }
 

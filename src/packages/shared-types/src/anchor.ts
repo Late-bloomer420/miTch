@@ -14,7 +14,9 @@ export type Hex32 = string;
 export interface AnchorRef {
     provider: 'TRANSPARENCY_LOG' | 'PUBLIC_LEDGER' | 'INTERNAL_WORM' | 'DEV_NULL';
     ref: string;
-    timestamp: string;
+    timestamp: number;
+    /** Provider-specific metadata */
+    [key: string]: unknown;
 }
 
 /**
