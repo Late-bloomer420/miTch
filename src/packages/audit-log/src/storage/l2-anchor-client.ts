@@ -1,16 +1,33 @@
 import { L2AnchorReceipt } from '@mitch/shared-types';
 
 /**
- * L2 Blockchain Anchor Client (Production-Ready)
- * 
- * Replaces the mock implementation with real blockchain anchoring.
- * Supports multiple L2 networks for cost optimization and redundancy.
- * 
- * GDPR Compliance:
+ * L2 Blockchain Anchor Client
+ *
+ * **Status: Partially mocked — planned for real implementation (F-12)**
+ *
+ * What is real:
+ * - Binary Merkle tree root computation (SHA-256, power-of-2 padding)
+ * - Batch queue with configurable flush interval
+ * - Contract address resolution from environment variables
+ *   (`L2_CONTRACT_OPTIMISM_MAINNET`, `L2_CONTRACT_OPTIMISM_SEPOLIA`, etc.)
+ * - Structured `L2AnchorReceipt` with txHash, blockNumber, timestamp, network
+ *
+ * What is mocked:
+ * - `submitToL2()` — does NOT send a real on-chain transaction. Currently calls
+ *   `mockAnchor()` which returns a synthetic receipt. Integration with a real
+ *   EVM provider (ethers.js / viem) is required before production use.
+ * - `verifyAnchor()` — stub; checks for zero-address sentinel, always resolves confirmed.
+ *
+ * To enable real anchoring:
+ * 1. Add `viem` or `ethers` as a dependency
+ * 2. Implement `submitToL2()` to call the on-chain `anchor(bytes32)` function
+ * 3. Set env vars `L2_RPC_OPTIMISM_MAINNET` and `L2_CONTRACT_OPTIMISM_MAINNET`
+ *
+ * GDPR Compliance (planned):
  * - Art. 32 DSGVO: External, tamper-proof evidence
  * - Non-repudiation through blockchain immutability
  * - DPA-verifiable audit trail
- * 
+ *
  * Supported Networks:
  * - Optimism (low cost, fast finality)
  * - Arbitrum (alternative L2)

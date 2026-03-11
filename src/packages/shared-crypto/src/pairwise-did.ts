@@ -360,13 +360,20 @@ export async function generatePairwiseDIDFromMasterKey(
   const _encPKCS8 = buildP256PKCS8(encPrivBytes);
 
   // Step 6: Import as ECDSA signing key pair
-  const signingCryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    signingPKCS8.slice(0) as unknown as Uint8Array<ArrayBuffer>,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign']
-  );
+  // F-06: wrap in try/catch — HKDF bytes are a valid P-256 scalar with overwhelming probability
+  // (~1 in 2^128 chance of failure), but fail-fast protects against degenerate seeds.
+  let signingCryptoKey: CryptoKey;
+  try {
+    signingCryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      signingPKCS8.slice(0) as unknown as Uint8Array<ArrayBuffer>,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign']
+    );
+  } catch {
+    throw new Error('PAIRWISE_DID_KEYGEN_FAILED: derived scalar is not a valid P-256 private key');
+  }
 
   // Step 7: Derive public key and build did:peer:0
   const rawPubKey = await crypto.subtle.exportKey('raw', await getPublicKeyFromPrivate(signingCryptoKey));

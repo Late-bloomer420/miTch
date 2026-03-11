@@ -37,7 +37,7 @@ import {
     includesLayer,
     getLayerName
 } from '@mitch/layer-resolver';
-import { generatePairwiseDID } from '@mitch/shared-crypto';
+import { generatePairwiseDID, sha256, canonicalStringify } from '@mitch/shared-crypto';
 
 /**
  * Context for policy evaluation.
@@ -487,10 +487,32 @@ export class PolicyEngine {
     }
 
     private matchesPattern(pattern: string, value: string): boolean {
+        // Safe glob — no RegExp, guards against ReDoS (F-02)
         if (pattern === '*') return true;
+        if (pattern.length > 256 || value.length > 1024) return false;
         if (!pattern.includes('*')) return pattern === value;
-        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-        return regex.test(value);
+
+        const segments = pattern.split('*');
+        const anchoredStart = pattern[0] !== '*';
+        const anchoredEnd = pattern[pattern.length - 1] !== '*';
+        let cursor = 0;
+
+        for (let i = 0; i < segments.length; i++) {
+            const seg = segments[i];
+            if (seg === '') continue;
+            if (i === 0 && anchoredStart) {
+                if (!value.startsWith(seg)) return false;
+                cursor = seg.length;
+            } else if (i === segments.length - 1 && anchoredEnd) {
+                if (!value.endsWith(seg)) return false;
+                if (value.length - seg.length < cursor) return false;
+            } else {
+                const idx = value.indexOf(seg, cursor);
+                if (idx === -1) return false;
+                cursor = idx + seg.length;
+            }
+        }
+        return true;
     }
 
     // Core Intersection Logic
@@ -603,8 +625,8 @@ export class PolicyEngine {
         let decisionCapsule: DecisionCapsule | undefined;
 
         if (request && matchedRule) {
-            const requestHash = `sha256(req:${request.verifierId})`;
-            const policyHash = `sha256(pol:${policy.version})`;
+            const requestHash = await sha256(canonicalStringify(request));
+            const policyHash = await sha256(canonicalStringify(matchedRule));
 
             decisionCapsule = {
                 decision_id: crypto.randomUUID(),
