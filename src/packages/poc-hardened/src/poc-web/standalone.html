@@ -292,6 +292,34 @@
       transform: translateY(0);
     }
 
+    /* ── Confetti Animation ── */
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      80% { opacity: 0.8; }
+      100% { transform: translateY(220px) rotate(420deg); opacity: 0; }
+    }
+
+    /* ── Button State Animations ── */
+    @keyframes btnShake {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-6px) rotate(-0.5deg); }
+      35% { transform: translateX(6px) rotate(0.5deg); }
+      55% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    @keyframes allowFlash {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+      50% { box-shadow: 0 0 30px 12px rgba(34, 197, 94, 0.2); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    @keyframes shreddedAppear {
+      from { opacity: 0; filter: blur(4px); }
+      to { opacity: 1; filter: blur(0); }
+    }
+    .btn-flash-allow { animation: allowFlash 0.8s ease-out forwards; }
+    .btn-shake { animation: btnShake 0.5s ease-in-out; }
+    .btn-shredded-appear { animation: shreddedAppear 0.4s ease-out forwards; }
+
     .grid>.panel.full {
       margin: 1.5rem auto;
       width: 100%;
@@ -1585,9 +1613,10 @@
 
       <div class="uc-tabs">
         <button class="uc-tab active" data-uc="adtech" onclick="switchUC('adtech')">🎯 Ad-Tech</button>
-        <button class="uc-tab" data-uc="student" onclick="switchUC('student')">🎓 Student Discount</button>
+        <button class="uc-tab" data-uc="student" onclick="switchUC('student')">🎓 Student</button>
         <button class="uc-tab" data-uc="hospital" onclick="switchUC('hospital')">🏥 Notaufnahme</button>
-        <button class="uc-tab" data-uc="ehds" onclick="switchUC('ehds')">🔬 EHDS Secondary</button>
+        <button class="uc-tab" data-uc="ehds" onclick="switchUC('ehds')">🔬 EHDS</button>
+        <button class="uc-tab" data-uc="social" onclick="switchUC('social')">📱 Social Login</button>
       </div>
 
       <!-- ─── UC-1a: Ad-Tech ────────────────────────────────────────────── -->
@@ -1947,6 +1976,110 @@
             <button class="btn btn-ghost" id="uc-ehds-back" onclick="ucBack('ehds')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
             <span class="uc-step-count" id="uc-ehds-count">1 / 3</span>
             <button class="btn btn-primary" id="uc-ehds-next" onclick="ucNext('ehds')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── UC-3: Social Login ─────────────────────────────────────── -->
+      <div class="uc-pane" id="uc-social">
+        <div class="uc-wizard">
+          <div class="uc-steps-nav" id="snav-social">
+            <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
+            <div class="uc-snav-line"></div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Ergebnis</div>
+          </div>
+
+          <!-- Step 1: App Request -->
+          <div class="uc-panel active" id="social-p0">
+            <div class="uc-label-chip">① App Login Request</div>
+            <div class="uc-panel-title">FlirtRadar™ möchte dich verifizieren</div>
+            <div class="verifier-card">
+              <div class="vc-hdr">
+                <span style="font-size:1.4rem">💜</span>
+                <span class="vc-name">FlirtRadar™</span>
+                <span class="trust-chip low">Trust 35/100</span>
+              </div>
+              <div class="vc-did">did:mitch:flirtradar-app-eu · OID4VP 1.0 · Unregistered</div>
+            </div>
+            <div class="uc-sub-hdr">Was die App anfragt</div>
+            <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">≥ 18</span><span class="risk-badge low">🟢 Predicate</span></div>
+            <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val">String</span><span class="risk-badge med">🟡 Raw PII</span></div>
+            <div class="risk-row"><span class="rr-field">email</span><span class="rr-val">String</span><span class="risk-badge med">🟡 Raw PII</span></div>
+            <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val">Blob</span><span class="risk-badge high">🔴 Biometric</span></div>
+            <div class="risk-row"><span class="rr-field">friends_list</span><span class="rr-val">Array</span><span class="risk-badge high">🔴 Social Graph</span></div>
+            <div class="risk-row"><span class="rr-field">location_history</span><span class="rr-val">Array</span><span class="risk-badge high">🔴 Tracking</span></div>
+            <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val">UUID</span><span class="risk-badge high">🔴 Fingerprint</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.7rem">Vergleich: "Login with Google" teilt typischerweise alle angefragten Felder. miTch prüft jedes Feld einzeln.</p>
+          </div>
+
+          <!-- Step 2: Risk Analysis -->
+          <div class="uc-panel" id="social-p1">
+            <div class="uc-label-chip">② miTch Analyse</div>
+            <div class="uc-panel-title">Risikoanalyse: 🔴 High — strukturelle Blockade aktiv</div>
+            <div class="uc-sub-hdr">Was die App bekommt (minimaler Proof)</div>
+            <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">einmalig, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Strukturell nicht teilbar (Policy-Engine blockiert)</div>
+            <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="risk-row"><span class="rr-field">email</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="risk-row"><span class="rr-field">friends_list</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="risk-row"><span class="rr-field">location_history</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
+            <div class="allow-banner" style="border-left-color:var(--red)">
+              <div class="ab-title" style="color:var(--red)">⚠ Inference-Risiko: 🔴 High</div>
+              <div class="ab-body">friends_list ermöglicht Social-Graph-Analyse. location_history erlaubt Bewegungsprofile. Beides wird strukturell blockiert — die Daten verlassen das Wallet nie, auch nicht verschlüsselt.</div>
+            </div>
+          </div>
+
+          <!-- Step 3: Proof Generation -->
+          <div class="uc-panel" id="social-p2">
+            <div class="uc-label-chip">③ Proof Generation</div>
+            <div class="uc-panel-title">Pseudonymen Login-Proof generieren</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">miTch erzeugt einen pairwise-pseudonymen Proof: Die App erfährt nur "User ist ≥18" und bekommt eine einmalige ID, die nicht mit anderen Diensten verknüpfbar ist.</p>
+            <button class="btn btn-success" id="uc-social-prove-btn" onclick="ucRunSocialProof()">🔐 Pseudonym-Login generieren</button>
+            <div class="proof-box pending" id="uc-social-proof-box">— Warte auf Bestätigung —</div>
+          </div>
+
+          <!-- Step 4: Result -->
+          <div class="uc-panel" id="social-p3">
+            <div class="uc-label-chip">④ Ergebnis</div>
+            <div class="uc-panel-title">Die App wollte alles — sie hat fast nichts bekommen</div>
+            <div class="split-screen" style="margin-bottom:1rem">
+              <div class="ss-col" style="border-left:3px solid var(--red)">
+                <div class="ss-row"><span class="k">App wollte:</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ display_name</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ email</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ profile_photo</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ friends_list</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ location_history</span></div>
+                <div class="ss-row"><span style="color:var(--red)">✗ device_id</span></div>
+              </div>
+              <div class="ss-col" style="border-left:3px solid var(--green)">
+                <div class="ss-row"><span class="k">App hat bekommen:</span></div>
+                <div class="ss-row"><span style="color:var(--green)">✓ age_gte_18: true</span></div>
+                <div class="ss-row"><span style="color:var(--green)">✓ pseudonymous_id: pw-…</span></div>
+                <div class="ss-row"><span class="dim">— nichts weiter —</span></div>
+              </div>
+            </div>
+            <div class="allow-banner">
+              <div class="ab-title">✓ Login erfolgreich — ohne persönliche Daten</div>
+              <div class="ab-body">Die App kann den User wiedererkennen (via pseudonymous_id), aber weiß weder Name, Alter, Kontakte noch Standort. Bei "Login with Google" hätte die App all das bekommen.</div>
+            </div>
+            <div style="margin-top:0.8rem">
+              <button class="btn btn-ghost" id="uc-social-flag-btn" onclick="ucFlagVendor('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 FlirtRadar als übergriffig melden</button>
+              <p class="dim" id="uc-social-collective" style="font-size:0.78rem;margin-top:0.4rem">Wenn genug Nutzer melden, wird automatisch eine DSA-Beschwerde ausgelöst.</p>
+            </div>
+          </div>
+
+          <div class="uc-nav-row">
+            <button class="btn btn-ghost" id="uc-social-back" onclick="ucBack('social')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <span class="uc-step-count" id="uc-social-count">1 / 4</span>
+            <button class="btn btn-primary" id="uc-social-next" onclick="ucNext('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
           </div>
         </div>
       </div>
@@ -3261,6 +3394,9 @@
       addConsent('declined', [], allClaims, 'CoolShop.at');
       addAudit('verification_denied', { reason: 'user_rejected', categories: [] }, 'red');
       hl('p-wallet', 'red'); hl('p-verifier', 'red');
+      // Shake animation on verifier panel
+      const vp = document.getElementById('p-verifier');
+      if (vp) { vp.classList.add('btn-shake'); setTimeout(() => vp.classList.remove('btn-shake'), 600); }
       document.getElementById('verifier-ph').style.display = 'none';
       document.getElementById('verifier-result').innerHTML = `
     <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
@@ -3324,6 +3460,11 @@
 </div>`;
 
       hl('p-verifier', 'green'); hl('p-network', 'red');
+      // Green flash on verifier panel
+      const vp = document.getElementById('p-verifier');
+      if (vp) { vp.classList.add('btn-flash-allow'); setTimeout(() => vp.classList.remove('btn-flash-allow'), 900); }
+      // Confetti burst
+      launchConfetti();
 
       addAudit('disclosure_released', {
         claims: disclosed,
@@ -3515,6 +3656,23 @@
 
     function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+    // ─── Confetti Launcher ───────────────────────────────────────────
+    function launchConfetti() {
+      const colors = ['#22c55e', '#6366f1', '#eab308', '#ef4444', '#a78bfa', '#3b82f6'];
+      const container = document.body;
+      for (let i = 0; i < 40; i++) {
+        const el = document.createElement('div');
+        const size = 6 + Math.random() * 8;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const leftPct = 15 + Math.random() * 70;
+        const d = Math.random() * 400;
+        const dur = 600 + Math.random() * 800;
+        el.style.cssText = `position:fixed;left:${leftPct}%;top:30%;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>0.5?'50%':'2px'};pointer-events:none;z-index:9999;opacity:1;animation:confettiFall ${dur}ms ease-in ${d}ms both;`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), d + dur + 50);
+      }
+    }
+
     // ─── UI Enhancements (non-breaking additions) ───────────────────
 
     // Progress mapping per flow step
@@ -3664,6 +3822,7 @@
       student: { current: 0, total: 4 },
       hospital:{ current: 0, total: 4 },
       ehds:    { current: 0, total: 3 },
+      social:  { current: 0, total: 4 },
     };
 
     function switchUC(id) {
@@ -3742,6 +3901,7 @@
         '✗ ip_address:     [structurally impossible]';
       btn.textContent = 'Proof generiert ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      launchConfetti();
       await delay(700);
       ucNext(id);
     }
@@ -3768,6 +3928,7 @@
         '✗ study_program:     [not shared]';
       btn.textContent = 'Credential ausgestellt ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      launchConfetti();
       await delay(700);
       ucNext('student');
     }
@@ -3800,6 +3961,7 @@
         '✓ auto_shred_at:     session_end';
       btn.textContent = 'Freigabe erteilt ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      launchConfetti();
       await delay(700);
       ucNext('hospital');
     }
@@ -3807,6 +3969,37 @@
     function ucDenyHospital() {
       const box = document.getElementById('uc-hospital-proof-box');
       if (box) { box.className = 'proof-box'; box.textContent = '✗ Anfrage abgelehnt. Keine Daten geteilt.'; box.style.color = 'var(--red)'; }
+    }
+
+    async function ucRunSocialProof() {
+      const btn = document.getElementById('uc-social-prove-btn');
+      const box = document.getElementById('uc-social-proof-box');
+      if (!btn || !box) return;
+      btn.disabled = true;
+      btn.textContent = '⏳ Generiere…';
+      box.className = 'proof-box pending';
+      box.textContent = '⏳ Creating pairwise DID…';
+      await delay(400);
+      box.textContent = '⏳ Generating pseudonymous token…';
+      await delay(350);
+      const pwDid = 'pw-' + sha256Sim('flirtradar' + Date.now()).slice(0, 10);
+      box.className = 'proof-box';
+      box.textContent =
+        '✓ age_gte_18:        true\n' +
+        '✓ pseudonymous_id:   ' + pwDid + '\n' +
+        '✓ pairwise_did:      did:peer:0z' + sha256Sim('social' + Date.now()).slice(0, 12) + '…\n' +
+        '─────────────────────────────────\n' +
+        '✗ display_name:      [BLOCKED by policy]\n' +
+        '✗ email:             [BLOCKED by policy]\n' +
+        '✗ profile_photo:     [BLOCKED — biometric]\n' +
+        '✗ friends_list:      [BLOCKED — social graph]\n' +
+        '✗ location_history:  [BLOCKED — tracking]\n' +
+        '✗ device_id:         [BLOCKED — fingerprint]';
+      btn.textContent = 'Login-Proof generiert ✓';
+      btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
+      launchConfetti();
+      await delay(700);
+      ucNext('social');
     }
 
     async function ucRunBreakGlass() {
