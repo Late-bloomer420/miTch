@@ -1,13 +1,27 @@
 # miTch — The Forgetting Layer
 
+> **Privacy-preserving proof mediation for digital identity.**
+> Verifiers get cryptographic proofs. Never raw data. Never PII.
+
 [![Tests](https://img.shields.io/badge/tests-845%2B%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GDPR](https://img.shields.io/badge/GDPR-Art.%2025%20compliant-blue)](docs/ops/EVIDENCE_PACK_P0.md)
+[![GDPR Art. 25](https://img.shields.io/badge/GDPR-Art.%2025%20by%20Design-blue)](docs/ops/EVIDENCE_PACK_P0.md)
+[![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-compatible-blue)](docs/compliance)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
-Privacy-preserving compliance middleware for digital identity wallets. Verifiers receive minimal cryptographic proofs instead of raw PII. Ephemeral keys are destroyed after each transaction (crypto-shredding). The system is **fail-closed** and deny-biased: ambiguity → deny.
+**[🔴 Live Demo](https://late-bloomer420.github.io/miTch/)** — no server, no data collection, runs entirely in your browser.
 
-**[Live Demo](https://late-bloomer420.github.io/miTch/)** — no server, no data collection, runs entirely in your browser.
+---
+
+## What is miTch?
+
+miTch sits between identity wallets and verifiers. When a website asks "Are you 18+?", miTch ensures they get a **yes/no proof** — not your name, birthday, or address.
+
+- **Not a wallet** — works *with* EUDI wallets, not instead of them
+- **Not a blockchain** — ephemeral keys, crypto-shredding, no on-chain PII
+- **Not an identity provider** — miTch never sees or stores your identity
+
+**Core principle:** Fail-closed, deny-biased. If anything is ambiguous → **DENY**.
 
 ---
 
@@ -17,12 +31,12 @@ Privacy-preserving compliance middleware for digital identity wallets. Verifiers
 git clone https://github.com/Late-bloomer420/miTch.git
 cd miTch
 pnpm install
-pnpm dev        # starts wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
+pnpm dev        # wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
 ```
 
 ```bash
-pnpm test       # 845+ tests, 38/38 turbo tasks
-pnpm lint       # 0 errors, 0 warnings
+pnpm test       # 845+ tests across 25 packages
+pnpm lint       # 0 errors
 pnpm build      # compile all packages
 ```
 
@@ -31,61 +45,111 @@ pnpm build      # compile all packages
 ## How It Works
 
 ```
-Issuer (eID/gov)  →  Wallet (Edge)  →  Verifier (shop/hospital)
-                         ↑
-                    Policy Engine
-                    (Fail-Closed)
+Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (shop/hospital)
+                                            ↓
+                                     Minimal Proof Only
+                                     (no PII leaves device)
 ```
 
-1. **Issuance** — Government issues credential once (SD-JWT VC, OID4VCI)
-2. **Storage** — Credential stored locally, AES-256-GCM encrypted (never leaves device)
-3. **Presentation** — Policy Engine evaluates request; if allowed, generates minimal proof
-4. **Proof** — ECDSA-signed, AAD-bound, RSA-OAEP wrapped, delivered via OID4VP
-5. **Shredding** — Ephemeral keys destroyed; verifier has proof, no PII
+1. **Issuance** — Government issues credential (SD-JWT VC via OID4VCI)
+2. **Storage** — Credential stored locally, AES-256-GCM encrypted
+3. **Request** — Verifier asks for attributes via OID4VP
+4. **Mediation** — Policy Engine evaluates: what's asked vs. what's allowed
+5. **Proof** — Only proven claims leave the device, ECDSA-signed, AAD-bound
+6. **Shredding** — Ephemeral keys destroyed. Verifier has proof, nothing else.
 
 ---
 
 ## Architecture
 
-pnpm monorepo (Turborepo) — 22 packages + 3 apps.
+pnpm monorepo (Turborepo) — **25 packages, 3 apps**.
+
+### Core
 
 | Package | Purpose |
 |---|---|
-| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · pairwise DID derivation |
-| `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny reason codes |
-| `@mitch/predicates` | ZK-style predicates (isOver18, hasLicense, …) |
-| `@mitch/verifier-sdk` | Server-side: decrypt · verify · replay-check |
+| `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
+| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs |
+| `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
+| `@mitch/shared-types` | Shared TypeScript types across all packages |
+
+### Protocol
+
+| Package | Purpose |
+|---|---|
 | `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
+| `@mitch/oid4vp` | OpenID for Verifiable Presentations + SIOPv2 |
+| `@mitch/oid4vp-verifier` | Verifier-side OID4VP request handling |
+| `@mitch/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
+| `@mitch/verifier-browser` | Browser-side verifier integration |
+
+### Storage & Security
+
+| Package | Purpose |
+|---|---|
 | `@mitch/secure-storage` | AES-256-GCM credential store (IndexedDB) |
+| `@mitch/secure-memory` | Secure in-memory key handling |
+| `@mitch/wallet-core` | Wallet logic + CRDT multi-device sync |
+| `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
 | `@mitch/audit-log` | WORM append-only audit log (GDPR Art. 32) |
+| `@mitch/revocation-statuslist` | StatusList2021 — fail-closed revocation |
 | `@mitch/anchor-service` | Merkle batch anchoring + L2 stubs |
-| `@mitch/revocation-statuslist` | StatusList2021 — fail-closed revocation check |
 
-Apps: `wallet-pwa` (React PWA) · `verifier-demo` (Express API + frontend) · `issuer-mock` (OID4VCI server)
+### Identity & Compliance
 
-Full diagram: [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md)
+| Package | Purpose |
+|---|---|
+| `@mitch/eid-issuer-connector` | eID/ID Austria bridge for credential issuance |
+| `@mitch/layer-resolver` | DID + layer resolution |
+| `@mitch/phase0-security` | Security hardening patterns |
+
+### Demos & Testing
+
+| Package | Purpose |
+|---|---|
+| `@mitch/poc-hardened` | Hardened proof-of-concept (standalone demo) |
+| `@mitch/demo-liquor-store` | Age verification demo scenario |
+| `@mitch/benchmarks` | Performance benchmarks |
+| `@mitch/integration-tests` | Cross-package integration tests |
+| `@mitch/mock-issuer` | Mock credential issuer for testing |
+| `@mitch/secure-ui-test` | UI security testing |
+
+**Apps:** `wallet-pwa` (React PWA) · `verifier-demo` (Express + frontend) · `issuer-mock` (OID4VCI server)
 
 ---
 
 ## Key Properties
 
-| Property | Implementation |
+| Property | How |
 |---|---|
-| Fail-Closed | Every ambiguous state → DENY (no silent allow) |
-| Unlinkability | HKDF pairwise DIDs per verifier session (Spec 111) |
-| Data Minimization | Only proven claims leave the device, never raw attributes |
-| WORM Audit | Append-only IndexedDB log, integrity-chained |
-| Replay Protection | Nonce + decision_id + verifier_did AAD binding |
-| Zero Identity Custody | No PII on any server — miTch infrastructure is blind |
+| **Fail-Closed** | Every ambiguous state → DENY (no silent allow) |
+| **Unlinkability** | HKDF pairwise DIDs per verifier session |
+| **Data Minimization** | Only proven claims leave device — never raw attributes |
+| **Crypto-Shredding** | Ephemeral keys destroyed after each transaction |
+| **WORM Audit** | Append-only log, integrity-chained, user-readable |
+| **Replay Protection** | Nonce + decision_id + verifier_did AAD binding |
+| **Zero Identity Custody** | No PII on any server — infrastructure is blind |
 
 ---
 
 ## Compliance
 
-- **GDPR Art. 25** — Privacy by Design, Data Minimization by Construction
-- **GDPR Art. 32** — WORM audit log, AES-256-GCM at rest
-- **eIDAS 2.0 / EUDI Wallet** — OID4VP + OID4VCI protocol stack
-- **EHDS** — Break-glass WebAuthn step-up for health data (Art. 9 GDPR)
+| Standard | Status |
+|---|---|
+| **GDPR Art. 25** | Privacy by Design — data minimization by construction |
+| **GDPR Art. 32** | WORM audit log, AES-256-GCM at rest |
+| **eIDAS 2.0 / EUDI** | OID4VP + OID4VCI + SIOPv2 + DPoP + HAIP |
+| **CIR (Implementing Regulation)** | 82% compliant ([matrix](docs/compliance/EUDI_CIR_MATRIX.md)) |
+| **EHDS** | Break-glass WebAuthn step-up for health data |
+
+---
+
+## Use Cases
+
+- **🍺 Age Verification** — Prove 18+ without revealing birthday
+- **🎓 Student Discount** — Prove enrollment without sharing student ID
+- **🏥 Health Data (EHDS)** — Emergency access with WebAuthn step-up + audit trail
+- **📺 Ad-Tech Blind Provider** — Demographic verification without tracking (nullifier-based sybil protection)
 
 ---
 
@@ -93,16 +157,16 @@ Full diagram: [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE
 
 | Document | Link |
 |---|---|
-| Architecture Diagrams | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
-| Presentation Outline | [docs/presentation/OUTLINE.md](docs/presentation/OUTLINE.md) |
+| Architecture | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
 | Demo Script | [docs/presentation/DEMO_SCRIPT.md](docs/presentation/DEMO_SCRIPT.md) |
+| Specs (107) | [docs/specs/](docs/specs/) |
+| ADRs (8) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
 | P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
-| Pilot Dry Run | [docs/pilot/PILOT_DRY_RUN_01.md](docs/pilot/PILOT_DRY_RUN_01.md) |
-| Master Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |
-| Unlinkability Spec 111 | [docs/specs/111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md](docs/specs/111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md) |
+| Compliance Matrix | [docs/compliance/EUDI_CIR_MATRIX.md](docs/compliance/EUDI_CIR_MATRIX.md) |
+| Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |
 
 ---
 
 ## License
 
-[MIT](LICENSE) — **Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
+[Apache 2.0](LICENSE) — **Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
