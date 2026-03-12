@@ -1,4 +1,3 @@
-import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { LocalAuditLog } from '../src/index.js';
 import type { AuditEvent } from '../src/index.js';
@@ -7,7 +6,6 @@ describe('LocalAuditLog', () => {
   let log: LocalAuditLog;
 
   beforeEach(async () => {
-    indexedDB.deleteDatabase('mitch-audit-log');
     log = new LocalAuditLog();
     await log.initialize();
   });
