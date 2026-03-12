@@ -7,12 +7,14 @@
     "type": "module",
     "scripts": {
         "build": "tsc",
-        "test": "node -e \"console.log('phase0-security: no tests')\""
+        "test": "vitest run"
     },
     "dependencies": {},
     "devDependencies": {
         "typescript": "^5.0.0",
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.0.0",
+        "vitest": "^2.1.9",
+        "fake-indexeddb": "^6.2.5"
     },
     "author": "miTch Core Team",
     "license": "UNLICENSED"

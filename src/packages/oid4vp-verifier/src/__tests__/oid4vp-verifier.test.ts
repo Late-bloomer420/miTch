@@ -129,4 +129,137 @@ describe('satisfiesConstraints', () => {
         expect(r.ok).toBe(false);
         if (!r.ok) expect(r.code).toBe('INVALID_CREDENTIAL');
     });
+
+    it('accepts credential with definition containing no fields', () => {
+        const emptyDef: PresentationDefinition = {
+            id: 'empty-pd',
+            input_descriptors: [{ id: 'desc', constraints: { fields: [] } }],
+        };
+        const r = satisfiesConstraints('eyJhbGciOiJFUzI1NiJ9.payload.sig', emptyDef);
+        expect(r.ok).toBe(true);
+    });
+
+    it('rejects empty-path field in non-optional descriptor', () => {
+        const badDef: PresentationDefinition = {
+            id: 'bad-pd',
+            input_descriptors: [{
+                id: 'bad-desc',
+                constraints: {
+                    fields: [{ path: [], optional: false }],
+                },
+            }],
+        };
+        const r = satisfiesConstraints('eyJhbGciOiJFUzI1NiJ9.payload.sig', badDef);
+        expect(r.ok).toBe(false);
+        if (!r.ok) expect(r.code).toBe('EMPTY_PATH');
+    });
+});
+
+describe('verifyAuthorizationResponse — nonce replay protection', () => {
+    it('accepts first use of a nonce', () => {
+        const result = verifyAuthorizationResponse({
+            response: buildResponse({ state: 'st-nonce' }),
+            expectedNonce: `unique-nonce-${Date.now()}-A`,
+            expectedState: 'st-nonce',
+            definition: DEFINITION,
+        });
+        expect(result.valid).toBe(true);
+    });
+
+    it('rejects second use of same nonce (replay)', () => {
+        const nonce = `replay-nonce-${Date.now()}`;
+        const opts = {
+            response: buildResponse({ state: 'st-r' }),
+            expectedNonce: nonce,
+            expectedState: 'st-r',
+            definition: DEFINITION,
+        };
+
+        const first = verifyAuthorizationResponse(opts);
+        expect(first.valid).toBe(true);
+
+        const second = verifyAuthorizationResponse(opts);
+        expect(second.valid).toBe(false);
+        expect(second.errors.some(e => e.includes('replay') || e.includes('Nonce'))).toBe(true);
+    });
+
+    it('different nonces both accepted independently', () => {
+        const r1 = verifyAuthorizationResponse({
+            response: buildResponse({ state: 's1' }),
+            expectedNonce: `nonce-x-${Date.now()}-1`,
+            expectedState: 's1',
+            definition: DEFINITION,
+        });
+        const r2 = verifyAuthorizationResponse({
+            response: buildResponse({ state: 's2' }),
+            expectedNonce: `nonce-x-${Date.now()}-2`,
+            expectedState: 's2',
+            definition: DEFINITION,
+        });
+        expect(r1.valid).toBe(true);
+        expect(r2.valid).toBe(true);
+    });
+
+    it('rejects response with no descriptor map entries', () => {
+        const result = verifyAuthorizationResponse({
+            response: buildResponse({
+                presentation_submission: {
+                    id: 'sub-nodesc',
+                    definition_id: 'age-pd',
+                    descriptor_map: [], // empty — no mappings
+                },
+            }),
+            expectedNonce: `nonce-nodesc-${Date.now()}`,
+            definition: DEFINITION,
+            skipNonceCheck: true,
+        });
+        // descriptor_map is empty but definition has 1 descriptor → mismatch
+        expect(result.valid).toBe(false);
+    });
+
+    it('rejects when credential count < descriptor count', () => {
+        const multiDef: PresentationDefinition = {
+            id: 'multi-pd',
+            input_descriptors: [
+                { id: 'd1', constraints: { fields: [{ path: ['$.a'] }] } },
+                { id: 'd2', constraints: { fields: [{ path: ['$.b'] }] } },
+            ],
+        };
+        // Only 1 credential in vp_token but 2 descriptors required
+        const result = verifyAuthorizationResponse({
+            response: {
+                vp_token: 'eyJhbGciOiJFUzI1NiJ9.single.credential',
+                presentation_submission: {
+                    id: 'sub-multi',
+                    definition_id: 'multi-pd',
+                    descriptor_map: [
+                        { id: 'd1', format: 'sd-jwt', path: '$' },
+                        { id: 'd2', format: 'sd-jwt', path: '$[1]' },
+                    ],
+                },
+                state: 'st-multi',
+            },
+            expectedNonce: `nonce-multi-${Date.now()}`,
+            expectedState: 'st-multi',
+            definition: multiDef,
+            skipNonceCheck: true,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('count') || e.includes('mismatch'))).toBe(true);
+    });
+
+    it('skipNonceCheck bypasses replay detection', () => {
+        const nonce = `skip-nonce-${Date.now()}`;
+        const opts = {
+            response: buildResponse({ state: 'st-skip' }),
+            expectedNonce: nonce,
+            expectedState: 'st-skip',
+            definition: DEFINITION,
+            skipNonceCheck: true as const,
+        };
+        // Second call still passes because nonce check is skipped
+        verifyAuthorizationResponse(opts);
+        const second = verifyAuthorizationResponse(opts);
+        expect(second.valid).toBe(true);
+    });
 });
