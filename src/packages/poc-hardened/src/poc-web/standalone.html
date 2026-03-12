@@ -945,9 +945,53 @@
       color: var(--accent);
       border-bottom-color: var(--accent);
     }
+    
+    .tab-content { display: none; padding: 1rem 0; font-size: 0.9rem; }
+    .tab-content.active { display: block; }
 
-    .tab-content {
-      display: none;
+    /* Art 17 Grid */
+    .art17-grid {
+      display: grid;
+      grid-template-columns: 25% 1fr 1fr;
+      width: 100%;
+    }
+    .a17-hdr, .a17-row {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .a17-hdr:last-child, .a17-row:nth-child(3n) { border-right: none; }
+    
+    @media (max-width: 768px) {
+      .art17-grid {
+        display: flex;
+        flex-direction: column;
+      }
+      .a17-hdr { display: none; }
+      .a17-row { border-right: none; border-bottom: none; padding: 0.5rem 1rem; }
+      .a17-row:nth-child(3n+1) { 
+        padding-top: 1.5rem; 
+        font-weight: 700; 
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.5rem;
+      }
+      .a17-row:nth-child(3n+2)::before { content: "Traditional: "; color: var(--red); display: block; font-size: 0.8rem; margin-bottom: 2px;}
+      .a17-row:nth-child(3n)::before { content: "miTch: "; color: var(--green); display: block; font-size: 0.8rem; margin-bottom: 2px;}
+      .a17-row:nth-child(3n) { margin-bottom: 1rem; border-bottom: 1px dashed var(--border); padding-bottom: 1rem;}
+      .a17-row:last-child { border-bottom: none; }
+    }
+
+    /* TCO Styles */
+    .tco-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: 0.9rem;
+    }
+    .tco-row span:last-child {
+      font-family: var(--mono);
+      font-weight: 500;
     }
 
     .tab-content.active {
@@ -2442,6 +2486,126 @@
           <button class="btn btn-success" onclick="doUnrevoke()" id="btn-unrev" disabled>✅ Unrevoke</button>
         </div>
         <div id="revoke-result"></div>
+      </div>
+    </div>
+
+    <!-- ENTERPRISE PERSPECTIVE -->
+    <div class="vsec-divider">
+      <div class="vsec">
+        <div class="vsec-label" style="color:var(--orange)">Why Your CTO Should Care</div>
+        <h2 class="vsec-title">🏢 Enterprise Perspective</h2>
+        
+        <div style="background:var(--surface2);border-left:4px solid var(--accent);padding:1.5rem;border-radius:0 8px 8px 0;margin-bottom:3rem;font-size:1.1rem;font-style:italic">
+          "The cheapest data to protect is the data you never store."<br>
+          <span class="dim" style="font-size:0.85rem;font-style:normal;margin-top:0.5rem;display:inline-block">— Zero Data Architecture Principle</span>
+        </div>
+
+        <!-- 1. TCO Calculator -->
+        <h3 style="margin-bottom:1rem">1. Total Cost of Ownership (Annual)</h3>
+        <div class="panel full" style="margin-bottom:3rem; overflow:visible;">
+          <div class="pb">
+            <div style="margin-bottom:2rem">
+              <label for="tco-users" style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:1rem">
+                <span>Active Users per Year</span>
+                <span id="tco-users-val" style="color:var(--accent);font-family:var(--mono);font-size:1.1rem">100.000</span>
+              </label>
+              <input type="range" id="tco-users" min="10000" max="10000000" step="10000" value="100000" style="width:100%;accent-color:var(--accent)">
+            </div>
+            
+            <div class="comparison" style="grid-template-columns:1fr 1fr; gap:2rem">
+              <div class="cc doesnt" style="background:var(--red-dim)">
+                <h4 style="color:var(--red);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;margin-bottom:1rem">Traditional Identity Stack</h4>
+                <div class="tco-row"><span>User Onboarding (ID Scan)</span><span id="tco-trad-ob">€ 150.000</span></div>
+                <div class="tco-row"><span>PII Database (RDS+KMS+Backups)</span><span id="tco-trad-db">€ 36.000</span></div>
+                <div class="tco-row"><span>GDPR Compliance Mgmt</span><span id="tco-trad-gdpr">€ 24.000</span></div>
+                <div class="tco-row"><span>Data Breach Reserve (Pro-rata)</span><span id="tco-trad-breach">€ 89.000</span></div>
+                <div class="tco-row"><span>Löschpflicht Art. 17 (2%)</span><span id="tco-trad-del">€ 30.000</span></div>
+                <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
+                  <span>Total/Year</span>
+                  <span id="tco-trad-total" style="color:var(--red);font-family:var(--mono)">€ 329.000</span>
+                </div>
+              </div>
+              
+              <div class="cc sees" style="background:var(--green-dim)">
+                <h4 style="color:var(--green);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;margin-bottom:1rem">miTch Stack</h4>
+                <div class="tco-row"><span>eID Authentication</span><span id="tco-mitch-auth">€ 15.000</span></div>
+                <div class="tco-row"><span>Credential Signing (HSM)</span><span id="tco-mitch-sign">€ 1.000</span></div>
+                <div class="tco-row"><span>StatusList CDN</span><span id="tco-mitch-cdn">€ 30</span></div>
+                <div class="tco-row"><span>PII Database</span><span style="color:var(--green)">€ 0</span></div>
+                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span style="color:var(--green)">€ 0</span></div>
+                <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
+                  <span>Total/Year</span>
+                  <span id="tco-mitch-total" style="color:var(--green);font-family:var(--mono)">€ 16.030</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="text-align:center;margin-top:2rem">
+              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">JÄHRLICHE ERSPARNIS</div>
+              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">€ 312.970 <span style="font-size:1.2rem;opacity:0.8">(95%)</span></div>
+            </div>
+            
+            <div style="margin-top:2rem;font-size:0.7rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
+              <span>📎 IBM Cost of Data Breach 2024</span>
+              <span>📎 AWS Pricing Pricing</span>
+              <span>📎 A-Trust Pricing</span>
+              <span>📎 DLA Piper GDPR Survey</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Breach Scenario -->
+        <h3 style="margin-bottom:1rem">2. Datenpanne im Vergleich (Data Breach)</h3>
+        <p class="vsec-body">Was passiert, wenn der Worst-Case eintritt?</p>
+        <div class="comparison" style="margin-bottom:3rem" id="breach-trigger">
+          <!-- Traditional Breach -->
+          <div class="cc" style="background:var(--red-dim);border:1px solid var(--red);padding:1.5rem">
+            <h4 style="color:var(--red);margin-bottom:1.5rem;border-bottom:1px solid rgba(255,0,0,0.2);padding-bottom:0.5rem">Traditional IT</h4>
+            <div id="breach-trad-steps">
+               <!-- Animated via JS -->
+            </div>
+          </div>
+          <!-- miTch Breach -->
+          <div class="cc" style="background:var(--green-dim);border:1px solid var(--green);padding:1.5rem">
+            <h4 style="color:var(--green);margin-bottom:1.5rem;border-bottom:1px solid rgba(0,255,0,0.2);padding-bottom:0.5rem">miTch Architecture</h4>
+            <div id="breach-mitch-steps">
+               <!-- Animated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Article 17 Deletion -->
+        <h3 style="margin-bottom:1rem">3. Art. 17 DSGVO — Recht auf Löschung</h3>
+        <div class="panel full">
+          <div class="pb" style="padding:0">
+            <div class="art17-grid">
+              <div class="a17-hdr" style="border-bottom:1px solid var(--border)"></div>
+              <div class="a17-hdr" style="border-bottom:1px solid var(--border);color:var(--red);font-weight:700">Traditional</div>
+              <div class="a17-hdr" style="border-bottom:1px solid var(--border);color:var(--green);font-weight:700">miTch</div>
+              
+              <div class="a17-row"><span class="dim">PII gespeichert in</span></div>
+              <div class="a17-row">8-14 DB-Tabellen, Backups, Logs, CDN-Cache</div>
+              <div class="a17-row" style="color:var(--green)">Nirgends</div>
+              
+              <div class="a17-row"><span class="dim">Löschaufwand pro Anfrage</span></div>
+              <div class="a17-row">~€ 15 (manuell/semi-automatisch)</div>
+              <div class="a17-row" style="color:var(--green)">€ 0 (nichts da)</div>
+              
+              <div class="a17-row"><span class="dim">Zeitaufwand</span></div>
+              <div class="a17-row">3-30 Tage</div>
+              <div class="a17-row" style="color:var(--green)">0 Sekunden</div>
+              
+              <div class="a17-row"><span class="dim">Risiko unvollst. Löschung</span></div>
+              <div class="a17-row" style="color:var(--red)">Hoch (Backup-Fragmente, Logs)</div>
+              <div class="a17-row" style="color:var(--green)">Unmöglich</div>
+              
+              <div class="a17-row" style="border-bottom:none"><span class="dim">Audit-Nachweis</span></div>
+              <div class="a17-row" style="border-bottom:none">Manueller Report</div>
+              <div class="a17-row" style="border-bottom:none;color:var(--green)">Automatisch (Crypto-Shredding = Löschbeweis)</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -4767,6 +4931,132 @@
       }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
       document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     }
+
+    // --- TCO Calculator Logic ---
+    function updateTCO() {
+      const slider = document.getElementById('tco-users');
+      if(!slider) return;
+      const users = parseInt(slider.value, 10);
+      
+      const fmt = new Intl.NumberFormat('de-DE');
+      document.getElementById('tco-users-val').textContent = fmt.format(users);
+      
+      // Traditional Costs
+      const tradOb = users * 1.50;
+      const tradDb = users * 0.03 * 12;
+      const tradGdpr = users * 0.24;
+      const tradBreach = users * 0.89; // proxy for breach risk
+      const tradDel = users * 0.02 * 15;
+      const tradTotal = tradOb + tradDb + tradGdpr + tradBreach + tradDel;
+      
+      // miTch Costs
+      const mitchAuth = users * 0.15;
+      const mitchSign = users * 0.01;
+      const mitchCdn = (users * 1) * 0.0003; // assume 1 verification per user/year for simplicity
+      const mitchTotal = mitchAuth + mitchSign + mitchCdn;
+
+      const savings = tradTotal - mitchTotal;
+      const savingsPct = ((savings / tradTotal) * 100).toFixed(0);
+
+      // DOM Updates
+      const upd = (id, val, isZero = false) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.textContent = isZero ? '€ 0' : '€ ' + fmt.format(Math.round(val));
+      };
+
+      upd('tco-trad-ob', tradOb);
+      upd('tco-trad-db', tradDb);
+      upd('tco-trad-gdpr', tradGdpr);
+      upd('tco-trad-breach', tradBreach);
+      upd('tco-trad-del', tradDel);
+      upd('tco-trad-total', tradTotal);
+
+      upd('tco-mitch-auth', mitchAuth);
+      upd('tco-mitch-sign', mitchSign);
+      upd('tco-mitch-cdn', mitchCdn);
+      upd('tco-mitch-total', mitchTotal);
+
+      const savEl = document.getElementById('tco-savings');
+      if(savEl) {
+        savEl.innerHTML = '€ ' + fmt.format(Math.round(savings)) + ' <span style="font-size:1.2rem;opacity:0.8">(' + savingsPct + '%)</span>';
+      }
+    }
+
+    const tcoSlider = document.getElementById('tco-users');
+    if (tcoSlider) {
+      tcoSlider.addEventListener('input', updateTCO);
+      updateTCO(); // Initial run
+    }
+
+    // --- Breach Scenario Animation ---
+    let breachAnimated = false;
+    const tradBreachEvents = [
+      { t: "⏰ Tag 0", desc: "Breach detected", d: 0 },
+      { t: "📋 Tag 1", desc: "Incident Response Team mobilisiert (€500/h)", d: 600 },
+      { t: "⚖️ Tag 3", desc: "72h DSGVO Meldepflicht an Behörde (Art. 33)", d: 1100 },
+      { t: "📧 Tag 7", desc: "Alle betroffenen User benachrichtigen (Art. 34)", d: 1600 },
+      { t: "💰 Tag 30", desc: "Forensik-Bericht: €150.000", d: 2100 },
+      { t: "📰 Tag 45", desc: "Presse berichtet, Reputationsschaden", d: 2600 },
+      { t: "⛔ Tag 90", desc: "Behörde verhängt Bußgeld: bis 4% vom Jahresumsatz", d: 3100 },
+      { t: "📊 Durchschnitt", desc: "€4.45M pro Breach (IBM 2024)", d: 3600, bold: true }
+    ];
+
+    const mitchBreachEvents = [
+      { t: "🤷", desc: "\"Was soll geleakt werden?\"", d: 200, bold: true },
+      { t: "📭", desc: "Keine PII gespeichert", d: 700 },
+      { t: "📭", desc: "Keine Datenbank mit User-Daten", d: 1200 },
+      { t: "📭", desc: "Keine Meldepflicht (keine Betroffenen)", d: 1700 },
+      { t: "📭", desc: "Kein Bußgeld-Risiko", d: 2200 },
+      { t: "📭", desc: "Kein Reputationsschaden", d: 2700 },
+      { t: "✅", desc: "Kosten: € 0", d: 3200, bold: true, g: true }
+    ];
+
+    async function playBreachAnimation() {
+      if (breachAnimated) return;
+      breachAnimated = true;
+      
+      const tradCt = document.getElementById('breach-trad-steps');
+      const mitchCt = document.getElementById('breach-mitch-steps');
+      if (!tradCt || !mitchCt) return;
+
+      // Prepare UI
+      tradCt.innerHTML = tradBreachEvents.map((e,i) => `<div class="engine-step" id="bs-t-${i}" style="color:var(--red)"><span style="font-family:var(--mono);margin-right:0.5rem;opacity:0.8">${e.t}</span> <span ${e.bold ? 'style="font-weight:700"' : ''}>${e.desc}</span></div>`).join('');
+      mitchCt.innerHTML = mitchBreachEvents.map((e,i) => `<div class="engine-step" id="bs-m-${i}" style="color:var(--green)"><span style="margin-right:0.5rem">${e.t}</span> <span ${e.bold ? 'style="font-weight:700"' : ''}>${e.desc}</span></div>`).join('');
+
+      // Play trad
+      tradBreachEvents.forEach((ev, i) => {
+        setTimeout(() => {
+          const el = document.getElementById(`bs-t-${i}`);
+          if(el) { el.classList.add('active'); setTimeout(()=> { el.classList.remove('active'); el.classList.add('pass'); el.style.borderColor = 'rgba(255,0,0,0.3)'; }, 400); }
+        }, ev.d);
+      });
+
+      // Play mitch
+      mitchBreachEvents.forEach((ev, i) => {
+        setTimeout(() => {
+          const el = document.getElementById(`bs-m-${i}`);
+          if(el) { el.classList.add('active'); setTimeout(()=> { el.classList.remove('active'); el.classList.add('pass'); }, 400); }
+        }, ev.d);
+      });
+    }
+
+    // Hook up observer for breach and art 17
+    function initEnterpriseReveal() {
+      const breachObs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            playBreachAnimation();
+            breachObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.3 });
+      
+      const trigger = document.getElementById('breach-trigger');
+      if(trigger) breachObs.observe(trigger);
+    }
+    initEnterpriseReveal();
+
 
     // Init
     initCarousel();
