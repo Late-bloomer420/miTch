@@ -296,8 +296,9 @@ app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
     const publicKeyJwk = await globalThis.crypto.subtle.exportKey('jwk', keys.publicKey);
     const baseUrl = process.env.VERIFIER_BASE_URL || `${req.protocol}://${req.get('host')}`;
 
-    // Minimal DID Document
+    // Minimal DID Document (OID4VP-compatible — @context required for wallet DID resolution)
     res.json({
+        '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'],
         id: 'did:mitch:verifier-liquor-store',
         verificationMethod: [{
             id: 'did:mitch:verifier-liquor-store#key-1',
@@ -308,7 +309,7 @@ app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
         service: [{
             id: 'did:mitch:verifier-liquor-store#present',
             type: 'VerifierService',
-            serviceEndpoint: `${baseUrl}/present` // In prod, use a fixed HTTPS base URL
+            serviceEndpoint: `${baseUrl}/present`
         }]
     });
 });
