@@ -186,7 +186,7 @@ app.get('/authorize', (req, res) => {
     try {
         const { request, nonce } = buildOID4VPRequest({
             verifierClientId: 'did:mitch:verifier-liquor-store',
-            redirectUri: `${baseUrl}/present`,
+            redirectUri: `${baseUrl}/oid4vp-present`,
             scenarioId,
             clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
         });
@@ -272,6 +272,97 @@ app.post('/wallet-present', async (req, res) => {
     } catch (e: unknown) {
         lastVerificationStatus = 'FAILED';
         console.error('[OID4VP] Error:', e instanceof Error ? e.message : String(e));
+        return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
+    }
+});
+
+// ─── B-02: OID4VP Direct Post Endpoint (Wallet → Verifier) ──────────────────
+// Receives SD-JWT VP Token + Presentation Submission from wallet via direct_post.
+// Validates issuer signature, Key Binding JWT (nonce + aud), revocation status.
+app.post('/oid4vp-present', async (req, res) => {
+    try {
+        const body = req.body as {
+            vp_token?: string;
+            presentation_submission?: unknown;
+            state?: string;
+            issuer_jwk?: JsonWebKey;
+        };
+
+        if (!body.vp_token || !body.presentation_submission) {
+            return res.status(400).json({ ok: false, error: 'Missing vp_token or presentation_submission' });
+        }
+
+        if (!body.issuer_jwk) {
+            return res.status(400).json({ ok: false, error: 'Missing issuer_jwk (required for PoC verification)' });
+        }
+
+        // Import issuer public key from JWK
+        const issuerPublicKey = await globalThis.crypto.subtle.importKey(
+            'jwk',
+            body.issuer_jwk,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['verify']
+        );
+
+        // Reconstruct the AuthorizationRequest for nonce/aud validation
+        // The nonce is embedded in the KB-JWT and must match one from our nonceStore
+        const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
+        const reconstructedRequest = {
+            response_type: 'vp_token' as const,
+            client_id: 'did:mitch:verifier-liquor-store',
+            redirect_uri: `${baseUrl}/oid4vp-present`,
+            nonce: '', // Will be extracted from KB-JWT for validation
+            presentation_definition: { id: 'reconstructed', input_descriptors: [] },
+            response_mode: 'direct_post' as const,
+            state: body.state,
+        };
+
+        // Extract nonce from KB-JWT payload for nonceStore validation
+        const vpParts = body.vp_token.split('~');
+        const kbJwtPart = vpParts[vpParts.length - 1];
+        if (kbJwtPart) {
+            try {
+                const kbPayloadB64 = kbJwtPart.split('.')[1];
+                const kbPayload = JSON.parse(atob(kbPayloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+                reconstructedRequest.nonce = kbPayload.nonce ?? '';
+            } catch { /* nonce extraction failed — validateSDJWTPresentation will catch it */ }
+        }
+
+        // W-04: Validate SD-JWT VP Token
+        const validation = await validateSDJWTPresentation({
+            vpTokenString: body.vp_token,
+            presentationSubmission: body.presentation_submission as import('@mitch/oid4vp').PresentationSubmission,
+            request: reconstructedRequest,
+            issuerPublicKey,
+            checkRevocation: true,
+        });
+
+        // W-05: Session cleanup
+        const { consentReceipt, auditEntry } = buildSessionCleanup({
+            request: reconstructedRequest,
+            disclosedClaims: validation.disclosedClaims ?? {},
+            outcome: validation.ok ? 'SUCCESS' : 'DENIED',
+        });
+
+        if (validation.ok) {
+            lastVerificationStatus = 'VERIFIED';
+            lastIssuer = 'https://issuer.mitch.demo';
+            lastDisclosedClaims = validation.disclosedClaims ?? null;
+            lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+            metrics.inc('oid4vp_success');
+            console.log(`[OID4VP-Present] ✅ Verified`, auditEntry);
+            return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
+        } else {
+            lastVerificationStatus = 'FAILED';
+            lastDisclosedClaims = null;
+            metrics.inc('oid4vp_rejected');
+            console.warn(`[OID4VP-Present] ❌ Rejected:`, validation.errors);
+            return res.status(403).json({ ok: false, errors: validation.errors });
+        }
+    } catch (e: unknown) {
+        lastVerificationStatus = 'FAILED';
+        console.error('[OID4VP-Present] Error:', e instanceof Error ? e.message : String(e));
         return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
     }
 });

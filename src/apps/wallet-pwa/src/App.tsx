@@ -15,6 +15,14 @@ import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
 import { CONFIG } from './config';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
+import {
+    buildSDJWTPresentation,
+    validateSDJWTPresentation,
+    buildSessionCleanup,
+    SCENARIO_VCT,
+    type AuthorizationRequest,
+} from '@mitch/oid4vp';
+import { SCENARIO_CLAIMS } from './scenario-claims';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     {
@@ -495,10 +503,96 @@ export default function App() {
         });
     };
 
+    // OID4VP: present SD-JWT VP to verifier via direct_post
+    const presentOID4VP = async (authRequest: AuthorizationRequest, scenarioId: string) => {
+        let holderKeys: CryptoKeyPair | null = null;
+        let issuerKeys: CryptoKeyPair | null = null;
+
+        try {
+            setStatus('PROVING');
+            addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
+
+            // Generate ephemeral key pairs (PoC — in production, holder key is from wallet, issuer from trust registry)
+            holderKeys = await crypto.subtle.generateKey(
+                { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+            );
+            issuerKeys = await crypto.subtle.generateKey(
+                { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+            );
+
+            const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
+            const isRevoked = scenarioId === 'revoked';
+
+            // W-03: Build SD-JWT VP Token with Key Binding JWT
+            const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({
+                request: authRequest,
+                issuerPrivateKey: issuerKeys.privateKey,
+                holderKeyPair: holderKeys,
+                claims,
+                vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
+                issuerDid: 'https://issuer.mitch.demo',
+                revoked: isRevoked,
+            });
+
+            addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
+            addLog(`🔑 Key Binding JWT attached (nonce + aud bound)`, 'info');
+
+            // Send issuer public key alongside VP for PoC verification
+            const issuerPubJwk = await crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
+
+            // POST direct_post to verifier redirect_uri
+            const redirectUri = authRequest.redirect_uri;
+            addLog(`🚀 POSTing VP to ${redirectUri}...`, 'info');
+
+            const response = await fetch(redirectUri, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vp_token: vpTokenString,
+                    presentation_submission: presentationSubmission,
+                    state: authRequest.state,
+                    issuer_jwk: issuerPubJwk,
+                }),
+            });
+
+            const result = await response.json() as { ok: boolean; disclosedClaims?: Record<string, unknown>; errors?: string[]; error?: string };
+
+            if (result.ok) {
+                addLog('✅ Verifier confirmed: Presentation VALID', 'success');
+                if (result.disclosedClaims) {
+                    addLog(`👁️ Verifier sees: ${JSON.stringify(result.disclosedClaims)}`, 'info');
+                }
+                setFlashAllow(true);
+                setTimeout(() => setFlashAllow(false), 900);
+            } else {
+                addLog(`⚠️ Verifier rejected: ${result.errors?.join(', ') ?? result.error ?? 'unknown'}`, 'warning');
+            }
+
+            // W-05: Session cleanup — audit entry
+            const { consentReceipt, auditEntry } = buildSessionCleanup({
+                request: authRequest,
+                disclosedClaims,
+                outcome: result.ok ? 'SUCCESS' : 'DENIED',
+            });
+            addLog(`📝 Audit: ${auditEntry.outcome} — receipt ${consentReceipt.id}`, 'info');
+
+            setLogs(prev => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
+            setStatus('SHREDDED');
+        } catch (error) {
+            addLog(`❌ OID4VP Proof Failed: ${error instanceof Error ? error.message : 'Unknown'}`, 'error');
+            setStatus('IDLE');
+        } finally {
+            // B-03: Crypto-shredding — destroy ephemeral keys
+            holderKeys = null;
+            issuerKeys = null;
+            addLog('🗑️ Ephemeral keys destroyed (crypto-shredding)', 'info');
+        }
+    };
+
     // OID4VP: handle incoming request from verifier-demo deep link
     const handleIncomingOID4VP = async () => {
         if (!incomingOID4VP) return;
-        const { scenario: _scenario, endpoint, verifier } = incomingOID4VP;
+        const { scenario, endpoint, verifier } = incomingOID4VP;
 
         setStatus('EVALUATING');
         setLogs([]);
@@ -507,19 +601,28 @@ export default function App() {
 
         addLog(`📲 Incoming OID4VP request from ${verifier}`, 'info');
 
-        const request: VerifierRequest = {
-            verifierId: verifier,
-            requestedClaims: [],
-            requestedProvenClaims: ['age >= 18'],
-            origin: endpoint,
-            serviceEndpoint: `${endpoint}/present`,
-        };
-        setCurrentRequest(request);
-
-        const context: EvaluationContext = { timestamp: Date.now(), userDID: 'did:example:wallet-user' };
-
         try {
-            const result = await walletRef.current.evaluateRequest(request, context);
+            // Step 1: Fetch OID4VP Authorization Request from verifier
+            addLog(`🔄 Fetching auth request from ${endpoint}/authorize...`, 'info');
+            const authRes = await fetch(`${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`);
+            if (!authRes.ok) throw new Error(`Verifier /authorize returned ${authRes.status}`);
+            const { authRequest } = await authRes.json() as { authRequest: AuthorizationRequest };
+
+            addLog(`📄 Received PD: ${authRequest.presentation_definition.name ?? authRequest.presentation_definition.id}`, 'info');
+
+            // Step 2: Policy evaluation (convert OID4VP request to VerifierRequest for policy engine)
+            const policyRequest: VerifierRequest = {
+                verifierId: verifier,
+                requestedClaims: authRequest.presentation_definition.input_descriptors.flatMap(
+                    d => d.constraints?.fields?.flatMap(f => f.path.map(p => p.replace('$.', ''))) ?? []
+                ),
+                requestedProvenClaims: [],
+                origin: endpoint,
+            };
+            setCurrentRequest(policyRequest);
+
+            const context: EvaluationContext = { timestamp: Date.now(), userDID: 'did:example:wallet-user' };
+            const result = await walletRef.current.evaluateRequest(policyRequest, context);
             setEvaluationResult(result);
 
             if (result.verdict === 'DENY') {
@@ -527,12 +630,15 @@ export default function App() {
                 addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
             } else if (result.verdict === 'PROMPT') {
                 addLog(`🔔 Consent Required`, 'info');
+                // Store auth request for use after consent
+                (window as unknown as Record<string, unknown>)._pendingAuthRequest = authRequest;
+                (window as unknown as Record<string, unknown>)._pendingScenario = scenario;
                 setShowConsent(true);
             } else {
-                addLog(`✅ Policy ALLOWED. Generating proof...`, 'success');
+                addLog(`✅ Policy ALLOWED. Building SD-JWT VP...`, 'success');
                 setFlashAllow(true);
                 setTimeout(() => setFlashAllow(false), 900);
-                await proceedWithProof(result, undefined, request.serviceEndpoint);
+                await presentOID4VP(authRequest, scenario);
             }
         } catch (e) {
             addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -698,7 +804,15 @@ export default function App() {
                     timeoutMinutes={currentPolicy?.globalSettings?.requireConsentTimeoutMinutes}
                     onApprove={(_presenceProof) => {
                         setShowConsent(false);
-                        proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
+                        const pendingAuth = (window as unknown as Record<string, unknown>)._pendingAuthRequest as AuthorizationRequest | undefined;
+                        const pendingScenario = (window as unknown as Record<string, unknown>)._pendingScenario as string | undefined;
+                        if (pendingAuth && pendingScenario) {
+                            delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
+                            delete (window as unknown as Record<string, unknown>)._pendingScenario;
+                            presentOID4VP(pendingAuth, pendingScenario);
+                        } else {
+                            proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
+                        }
                     }}
                     onReject={() => {
                         setStatus('DENIED');
