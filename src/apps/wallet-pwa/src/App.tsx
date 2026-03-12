@@ -87,6 +87,18 @@ export default function App() {
     const [showSecondary, setShowSecondary] = useState(false);
     const [flashAllow, setFlashAllow] = useState(false);
     const [copyLabel, setCopyLabel] = useState('Copy Log');
+    const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>('idle');
+
+    // Parse OID4VP deep-link params on load (verifier-demo → wallet-pwa)
+    const [incomingOID4VP] = useState<{ scenario: string; endpoint: string; verifier: string } | null>(() => {
+        try {
+            const p = new URLSearchParams(window.location.search);
+            const endpoint = p.get('endpoint');
+            const scenario = p.get('scenario');
+            if (!endpoint || !scenario) return null;
+            return { scenario, endpoint, verifier: p.get('verifier') ?? 'did:mitch:verifier-liquor-store' };
+        } catch { return null; }
+    });
 
     const logContainerRef = useRef<HTMLDivElement>(null);
     const walletRef = useRef<WalletService>(new WalletService());
@@ -483,6 +495,90 @@ export default function App() {
         });
     };
 
+    // OID4VP: handle incoming request from verifier-demo deep link
+    const handleIncomingOID4VP = async () => {
+        if (!incomingOID4VP) return;
+        const { scenario: _scenario, endpoint, verifier } = incomingOID4VP;
+
+        setStatus('EVALUATING');
+        setLogs([]);
+        setEvaluationResult(null);
+        setFlashAllow(false);
+
+        addLog(`📲 Incoming OID4VP request from ${verifier}`, 'info');
+
+        const request: VerifierRequest = {
+            verifierId: verifier,
+            requestedClaims: [],
+            requestedProvenClaims: ['age >= 18'],
+            origin: endpoint,
+            serviceEndpoint: `${endpoint}/present`,
+        };
+        setCurrentRequest(request);
+
+        const context: EvaluationContext = { timestamp: Date.now(), userDID: 'did:example:wallet-user' };
+
+        try {
+            const result = await walletRef.current.evaluateRequest(request, context);
+            setEvaluationResult(result);
+
+            if (result.verdict === 'DENY') {
+                setStatus('DENIED');
+                addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+            } else if (result.verdict === 'PROMPT') {
+                addLog(`🔔 Consent Required`, 'info');
+                setShowConsent(true);
+            } else {
+                addLog(`✅ Policy ALLOWED. Generating proof...`, 'success');
+                setFlashAllow(true);
+                setTimeout(() => setFlashAllow(false), 900);
+                await proceedWithProof(result, undefined, request.serviceEndpoint);
+            }
+        } catch (e) {
+            addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
+            setStatus('IDLE');
+        }
+
+        // Clear URL params so page refresh doesn't re-trigger
+        window.history.replaceState({}, '', window.location.pathname);
+    };
+
+    // OID4VCI: fetch a test credential from issuer-mock
+    const handleFetchCredential = async () => {
+        setCredentialStatus('fetching');
+        addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
+        try {
+            const res = await fetch('http://localhost:3005/credential', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
+                    proof: {}
+                })
+            });
+            if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
+            const data = await res.json() as { credential?: string; error?: string };
+            if (!data.credential) throw new Error(data.error ?? 'No credential in response');
+
+            // Decode JWT payload (header.payload.sig)
+            const parts = data.credential.split('.');
+            if (parts.length < 2) throw new Error('Invalid JWT format');
+            const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+            const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+            const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
+            const subject = (vcPayload?.credentialSubject ?? payload['credentialSubject'] ?? {}) as Record<string, unknown>;
+
+            const credId = `vc-issuer-${Date.now()}`;
+            await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
+
+            setCredentialStatus('done');
+            addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
+        } catch (e) {
+            setCredentialStatus('error');
+            addLog(`❌ Credential fetch failed: ${(e as Error).message}`, 'error');
+        }
+    };
+
     // UX-02: primary button classes
     const getPrimaryBtnClass = () => {
         const base = 'btn-primary';
@@ -515,6 +611,39 @@ export default function App() {
                 miTch <span className="wallet-title-accent">Smart Wallet</span>
             </h1>
 
+            {/* OID4VP: incoming request banner */}
+            {incomingOID4VP && (
+                <div style={{
+                    background: 'linear-gradient(135deg, #0a1628, #0d2040)',
+                    border: '1px solid #0891b2',
+                    borderRadius: 10,
+                    padding: '16px 20px',
+                    marginBottom: 16,
+                }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#38bdf8', marginBottom: 6 }}>
+                        📲 Incoming Verification Request
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+                        Verifier: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.verifier}</code>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
+                        Scenario: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.scenario}</code>
+                        {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>age ≥ 18</code>
+                    </div>
+                    <button
+                        onClick={handleIncomingOID4VP}
+                        disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+                        style={{
+                            background: '#0891b2', color: '#fff', border: 'none',
+                            borderRadius: 6, padding: '8px 20px', cursor: 'pointer',
+                            fontWeight: 600, fontSize: 13, marginRight: 8
+                        }}
+                    >
+                        ✅ Accept &amp; Prove
+                    </button>
+                </div>
+            )}
+
             {/* UX-03: Credential Card */}
             <div className="credential-card">
                 <div className="credential-card-header">
@@ -539,6 +668,26 @@ export default function App() {
                         <div className="credential-issuer">did:example:st-mary-hospital</div>
                     </div>
                 </div>
+
+                <div className="credential-divider" />
+
+                {/* OID4VCI: fetch credential from issuer-mock */}
+                <button
+                    onClick={handleFetchCredential}
+                    disabled={credentialStatus === 'fetching' || status === 'LOCKED'}
+                    style={{
+                        width: '100%', padding: '8px 0', marginTop: 4,
+                        background: credentialStatus === 'done' ? '#14532d' : '#0f172a',
+                        border: `1px solid ${credentialStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
+                        borderRadius: 6, color: credentialStatus === 'done' ? '#86efac' : '#7dd3fc',
+                        fontSize: 12, cursor: 'pointer', fontFamily: 'monospace',
+                    }}
+                >
+                    {credentialStatus === 'fetching' ? '⏳ Fetching…' :
+                     credentialStatus === 'done' ? '✅ AgeCredential from issuer-mock' :
+                     credentialStatus === 'error' ? '❌ Retry — Get Test Credential' :
+                     '🎫 Get Test Credential (OID4VCI)'}
+                </button>
             </div>
 
             {/* ConsentModal */}

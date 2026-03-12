@@ -916,6 +916,28 @@ export class WalletService {
     }
 
     /**
+     * Store a credential received from an OID4VCI issuer.
+     * Call after parsing the JWT credential response from POST /credential.
+     */
+    async addIssuedCredential(
+        id: string,
+        subject: Record<string, unknown>,
+        issuerDid: string
+    ): Promise<void> {
+        await this.ensureSeeded();
+        if (!this.storage) throw new Error('Wallet locked');
+        const meta: StoredCredentialMetadata = {
+            id,
+            issuer: issuerDid,
+            type: ['VerifiableCredential', 'AgeCredential'],
+            issuedAt: new Date().toISOString(),
+            claims: Object.keys(subject),
+        };
+        await this.storage.save(id, subject, meta);
+        await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
+    }
+
+    /**
      * Get recent logs for the UI.
      */
     getRecentAuditLogs(limit: number = 5): AuditLogEntry[] {
