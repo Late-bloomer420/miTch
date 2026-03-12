@@ -109,6 +109,15 @@
 **Machbarkeit:** ⭐⭐ — Plattformen müssten miTch-kompatibel werden. Braucht kritische Masse.  
 **Markt:** 4+ Milliarden Social-Media-Nutzer.
 
+### 14b. Phone Number Verification (mi.call)
+**Problem:** Telefonnummern sind das universelle Login-Token (WhatsApp, Signal, 2FA). Jeder Service speichert die Nummer, Cross-Service Tracking ist trivial. Telcos sehen wer sich wo anmeldet.  
+**miTch:** Privacy Layer vor bestehenden Telco-APIs (GSMA Mobile Connect, CAMARA Number Verify, A1/Magenta Silent Auth). Service bekommt: `has_verified_phone: true` + pairwise pseudonymous ID. Nicht die Nummer.  
+**Partner:** GSMA Open Gateway, A1 Digital Identity, Magenta/CAMARA, ID Austria (Handy-Signatur als Credential-Basis).  
+**Regulierung:** GDPR Art. 25, ePrivacy Directive, EECC (European Electronic Communications Code).  
+**Machbarkeit:** ⭐⭐⭐ — Telco-APIs existieren schon. miTch muss sich nur davor setzen. Braucht einen Telco-Partner.  
+**Markt:** 8+ Milliarden Mobilfunkverträge weltweit. Jede 2FA-Implementierung ist ein potenzieller Kunde.  
+**Notiz:** Tier 3 — erst nach funktionierendem Pilot und echten Partner-Gesprächen. Siehe Social Login Use Case als Vorbild für die Architektur.
+
 ### 15. Dezentrale Marktplätze / Sharing Economy
 **Problem:** Airbnb, eBay, Vinted — Vertrauen zwischen Fremden braucht Identifikation. Aber Airbnb weiß alles über Host UND Gast.  
 **miTch:** Host verifiziert: "Gast ist volljährig + hat positive Bewertungshistorie" — ohne echten Namen.  
