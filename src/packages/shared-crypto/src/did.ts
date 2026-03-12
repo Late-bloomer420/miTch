@@ -240,7 +240,7 @@ export class DIDResolver {
     }
 
     private async resolveDidMitch(did: string): Promise<DIDDocument> {
-        const backendUrl = 'http://localhost:3002/did.json';
+        const backendUrl = 'http://localhost:3004/did.json';
         try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), this.fetchTimeoutMs);
