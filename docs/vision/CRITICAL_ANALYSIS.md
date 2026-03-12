@@ -300,7 +300,8 @@ Use what exists today. Don't wait for EUDIW to solve problems it hasn't solved y
 | UX overload at transaction time | ✅ RESOLVED | Minimal at transaction. Full detail in daily review. See UX_DAILY_REVIEW.md |
 | Consent receipt as core feature | ✅ RESOLVED | Core wallet, not plugin. Portable, signed, exportable as evidence. |
 | Escalation path | ✅ RESOLVED | Daily review → notification → DPA/lawyer/specialist directory. See UX_DAILY_REVIEW.md |
-| Data ingestion strategy | ✅ RESOLVED | PSD2 open banking = first connector (EU banks have legal API obligation, OAuth2 auth, Nordigen/GoCardless free-tier aggregator). EHDS health data follows 2025–2027. Social media = skip for now. |
+| Data ingestion strategy | ✅ RESOLVED | PSD2 open banking = first connector (EU banks have legal API obligation, OAuth2 auth, Nordigen/GoCardless free-tier aggregator). EHDS health data follows 2025–2027. Social media = implemented as Social Login Privacy use case (docs/modules/social-login-privacy.md). Pseudonymous login via pairwise DIDs, structural blocks on biometrics/social graph. |
+| Ad-Tech Blind Provider | ✅ RESOLVED | Implemented (nullifier-based sybil protection, budget quantization, verifier SDK) |
 | Module security design | 🟡 PARTIAL | Working answer: capability declaration at install, typed API, no raw credential access. Full design needed before build. |
 | Identity bridge / EUDIW dependency | ✅ RESOLVED | Do NOT depend on EUDIW. Use PSD2 OAuth2 today, national eIDs via OIDC for health. Design so EUDIW can replace the auth layer later without breaking the rest. |
 | Identity bridge (Austria specifically) | ✅ RESOLVED | ID Austria is already in mass-market deployment in Tyrol. Acts as the concrete identity bridge for Austrian users today — no EUDIW needed. miTch is a "smart layer" above ID Austria: uses the existing state signature to authorise data requests without building new identity infrastructure. |

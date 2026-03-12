@@ -139,3 +139,4 @@ It is the user's evidence, not miTch's data.
 - How does the DPA directory stay current? Manual curation? Links to official EU register?
 - Does the escalation path create legal liability for miTch if a recommendation is wrong?
 - What's the minimum viable version of the daily review that ships first?
+- The audit-log package (@mitch/audit-log) provides the backend for the daily review — WORM append-only log with integrity chain and L2 anchoring. The UX layer (frontend) is not yet built.

@@ -109,14 +109,16 @@ Anything involving user data as a revenue input is not.
 
 | Horizon | What | Status |
 |---|---|---|
-| Now (build on current) | Daily review UX — transaction log, danger levels, notification, escalation path | Extends existing ComplianceDashboard + PrivacyAuditService |
-| Now | Consent receipt as portable evidence — core wallet feature, not plugin | Partially exists in W-05 session cleanup |
-| Near term | Enterprise B2B: forgetting layer as compliance middleware for institutions | Verifier-side acquisition wedge |
+| Now (build on current) | Daily review UX — transaction log, danger levels, notification, escalation path | Partially exists (audit-log package, PrivacyAuditService) |
+| Now | Consent receipt as portable evidence — core wallet feature, not plugin | Partially implemented |
+| Near term | Enterprise B2B: forgetting layer as compliance middleware for institutions | Verifier SDK implemented, ad-tech module exists |
 | Near term | PSD2 open banking connector — first real data portability flow (EU banks already have APIs) | First real data connector |
 | Medium term | In-app module registry — open API for developers to publish modules | Requires stable core + defined module API |
 | Medium term | Predicate proof layer (Bulletproofs range proofs) for specific claim types | Narrowed from general ZK |
 | Long term | Verifier profiles as standard interface for business data requirements | Requires ecosystem adoption |
 | Long term | General ZK for complex computations | Research horizon |
+
+**Note:** As of March 2026, the miTch repository contains 25 packages + 3 apps.
 
 ---
 

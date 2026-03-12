@@ -52,7 +52,7 @@ It does not claim to show the full shadow profile. That would be dishonest.
 
 ## The Partial Lever: EU AI Act
 
-The EU AI Act (enforcement August 2025+) is the most significant regulation for the shadow profile problem, though it only partially addresses it.
+The EU AI Act (in force since August 2025) is the most significant regulation for the shadow profile problem, though it only partially addresses it.
 
 ### What the AI Act requires (high-risk AI systems):
 

@@ -291,6 +291,16 @@ Show you've already thought deeply. Ask where their thinking goes next.
 
 ---
 
+## New Use Cases Since Original Draft
+
+- **Social Login Privacy** (docs/modules/social-login-privacy.md) — FlirtRadar demo, DSA compliance
+- **Ad-Tech Blind Provider** — nullifier-based, IAB-compatible  
+- **Phone Number Verification** (mi.call) — Tier 3 concept
+
+These can be used as additional conversation starters with partners.
+
+---
+
 ### Why these questions work
 
 - They show you've already done your homework — EUDIW ARF, Bulletproofs, EHDS dates, AI Act.
