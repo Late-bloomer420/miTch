@@ -46,6 +46,27 @@
       --section-gap: 1rem;
     }
 
+    body.light-mode {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-dim: #64748b;
+      --accent: #4f46e5;
+      --accent-glow: rgba(79, 70, 229, 0.15);
+      --green: #16a34a;
+      --green-dim: rgba(22, 163, 74, 0.1);
+      --red: #dc2626;
+      --red-dim: rgba(220, 38, 38, 0.1);
+      --yellow: #ca8a04;
+      --yellow-dim: rgba(202, 138, 4, 0.1);
+      --blue: #2563eb;
+      --blue-dim: rgba(37, 99, 235, 0.1);
+      --orange: #ea580c;
+      --orange-dim: rgba(234, 88, 12, 0.1);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -101,6 +122,31 @@
       margin-top: 0.5rem;
       font-size: clamp(0.9rem, 2vw, 1.1rem);
       letter-spacing: 0.02em;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      transition: all 0.2s;
+      z-index: 50;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: scale(1.1);
     }
 
     /* ── Sticky Flow Bar ── */
@@ -273,12 +319,29 @@
     }
 
     @media (max-width: 480px) {
+      .header { padding: 3rem 1rem 2rem; }
       .header h1 { font-size: 1.35rem; }
       .header .tagline { font-size: 0.82rem; }
       .vsec-title { font-size: 1.2rem; }
       .uc-panel { padding: 1rem 1rem; min-height: 240px; }
       .uc-nav-row { padding: 0.7rem 0.8rem; }
       .problem-card-body ul li { font-size: 0.78rem; }
+      .uc-tabs { flex-direction: column; border-radius: 8px; }
+      .uc-tab { width: 100%; border-bottom: 1px solid var(--border); border-left: none !important; }
+      .uc-tab:last-child { border-bottom: none; }
+      .uc-tab.active { background: rgba(99, 102, 241, 0.1); }
+      .flow-step { font-size: 0.7rem; padding: 0.35rem 0.6rem; }
+      .flow-connector { width: 10px; }
+    }
+
+    /* Support for narrow 375px screens */
+    @media (max-width: 375px) {
+      body { font-size: 14px; }
+      .header h1 { font-size: 1.2rem; }
+      .btn { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+      .panel .ph { font-size: 0.8rem; padding: 0.7rem 0.9rem; }
+      .uc-panel-title { font-size: 0.95rem; }
+      .vsec { padding: 2rem 0.8rem; }
     }
 
     /* ── Scroll Reveal ── */
@@ -534,6 +597,17 @@
 
     .btn-ghost:hover:not(:disabled) {
       border-color: var(--accent);
+    }
+
+    .hiw-arrow {
+      font-size: 1.6rem;
+      color: var(--accent);
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .hiw-step:hover .hiw-arrow {
+      transform: translateX(8px);
+      color: var(--green);
     }
 
     .btn-orange {
@@ -1528,6 +1602,7 @@
   -->
 
   <div class="header">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="theme-toggle">🌓</button>
     <h1>🔒 miTch — The Forgetting Layer</h1>
     <div class="tagline">Privacy Middleware for National Identity Wallets</div>
     <div
@@ -1604,17 +1679,63 @@
     </div>
   </div>
 
-  <!-- ══ SECTION B: USE CASES ════════════════════════════════════════════ -->
+  <!-- ══ SECTION A2: HOW IT WORKS ══════════════════════════════════════ -->
+  <style>
+    .hiw-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; position: relative; }
+    @media (max-width: 768px) { .hiw-steps { grid-template-columns: 1fr; gap: 2rem; } }
+    .hiw-step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; text-align: center; position: relative; z-index: 1; transition: transform 0.3s; }
+    .hiw-step:hover { transform: translateY(-5px); border-color: var(--accent); }
+    .hiw-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+    .hiw-step h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent); }
+    .hiw-step p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+    .hiw-arrow { position: absolute; top: 50%; right: -0.75rem; transform: translateY(-50%); font-size: 1.5rem; color: var(--border); z-index: 0; }
+    @media (max-width: 768px) { .hiw-arrow { top: auto; bottom: -1.75rem; right: 50%; transform: translateX(50%) rotate(90deg); } }
+    .hiw-step:last-child .hiw-arrow { display: none; }
+  </style>
+
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">Simplicity by Design</div>
+      <h2 class="vsec-title">How It Works</h2>
+      <p class="vsec-body">Four steps to absolute privacy. No magic, just solid engineering and modern cryptography.</p>
+
+      <div class="hiw-steps">
+        <div class="hiw-step">
+          <span class="hiw-icon">🏛️</span>
+          <h3>1. Issuer</h3>
+          <p>National ID system signs your data. miTch prepares <strong>selective proofs</strong>.</p>
+          <div class="hiw-arrow">→</div>
+        </div>
+        <div class="hiw-step">
+          <span class="hiw-icon">📱</span>
+          <h3>2. Wallet</h3>
+          <p>Your device stores the credentials. <strong>Raw data is shredded</strong> after signing.</p>
+          <div class="hiw-arrow">→</div>
+        </div>
+        <div class="hiw-step">
+          <span class="hiw-icon">⚖️</span>
+          <h3>3. Policy Engine</h3>
+          <p>miTch filters the request. You see exactly <strong>what</strong> is shared and <strong>why</strong>.</p>
+          <div class="hiw-arrow">→</div>
+        </div>
+        <div class="hiw-step">
+          <span class="hiw-icon">🏪</span>
+          <h3>4. Verifier</h3>
+          <p>Service receives <strong>only the proof</strong> (e.g., "Over 18: Yes"). No name, no ID shared.</p>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="vsec-divider">
     <div class="vsec">
       <div class="vsec-label">Live Demo</div>
-      <h2 class="vsec-title">Verifier fragt. miTch filtert. Du entscheidest.</h2>
-      <p class="vsec-body">Vier konkrete Szenarien — dieselbe Mechanik. Klick dich durch jeden Schritt und sieh genau was geteilt wird, was geblockt wird, und warum.</p>
+      <h2 class="vsec-title">Verifier asks. miTch filters. You decide.</h2>
+      <p class="vsec-body">Four concrete scenarios — same mechanics. Click through each step and see exactly what is shared, what is blocked, and why.</p>
 
       <div class="uc-tabs">
         <button class="uc-tab active" data-uc="adtech" onclick="switchUC('adtech')">🎯 Ad-Tech</button>
         <button class="uc-tab" data-uc="student" onclick="switchUC('student')">🎓 Student</button>
-        <button class="uc-tab" data-uc="hospital" onclick="switchUC('hospital')">🏥 Notaufnahme</button>
+        <button class="uc-tab" data-uc="hospital" onclick="switchUC('hospital')">🏥 Hospital</button>
         <button class="uc-tab" data-uc="ehds" onclick="switchUC('ehds')">🔬 EHDS</button>
         <button class="uc-tab" data-uc="social" onclick="switchUC('social')">📱 Social Login</button>
       </div>
@@ -1625,17 +1746,17 @@
           <div class="uc-steps-nav" id="snav-adtech">
             <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analysis</div>
             <div class="uc-snav-line"></div>
             <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Ergebnis</div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Result</div>
           </div>
 
           <!-- Step 1: Verifier Request -->
           <div class="uc-panel active" id="adtech-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">ExampleAds GmbH möchte dich verifizieren</div>
+            <div class="uc-panel-title">ExampleAds GmbH wants to verify you</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🎯</span>
@@ -1649,27 +1770,27 @@
             <div class="risk-row"><span class="rr-field">region_match</span><span class="rr-val">EU / EEA</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">humanity_proof</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">frequency_cap</span><span class="rr-val">5 / day</span><span class="risk-badge low">🟢 Rate Limit</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Diese Anfrage wird als OID4VP Presentation Request übermittelt. Kein direkter Datenzugriff möglich.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">This request is transmitted as an OID4VP Presentation Request. No direct data access is possible.</p>
           </div>
 
           <!-- Step 2: Transparency Layer -->
           <div class="uc-panel" id="adtech-p1">
-            <div class="uc-label-chip">② miTch Analyse</div>
-            <div class="uc-panel-title">Was bekommt der Verifier — und was nicht?</div>
-            <div class="uc-sub-hdr">Geteilte Attribute (minimaler Proof)</div>
-            <div class="risk-row"><span class="rr-field">age ≥ 18</span><span class="rr-val">true/false, kein Alter</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="risk-row"><span class="rr-field">region: EU</span><span class="rr-val">ja/nein, kein Land</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-label-chip">② miTch Analysis</div>
+            <div class="uc-panel-title">What does the verifier get — and what not?</div>
+            <div class="uc-sub-hdr">Shared attributes (minimal proof)</div>
+            <div class="risk-row"><span class="rr-field">age ≥ 18</span><span class="rr-val">true/false, no age</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="risk-row"><span class="rr-field">region: EU</span><span class="rr-val">yes/no, no country</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">humanity</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Strukturell nicht teilbar</div>
-            <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT IN PREDICATE</span></div>
-            <div class="blocked-row"><span class="br-field">Geburtsdatum</span><span class="br-reason">NOT IN PREDICATE</span></div>
+            <div class="uc-sub-hdr">Structurally not shareable</div>
+            <div class="blocked-row"><span class="br-field">Last Name, First Name</span><span class="br-reason">NOT IN PREDICATE</span></div>
+            <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
             <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
-              <div class="ib-body">Mit Alter ≥ 18 + Region EU + Zeitstempel kann der Verifier ein grobes demografisches Cluster bilden. Dein genaues Alter, Land oder Profil bleibt unbekannt. Budget-Signal ist auf 1.920 Slots quantisiert — kein kontinuierliches Fingerprinting möglich.</div>
+              <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots — no continuous fingerprinting is possible.</div>
             </div>
-            <div class="uc-sub-hdr">Deine Ad-Preferences (bleiben lokal)</div>
+            <div class="uc-sub-hdr">Your Ad-Preferences (remain local)</div>
             <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
               <tr><td style="color:var(--text-dim);padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">Max. Impressions/Tag</td><td style="font-family:var(--mono);color:var(--accent);text-align:right;padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">5</td></tr>
               <tr><td style="color:var(--text-dim);padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">Quiet Period</td><td style="font-family:var(--mono);color:var(--accent);text-align:right;padding:0.25rem 0.4rem;border-bottom:1px solid var(--border)">22:00–07:00</td></tr>
@@ -1680,21 +1801,21 @@
           <!-- Step 3: Proof Generation -->
           <div class="uc-panel" id="adtech-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
-            <div class="uc-panel-title">Nullifier + Budget-Signal werden erzeugt</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Der Nullifier ist deterministisch: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Zwei Verifier mit gleichem Scope erhalten unterschiedliche Nullifier — kein Cross-Verifier Tracking möglich.</p>
+            <div class="uc-panel-title">Nullifier + Budget signal are generated</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — no cross-verifier tracking is possible.</p>
             <div class="btn-row">
-              <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Proof generieren</button>
+              <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Generate Proof</button>
             </div>
-            <div class="proof-box pending" id="uc-adtech-proof-box">— Noch nicht generiert —</div>
+            <div class="proof-box pending" id="uc-adtech-proof-box">— Not yet generated —</div>
           </div>
 
           <!-- Step 4: Split-Screen Result -->
           <div class="uc-panel" id="adtech-p3">
-            <div class="uc-label-chip">④ Ergebnis</div>
-            <div class="uc-panel-title">Was sieht der Verifier — vs. was sieht der User?</div>
+            <div class="uc-label-chip">④ Result</div>
+            <div class="uc-panel-title">What does the verifier see — vs. what does the user see?</div>
             <div class="split-screen">
               <div class="ss-col verifier-col">
-                <div class="ss-col-title">🔴 Verifier sieht</div>
+                <div class="ss-col-title">🔴 Verifier sees</div>
                 <div class="ss-row"><span class="ss-key">age_gte_18:</span><span class="ss-val">true</span></div>
                 <div class="ss-row"><span class="ss-key">region_eu:</span><span class="ss-val">true</span></div>
                 <div class="ss-row"><span class="ss-key">humanity:</span><span class="ss-val">verified</span></div>
@@ -1705,25 +1826,28 @@
                 <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">impossible</span></div>
               </div>
               <div class="ss-col user-col">
-                <div class="ss-col-title">🟢 Du siehst (Wallet)</div>
+                <div class="ss-col-title">🟢 You see (Wallet)</div>
                 <div class="ss-row"><span class="ss-key">Verifier:</span><span class="ss-val">ExampleAds GmbH</span></div>
-                <div class="ss-row"><span class="ss-key">Zeitpunkt:</span><span class="ss-val" id="adtech-ts">—</span></div>
-                <div class="ss-row"><span class="ss-key">Geteilt:</span><span class="ss-val">3 Prädikate</span></div>
-                <div class="ss-row"><span class="ss-key">Geblockt:</span><span class="ss-val">4 Felder</span></div>
-                <div class="ss-row"><span class="ss-key">Budget:</span><span class="ss-val">4 / 5 verbleibend</span></div>
+                <div class="ss-row"><span class="ss-key">Time:</span><span class="ss-val" id="adtech-ts">—</span></div>
+                <div class="ss-row"><span class="ss-key">Shared:</span><span class="ss-val">3 predicates</span></div>
+                <div class="ss-row"><span class="ss-key">Blocked:</span><span class="ss-val">4 fields</span></div>
+                <div class="ss-row"><span class="ss-key">Budget:</span><span class="ss-val">4 / 5 remaining</span></div>
                 <div class="ss-row"><span class="ss-key">Basis:</span><span class="ss-val">GDPR Art. 6(1)(a)</span></div>
                 <div class="ss-row"><span class="ss-key">Receipt:</span><span class="ss-val">consent-…3c9f</span></div>
               </div>
             </div>
             <div class="collective-signal" style="margin-top:0.9rem">
-              <strong>Sybil Prevention:</strong> Derselbe Nullifier für ExampleAds + campaign-summer25 kann nur einmal pro Frequenz-Fenster verwendet werden. 100 gefälschte Accounts → 100 verschiedene Nullifier, aber jeder wird vom Verifier getrackt und ab Limit geblockt.
+              <strong>Sybil Prevention:</strong> The same nullifier for ExampleAds + campaign-summer25 can only be used once per frequency window. 100 fake accounts → 100 different nullifiers, but each is tracked by the verifier and blocked once the limit is reached.
+            </div>
+            <div style="margin-top:1.5rem; text-align:center;">
+              <button class="btn btn-success" onclick="activateScenario('adtech')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
             </div>
           </div>
 
           <div class="uc-nav-row">
-            <button class="btn btn-ghost" id="uc-adtech-back" onclick="ucBack('adtech')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <button class="btn btn-ghost" id="uc-adtech-back" onclick="ucBack('adtech')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Back</button>
             <span class="uc-step-count" id="uc-adtech-count">1 / 4</span>
-            <button class="btn btn-primary" id="uc-adtech-next" onclick="ucNext('adtech')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+            <button class="btn btn-primary" id="uc-adtech-next" onclick="ucNext('adtech')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Next →</button>
           </div>
         </div>
       </div>
@@ -1734,7 +1858,7 @@
           <div class="uc-steps-nav" id="snav-student">
             <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analysis</div>
             <div class="uc-snav-line"></div>
             <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
             <div class="uc-snav-line"></div>
@@ -1744,7 +1868,7 @@
           <!-- Step 1: IVB Request -->
           <div class="uc-panel active" id="student-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">IVB Innsbruck fragt: Bist du Student?</div>
+            <div class="uc-panel-title">IVB Innsbruck asks: Are you a student?</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🚌</span>
@@ -1757,78 +1881,81 @@
             <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">is_student: true/false</span><span class="risk-badge low">🟢 Boolean</span></div>
             <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende</span><span class="risk-badge low">🟢 Date</span></div>
             <div class="allow-banner" style="margin-top:0.8rem">
-              <div class="ab-title">Anfrage sauber — keine sensitiven Daten</div>
-              <div class="ab-body">IVB fragt nur ob du Student bist und bis wann. Name, Matrikelnummer, Studiengang, Uni, Geburtsdatum — nichts davon ist Teil der Anfrage.</div>
+              <div class="ab-title">Request clean — no sensitive data</div>
+              <div class="ab-body">IVB only asks if you are a student and until when. Name, matriculation number, field of study, university, date of birth — none of this is part of the request.</div>
             </div>
           </div>
 
           <!-- Step 2: Analysis -->
           <div class="uc-panel" id="student-p1">
-            <div class="uc-label-chip">② miTch Analyse</div>
-            <div class="uc-panel-title">Risikoanalyse: 🟢 Low — sicher zu teilen</div>
-            <div class="uc-sub-hdr">Was wird geteilt (minimaler Proof)</div>
+            <div class="uc-label-chip">② miTch Analysis</div>
+            <div class="uc-panel-title">Risk Analysis: 🟢 Low — safe to share</div>
+            <div class="uc-sub-hdr">What is shared (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende 23:59</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Strukturell nicht teilbar (nicht in Anfrage)</div>
+            <div class="uc-sub-hdr">Structurally not shareable (not in request)</div>
             <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Matrikelnummer</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Geburtsdatum</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Universität</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Studiengang</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Matriculation Number</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">University</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Field of Study</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">Student-Boolean + Semesterende geben keinen Rückschluss auf Identität. IVB erfährt nur: Dieser Wallet-User ist gültiger Student. Kein Profiling möglich.</div>
+              <div class="ib-body">Student boolean + semester end date do not allow any conclusions about identity. IVB only learns: This wallet user is a valid student. No profiling possible.</div>
             </div>
           </div>
 
           <!-- Step 3: Proof -->
           <div class="uc-panel" id="student-p2">
             <div class="uc-label-chip">③ Ephemeral Credential</div>
-            <div class="uc-panel-title">Kurzzeit-Credential wird ausgestellt</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Das Credential gilt nur für diese Session und verfällt automatisch um Mitternacht. Die Universität bestätigt den Status — IVB erfährt nie welche Uni.</p>
+            <div class="uc-panel-title">Short-term credential is issued</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The credential is valid only for this session and expires automatically at midnight. The university confirms the status — IVB never learns which university.</p>
             <div class="btn-row">
-              <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Studentenstatus bestätigen</button>
+              <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Confirm Student Status</button>
             </div>
-            <div class="proof-box pending" id="uc-student-proof-box">— Noch nicht bestätigt —</div>
+            <div class="proof-box pending" id="uc-student-proof-box">— Not yet confirmed —</div>
           </div>
 
           <!-- Step 4: Overreaching Demo -->
           <div class="uc-panel" id="student-p3">
             <div class="uc-label-chip">④ Overreach-Demo</div>
-            <div class="uc-panel-title">Was passiert wenn ein Vendor zu viel verlangt?</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">IVB+ (Pilotprogramm) stellt eine erweiterte Anfrage — zusätzlich zur Studentenverifizierung will der Vendor Matrikelnummer und Universitätsnamen.</p>
-            <div class="uc-sub-hdr">Anfrage von IVB+</div>
+            <div class="uc-panel-title">What happens when a vendor asks for too much?</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">IVB+ (pilot program) makes an extended request — in addition to student verification, the vendor wants the matriculation number and university name.</p>
+            <div class="uc-sub-hdr">Request from IVB+</div>
             <div class="ok-row"><span class="or-field">student_status</span><span class="or-status">✓ OK</span></div>
             <div class="ok-row"><span class="or-field">valid_until</span><span class="or-status">✓ OK</span></div>
-            <div class="overreach-row"><span class="or-field">matrikelnummer</span><span class="or-status">⛔ BLOCKED</span></div>
+            <div class="overreach-row"><span class="or-field">matriculation_number</span><span class="or-status">⛔ BLOCKED</span></div>
             <div class="overreach-row"><span class="or-field">university_name</span><span class="or-status">⛔ BLOCKED</span></div>
             <div class="deny-banner" style="margin-top:0.8rem">
-              <div class="db-title">⛔ Anfrage partiell abgelehnt</div>
-              <div class="db-body">Matrikelnummer und Universitätsname sind nicht Teil des genehmigten Predicate-Sets. miTch gibt nur die saubere Teilmenge frei — der Vendor erhält die anderen Felder nicht, kann aber die Studentenverifizierung trotzdem nutzen.</div>
+              <div class="db-title">⛔ Request partially denied</div>
+              <div class="db-body">Matriculation number and university name are not part of the approved predicate set. miTch only releases the clean subset — the vendor does not receive the other fields but can still use the student verification.</div>
             </div>
             <div class="btn-row">
-              <button class="btn btn-ghost" onclick="ucFlagVendor('student')" id="uc-student-flag-btn" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Vendor melden</button>
+              <button class="btn btn-ghost" onclick="ucFlagVendor('student')" id="uc-student-flag-btn" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Flag Vendor</button>
             </div>
             <div class="collective-signal" id="uc-student-collective">
-              <strong>423 Studenten</strong> haben IVB+ bereits als übergriffig gemeldet. Ab 500 Meldungen wird der Vendor automatisch dem AT-DSA gemeldet.
+              <strong>423 students</strong> have already reported IVB+ as overreaching. From 500 reports, the vendor is automatically reported to the AT-DSA.
+            </div>
+            <div style="margin-top:1.5rem; text-align:center;">
+              <button class="btn btn-success" onclick="activateScenario('student')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
             </div>
           </div>
 
           <div class="uc-nav-row">
-            <button class="btn btn-ghost" id="uc-student-back" onclick="ucBack('student')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <button class="btn btn-ghost" id="uc-student-back" onclick="ucBack('student')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Back</button>
             <span class="uc-step-count" id="uc-student-count">1 / 4</span>
-            <button class="btn btn-primary" id="uc-student-next" onclick="ucNext('student')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+            <button class="btn btn-primary" id="uc-student-next" onclick="ucNext('student')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Next →</button>
           </div>
         </div>
       </div>
 
-      <!-- ─── UC-2a: Notaufnahme ─────────────────────────────────────────── -->
+      <!-- ─── UC-2a: Hospital ─────────────────────────────────────────── -->
       <div class="uc-pane" id="uc-hospital">
         <div class="uc-wizard">
           <div class="uc-steps-nav" id="snav-hospital">
             <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Risiko</div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Risk</div>
             <div class="uc-snav-line"></div>
             <div class="uc-snav-dot">3</div><div class="uc-snav-label">Consent</div>
             <div class="uc-snav-line"></div>
@@ -1838,75 +1965,78 @@
           <!-- Step 1: Hospital Request -->
           <div class="uc-panel active" id="hospital-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">UKH Innsbruck — Notaufnahme</div>
+            <div class="uc-panel-title">UKH Innsbruck — Hospital Admission</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🏥</span>
-                <span class="vc-name">UKH Innsbruck — Notaufnahme</span>
+                <span class="vc-name">UKH Innsbruck — Hospital</span>
                 <span class="trust-chip high">Trust 97/100</span>
               </div>
               <div class="vc-did">did:mitch:ukh-innsbruck · ELGA-zertifiziert · Art. 9 GDPR Basis</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
-            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">Liste</span><span class="risk-badge med">🟡 Medium</span></div>
+            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">List</span><span class="risk-badge med">🟡 Medium</span></div>
             <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">ABO+Rh</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">ÖGK/privat</span><span class="risk-badge low">🟢 Low</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Rechtsgrundlage: GDPR Art. 9(2)(c) — lebenswichtige Interessen. Ephemeral Credential, automatisch gelöscht bei Session-Ende.</p>
+            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">Public/Private</span><span class="risk-badge low">🟢 Low</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Legal basis: GDPR Art. 9(2)(c) — vital interests. Ephemeral credential, automatically deleted at session end.</p>
           </div>
 
           <!-- Step 2: Risk Analysis -->
           <div class="uc-panel" id="hospital-p1">
-            <div class="uc-label-chip">② Risikoanalyse</div>
-            <div class="uc-panel-title">Per-Attribut Bewertung</div>
-            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">Penicillin, Latex</span><span class="risk-badge med">🟡 Medium — medizinisch notwendig</span></div>
+            <div class="uc-label-chip">② Risk Analysis</div>
+            <div class="uc-panel-title">Per-Attribute Assessment</div>
+            <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">Penicillin, Latex</span><span class="risk-badge med">🟡 Medium — medically necessary</span></div>
             <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">A+</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">ÖGK — aktiv</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Nicht angefragt — nicht teilbar</div>
-            <div class="blocked-row"><span class="br-field">Diagnose-History</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Medikamentenliste</span><span class="br-reason">NOT REQUESTED</span></div>
-            <div class="blocked-row"><span class="br-field">Psychische Erkrankungen</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
-            <div class="blocked-row"><span class="br-field">Genomdaten</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
+            <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">Public — active</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Not requested — not shareable</div>
+            <div class="blocked-row"><span class="br-field">Diagnosis History</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Medication List</span><span class="br-reason">NOT REQUESTED</span></div>
+            <div class="blocked-row"><span class="br-field">Mental Health Data</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
+            <div class="blocked-row"><span class="br-field">Genomic Data</span><span class="br-reason">NOT REQUESTABLE — Art. 9(1) GDPR</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">Allergien + Blutgruppe + Versicherung erlauben dem KH keine weiteren Schlüsse über Identität, Wohnort oder Diagnosen. Die Kombination ist medizinisch notwendig und juristisch gedeckt.</div>
+              <div class="ib-body">Allergies + blood group + insurance do not allow the hospital to draw further conclusions about identity, place of residence, or diagnoses. The combination is medically necessary and legally covered.</div>
             </div>
           </div>
 
           <!-- Step 3: Consent + Proof -->
           <div class="uc-panel" id="hospital-p2">
             <div class="uc-label-chip">③ Consent &amp; Ephemeral Proof</div>
-            <div class="uc-panel-title">Freigabe + Session-Key Generierung</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Nach Freigabe wird ein ephemeral Session-Key erzeugt. Die Daten sind mit diesem Key verschlüsselt — bei Session-Ende wird der Key automatisch gelöscht (Crypto-Shredding).</p>
+            <div class="uc-panel-title">Release + Session Key Generation</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">After release, an ephemeral session key is generated. The data is encrypted with this key — at the end of the session, the key is automatically deleted (crypto-shredding).</p>
             <div class="btn-row">
-              <button class="btn btn-success" id="uc-hospital-prove-btn" onclick="ucRunHospitalProof()">✓ Notaufnahme freigeben</button>
-              <button class="btn btn-danger" onclick="ucDenyHospital()" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">✗ Ablehnen</button>
+              <button class="btn btn-success" id="uc-hospital-prove-btn" onclick="ucRunHospitalProof()">✓ Release Hospital Admission</button>
+              <button class="btn btn-danger" onclick="ucDenyHospital()" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">✗ Deny</button>
             </div>
-            <div class="proof-box pending" id="uc-hospital-proof-box">— Warte auf Freigabe —</div>
+            <div class="proof-box pending" id="uc-hospital-proof-box">— Waiting for release —</div>
           </div>
 
           <!-- Step 4: Post-Session -->
           <div class="uc-panel" id="hospital-p3">
             <div class="uc-label-chip">④ Post-Session</div>
-            <div class="uc-panel-title">Daten kryptografisch gelöscht — Consent Receipt ausgestellt</div>
+            <div class="uc-panel-title">Data cryptographically deleted — Consent receipt issued</div>
             <div class="allow-banner">
-              <div class="ab-title">✓ Session beendet — Crypto-Shredding aktiv</div>
-              <div class="ab-body">Der ephemeral Session-Key wurde gelöscht. Alle verschlüsselten Daten sind dauerhaft unlesbar — auch für miTch und UKH nach Session-Ende.</div>
+              <div class="ab-title">✓ Session ended — Crypto-shredding active</div>
+              <div class="ab-body">The ephemeral session key has been deleted. All encrypted data is permanently unreadable — even for miTch and the hospital after the session end.</div>
             </div>
-            <div class="uc-sub-hdr">Consent Receipt (in deinem Wallet gespeichert)</div>
+            <div class="uc-sub-hdr">Consent Receipt (stored in your wallet)</div>
             <div class="receipt-box">
               <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">UKH Innsbruck — Notaufnahme</span></div>
-              <div class="receipt-row"><span class="rk">Zeitpunkt</span><span class="rv" id="hospital-ts">—</span></div>
-              <div class="receipt-row"><span class="rk">Geteilt</span><span class="rv">allergies, blood_group, insurance</span></div>
+              <div class="receipt-row"><span class="rk">Time</span><span class="rv" id="hospital-ts">—</span></div>
+              <div class="receipt-row"><span class="rk">Shared</span><span class="rv">allergies, blood_group, insurance</span></div>
               <div class="receipt-row"><span class="rk">Basis</span><span class="rv">GDPR Art. 9(2)(c)</span></div>
-              <div class="receipt-row"><span class="rk">Session-Key</span><span class="rv">🗑 gelöscht</span></div>
-              <div class="receipt-row"><span class="rk">Daten verfügbar</span><span class="rv">❌ nein — shredded</span></div>
+              <div class="receipt-row"><span class="rk">Session Key</span><span class="rv">🗑 deleted</span></div>
+              <div class="receipt-row"><span class="rk">Data available</span><span class="rv">❌ no — shredded</span></div>
+            </div>
+            <div style="margin-top:1.5rem; text-align:center;">
+              <button class="btn btn-success" onclick="activateScenario('hospital')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
             </div>
           </div>
 
           <div class="uc-nav-row">
-            <button class="btn btn-ghost" id="uc-hospital-back" onclick="ucBack('hospital')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <button class="btn btn-ghost" id="uc-hospital-back" onclick="ucBack('hospital')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Back</button>
             <span class="uc-step-count" id="uc-hospital-count">1 / 4</span>
-            <button class="btn btn-primary" id="uc-hospital-next" onclick="ucNext('hospital')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+            <button class="btn btn-primary" id="uc-hospital-next" onclick="ucNext('hospital')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Next →</button>
           </div>
         </div>
       </div>
@@ -1925,57 +2055,60 @@
           <!-- Step 1: University Request -->
           <div class="uc-panel active" id="ehds-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">MedUni Wien — Forschungsanfrage</div>
+            <div class="uc-panel-title">MedUni Vienna — Research Request</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🔬</span>
-                <span class="vc-name">MedUni Wien — Forschungsabteilung</span>
+                <span class="vc-name">MedUni Vienna — Research Dept.</span>
                 <span class="trust-chip med">Trust 74/100</span>
               </div>
-              <div class="vc-did">did:mitch:meduni-wien-research · kein HDAB-Zertifikat erkannt</div>
+              <div class="vc-did">did:mitch:meduni-vienna-research · no HDAB certificate detected</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
-            <div class="risk-row"><span class="rr-field">health_data_pseudonymized</span><span class="rr-val">Diabetes-Studie 2025</span><span class="risk-badge high">🔴 High</span></div>
+            <div class="risk-row"><span class="rr-field">health_data_pseudonymized</span><span class="rr-val">Diabetes Study 2025</span><span class="risk-badge high">🔴 High</span></div>
             <div class="risk-row"><span class="rr-field">diagnosis_codes</span><span class="rr-val">ICD-10 subset</span><span class="risk-badge high">🔴 High</span></div>
-            <div class="risk-row"><span class="rr-field">medication_history</span><span class="rr-val">letzte 24 Monate</span><span class="risk-badge high">🔴 High</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Erkannt: Sekundärnutzung von Gesundheitsdaten (EHDS Art. 33). Verifier hat kein HDAB-Zertifikat.</p>
+            <div class="risk-row"><span class="rr-field">medication_history</span><span class="rr-val">last 24 months</span><span class="risk-badge high">🔴 High</span></div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Detected: Secondary use of health data (EHDS Art. 33). Verifier has no HDAB certificate.</p>
           </div>
 
           <!-- Step 2: Deny -->
           <div class="uc-panel" id="ehds-p1">
             <div class="uc-label-chip">② Policy: DENY</div>
-            <div class="uc-panel-title">Anfrage automatisch abgelehnt</div>
+            <div class="uc-panel-title">Request automatically denied</div>
             <div class="deny-banner">
               <div class="db-title">⛔ DENY_SECONDARY_USE_DIRECT</div>
-              <div class="db-body">Diese Anfrage zielt auf Sekundärnutzung von Gesundheitsdaten. Laut EHDS Regulation (EU) 2025/327, Art. 33, darf Sekundärnutzung <strong style="color:var(--text)">ausschließlich über einen Health Data Access Body (HDAB)</strong> erfolgen. Ein direkter Zugriff auf Wallets ist nicht zulässig — auch nicht mit Einwilligung des Nutzers.</div>
+              <div class="db-body">This request aims at secondary use of health data. According to EHDS Regulation (EU) 2025/327, Art. 33, secondary use must <strong style="color:var(--text)">only occur via a Health Data Access Body (HDAB)</strong>. Direct access to wallets is not permitted — even with the user's consent.</div>
             </div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;font-size:0.79rem;color:var(--text-dim);line-height:1.6">
-              <strong style="color:var(--text)">Was muss MedUni Wien stattdessen tun?</strong><br>
-              1. Antrag beim österreichischen HDAB (Gesundheit Österreich GmbH / ELGA GmbH)<br>
-              2. Ethikvotum + Datenschutz-Folgenabschätzung einreichen<br>
-              3. Datenzugang über HDAB-Portal — nicht über individuelle Wallets
+              <strong style="color:var(--text)">What must MedUni Vienna do instead?</strong><br>
+              1. Apply to the Austrian HDAB (GÖG / ELGA GmbH)<br>
+              2. Submit ethics vote + data protection impact assessment<br>
+              3. Data access via HDAB portal — not via individual wallets
             </div>
             <div class="collective-signal" style="margin-top:0.8rem">
-              Diese Anfrage wurde automatisch protokolliert. Bei wiederholtem Muster: Meldung an Datenschutzbehörde (DSB) möglich.
+              This request was automatically logged. For repeated patterns: Report to data protection authority (DSB) possible.
             </div>
           </div>
 
           <!-- Step 3: Break-Glass -->
           <div class="uc-panel" id="ehds-p2">
             <div class="uc-label-chip">③ Break-Glass Override</div>
-            <div class="uc-panel-title">Notfall-Override: Arzt überschreibt Policy</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">In echten Notfällen kann ein autorisierter Arzt die Policy überschreiben. Jeder Override wird <strong style="color:var(--text)">permanent im Audit-Trail</strong> gespeichert — keine Möglichkeit unbemerkt zu handeln.</p>
+            <div class="uc-panel-title">Emergency Override: Doctor overwrites Policy</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">In real emergencies, an authorized doctor can overwrite the policy. Every override is <strong style="color:var(--text)">permanently stored in the audit trail</strong> — no possibility to act unnoticed.</p>
             <div class="btn-row">
-              <button class="btn btn-orange" id="uc-ehds-bg-btn" onclick="ucRunBreakGlass()">🔓 Break-Glass aktivieren (Notfall)</button>
+              <button class="btn btn-orange" id="uc-ehds-bg-btn" onclick="ucRunBreakGlass()">🔓 Activate Break-Glass (Emergency)</button>
             </div>
-            <div class="bg-log" id="uc-ehds-bg-log">— Noch kein Override —</div>
-            <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.7rem;line-height:1.5">⚠ Break-Glass gilt nur für unmittelbare Notfallbehandlung. Sekundärnutzung für Forschung ist auch via Break-Glass nicht zulässig — dieser Flow ist für Behandlungsnotfälle (Art. 9(2)(c) GDPR).</p>
+            <div class="bg-log" id="uc-ehds-bg-log">— No override yet —</div>
+            <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.7rem;line-height:1.5">⚠ Break-glass only applies to immediate emergency treatment. Secondary use for research is not permitted even via break-glass — this flow is for treatment emergencies (Art. 9(2)(c) GDPR).</p>
+            <div style="margin-top:1.5rem; text-align:center;">
+              <button class="btn btn-success" onclick="activateScenario('ehds')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
+            </div>
           </div>
 
           <div class="uc-nav-row">
-            <button class="btn btn-ghost" id="uc-ehds-back" onclick="ucBack('ehds')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <button class="btn btn-ghost" id="uc-ehds-back" onclick="ucBack('ehds')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Back</button>
             <span class="uc-step-count" id="uc-ehds-count">1 / 3</span>
-            <button class="btn btn-primary" id="uc-ehds-next" onclick="ucNext('ehds')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+            <button class="btn btn-primary" id="uc-ehds-next" onclick="ucNext('ehds')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Next →</button>
           </div>
         </div>
       </div>
@@ -1986,17 +2119,17 @@
           <div class="uc-steps-nav" id="snav-social">
             <div class="uc-snav-dot active">1</div><div class="uc-snav-label">Request</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analyse</div>
+            <div class="uc-snav-dot">2</div><div class="uc-snav-label">Analysis</div>
             <div class="uc-snav-line"></div>
             <div class="uc-snav-dot">3</div><div class="uc-snav-label">Proof</div>
             <div class="uc-snav-line"></div>
-            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Ergebnis</div>
+            <div class="uc-snav-dot">4</div><div class="uc-snav-label">Result</div>
           </div>
 
           <!-- Step 1: App Request -->
           <div class="uc-panel active" id="social-p0">
             <div class="uc-label-chip">① App Login Request</div>
-            <div class="uc-panel-title">FlirtRadar™ möchte dich verifizieren</div>
+            <div class="uc-panel-title">FlirtRadar™ wants to verify you</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">💜</span>
@@ -2013,17 +2146,17 @@
             <div class="risk-row"><span class="rr-field">friends_list</span><span class="rr-val">Array</span><span class="risk-badge high">🔴 Social Graph</span></div>
             <div class="risk-row"><span class="rr-field">location_history</span><span class="rr-val">Array</span><span class="risk-badge high">🔴 Tracking</span></div>
             <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val">UUID</span><span class="risk-badge high">🔴 Fingerprint</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.7rem">Vergleich: "Login with Google" teilt typischerweise alle angefragten Felder. miTch prüft jedes Feld einzeln.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.7rem">Comparison: "Login with Google" typically shares all requested fields. miTch checks each field individually.</p>
           </div>
 
           <!-- Step 2: Risk Analysis -->
           <div class="uc-panel" id="social-p1">
             <div class="uc-label-chip">② miTch Analyse</div>
-            <div class="uc-panel-title">Risikoanalyse: 🔴 High — strukturelle Blockade aktiv</div>
-            <div class="uc-sub-hdr">Was die App bekommt (minimaler Proof)</div>
+            <div class="uc-panel-title">Risk Analysis: 🔴 High — structural blockage active</div>
+            <div class="uc-sub-hdr">What the app gets (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">einmalig, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Strukturell nicht teilbar (Policy-Engine blockiert)</div>
+            <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">unique, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
+            <div class="uc-sub-hdr">Structurally not shareable (Policy Engine blocks)</div>
             <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">email</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
@@ -2032,26 +2165,26 @@
             <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="allow-banner" style="border-left-color:var(--red)">
               <div class="ab-title" style="color:var(--red)">⚠ Inference-Risiko: 🔴 High</div>
-              <div class="ab-body">friends_list ermöglicht Social-Graph-Analyse. location_history erlaubt Bewegungsprofile. Beides wird strukturell blockiert — die Daten verlassen das Wallet nie, auch nicht verschlüsselt.</div>
+              <div class="ab-body">friends_list enables social graph analysis. location_history allows movement profiles. Both are structurally blocked — the data never leaves the wallet, not even encrypted.</div>
             </div>
           </div>
 
           <!-- Step 3: Proof Generation -->
           <div class="uc-panel" id="social-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
-            <div class="uc-panel-title">Pseudonymen Login-Proof generieren</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">miTch erzeugt einen pairwise-pseudonymen Proof: Die App erfährt nur "User ist ≥18" und bekommt eine einmalige ID, die nicht mit anderen Diensten verknüpfbar ist.</p>
-            <button class="btn btn-success" id="uc-social-prove-btn" onclick="ucRunSocialProof()">🔐 Pseudonym-Login generieren</button>
-            <div class="proof-box pending" id="uc-social-proof-box">— Warte auf Bestätigung —</div>
+            <div class="uc-panel-title">Generate Pseudonymous Login Proof</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">miTch generates a pairwise-pseudonymous proof: The app only learns "User is ≥18" and receives a unique ID that is not linkable to other services.</p>
+            <button class="btn btn-success" id="uc-social-prove-btn" onclick="ucRunSocialProof()">🔐 Generate Pseudonym Login</button>
+            <div class="proof-box pending" id="uc-social-proof-box">— Waiting for confirmation —</div>
           </div>
 
           <!-- Step 4: Result -->
           <div class="uc-panel" id="social-p3">
-            <div class="uc-label-chip">④ Ergebnis</div>
-            <div class="uc-panel-title">Die App wollte alles — sie hat fast nichts bekommen</div>
+            <div class="uc-label-chip">④ Result</div>
+            <div class="uc-panel-title">The app wanted everything — it got almost nothing</div>
             <div class="split-screen" style="margin-bottom:1rem">
               <div class="ss-col" style="border-left:3px solid var(--red)">
-                <div class="ss-row"><span class="k">App wollte:</span></div>
+                <div class="ss-row"><span class="k">App wanted:</span></div>
                 <div class="ss-row"><span style="color:var(--red)">✗ display_name</span></div>
                 <div class="ss-row"><span style="color:var(--red)">✗ email</span></div>
                 <div class="ss-row"><span style="color:var(--red)">✗ profile_photo</span></div>
@@ -2060,26 +2193,29 @@
                 <div class="ss-row"><span style="color:var(--red)">✗ device_id</span></div>
               </div>
               <div class="ss-col" style="border-left:3px solid var(--green)">
-                <div class="ss-row"><span class="k">App hat bekommen:</span></div>
+                <div class="ss-row"><span class="k">App received:</span></div>
                 <div class="ss-row"><span style="color:var(--green)">✓ age_gte_18: true</span></div>
                 <div class="ss-row"><span style="color:var(--green)">✓ pseudonymous_id: pw-…</span></div>
-                <div class="ss-row"><span class="dim">— nichts weiter —</span></div>
+                <div class="ss-row"><span class="dim">— nothing else —</span></div>
               </div>
             </div>
             <div class="allow-banner">
-              <div class="ab-title">✓ Login erfolgreich — ohne persönliche Daten</div>
-              <div class="ab-body">Die App kann den User wiedererkennen (via pseudonymous_id), aber weiß weder Name, Alter, Kontakte noch Standort. Bei "Login with Google" hätte die App all das bekommen.</div>
+              <div class="ab-title">✓ Login successful — without personal data</div>
+              <div class="ab-body">The app can recognize the user (via pseudonymous_id), but knows neither name, age, contacts, nor location. With "Login with Google", the app would have received all of that.</div>
             </div>
             <div style="margin-top:0.8rem">
-              <button class="btn btn-ghost" id="uc-social-flag-btn" onclick="ucFlagVendor('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 FlirtRadar als übergriffig melden</button>
-              <p class="dim" id="uc-social-collective" style="font-size:0.78rem;margin-top:0.4rem">Wenn genug Nutzer melden, wird automatisch eine DSA-Beschwerde ausgelöst.</p>
+              <button class="btn btn-ghost" id="uc-social-flag-btn" onclick="ucFlagVendor('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Report FlirtRadar as overreaching</button>
+              <p class="dim" id="uc-social-collective" style="font-size:0.78rem;margin-top:0.4rem">If enough users report, a DSA complaint is automatically triggered.</p>
+            </div>
+            <div style="margin-top:1.5rem; text-align:center;">
+              <button class="btn btn-success" onclick="activateScenario('social')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
             </div>
           </div>
 
           <div class="uc-nav-row">
-            <button class="btn btn-ghost" id="uc-social-back" onclick="ucBack('social')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Zurück</button>
+            <button class="btn btn-ghost" id="uc-social-back" onclick="ucBack('social')" disabled style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">← Back</button>
             <span class="uc-step-count" id="uc-social-count">1 / 4</span>
-            <button class="btn btn-primary" id="uc-social-next" onclick="ucNext('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Weiter →</button>
+            <button class="btn btn-primary" id="uc-social-next" onclick="ucNext('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">Next →</button>
           </div>
         </div>
       </div>
@@ -2090,6 +2226,7 @@
   <!-- ── Sticky Demo Flow Bar ───────────────────────────────────────────── -->
   <div style="text-align:center;padding:1.2rem 1rem 0.4rem;background:var(--bg)">
     <div class="vsec-label" style="margin-bottom:0.3rem">Interactive Demo</div>
+    <div id="scenario-badge" style="display:none; margin: 0 auto 0.5rem; padding: 0.3rem 0.8rem; background: var(--blue-dim); color: var(--blue); border-radius: 999px; font-weight: 700; font-size: 0.8rem; width: fit-content;"></div>
     <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.2rem">See exactly how miTch handles a real verification — step by step.</p>
   </div>
 
@@ -2547,7 +2684,55 @@
     </div>
   </div>
 
-  <!-- DPIA Completion Popup -->
+  <!-- ══ SECTION E: STATE OF MITCH ═════════════════════════════════════ -->
+  <style>
+    .stats-footer { background: var(--surface2); border-top: 1px solid var(--border); padding: 3rem 1.5rem; margin-top: 4rem; text-align: center; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto 2rem; }
+    .stat-item { display: flex; flex-direction: column; gap: 0.5rem; }
+    .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+    .stat-lbl { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+    .tech-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+    .tech-badge { background: var(--surface); border: 1px solid var(--border); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.75rem; color: var(--text-dim); }
+  </style>
+
+  <footer class="stats-footer">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-val">25</span>
+        <span class="stat-lbl">Packages</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">845+</span>
+        <span class="stat-lbl">Unit Tests</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">4/4</span>
+        <span class="stat-lbl">CI Green</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">5</span>
+        <span class="stat-lbl">Live Use Cases</span>
+      </div>
+    </div>
+    
+    <div style="margin: 2rem 0;">
+      <a href="https://github.com/Late-bloomer420/miTch" target="_blank" class="btn btn-ghost" style="min-height: 40px; padding: 0.5rem 1.5rem;">
+        <span style="font-size: 1.2rem; margin-right: 0.5rem;">🐙</span> View on GitHub
+      </a>
+    </div>
+
+    <div class="tech-badges">
+      <span class="tech-badge">SD-JWT VC</span>
+      <span class="tech-badge">OID4VP</span>
+      <span class="tech-badge">AES-256-GCM</span>
+      <span class="tech-badge">HKDF</span>
+      <span class="tech-badge">Post-Quantum ready</span>
+    </div>
+    
+    <p style="margin-top: 2rem; font-size: 0.75rem; color: var(--text-dim); opacity: 0.6;">
+      miTch — The Forgetting Layer Project · 2026 · Open Source under MIT
+    </p>
+  </footer>
   <div id="dpia-popup">
     <div
       style="background:var(--surface); border:1px solid var(--accent); border-radius:16px; padding:2rem; max-width:500px; width:90%; text-align:center; box-shadow:0 0 40px var(--accent-glow);">
@@ -2818,12 +3003,335 @@
       consents: [],
       ephemeralKeyId: null,
       chainHash: '0000000000000000',
+      verifierName: 'CoolShop.at',
+      verifierDid: 'did:mitch:verifier-coolshop',
     };
 
     const CLAIMS = {
       over_18: true, over_16: true, over_21: false,
       email_verified: true, jurisdiction: 'AT',
     };
+
+    const SCENARIOS = {
+      adtech: {
+        name: 'Ad-Tech Blind Provider',
+        verifier: { name: 'AdNetwork GmbH', did: 'did:mitch:adnetwork-gmbh' },
+        claims: {
+          nullifier: 'H(…a8f3c201)',        // generated
+          budget_slot: 'slot_742 (1/1920)', // generated
+          cohort_signal: 'interest_group_17',
+        },
+        // Which claims are auto-selected vs optional
+        required: ['nullifier', 'budget_slot'],
+        optional: ['cohort_signal'],
+        // Policy Engine behavior
+        policy: {
+          rule: 'ad_verification',
+          verdict: 'ALLOW',           // always auto-approve (zero PII)
+          reason: 'Zero PII disclosed — deterministic verification only',
+          checks: [
+            '🔍 Verifier identity check (did:mitch:adnetwork-gmbh)',
+            '📋 Matching policy rule: "ad_blind_provider" → AdNetwork GmbH',
+            '📊 Claims requested: nullifier, budget_slot (zero PII)',
+            '🛡️ Data minimization: PASS — no personal data leaves device',
+            '✅ Deterministic proof, no PII → ALLOW (auto-approve)',
+          ],
+        },
+        // Cost comparison overrides
+        costs: {
+          traditional: {
+            label: 'Programmatic Ad (Traditional)',
+            items: [
+              { label: 'Third-party cookie tracking', avg: 0.35, source: 'Industry avg CPM' },
+              { label: 'Cross-site fingerprinting', avg: 0.08, source: 'FLoC/Topics API alternative' },
+              { label: 'Data broker enrichment', avg: 0.15, source: 'Oracle/Lotame pricing' },
+              { label: 'GDPR consent banner', avg: 0.04, source: 'OneTrust enterprise' },
+              { label: 'Regulatory risk reserve', avg: 0.12, source: 'Average GDPR fine ÷ impressions' },
+            ],
+          },
+          mitch: {
+            label: 'miTch Blind Provider',
+            items: [
+              { label: 'Nullifier generation (on-device)', avg: 0, source: 'WebCrypto — free' },
+              { label: 'Budget signal (quantized)', avg: 0, source: 'Local computation — free' },
+              { label: 'StatusList CDN check', avg: 0.0003, source: 'CloudFront bitstring' },
+              { label: 'PII stored', avg: 0, source: 'Zero — crypto-shredded' },
+            ],
+          },
+          scaleNote: 'Bei 10M Impressions/Monat',
+        },
+      },
+    
+      student: {
+        name: 'Invisible Student',
+        verifier: { name: 'IVB Innsbruck', did: 'did:mitch:ivb-innsbruck' },
+        claims: {
+          is_student: true,
+          semester_valid_until: '2026-09-30',
+        },
+        required: ['is_student'],
+        optional: ['semester_valid_until'],
+        policy: {
+          rule: 'student_discount',
+          verdict: 'ALLOW',
+          reason: 'Boolean predicate only — no identity data disclosed',
+          checks: [
+            '🔍 Verifier identity check (did:mitch:ivb-innsbruck)',
+            '📋 Matching policy rule: "student_discount" → IVB Innsbruck',
+            '📊 Claims requested: is_student (boolean), semester_valid_until',
+            '🛡️ Data minimization: PASS — no name, no Matrikelnummer',
+            '✅ Boolean predicate, trusted municipal verifier → ALLOW',
+          ],
+        },
+        costs: {
+          traditional: {
+            label: 'Student Verification (Traditional)',
+            items: [
+              { label: 'Physical ID check at counter', avg: 2.50, source: 'Staff cost per verification' },
+              { label: 'Student ID card production', avg: 5.00, source: 'ÖH Ausweis annual cost' },
+              { label: 'Database integration (Uni↔IVB)', avg: 0.80, source: 'API maintenance/year ÷ verifications' },
+              { label: 'PII storage (name, Matrikelnr.)', avg: 0.03, source: 'GDPR-compliant DB hosting' },
+              { label: 'Manual fraud checks', avg: 0.50, source: 'Spot-check staff allocation' },
+            ],
+          },
+          mitch: {
+            label: 'miTch Invisible Student',
+            items: [
+              { label: 'SD-JWT boolean proof', avg: 0, source: 'On-device selective disclosure' },
+              { label: 'Semester validity check', avg: 0.0003, source: 'StatusList CDN' },
+              { label: 'Student ID card needed', avg: 0, source: 'Not needed — wallet proof' },
+              { label: 'PII stored by IVB', avg: 0, source: 'Zero — only boolean received' },
+            ],
+          },
+          scaleNote: 'Bei 50.000 Studenten/Jahr in Innsbruck',
+        },
+      },
+    
+      hospital: {
+        name: 'Hospital Admission',
+        verifier: { name: 'Tirol Kliniken GmbH', did: 'did:mitch:tirol-kliniken' },
+        claims: {
+          full_name: 'Maria Musterfrau',
+          date_of_birth: '1995-03-15',
+          insurance_id: 'AT-SVS-1234567',
+          blood_type: 'A+',
+          allergies: 'Penicillin',
+          emergency_contact: '+43 660 1234567',
+        },
+        required: ['full_name', 'date_of_birth', 'insurance_id'],
+        optional: ['blood_type', 'allergies', 'emergency_contact'],
+        policy: {
+          rule: 'medical_admission',
+          verdict: 'PROMPT',
+          reason: 'Sensitive medical + identity data — explicit consent required',
+          checks: [
+            '🔍 Verifier identity check (did:mitch:tirol-kliniken)',
+            '📋 Matching policy rule: "medical_admission" → Tirol Kliniken',
+            '📊 Claims requested: 6 attributes including medical data',
+            '🛡️ Data minimization: WARNING — blood_type + allergies are sensitive',
+            '⚠️ Multiple sensitive claims → PROMPT (explicit consent required)',
+          ],
+        },
+        costs: {
+          traditional: {
+            label: 'Hospital Admission (Traditional)',
+            items: [
+              { label: 'Manual registration (reception staff)', avg: 8.00, source: '~15min × €32/hr' },
+              { label: 'Insurance verification API', avg: 0.50, source: 'SV-GKK/ÖGK interface' },
+              { label: 'Paper form digitization', avg: 1.20, source: 'Scanning + OCR pipeline' },
+              { label: 'EHR data entry', avg: 3.00, source: 'Manual entry time' },
+              { label: 'ELGA integration', avg: 0.30, source: 'ELGA GmbH transaction fee' },
+              { label: 'Data breach risk (medical)', avg: 0.45, source: 'IBM 2024: healthcare €10.93M avg' },
+            ],
+          },
+          mitch: {
+            label: 'miTch Hospital Admission',
+            items: [
+              { label: 'Verifiable Credential presentation', avg: 0, source: 'On-device, instant' },
+              { label: 'Insurance status proof', avg: 0.01, source: 'Issuer-signed, no API call' },
+              { label: 'Consent + audit trail', avg: 0, source: 'Built into wallet flow' },
+              { label: 'ELGA bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
+              { label: 'Breach risk reduction', avg: 0.02, source: 'Minimal PII retained post-admission' },
+            ],
+          },
+          scaleNote: 'Bei 500.000 Aufnahmen/Jahr in Tirol',
+        },
+      },
+    
+      ehds: {
+        name: 'EHDS Research Access',
+        verifier: { name: 'EU Health Research Portal', did: 'did:mitch:ehds-portal' },
+        claims: {
+          health_record_pseudonymized: '[encrypted blob]',
+          data_category: 'cardiovascular',
+          consent_scope: 'research_only',
+          retention_limit: '24_months',
+        },
+        required: ['consent_scope', 'data_category'],
+        optional: ['health_record_pseudonymized', 'retention_limit'],
+        policy: {
+          rule: 'ehds_secondary_use',
+          verdict: 'DENY',
+          reason: 'Secondary health data use requires explicit Art. 9 consent + ethics board approval',
+          checks: [
+            '🔍 Verifier identity check (did:mitch:ehds-portal)',
+            '📋 Matching policy rule: "ehds_secondary_use" → EU Research Portal',
+            '📊 Claims requested: pseudonymized health record (Art. 9 GDPR)',
+            '🛡️ Data minimization: FAIL — health data requires highest protection',
+            '⛔ Art. 9 special category data, no ethics approval attached → DENY',
+          ],
+          // EHDS has break-glass override
+          hasBreakGlass: true,
+          breakGlassChecks: [
+            '🔓 Break-Glass activated — emergency research override',
+            '📋 Logging elevated access to immutable audit chain',
+            '⏰ Auto-expiry set: 24 hours',
+            '⚠️ OVERRIDE: ALLOW with mandatory audit trail',
+          ],
+        },
+        costs: {
+          traditional: {
+            label: 'Health Data Research (Traditional)',
+            items: [
+              { label: 'Ethics board application', avg: 15.00, source: 'Per-study cost amortized' },
+              { label: 'Data anonymization service', avg: 3.50, source: 'K-anonymity/l-diversity processing' },
+              { label: 'Secure data room access', avg: 2.00, source: 'Trusted Research Environment' },
+              { label: 'Re-identification risk insurance', avg: 1.50, source: 'Specialized cyber insurance' },
+              { label: 'Cross-border transfer (EDPB)', avg: 0.80, source: 'Legal review per jurisdiction' },
+            ],
+          },
+          mitch: {
+            label: 'miTch EHDS Access',
+            items: [
+              { label: 'Pseudonymized data proof', avg: 0.05, source: 'ZK proof generation (estimated)' },
+              { label: 'Consent verification', avg: 0, source: 'On-chain consent record' },
+              { label: 'Automatic audit trail', avg: 0.01, source: 'Transparency log entry' },
+              { label: 'Re-identification risk', avg: 0, source: 'Crypto-shredding prevents re-ID' },
+            ],
+          },
+          scaleNote: 'Bei 100.000 Forschungszugriffen/Jahr EU-weit',
+        },
+      },
+    
+      social: {
+        name: 'Social Login (Pseudonymous)',
+        verifier: { name: 'FlirtRadar.app', did: 'did:mitch:flirtradar' },
+        claims: {
+          pseudonym_id: 'nym_' + 'a8f3c201',  // deterministic per-site
+          age_range: '18-25',
+          is_human: true,
+        },
+        required: ['pseudonym_id', 'is_human'],
+        optional: ['age_range'],
+        policy: {
+          rule: 'social_login_pseudonymous',
+          verdict: 'ALLOW',
+          reason: 'Pseudonymous login — no real identity data disclosed',
+          checks: [
+            '🔍 Verifier identity check (did:mitch:flirtradar)',
+            '📋 Matching policy rule: "social_login" → FlirtRadar.app',
+            '📊 Claims requested: pseudonym, age_range, is_human (zero PII)',
+            '🛡️ Data minimization: PASS — site-specific pseudonym, no linkability',
+            '✅ Pseudonymous claims only → ALLOW (auto-approve)',
+          ],
+        },
+        costs: {
+          traditional: {
+            label: 'Social Login (Traditional)',
+            items: [
+              { label: 'OAuth provider (Google/Facebook)', avg: 0, source: 'Free — but you ARE the product' },
+              { label: 'Profile data harvesting (hidden cost)', avg: 0.25, source: 'User data value to ad networks' },
+              { label: 'Cross-site tracking (shadow profile)', avg: 0.15, source: 'Aggregate profiling value' },
+              { label: 'Account takeover risk', avg: 0.08, source: 'Credential stuffing losses amortized' },
+              { label: 'GDPR consent (cookie banners)', avg: 0.04, source: 'CMP integration' },
+            ],
+          },
+          mitch: {
+            label: 'miTch Pseudonymous Login',
+            items: [
+              { label: 'Pseudonym generation (on-device)', avg: 0, source: 'HKDF derivation — free' },
+              { label: 'Humanity proof', avg: 0, source: 'Local WebAuthn — free' },
+              { label: 'Profile data shared', avg: 0, source: 'Zero — pseudonym only' },
+              { label: 'Cross-site linkability', avg: 0, source: 'Impossible — pairwise pseudonyms' },
+            ],
+          },
+          scaleNote: 'Bei 1M Logins/Monat',
+        },
+      },
+    };
+
+    let activeScenario = null;
+
+    function activateScenario(key) {
+      activeScenario = key;
+      const sc = SCENARIOS[key];
+
+      // 1. Update CLAIMS object to match scenario
+      Object.keys(CLAIMS).forEach(k => delete CLAIMS[k]);
+      Object.assign(CLAIMS, sc.claims);
+
+      // 2. Update claim checkboxes in wallet panel
+      // Not strictly necessary here if we do it in doIssue, but good for safety
+      if (document.getElementById('wallet-ctrl').style.display !== 'none') {
+        rebuildClaimCheckboxes(sc);
+      }
+
+      // 3. Update verifier name everywhere
+      updateVerifierName(sc.verifier.name, sc.verifier.did);
+
+      // 4. Pre-select required claims, leave optional unchecked
+      // Handled in rebuildClaimCheckboxes
+
+      // 5. Reset demo state + scroll to demo section
+      doReset(true);
+      scrollToDemo();
+
+      // 6. Visual indicator: which scenario active
+      document.querySelectorAll('.uc-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.querySelector(`.uc-tab[data-uc="${key}"]`);
+      if (activeTab) activeTab.classList.add('active');
+    }
+
+    function scrollToDemo() {
+      const demoHeader = document.querySelector('.flow').previousElementSibling;
+      if (demoHeader) {
+        demoHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function rebuildClaimCheckboxes(sc) {
+      const container = document.getElementById('claims-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      Object.entries(sc.claims).forEach(([key, value]) => {
+        const isRequired = sc.required.includes(key);
+        const displayValue = typeof value === 'boolean' ? (value ? '✅ true' : '❌ false')
+          : typeof value === 'string' && value.length > 20 ? value.substring(0, 20) + '…'
+          : value;
+
+        container.innerHTML += `
+          <li>
+            <input type="checkbox" id="c-${key}" value="${key}"
+              ${isRequired ? 'checked disabled' : ''}
+              ${sc.optional.includes(key) ? '' : 'checked'}>
+            <label for="c-${key}">
+              ${key}: <span style="color:${typeof value === 'boolean' ? (value ? 'var(--green)' : 'var(--red)') : 'var(--yellow)'}">${displayValue}</span>
+              ${isRequired ? '<span class="tag tag-blue" style="font-size:0.6rem; margin-left:8px">required</span>' : ''}
+            </label>
+          </li>`;
+      });
+    }
+
+    function updateVerifierName(name, did) {
+      STATE.verifierName = name;
+      STATE.verifierDid = did;
+
+      const verifierHeaderInner = document.querySelector('#p-verifier .ph');
+      if (verifierHeaderInner) {
+        verifierHeaderInner.innerHTML = `<span class="icon">🏪</span> Verifier <span class="tag tag-green" style="margin-left:auto" id="verifier-name">${name}</span>`;
+      }
+    }
 
     function sha256Sim(input) {
       // Simple hash simulation for demo (not cryptographic)
@@ -3200,23 +3708,41 @@
       const steps = document.getElementById('engine-steps');
       steps.style.display = 'block';
 
-      const engineChecks = [
-        { label: '🔍 Verifier identity check (did:mitch:verifier-coolshop)', delay: 400 },
-        { label: '📋 Matching policy rule: "age_verification" → CoolShop.at', delay: 500 },
-        { label: `📊 Claims requested: ${checked.join(', ')}`, delay: 400 },
-        { label: '🛡️ Data minimization check — no excess claims', delay: 500 },
-        {
-          label: checked.length === 1 && checked[0] === 'over_18'
-            ? '✅ Single predicate, trusted verifier → ALLOW (auto-approve)'
-            : '⚠️ Multiple claims or sensitive data → PROMPT (consent required)', delay: 600
-        },
-      ];
+      let engineChecks;
+      let verdict;
+      let needsConsent = false;
+      let isBreakGlass = false;
 
-      const needsConsent = !(checked.length === 1 && checked[0] === 'over_18');
-      const verdict = STATE.revoked ? 'DENY (revoked)' : needsConsent ? 'PROMPT' : 'ALLOW';
+      if (activeScenario) {
+        const sc = SCENARIOS[activeScenario];
+        engineChecks = sc.policy.checks.map(c => ({ label: c, delay: 400 + Math.random() * 200 }));
+        verdict = STATE.revoked ? 'DENY (revoked)' : sc.policy.verdict;
+        needsConsent = verdict === 'PROMPT';
+        if (sc.policy.hasBreakGlass) {
+            isBreakGlass = true;
+        }
+      } else {
+        engineChecks = [
+          { label: '🔍 Verifier identity check (' + STATE.verifierDid + ')', delay: 400 },
+          { label: '📋 Matching policy rule: "age_verification" → ' + STATE.verifierName, delay: 500 },
+          { label: `📊 Claims requested: ${checked.join(', ')}`, delay: 400 },
+          { label: '🛡️ Data minimization check — no excess claims', delay: 500 },
+          {
+            label: checked.length === 1 && checked[0] === 'over_18'
+              ? '✅ Single predicate, trusted verifier → ALLOW (auto-approve)'
+              : '⚠️ Multiple claims or sensitive data → PROMPT (consent required)', delay: 600
+          },
+        ];
+        needsConsent = !(checked.length === 1 && checked[0] === 'over_18');
+        verdict = STATE.revoked ? 'DENY (revoked)' : needsConsent ? 'PROMPT' : 'ALLOW';
+      }
 
       steps.innerHTML = engineChecks.map((s, i) => `<div class="engine-step" id="estep-${i}">${s.label}</div>`).join('') +
         `<div class="engine-step" id="estep-verdict" style="font-weight:700"></div>`;
+        
+      if (isBreakGlass && verdict === 'DENY') {
+        steps.innerHTML += `<button id="btn-breakglass" class="btn btn-ghost" style="margin-top:1rem;color:var(--orange);border-color:var(--orange)" onclick="triggerBreakGlass()">🚨 Emergency Override (Break-Glass)</button>`;
+      }
 
       // Animate steps
       for (let i = 0; i < engineChecks.length; i++) {
@@ -3229,18 +3755,18 @@
 
       await delay(300);
       const verdictEl = document.getElementById('estep-verdict');
-      if (STATE.revoked) {
-        verdictEl.textContent = '⛔ VERDICT: DENY — credential revoked';
+      if (verdict.includes('DENY')) {
+        verdictEl.textContent = `⛔ VERDICT: DENY${STATE.revoked ? ' — credential revoked' : (activeScenario ? ' — ' + SCENARIOS[activeScenario].policy.reason : '')}`;
         verdictEl.classList.add('fail');
         hl('p-engine', 'red');
-        setStatus('Denied — credential revoked');
-        addAudit('verification_denied', { reason: 'revoked', categories: checked }, 'red');
+        setStatus('Denied by Policy Engine');
+        addAudit('verification_denied', { reason: STATE.revoked ? 'revoked' : 'policy_deny', categories: checked }, 'red');
         return;
       }
 
       verdictEl.textContent = needsConsent
-        ? `⚠️ VERDICT: PROMPT — user consent required for: ${checked.join(', ')}`
-        : `✅ VERDICT: ALLOW — auto-approved (minimal disclosure)`;
+        ? `⚠️ VERDICT: PROMPT — ${activeScenario ? SCENARIOS[activeScenario].policy.reason : 'user consent required'}`
+        : `✅ VERDICT: ALLOW — ${activeScenario ? SCENARIOS[activeScenario].policy.reason : 'auto-approved (minimal disclosure)'}`;
       verdictEl.classList.add(needsConsent ? 'active' : 'pass');
       hl('p-engine', needsConsent ? 'orange' : 'green');
 
@@ -3248,13 +3774,56 @@
         setFlow('wallet');
         document.getElementById('wallet-consent').style.display = 'block';
         document.getElementById('consent-reason').textContent =
-          `CoolShop.at requests: ${checked.join(', ')}. This includes more than the minimum required data. Your explicit consent is needed.`;
+          `${STATE.verifierName} requests: ${checked.join(', ')}. ${activeScenario ? SCENARIOS[activeScenario].policy.reason : 'This includes more than the minimum required data. Your explicit consent is needed.'}`;
         setStatus('Consent required — approve or reject');
       } else {
         // Auto-approve goes straight to biometric
         _pendingChecked = checked;
         await startLocalAuth();
       }
+    }
+
+    async function triggerBreakGlass() {
+      const btn = document.getElementById('btn-breakglass');
+      if (btn) btn.style.display = 'none';
+      
+      const steps = document.getElementById('engine-steps');
+      const sc = SCENARIOS.ehds;
+      const bgChecks = sc.policy.breakGlassChecks.map(c => ({ label: c, delay: 500 }));
+      
+      bgChecks.forEach((c, i) => {
+        const div = document.createElement('div');
+        div.className = 'engine-step';
+        div.id = `estep-bg-${i}`;
+        div.textContent = c.label;
+        steps.appendChild(div);
+      });
+      
+      const verdictEl = document.getElementById('estep-verdict');
+      if (verdictEl) {
+          verdictEl.style.textDecoration = 'line-through';
+          verdictEl.style.opacity = '0.5';
+      }
+
+      for (let i = 0; i < bgChecks.length; i++) {
+        await delay(bgChecks[i].delay);
+        const el = document.getElementById(`estep-bg-${i}`);
+        el.classList.add('active');
+        await delay(200);
+        el.classList.remove('active');
+        el.classList.add(i === bgChecks.length - 1 ? 'active' : 'pass');
+      }
+      
+      hl('p-engine', 'orange');
+      addAudit('break_glass_activated', { reason: 'emergency_override', user: 'dr.mueller@ukh-ibk.at' }, 'orange');
+      
+      // Proceed after Break-Glass
+      setFlow('wallet');
+      document.getElementById('wallet-consent').style.display = 'block';
+      let checkedStr = Object.keys(CLAIMS).filter(n => document.getElementById('c-' + n)?.checked).join(', ');
+      document.getElementById('consent-reason').textContent =
+        `${STATE.verifierName} requests: ${checkedStr}. EMERGENCY OVERRIDE ACTIVE. Your explicit consent is still required.`;
+      setStatus('Emergency Override Active — Consent required');
     }
 
     // ─── Step 3: Consent & Biometric ────────────────────────────────
@@ -3292,7 +3861,7 @@
 
       // Update Transaction Context Summary
       const policyDecision = _pendingChecked.length === Object.keys(CLAIMS).length ? 'Full Disclosure (Allow)' : 'Partial (Allow)';
-      const tx = WA.buildTxContext('CoolShop.at', Object.keys(CLAIMS), _pendingChecked, policyDecision, env.mode);
+      const tx = WA.buildTxContext(STATE.verifierName, Object.keys(CLAIMS), _pendingChecked, policyDecision, env.mode);
       document.getElementById('auth-tx-content').innerHTML = `
         Release <strong>${tx.selectedClaims.length}</strong> attributes to <strong>${tx.verifierName}</strong>.
         <div style="margin-top:0.3rem; opacity:0.8; font-size:0.7rem">Policy: ${tx.policyDecision} | Transaction: ${tx.nonce.substring(0, 8)}</div>
@@ -3306,7 +3875,7 @@
 
       document.getElementById('auth-hint').textContent = env.secure ? '' : 'For real device authorization, open via localhost.';
 
-      addAudit('disclosure_authorization_requested', { mode: env.mode, verifier: 'CoolShop.at' }, 'blue');
+      addAudit('disclosure_authorization_requested', { mode: env.mode, verifier: STATE.verifierName }, 'blue');
     }
 
     async function doRegister() {
@@ -3391,7 +3960,7 @@
       document.getElementById('wallet-consent').style.display = 'none';
       document.getElementById('wallet-start').style.display = 'block';
       const allClaims = Object.keys(CLAIMS);
-      addConsent('declined', [], allClaims, 'CoolShop.at');
+      addConsent('declined', [], allClaims, STATE.verifierName);
       addAudit('verification_denied', { reason: 'user_rejected', categories: [] }, 'red');
       hl('p-wallet', 'red'); hl('p-verifier', 'red');
       // Shake animation on verifier panel
@@ -3402,7 +3971,7 @@
     <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
     <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Cannot distinguish from "credential not available".</p></div>`;
       setStatus('Rejected by user'); setFlow('wallet');
-      addAudit('disclosure_blocked_or_aborted', { reason: 'user_denied_consent', verifier: 'CoolShop.at' }, 'red');
+      addAudit('disclosure_blocked_or_aborted', { reason: 'user_denied_consent', verifier: STATE.verifierName }, 'red');
     }
 
     // ─── Step 4: Complete Verification ───────────────────────────────
@@ -3426,7 +3995,7 @@
   </div>
   <div><span class="k">disclosed:</span> <span class="vt">${disclosed.join(', ')}</span></div>
   <div><span class="k">hidden:</span> <span class="hv">${hidden.join(', ')}</span></div>
-  <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim('coolshop' + Date.now()).substring(0, 16)}...</span></div>
+  <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim(STATE.verifierName + Date.now()).substring(0, 16)}...</span></div>
 </div>`;
 
       // Verifier result
@@ -3468,7 +4037,7 @@
 
       addAudit('disclosure_released', {
         claims: disclosed,
-        verifier: 'CoolShop.at',
+        verifier: STATE.verifierName,
         mode: mode
       }, mode === 'real' ? 'green' : 'orange');
 
@@ -3527,6 +4096,11 @@
     const SESSION_COSTS = { traditional: 0, mitch: 0, steps: [] };
 
     function renderCosts(phase) {
+      if (activeScenario) {
+        renderScenarioCosts(SCENARIOS[activeScenario].costs);
+        return;
+      }
+      
       // phase: 'issuance' or 'verification'
       document.getElementById('cost-ph').style.display = 'none';
       document.getElementById('cost-result').style.display = 'block';
@@ -3620,6 +4194,63 @@
         '📎 ' + allSources.join(' · ');
     }
 
+    function renderScenarioCosts(costs) {
+      document.getElementById('cost-ph').style.display = 'none';
+      document.getElementById('cost-result').style.display = 'block';
+
+      const tradTotal = costs.traditional.items.reduce((s, c) => s + c.avg, 0);
+      const mitchTotal = costs.mitch.items.reduce((s, c) => s + c.avg, 0);
+
+      document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(c => `
+        <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
+          <span>${c.label}</span>
+          <span style="font-family:var(--mono);color:var(--red);white-space:nowrap">€${c.avg.toFixed(3)}</span>
+        </li>`).join('');
+
+      document.getElementById('cost-mitch').innerHTML = costs.mitch.items.map(c => `
+        <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
+          <span>${c.label}</span>
+          <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+            ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+          </span>
+        </li>`).join('');
+
+      document.getElementById('cost-trad-total').innerHTML =
+        `<span class="dim">${costs.traditional.label}</span> <span style="color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</span>`;
+      document.getElementById('cost-mitch-total').innerHTML =
+        `<span class="dim">${costs.mitch.label}</span> <span style="color:var(--green);font-family:var(--mono)">€${mitchTotal.toFixed(3)}</span>`;
+
+      const savingsPct = tradTotal > 0 ? ((1 - mitchTotal / tradTotal) * 100).toFixed(0) : '0';
+
+      document.getElementById('cost-savings').innerHTML = `
+        <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:1rem;">
+          <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO VORGANG</div>
+          <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
+            <div>
+              <div style="font-size:0.7rem;color:var(--red)">Traditional</div>
+              <div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</div>
+            </div>
+            <div style="font-size:1.5rem">→</div>
+            <div>
+              <div style="font-size:0.7rem;color:var(--green)">miTch</div>
+              <div style="font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)">€${mitchTotal.toFixed(3)}</div>
+            </div>
+            <div style="padding:0.4rem 0.8rem;background:var(--green-dim);border-radius:8px">
+              <div style="font-size:0.7rem;color:var(--green)">Savings</div>
+              <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${savingsPct}%</div>
+            </div>
+          </div>
+          ${costs.scaleNote ? `<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)">${costs.scaleNote}</div>` : ''}
+        </div>
+      `;
+
+      const allSources = [...new Set([
+        ...costs.traditional.items.map(c => c.source),
+        ...costs.mitch.items.map(c => c.source),
+      ].filter(Boolean))];
+      document.getElementById('cost-sources').innerHTML = '📎 ' + allSources.join(' · ');
+    }
+
     // ─── Revocation ──────────────────────────────────────────────────
 
     function doRevoke() {
@@ -3638,7 +4269,18 @@
 
     // ─── Reset ───────────────────────────────────────────────────────
 
-    function doReset() {
+    function doReset(retainScenario = false) {
+      if (retainScenario !== true) {
+        activeScenario = null;
+        updateVerifierName('CoolShop.at', 'did:mitch:verifier-coolshop');
+        Object.keys(CLAIMS).forEach(k => delete CLAIMS[k]);
+        Object.assign(CLAIMS, {
+          over_18: true, over_16: true, over_21: false,
+          email_verified: true, jurisdiction: 'AT',
+        });
+        document.querySelectorAll('.uc-tab').forEach(t => t.classList.remove('active'));
+      }
+
       STATE.credential = null; STATE.revoked = false;
       STATE.auditChain = []; STATE.consents = []; STATE.chainHash = '0000000000000000';
       ['issuer-result', 'wallet-result', 'verifier-result', 'network-result', 'revoke-result', 'shred-result', 'audit-chain-content', 'consent-content'].forEach(id => document.getElementById(id).innerHTML = '');
@@ -3650,6 +4292,16 @@
       ['btn-rev', 'btn-unrev'].forEach(id => document.getElementById(id).disabled = true);
       document.getElementById('btn-issue').disabled = false;
       setFlow('issue'); setStatus('Ready');
+      
+      const scenarioBadge = document.getElementById('scenario-badge');
+      if (scenarioBadge) {
+        if (activeScenario) {
+            scenarioBadge.style.display = 'block';
+            scenarioBadge.innerHTML = '🎓 ' + SCENARIOS[activeScenario].name + ' Demo Active';
+        } else {
+            scenarioBadge.style.display = 'none';
+        }
+      }
     }
 
     // ─── Utils ───────────────────────────────────────────────────────
@@ -3825,10 +4477,46 @@
       social:  { current: 0, total: 4 },
     };
 
+    // Initialize all use cases at step 0
+    window.addEventListener('load', () => {
+      Object.keys(ucState).forEach(id => ucGoTo(id, 0));
+      initCarousel();
+    });
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-mode');
+      localStorage.setItem('mitch_theme', isLight ? 'light' : 'dark');
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.textContent = isLight ? '🌙' : '🌓';
+      addAudit('theme_changed', { theme: isLight ? 'light' : 'dark' }, 'blue');
+    }
+
+    // Init theme
+    if (localStorage.getItem('mitch_theme') === 'light') {
+      document.body.classList.add('light-mode');
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.textContent = '🌙';
+    }
+
     function switchUC(id) {
       document.querySelectorAll('.uc-pane').forEach(p => p.classList.remove('is-active'));
       document.getElementById('uc-' + id).classList.add('is-active');
       document.querySelectorAll('.uc-tab').forEach(t => t.classList.toggle('active', t.dataset.uc === id));
+      
+      // Smooth scroll to top of use cases section
+      const target = document.querySelector('.uc-tabs');
+      if (target) {
+        const offset = 80; // Account for sticky headers
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = target.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
 
     function ucGoTo(id, step) {
@@ -3856,16 +4544,16 @@
       if (back) back.disabled = s.current === 0;
       if (next) {
         next.disabled = s.current === s.total - 1;
-        next.textContent = s.current === s.total - 1 ? 'Fertig ✓' : 'Weiter →';
+        next.textContent = s.current === s.total - 1 ? 'Done ✓' : 'Next →';
       }
       // Stamp timestamp on result panels
       if (id === 'adtech' && s.current === 3) {
         const el = document.getElementById('adtech-ts');
-        if (el && el.textContent === '—') el.textContent = new Date().toLocaleTimeString('de-AT');
+        if (el && el.textContent === '—') el.textContent = new Date().toLocaleTimeString('en-GB');
       }
       if (id === 'hospital' && s.current === 3) {
         const el = document.getElementById('hospital-ts');
-        if (el && el.textContent === '—') el.textContent = new Date().toLocaleString('de-AT');
+        if (el && el.textContent === '—') el.textContent = new Date().toLocaleString('en-GB');
       }
     }
 
@@ -3877,9 +4565,9 @@
       const box = document.getElementById('uc-' + id + '-proof-box');
       if (!btn || !box) return;
       btn.disabled = true;
-      btn.textContent = '⏳ Berechne…';
+      btn.textContent = '⏳ Calculating…';
       box.className = 'proof-box pending';
-      box.textContent = '⏳ Computing nullifier…';
+      box.textContent = '⏳ Calculating nullifier…';
       await delay(420);
       box.textContent = '⏳ Quantizing budget signal…';
       await delay(380);
@@ -3899,10 +4587,11 @@
         '✗ name:           [not in predicate]\n' +
         '✗ dob:            [not in predicate]\n' +
         '✗ ip_address:     [structurally impossible]';
-      btn.textContent = 'Proof generiert ✓';
+      btn.textContent = 'Proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
+      addReviewEntry('ExampleAds GmbH — Verification', 'clean', ['✓ Age ≥ 18', '✓ Region: EU', '✗ Name blocked', '✗ ID blocked']);
       ucNext(id);
     }
 
@@ -3911,7 +4600,7 @@
       const box = document.getElementById('uc-student-proof-box');
       if (!btn || !box) return;
       btn.disabled = true;
-      btn.textContent = '⏳ Ausstellend…';
+      btn.textContent = '⏳ Issuing…';
       box.className = 'proof-box pending';
       box.textContent = '⏳ Issuing ephemeral credential…';
       await delay(550);
@@ -3919,17 +4608,18 @@
       box.className = 'proof-box';
       box.textContent =
         '✓ student_status:    true\n' +
-        '✓ valid_until:       ' + d.toLocaleDateString('de-AT') + ' 23:59\n' +
+        '✓ valid_until:       ' + d.toLocaleDateString('en-GB') + ' 23:59\n' +
         '─────────────────────────────────\n' +
         '✗ name:              [not shared]\n' +
-        '✗ matrikelnummer:    [not shared]\n' +
-        '✗ geburtsdatum:      [not shared]\n' +
+        '✗ matriculation_no:  [not shared]\n' +
+        '✗ date_of_birth:     [not shared]\n' +
         '✗ university:        [not shared]\n' +
         '✗ study_program:     [not shared]';
-      btn.textContent = 'Credential ausgestellt ✓';
+      btn.textContent = 'Credential issued ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
+      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
       ucNext('student');
     }
 
@@ -3938,7 +4628,7 @@
       const box = document.getElementById('uc-hospital-proof-box');
       if (!btn || !box) return;
       btn.disabled = true;
-      btn.textContent = '⏳ Freigabe läuft…';
+      btn.textContent = '⏳ Releasing…';
       box.className = 'proof-box pending';
       box.textContent = '⏳ Creating ephemeral session key…';
       await delay(450);
@@ -3950,7 +4640,7 @@
       box.textContent =
         '✓ allergies:         Penicillin, Latex\n' +
         '✓ blood_group:       A+\n' +
-        '✓ insurance:         ÖGK — aktiv\n' +
+        '✓ insurance:         Public — active\n' +
         '─────────────────────────────────\n' +
         '✗ diagnosis_history: [not requested]\n' +
         '✗ medications:       [not requested]\n' +
@@ -3959,16 +4649,17 @@
         '✓ ephemeral_key:     ' + keyId + '\n' +
         '✓ session_id:        ' + sesId + '\n' +
         '✓ auto_shred_at:     session_end';
-      btn.textContent = 'Freigabe erteilt ✓';
+      btn.textContent = 'Release granted ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
+      addReviewEntry('UKH Innsbruck — Hospital Admission', 'clean', ['✓ Allergies shared', '✓ Blood group shared', '✓ Insurance shared', '✗ History blocked']);
       ucNext('hospital');
     }
 
     function ucDenyHospital() {
       const box = document.getElementById('uc-hospital-proof-box');
-      if (box) { box.className = 'proof-box'; box.textContent = '✗ Anfrage abgelehnt. Keine Daten geteilt.'; box.style.color = 'var(--red)'; }
+      if (box) { box.className = 'proof-box'; box.textContent = '✗ Request denied. No data shared.'; box.style.color = 'var(--red)'; }
     }
 
     async function ucRunSocialProof() {
@@ -3976,7 +4667,7 @@
       const box = document.getElementById('uc-social-proof-box');
       if (!btn || !box) return;
       btn.disabled = true;
-      btn.textContent = '⏳ Generiere…';
+      btn.textContent = '⏳ Generating…';
       box.className = 'proof-box pending';
       box.textContent = '⏳ Creating pairwise DID…';
       await delay(400);
@@ -3995,10 +4686,11 @@
         '✗ friends_list:      [BLOCKED — social graph]\n' +
         '✗ location_history:  [BLOCKED — tracking]\n' +
         '✗ device_id:         [BLOCKED — fingerprint]';
-      btn.textContent = 'Login-Proof generiert ✓';
+      btn.textContent = 'Login proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
+      addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Overreach detected: location history BLOCKED']);
       ucNext('social');
     }
 
@@ -4007,7 +4699,7 @@
       const log = document.getElementById('uc-ehds-bg-log');
       if (!btn || !log) return;
       btn.disabled = true;
-      btn.textContent = '⏳ Override läuft…';
+      btn.textContent = '⏳ Override running…';
       log.textContent = '';
       const now = new Date().toISOString();
       const entries = [
@@ -4023,18 +4715,45 @@
         log.innerHTML += '<div><span class="bgl-ts">' + e.ts.slice(11, 19) + '</span>  <span class="bgl-act">' + e.act + '</span>  <span class="bgl-who">← ' + e.who + '</span></div>';
       }
       await delay(200);
-      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ Dieser Override ist permanent im Audit-Trail — auch für Aufsichtsbehörden einsehbar.</div>';
-      btn.textContent = 'Override protokolliert ✓';
+      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ This override is permanent in the audit trail — also visible to supervisory authorities.</div>';
+      btn.textContent = 'Override logged ✓';
     }
 
     function ucFlagVendor(id) {
       const btn = document.getElementById('uc-' + id + '-flag-btn');
       const sig = document.getElementById('uc-' + id + '-collective');
-      if (btn) { btn.textContent = '✓ Gemeldet'; btn.disabled = true; btn.style.cssText += ';color:var(--orange)'; }
-      if (sig) sig.innerHTML = '<strong>424 Studenten</strong> haben IVB+ bereits als übergriffig gemeldet. Noch 76 Meldungen bis zur automatischen DSA-Meldung.';
+      if (btn) { btn.textContent = '✓ Reported'; btn.disabled = true; btn.style.cssText += ';color:var(--orange)'; }
+      if (sig) sig.innerHTML = '<strong>424 students</strong> have already reported IVB+ as overreaching. 76 more reports until automatic DSA filing.';
     }
 
-    // ── Scroll Reveal (IntersectionObserver) ─────────────────────────
+    function addReviewEntry(title, level, metaLines) {
+      const container = document.querySelector('.review-entries');
+      if (!container) return;
+      const entry = document.createElement('div');
+      entry.className = 'review-entry' + (level === 'danger' ? ' danger' : (level === 'warn' ? ' warn' : ''));
+      const dotColor = level === 'danger' ? 'red' : (level === 'warn' ? 'yellow' : 'green');
+      const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      
+      let metaHtml = '';
+      metaLines.forEach(line => {
+        const isCheck = line.startsWith('✓');
+        const isX = line.startsWith('✗');
+        const isWarn = line.startsWith('⚠');
+        const pillClass = isCheck ? 'pill-green' : (isX ? 'pill-red' : (isWarn ? 'pill-yellow' : ''));
+        metaHtml += `<span class="shared-pill ${pillClass}">${line}</span>`;
+      });
+
+      entry.innerHTML = `
+        <div class="danger-dot dot-${dotColor}"></div>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600">${title}</div>
+          <div class="review-meta">${metaHtml}</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · Data forgotten (Proof of Possession shredded)</div>
+        </div>
+        <div class="review-time">${time}</div>
+      `;
+      container.prepend(entry);
+    }
     function initReveal() {
       const sections = document.querySelectorAll('.vsec-divider');
       sections.forEach(s => s.classList.add('reveal'));
