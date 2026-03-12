@@ -9,6 +9,14 @@
 
 ---
 
+## ⚠️ Build Rules (ALWAYS follow these)
+
+1. **tsconfig.build.json:** If you add test dependencies without type declarations (e.g. `fake-indexeddb`), ensure the package has a `tsconfig.build.json` that excludes `test/` from the build. The build command in `package.json` must be `tsc -p tsconfig.build.json`, not plain `tsc`.
+2. **CI must stay green:** After every push, all 4 GitHub Actions workflows must pass (ci.yml, ci-security.yml, pages.yml, push).
+3. **Do NOT touch:** `standalone.html` (Antigravity owns UX), `.github/workflows/` (already fixed), `memory/` (Claw's workspace).
+
+---
+
 ## Ziel
 
 Die Protokolle (SIOPv2, OID4VP, DPoP, SD-JWT VC, HAIP) sind implementiert und unit-getestet.
