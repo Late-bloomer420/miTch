@@ -60,20 +60,30 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
 
     // --- WAITING ---
     if (panelState === 'waiting') {
+        const walletBaseUrl = (import.meta as Record<string, Record<string, string>>).env?.VITE_WALLET_URL ?? 'http://localhost:5174';
+        const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=did%3Amitch%3Averifier-liquor-store`;
         return (
             <div style={{ textAlign: 'center', padding: 24 }}>
                 <QRCode
-                    value={`${backendUrl}/authorize?scenario=${scenario.id}`}
+                    value={walletDeepLink}
                     size={160}
                     bgColor="#ffffff"
                     fgColor="#0a0a0a"
                 />
                 <div style={{ marginTop: 12, color: '#555', fontSize: 13 }}>
-                    ● Waiting for wallet to present…
+                    ● Scan with wallet or open link below
                 </div>
                 <div style={{ marginTop: 6, fontSize: 10, color: '#333', fontFamily: 'monospace' }}>
                     OID4VP request: {scenario.label}
                 </div>
+                <a
+                    href={walletDeepLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'block', marginTop: 8, fontSize: 10, color: '#0891b2', wordBreak: 'break-all', textDecoration: 'none' }}
+                >
+                    Open in wallet →
+                </a>
             </div>
         );
     }
