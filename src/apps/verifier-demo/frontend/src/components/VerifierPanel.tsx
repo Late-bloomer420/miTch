@@ -60,7 +60,7 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
 
     // --- WAITING ---
     if (panelState === 'waiting') {
-        const walletBaseUrl = (import.meta as Record<string, Record<string, string>>).env?.VITE_WALLET_URL ?? 'http://localhost:5174';
+        const walletBaseUrl = (import.meta as unknown as Record<string, Record<string, string>>).env?.VITE_WALLET_URL ?? 'http://localhost:5174';
         const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=did%3Amitch%3Averifier-liquor-store`;
         return (
             <div style={{ textAlign: 'center', padding: 24 }}>
