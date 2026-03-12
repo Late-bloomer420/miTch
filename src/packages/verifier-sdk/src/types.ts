@@ -12,6 +12,24 @@ export interface TransportPackage {
     };
 }
 
+/** Runtime type guard for JSON.parse output — narrows unknown to TransportPackage */
+export function isTransportPackage(v: unknown): v is TransportPackage {
+    if (typeof v !== 'object' || v === null) return false;
+    const o = v as Record<string, unknown>;
+    if (typeof o['ciphertext'] !== 'string') return false;
+    const aad = o['aad_context'];
+    if (typeof aad !== 'object' || aad === null) return false;
+    const a = aad as Record<string, unknown>;
+    if (typeof a['decision_id'] !== 'string') return false;
+    if (typeof a['nonce'] !== 'string') return false;
+    if (typeof a['verifier_did'] !== 'string') return false;
+    const rec = o['recipient'];
+    if (typeof rec !== 'object' || rec === null) return false;
+    const r = rec as Record<string, unknown>;
+    if (typeof r['encrypted_key'] !== 'string') return false;
+    return true;
+}
+
 export interface VerificationResult<T = unknown> {
     vp: T;
     aad: TransportPackage['aad_context'];

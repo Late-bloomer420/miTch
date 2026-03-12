@@ -30,7 +30,8 @@ import {
     AADValidationError,
     ProofSignatureError,
     ReplayDetectedError,
-    TokenExpiredError
+    TokenExpiredError,
+    isTransportPackage,
 } from './types';
 
 export interface VerifierConfig {
@@ -85,7 +86,7 @@ export class VerifierSDK {
             throw new TransportParseError('JSON parse failed');
         }
 
-        if (!pkg.aad_context || !pkg.recipient?.encrypted_key || !pkg.ciphertext) {
+        if (!isTransportPackage(pkg)) {
             throw new TransportParseError('Missing required fields (aad_context, recipient, ciphertext)');
         }
 
