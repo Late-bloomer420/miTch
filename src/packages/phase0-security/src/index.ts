@@ -71,6 +71,14 @@ export class LocalAuditLog {
         console.info('[Audit] Initialized. Current hash:', this.currentHash.slice(0, 16) + '...');
     }
 
+    close(): void {
+        if (this.db) {
+            this.db.close();
+            this.db = null;
+        }
+        this.encryptionKey = null;
+    }
+
     async append(event: AuditEvent): Promise<void> {
         if (!this.db || !this.encryptionKey) {
             throw new Error('Audit-log not initialized');

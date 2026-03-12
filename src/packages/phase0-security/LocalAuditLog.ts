@@ -78,6 +78,18 @@ export class LocalAuditLog {
   }
 
   /**
+   * Close the database connection. Call in test teardown to avoid
+   * blocking deleteDatabase() between tests.
+   */
+  close(): void {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+    this.encryptionKey = null;
+  }
+
+  /**
    * Append event to audit-log (WORM - Write-Once)
    * Creates tamper-evident hash-chain
    */

@@ -53,7 +53,7 @@ blob-report/
 *.bak
 *.swp
 # Editor-crash lockfile artifacts (e.g. pnpm-lock.yaml.1184410667)
-pnpm-lock.yaml.*[0-9]
+pnpm-lock.yaml.*
 # Binary context packs — never commit
 *.zip
 

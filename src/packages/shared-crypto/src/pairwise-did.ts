@@ -371,8 +371,8 @@ export async function generatePairwiseDIDFromMasterKey(
       true,
       ['sign']
     );
-  } catch {
-    throw new Error('PAIRWISE_DID_KEYGEN_FAILED: derived scalar is not a valid P-256 private key');
+  } catch (e) {
+    throw new Error(`PAIRWISE_DID_KEYGEN_FAILED: derived scalar is not a valid P-256 private key — ${e}`);
   }
 
   // Step 7: Derive public key and build did:peer:0
