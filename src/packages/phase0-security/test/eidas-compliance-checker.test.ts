@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EIDASComplianceChecker, LocalAuditLog } from '../src/index.js';
 
