@@ -7,6 +7,7 @@ describe('EIDASComplianceChecker', () => {
   let checker: EIDASComplianceChecker;
 
   beforeEach(async () => {
+    indexedDB.deleteDatabase('mitch-audit-log');
     auditLog = new LocalAuditLog();
     await auditLog.initialize();
     checker = new EIDASComplianceChecker(auditLog);

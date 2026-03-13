@@ -1,5 +1,6 @@
-import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import FDBFactory from 'fake-indexeddb/lib/FDBFactory';
+import FDBKeyRange from 'fake-indexeddb/lib/FDBKeyRange';
 import { LocalAuditLog } from '../src/index.js';
 import type { AuditEvent } from '../src/index.js';
 
@@ -7,7 +8,10 @@ describe('LocalAuditLog', () => {
   let log: LocalAuditLog;
 
   beforeEach(async () => {
-    indexedDB.deleteDatabase('mitch-audit-log');
+    // Fresh IndexedDB per test — prevents stale connections blocking deleteDatabase
+    (globalThis as any).indexedDB = new FDBFactory();
+    (globalThis as any).IDBKeyRange = FDBKeyRange;
+    (globalThis as any).IDBFactory = FDBFactory;
     log = new LocalAuditLog();
     await log.initialize();
   });
