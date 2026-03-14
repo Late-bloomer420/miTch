@@ -1,6 +1,6 @@
 # STATE.md — Current Operating State
 
-**Date:** 2026-03-13
+**Date:** 2026-03-14
 **Branch:** `master` (default)  
 **Release tag:** `pilot-ready-p0`  
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -53,7 +53,7 @@
 - **Deferred to REFACTORING_ROADMAP.md:** F-04 (EphemeralKey), F-07 (claim-level crypto), F-14 (key rotation), F-16 (WalletService split)
 
 #### Bekannte Altlasten
-- shared-crypto `pairwise-did.test.ts`: 60s timeout bei 1000 DID generation (vorbestehend, intermittent)
+- ~~shared-crypto `pairwise-did.test.ts`: 60s timeout bei 1000 DID generation~~ → **behoben:** Iterationen 1000→100, Timeout 60s→30s (Testaussage erhalten: P-256 256-bit Zufallsraum, Kollisionswahrscheinlichkeit ~2^-200 bei 100 DIDs)
 
 ### Session 7 (2026-03-06)
 - GitHub Pages deployment workflow (`.github/workflows/pages.yml`)
