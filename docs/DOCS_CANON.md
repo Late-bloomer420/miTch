@@ -12,6 +12,10 @@ This file defines the authoritative document per topic area.
 - **Metadata budget + anti-correlation controls:** `docs/ops/METADATA_BUDGET_V1.md`
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 
+## Navigation
+
+- **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
+
 ## Conflict Resolution Rules
 
 - If README conflicts with the Evidence Pack, the Evidence Pack is authoritative.
