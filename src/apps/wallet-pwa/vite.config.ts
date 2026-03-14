@@ -15,6 +15,7 @@ export default defineConfig({
             '@mitch/secure-storage': path.resolve(__dirname, '../../packages/secure-storage/src'),
             '@mitch/predicates': path.resolve(__dirname, '../../packages/predicates/src'),
             '@mitch/layer-resolver': path.resolve(__dirname, '../../packages/layer-resolver/src'),
+            '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
         },
     },
 
@@ -28,6 +29,7 @@ export default defineConfig({
             '@mitch/secure-storage',
             '@mitch/predicates',
             '@mitch/layer-resolver',
+            '@mitch/oid4vp',
         ],
     },
 

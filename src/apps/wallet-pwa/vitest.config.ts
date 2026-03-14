@@ -12,6 +12,7 @@ export default defineConfig({
             '@mitch/audit-log': path.resolve(__dirname, '../../packages/audit-log/src'),
             '@mitch/secure-storage': path.resolve(__dirname, '../../packages/secure-storage/src'),
             '@mitch/predicates': path.resolve(__dirname, '../../packages/predicates/src'),
+            '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
         },
     },
     test: {
