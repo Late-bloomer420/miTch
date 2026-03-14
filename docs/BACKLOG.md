@@ -1,5 +1,5 @@
 # miTch — Master Backlog
-**Stand:** 2026-03-06 (Session 8 Update)
+**Stand:** 2026-03-14 (ADR-Update)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -77,7 +77,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein | ISO.18013-5 |
+| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — Strategie in ADR-012 dokumentiert; Implementierung offen | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
@@ -114,6 +114,7 @@ Basierend auf: `memory/miTch_security_patterns_memory.md`
 | S-03 | ✅ | Input Validation Schema (Whitelist-basiert) für Policy Parser | Claim-Name Injection |
 | S-04 | ✅ | Komponenten-Isolations-Modell (Engine/Consent/Audit) | Internal Privilege Escalation |
 | S-05 | ✅ | Zero Trust intern dokumentieren + implementieren | Chained Attacks |
+| S-10 | 🔴 | Formales Threat Model (STRIDE + Mitigations für Shredding, Blind Provider, Human-in-the-Loop) — ADR-009 dokumentiert (PROPOSED); Review + Acceptance Evidence offen | BSI TR-02102 + EUDI-CIR Risiko-Assessment |
 
 ---
 
@@ -142,6 +143,27 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
 | H-06 | ✅ | Demo E2E Flow testen (4 Szenarien) — D-01: 17 E2E tests |
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
+
+---
+
+## Architecture Decision Records (ADR-001–012)
+
+Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich: `docs/compliance/ADR/ADR-009.md` (WebAuthn Native Verifier — anderes Thema als ADR-009 Threat Model).
+
+| ADR | Titel | Status | Bezug |
+|-----|-------|--------|-------|
+| ADR-001 | Credential Stack (SD-JWT VC) | ACCEPTED | im Repo umgesetzt |
+| ADR-002 | WebAuthn Native Strategy | ACCEPTED | im Repo umgesetzt |
+| ADR-003 | Revocation Strategy (StatusList2021) | ACCEPTED | im Repo umgesetzt |
+| ADR-004 | Consent UX Strategy (Human-in-the-Loop First) | PROPOSED | dokumentiert |
+| ADR-005 | Metadata Minimization Strategy (Unlinkability First) | PROPOSED | dokumentiert |
+| ADR-006 | Recovery Strategy (Device Loss) | PROPOSED | dokumentiert; REFACTORING_ROADMAP |
+| ADR-007 | AI Orchestrator Integration (Scoped Delegation) | PROPOSED | dokumentiert |
+| ADR-008 | Batch Credentials Strategy (Unlinkable Multi-Credential) | PROPOSED | dokumentiert |
+| ADR-009 | Threat Model (STRIDE) | PROPOSED | dokumentiert; S-10 offen |
+| ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
+| ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
+| ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 offen |
 
 ---
 
