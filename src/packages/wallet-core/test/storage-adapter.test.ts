@@ -57,7 +57,7 @@ describe('UnavailableSyncAdapter', () => {
 
     it('does NOT expose a watch() method', () => {
         // UnavailableSyncAdapter has no watch — optional interface method should be absent
-        expect((adapter as any).watch).toBeUndefined();
+        expect('watch' in adapter).toBe(false);
     });
 });
 

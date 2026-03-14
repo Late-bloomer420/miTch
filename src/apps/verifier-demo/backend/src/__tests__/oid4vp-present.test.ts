@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 /**
  * B-02: OID4VP Direct Post Endpoint Tests
  *
@@ -9,7 +9,6 @@ import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from '../app';
 import {
-    buildOID4VPRequest,
     buildSDJWTPresentation,
     SCENARIO_VCT,
 } from '@mitch/oid4vp';

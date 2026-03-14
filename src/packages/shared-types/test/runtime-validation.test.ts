@@ -35,7 +35,7 @@ import type { QuantizedBudgetSignal } from '../src/ad-preferences.js';
 // ── enum / union types (imported for shape checks) ───────────────────────────
 
 import type { AuditEventType, AuditLogEntry } from '../src/audit.js';
-import type { AdDenyReason, AdVerificationResponse } from '../src/ad-response.js';
+import type { AdVerificationResponse } from '../src/ad-response.js';
 import type { OID4VCIError } from '../src/oid4vci.js';
 import type { AnchorRef } from '../src/anchor.js';
 import type { Result } from '../src/index.js';

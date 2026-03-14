@@ -15,7 +15,7 @@
  */
 
 import { weierstrass, ecdsa } from '@noble/curves/abstract/weierstrass.js';
-import { sha256, sha384 } from '@noble/hashes/sha2.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 // ─── brainpoolP256r1 Parameters (RFC 5639 §3.4, verified) ────────────────────
 
@@ -33,9 +33,9 @@ const BP256_CURVE = {
 };
 
 // Curve instances (P256r1 only — production-ready)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+ 
 const bp256Point = weierstrass(BP256_CURVE);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+ 
 const bp256ECDSA = ecdsa(bp256Point, sha256);
 
 // ─── Public Types ─────────────────────────────────────────────────────────────
@@ -65,9 +65,9 @@ export interface BrainpoolSignature {
  */
 export function generateBrainpoolKeyPair(curve: BrainpoolCurve): BrainpoolKeyPair {
     assertP384Stub(curve);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+     
     const privKey = bp256ECDSA.utils.randomSecretKey() as Uint8Array;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+     
     const pubKey = bp256ECDSA.getPublicKey(privKey) as Uint8Array;
     return { curve, privateKey: privKey, publicKey: pubKey };
 }
@@ -80,7 +80,7 @@ export function generateBrainpoolKeyPair(curve: BrainpoolCurve): BrainpoolKeyPai
  */
 export function signWithBrainpool(data: Uint8Array, keyPair: BrainpoolKeyPair): BrainpoolSignature {
     assertP384Stub(keyPair.curve);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+     
     const signature = bp256ECDSA.sign(data, keyPair.privateKey, { prehash: true }) as Uint8Array;
     return { signature, curve: keyPair.curve };
 }
@@ -96,7 +96,7 @@ export function verifyWithBrainpool(
     publicKey: Uint8Array
 ): boolean {
     assertP384Stub(sig.curve);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+     
     return bp256ECDSA.verify(sig.signature, data, publicKey, { prehash: true }) as boolean;
 }
 
@@ -111,7 +111,7 @@ export function brainpoolECDH(
     curve: BrainpoolCurve
 ): Uint8Array {
     assertP384Stub(curve);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+     
     return bp256ECDSA.getSharedSecret(privateKey, publicKey) as Uint8Array;
 }
 

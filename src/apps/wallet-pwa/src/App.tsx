@@ -17,7 +17,6 @@ import { CONFIG } from './config';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
     buildSDJWTPresentation,
-    validateSDJWTPresentation,
     buildSessionCleanup,
     SCENARIO_VCT,
     type AuthorizationRequest,

@@ -70,7 +70,7 @@ async function buildPackage(opts: {
         content: 'edge-case-data',
     };
     if (opts.validUntil !== undefined) {
-        (vpPayload as any).validUntil = opts.validUntil;
+        vpPayload.validUntil = opts.validUntil;
     }
 
     const sig = await crypto.subtle.sign(

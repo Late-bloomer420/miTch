@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { describe, it, expect, beforeAll } from 'vitest';
 import {
     buildHAIPPresentationDefinition,
@@ -13,7 +13,7 @@ import {
 
 let trustAnchorPrivKey: CryptoKey;
 let trustAnchorPubKey: CryptoKey;
-let verifierPrivKey: CryptoKey;
+let _verifierPrivKey: CryptoKey;
 let verifierPubKey: CryptoKey;
 
 const TRUST_ANCHOR_ISS = 'https://trust-anchor.example.com';
@@ -30,7 +30,7 @@ beforeAll(async () => {
     const vPair = await crypto.subtle.generateKey(
         { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
     );
-    verifierPrivKey = vPair.privateKey;
+    _verifierPrivKey = vPair.privateKey;
     verifierPubKey = vPair.publicKey;
 });
 

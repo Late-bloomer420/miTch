@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 /**
  * T-01: OID4VP End-to-End Protocol Flow Tests
  *
@@ -25,7 +25,7 @@ const ISSUER_DID = 'https://issuer.mitch.test';
 
 const AGE_CLAIMS = { age: 24, birthDate: '2000-01-01', name: 'Max Mustermann' };
 const DOCTOR_CLAIMS = { age: 35, role: 'Surgeon', licenseId: 'MED-998877', salary: 'redacted' };
-const EHDS_CLAIMS = { bloodGroup: 'A+', allergies: 'Penicillin', emergencyContacts: '+49-151-0100', diagnosis: '[private]' };
+const _EHDS_CLAIMS = { bloodGroup: 'A+', allergies: 'Penicillin', emergencyContacts: '+49-151-0100', diagnosis: '[private]' };
 
 async function makeIssuerKeyPair(): Promise<CryptoKeyPair> {
     return globalThis.crypto.subtle.generateKey(

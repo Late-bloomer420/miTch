@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
     verifyAuthorizationResponse,
     satisfiesConstraints,
@@ -7,6 +7,7 @@ import type {
     PresentationDefinition,
     AuthorizationResponse,
     PresentationSubmission,
+    VerifiablePresentation,
 } from '@mitch/oid4vp';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
@@ -234,7 +235,7 @@ describe('verifyAuthorizationResponse', () => {
                 holder: 'did:example:holder',
             };
             const result = verifyAuthorizationResponse({
-                response: buildResponse({ vp_token: vpObject as any }),
+                response: buildResponse({ vp_token: vpObject as VerifiablePresentation }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
                 skipNonceCheck: true,
@@ -251,7 +252,7 @@ describe('verifyAuthorizationResponse', () => {
                 holder: 'did:example:holder',
             };
             const result = verifyAuthorizationResponse({
-                response: buildResponse({ vp_token: vpObject as any }),
+                response: buildResponse({ vp_token: vpObject as VerifiablePresentation }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
                 skipNonceCheck: true,
