@@ -1,4 +1,5 @@
 import { webcrypto, createHash } from 'node:crypto';
+import type { IEphemeralKey } from '@mitch/shared-crypto';
 
 export interface ShredProof {
     timestamp: string;
@@ -25,7 +26,7 @@ export interface ShredProof {
  * });
  * // key is now shredded. Proof available via key.getShredProof()
  */
-export class EphemeralKey {
+export class EphemeralKey implements IEphemeralKey {
     private keyMaterial: Uint8Array | null;
     private isDestroyed: boolean = false;
     private shredProof: ShredProof | null = null;
@@ -77,7 +78,7 @@ export class EphemeralKey {
             return result;
         } finally {
             // CRITICAL: Always shred, even on exception/timeout
-            this.shred(operationSuccess, Date.now() - startTime);
+            this.shredInternal(operationSuccess, Date.now() - startTime);
         }
     }
 
@@ -99,7 +100,17 @@ export class EphemeralKey {
         );
     }
 
-    private shred(success: boolean, duration_ms: number) {
+    /**
+     * IEphemeralKey conformance: manually shred key material.
+     * Prefer use() for automatic shredding with audit proof.
+     */
+    shred(): void {
+        if (!this.isDestroyed) {
+            this.shredInternal(false, 0);
+        }
+    }
+
+    private shredInternal(success: boolean, duration_ms: number) {
         if (this.isDestroyed || !this.keyMaterial) return;
 
         // 1. Hash BEFORE shred

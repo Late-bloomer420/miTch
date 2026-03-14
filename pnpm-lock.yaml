@@ -555,6 +555,9 @@ importers:
 
   src/packages/secure-memory:
     devDependencies:
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       vitest:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))
