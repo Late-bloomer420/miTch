@@ -28,7 +28,7 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 39/39 turbo tasks pass; 60/60 wallet-pwa tests
+- **Tests:** 40/40 turbo tasks pass; 60/60 wallet-pwa tests
 - **Lint:** 0 errors, 0 warnings
 - **Audit:** 0 npm vulnerabilities
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
