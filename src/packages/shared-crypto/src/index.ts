@@ -4,6 +4,7 @@ export * from './hashing';
 export * from './encryption';
 export * from './signing';
 export * from './ephemeral';
+export type { IEphemeralKey } from './interfaces/IEphemeralKey';
 export * from './recovery';
 export * from './secure-buffer';
 export * from './webauthn';

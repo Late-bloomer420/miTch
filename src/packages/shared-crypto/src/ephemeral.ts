@@ -14,6 +14,7 @@
  * - Auditable key lifecycle
  */
 
+import type { IEphemeralKey } from './interfaces/IEphemeralKey';
 import { wrapKeyForRecipient } from './keys';
 import { encrypt, decrypt } from './encryption';
 
@@ -27,7 +28,7 @@ import { encrypt, decrypt } from './encryption';
  * 
  * This class wraps all access to the underlying key material.
  */
-export class EphemeralKey {
+export class EphemeralKey implements IEphemeralKey {
     private key: CryptoKey | null;
     private shredded: boolean = false;
 
@@ -95,8 +96,16 @@ export class EphemeralKey {
 
     /**
      * Checks if the key is still active.
+     * @deprecated Use isShredded() for IEphemeralKey conformance.
      */
     isDestroyed(): boolean {
+        return this.shredded;
+    }
+
+    /**
+     * IEphemeralKey conformance: returns true if key material has been destroyed.
+     */
+    isShredded(): boolean {
         return this.shredded;
     }
 

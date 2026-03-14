@@ -1,8 +1,13 @@
+import type { IEphemeralKey } from './interfaces/IEphemeralKey';
+
 /**
- * EphemeralKey: Crypto-Shredding Primitive
- * Represents a cryptographic key that can be securely destroyed.
+ * EphemeralKey: Crypto-Shredding Primitive (Uint8Array variant)
+ *
+ * Wraps raw key bytes and zeroes them on shred(). Used by pairwise-did.ts
+ * because raw byte shredding (fill(0)) is stronger than CryptoKey GC-based
+ * destruction — the caller controls when bytes are overwritten.
  */
-export class EphemeralKey {
+export class EphemeralKey implements IEphemeralKey {
     private keyData: Uint8Array | null;
 
     constructor(keyData: Uint8Array) {
