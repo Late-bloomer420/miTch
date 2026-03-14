@@ -19,15 +19,13 @@ import { decode as cborgDecode } from 'cborg';
  * unless `useMaps: true` is set. This does NOT affect the general
  * cbor.decode() used elsewhere.
  */
+const coseTags = [] as ((inner: any) => any)[];
+coseTags[CBOR_TAGS.COSE_MAC0] = (value: any) => value;
+coseTags[CBOR_TAGS.COSE_SIGN1] = (value: any) => value;
+coseTags[CBOR_TAGS.EMBEDDED_CBOR] = (innerBytes: any) => cborgDecode(innerBytes, COSE_DECODE_OPTIONS);
 const COSE_DECODE_OPTIONS = {
     useMaps: true,
-    tags: {
-        [CBOR_TAGS.COSE_SIGN1]: (value: unknown) => value,
-        [CBOR_TAGS.COSE_MAC0]: (value: unknown) => value,
-        [CBOR_TAGS.EMBEDDED_CBOR]: (innerBytes: Uint8Array) => {
-            return cborgDecode(innerBytes, COSE_DECODE_OPTIONS);
-        },
-    } as Record<number, (value: unknown) => unknown>,
+    tags: coseTags,
 };
 
 function coseDecode<T = unknown>(data: Uint8Array): T {
@@ -50,11 +48,19 @@ export const COSE_ALG = {
     ES256: -7,
 } as const;
 
-/** COSE_Sign1 CBOR Tag (RFC 9052 §4.2) */
-const COSE_SIGN1_TAG = 18;
-
 /** Tag 18 header bytes: major type 6 (tag) with value 18 = 0xd2 */
 const TAG_18_HEADER = new Uint8Array([0xd2]);
+
+/**
+ * Convert a Uint8Array to a plain ArrayBuffer for WebCrypto compatibility.
+ * TS 5.9 makes Uint8Array generic over ArrayBufferLike, but crypto.subtle
+ * expects BufferSource with a concrete ArrayBuffer. This copy guarantees that.
+ */
+function toArrayBuffer(data: Uint8Array): ArrayBuffer {
+    const copy = new Uint8Array(data.byteLength);
+    copy.set(data);
+    return copy.buffer;
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -158,7 +164,7 @@ export async function createSign1(opts: Sign1CreateOptions): Promise<Uint8Array>
     const signatureBuffer = await crypto.subtle.sign(
         { name: 'ECDSA', hash: 'SHA-256' },
         privateKey,
-        sigStructure,
+        toArrayBuffer(sigStructure),
     );
     const signature = new Uint8Array(signatureBuffer);
 
@@ -219,8 +225,8 @@ export async function verifySign1(
     const valid = await crypto.subtle.verify(
         { name: 'ECDSA', hash: 'SHA-256' },
         publicKey,
-        parsed.signature,
-        sigStructure,
+        toArrayBuffer(parsed.signature),
+        toArrayBuffer(sigStructure),
     );
 
     return {

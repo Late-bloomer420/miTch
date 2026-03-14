@@ -24,19 +24,16 @@ export const CBOR_TAGS = {
 
 /**
  * cborg decode options with tag handlers for mdoc-relevant CBOR tags.
+ * Tags are a sparse array indexed by tag number (cborg TagDecoder[] API).
+ * - Tag 17 = COSE_Mac0: pass through as-is.
+ * - Tag 18 = COSE_Sign1: pass through as-is.
  * - Tag 24 = embedded CBOR: decode the inner byte string as CBOR.
- * - Tag 18 = COSE_Sign1: pass through the inner array as-is.
- * - Tag 17 = COSE_Mac0: pass through the inner array as-is.
  */
-const DECODE_OPTIONS = {
-    tags: {
-        [CBOR_TAGS.EMBEDDED_CBOR]: (innerBytes: Uint8Array) => {
-            return cborgDecode(innerBytes);
-        },
-        [CBOR_TAGS.COSE_SIGN1]: (value: unknown) => value,
-        [CBOR_TAGS.COSE_MAC0]: (value: unknown) => value,
-    } as Record<number, (value: unknown) => unknown>,
-};
+const decodeTags = [] as ((inner: any) => any)[];
+decodeTags[CBOR_TAGS.COSE_MAC0] = (value: any) => value;
+decodeTags[CBOR_TAGS.COSE_SIGN1] = (value: any) => value;
+decodeTags[CBOR_TAGS.EMBEDDED_CBOR] = (innerBytes: any) => cborgDecode(innerBytes);
+const DECODE_OPTIONS = { tags: decodeTags };
 
 /**
  * Encode a JavaScript value to CBOR bytes.
