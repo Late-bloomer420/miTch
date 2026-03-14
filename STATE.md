@@ -1,6 +1,6 @@
 # STATE.md — Current Operating State
 
-**Date:** 2026-03-07
+**Date:** 2026-03-13
 **Branch:** `master` (default)  
 **Release tag:** `pilot-ready-p0`  
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -24,12 +24,12 @@
 
 ## Current status
 
-- **Tests:** 38/38 turbo tasks pass; **855+ individual tests** green (Session 9: +10 E2E)
+- **Tests:** 38/39 turbo tasks pass (wallet-pwa `App.test.tsx` `@mitch/oid4vp` module resolution fail in vite test env — in aktueller Validierung beobachtet, als vorbestehend eingeordnet, nicht Teil des ESLint-Cleanups)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
 - **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
-- **Lint:** 0 errors, **0 warnings** (H-01b complete — was 170 warnings / 2 errors)
+- **Lint:** 0 errors, **0 warnings** (ESLint 26 → 0: unused imports/vars entfernt, stale eslint-disable-Direktiven entfernt, test-local any-casts durch präzise Typen ersetzt)
 - **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
 - **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
 - **Phase 3 Security Hardening:** S-01–S-05 ✅
@@ -40,6 +40,20 @@
 - **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
 - **Demo:** D-01 ✅ (17 E2E scenario tests), D-02 ✅ (docs/DEMO_SCRIPT.md)
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+
+### Session 10+ (2026-03-11 – 2026-03-13)
+- **SPRINT_PLAN.md Block A Security Fixes:** F-01–F-03, F-06, F-08, F-10–F-11, F-13, F-17 (closed)
+- **F-01** Recovery: GF(2^8) Shamir 2-of-3 SSS (real secret sharing, ersetzt XOR 3-of-3)
+- **F-09** Verifier Binding Phase 1 (origin hostname vs. verifierId/did:web)
+- **F-18** `REFACTORING_ROADMAP.md` erstellt
+- phase0-security: IndexedDB test fixes, EIDASComplianceChecker tests (28 tests)
+- ESLint: 26 → 0 problems (unused imports, stale directives, test any-casts → precise types)
+- response-verifier tests + verifier-browser vitest config
+- **Deferred to REFACTORING_ROADMAP.md:** F-04 (EphemeralKey), F-07 (claim-level crypto), F-14 (key rotation), F-16 (WalletService split)
+
+#### Bekannte Altlasten
+- wallet-pwa `App.test.tsx`: `@mitch/oid4vp` module resolution fail im vite test env (dist/ vorhanden, in aktueller Validierung beobachtet, als vorbestehend eingeordnet)
+- shared-crypto `pairwise-did.test.ts`: 60s timeout bei 1000 DID generation (vorbestehend, intermittent)
 
 ### Session 7 (2026-03-06)
 - GitHub Pages deployment workflow (`.github/workflows/pages.yml`)
