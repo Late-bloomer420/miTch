@@ -19,3 +19,10 @@ Decisions made on 2026-02-20 for miTch Phase 0+ credential and proof infrastruct
 **Design now, build later:** AI delegation token spec (data model), BBS+ credential format slot.
 
 **Not Phase 0:** Cloud backup, social recovery, dark pattern detection, AI SDK, relay proxy, OHTTP.
+
+## Verwandte Sammlungen
+
+Diese DECISION-Dateien sind frühe, lightweight Decision Notes aus Phase 0. Für weiterführende ADRs siehe:
+
+- [`docs/03-architecture/mvp/`](../mvp/) — formale Architektur-Strategie-ADRs (ADR-001–012)
+- [`docs/compliance/ADR/`](../../compliance/ADR/) — compliance- und implementierungsnahe ADRs (ADR-001–009)

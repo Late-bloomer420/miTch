@@ -148,9 +148,9 @@
 | 91 | 91_Trust_Guardrail_False_Allow_Zero_Tolerance.md | Trust Guardrail False-Allow Zero | IMPLEMENTED | allow-assertion.ts | src/packages/policy-engine/ |
 | 92 | 92_Cost_KPI_Estimation_v1.md | Cost KPI Estimation | IMPLEMENTED | kpi.ts Kostenberechnung | src/packages/policy-engine/ |
 | 93 | 93_PQ_Readiness_Crypto_Agility_v1.md | PQ Readiness Crypto Agility | IMPLEMENTED | crypto-agility.ts, pqc.ts | src/packages/shared-crypto/ |
-| 94 | 94_WebAuthn_Crypto_Verification_Scaffold_v3.md | WebAuthn Crypto Verification Scaffold | PARTIALLY STALE | Spec beschreibt HMAC-Proxy-Modell (`WEBAUTHN_VERIFY_MODE=signed`); Code hat stattdessen native Assertion-Verifikation (challenge+origin+counter) — Spec-Konzept überholt | index.ts vs. Spec-Modell |
+| 94 | 94_WebAuthn_Crypto_Verification_Scaffold_v3.md | WebAuthn Crypto Verification Scaffold | PARTIALLY STALE | Spec beschreibt HMAC-Proxy-Modell (`WEBAUTHN_VERIFY_MODE=signed`); Code hat stattdessen native Assertion-Verifikation (challenge+origin+counter) — Spec-Konzept überholt | ADR-009, index.ts |
 | 95 | 95_WebAuthn_Native_Verifier_Hook_v1.md | WebAuthn Native Verifier Hook | IMPLEMENTED | webauthn-verifier Modul mit step-up-auth.ts, verifier.ts | src/packages/webauthn-verifier/ |
-| 96 | 96_WebAuthn_Native_Hook_Bound_Adapter_Evidence.md | WebAuthn Native Hook Bound Adapter | PARTIALLY STALE | Spec fordert HMAC-basierte Adapter-Evidence (`WEBAUTHN_NATIVE_ADAPTER_SECRET`); Code hat direkte Assertion-Verifikation ohne Modi | index.ts vs. Spec-Modell |
+| 96 | 96_WebAuthn_Native_Hook_Bound_Adapter_Evidence.md | WebAuthn Native Hook Bound Adapter | PARTIALLY STALE | Spec fordert HMAC-basierte Adapter-Evidence (`WEBAUTHN_NATIVE_ADAPTER_SECRET`); Code hat direkte Assertion-Verifikation ohne Modi | ADR-009, index.ts |
 | 97 | 97_WebAuthn_Config_Health_Guardrail.md | WebAuthn Config Health Guardrail | PARTIALLY STALE | kpi.ts hat `webauthnDriftMs`, aber nicht die 3 geforderten Felder (`reauth_strong_enabled`, `verify_mode_code`, `secret_config_valid`) | kpi.ts vs. Spec |
 | 98 | 98_WebAuthn_Native_Mode_Usage_Visibility.md | WebAuthn Native Mode Usage Visibility | PARTIALLY STALE | Konzept, nicht vollständig verdrahtet | Spec vs. Repo |
 | 99 | 99_WebAuthn_Allowlist_Mode_Drift_Warning.md | WebAuthn Allowlist Mode Drift Warning | PARTIALLY STALE | Konzept, nicht vollständig verdrahtet | Spec vs. Repo |
