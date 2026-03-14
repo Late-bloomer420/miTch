@@ -1,4 +1,8 @@
 # miTch — Master Backlog
+
+> **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
+> Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
+
 **Stand:** 2026-03-14 (ADR-Update)
 **Leitsatz:** *"Alle sind miTch."*
 

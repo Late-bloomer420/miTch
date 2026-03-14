@@ -6,13 +6,13 @@ This file defines the authoritative document per topic area and serves as naviga
 
 ## Document Hierarchy
 
-| Dokument | Zweck |
-|----------|-------|
-| `STATE.md` | Aktueller Betriebszustand (Tests, Gaps, Demo) |
-| `docs/BACKLOG.md` | Offene Arbeit, erledigte Meilensteine, ADR-Verweise |
-| `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs |
-| `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) |
-| `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) |
+| Dokument | Zweck | Rolle |
+|----------|-------|-------|
+| `STATE.md` | Operativer Health-Snapshot (Tests, Lint, Audit, Demo) | Was läuft? |
+| `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
+| `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
+| `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
+| `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
 
 ## Authoritative Sources
 

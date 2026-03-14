@@ -1,8 +1,11 @@
 # STATE.md — Current Operating State
 
+> **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
+> Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
+
 **Date:** 2026-03-14
-**Branch:** `master` (default)  
-**Release tag:** `pilot-ready-p0`  
+**Branch:** `master` (default)
+**Release tag:** `pilot-ready-p0`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
 
 ---
@@ -24,22 +27,17 @@
 
 ## Current status
 
-- **Tests:** 39/39 turbo tasks pass; 60/60 wallet-pwa tests (oid4vp alias fix: `92161b8`)
+### Operational Health
+- **Tests:** 39/39 turbo tasks pass; 60/60 wallet-pwa tests
+- **Lint:** 0 errors, 0 warnings
+- **Audit:** 0 npm vulnerabilities
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
-- **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
-- **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
-- **All P1 gaps closed:** AI-02 ✅ AI-04 ✅ G-07 ✅ G-08 ✅ G-09 ✅
-- **Lint:** 0 errors, **0 warnings** (ESLint 26 → 0: unused imports/vars entfernt, stale eslint-disable-Direktiven entfernt, test-local any-casts durch präzise Typen ersetzt)
-- **Findings backlog:** all items closed (P0 × 9, P1 × 5, P2 × 1)
-- **Phase 1+2 Unlinkability:** U-01–U-05 ✅ (HKDF pairwise DIDs + did:peer:0 inline resolution + cross-verifier isolation)
-- **Phase 3 Security Hardening:** S-01–S-05 ✅
-- **OID4VP:** E-01a–E-01d ✅ complete (Parser, VP Token Builder, Verifier, Policy Bridge)
-- **Session 9 E2E Wiring:** W-01–W-05 ✅ (OID4VP request generation, wallet consent UI, SD-JWT VC issuance, KB-JWT, verifier validation, session cleanup, consent receipt)
-- **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
-- **OID4VCI:** E-02 ✅ 32 comprehensive tests (createOffer, issueCredential, policy, audit)
-- **Wallet PWA Tests:** G-01–G-03 ✅ (DocumentService, PrivacyAuditService, App, WalletService, ConsentModal, PolicyEditor)
-- **Demo:** D-01 ✅ (17 E2E scenario tests), D-02 ✅ (docs/DEMO_SCRIPT.md)
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+- **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
+
+### Completion Summary
+Alle P0 + P1 Gaps geschlossen. Phase 0–1 complete, Phase 2–3 teilweise.
+Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 
 ---
 
