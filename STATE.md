@@ -24,7 +24,7 @@
 
 ## Current status
 
-- **Tests:** 38/39 turbo tasks pass (wallet-pwa `App.test.tsx` `@mitch/oid4vp` module resolution fail in vite test env — in aktueller Validierung beobachtet, als vorbestehend eingeordnet, nicht Teil des ESLint-Cleanups)
+- **Tests:** 39/39 turbo tasks pass; 60/60 wallet-pwa tests (oid4vp alias fix: `92161b8`)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Audit:** 0 npm vulnerabilities (Dependabot alert #18 dismissed)
 - **All P0 gaps closed:** G-01–G-06 ✅ AI-01 ✅ AI-05 ✅ AI-06 ✅
@@ -49,10 +49,10 @@
 - phase0-security: IndexedDB test fixes, EIDASComplianceChecker tests (28 tests)
 - ESLint: 26 → 0 problems (unused imports, stale directives, test any-casts → precise types)
 - response-verifier tests + verifier-browser vitest config
+- fix(wallet-pwa): `@mitch/oid4vp` alias in vite.config.ts + vitest.config.ts → 39/39 turbo, 60/60 wallet-pwa tests
 - **Deferred to REFACTORING_ROADMAP.md:** F-04 (EphemeralKey), F-07 (claim-level crypto), F-14 (key rotation), F-16 (WalletService split)
 
 #### Bekannte Altlasten
-- wallet-pwa `App.test.tsx`: `@mitch/oid4vp` module resolution fail im vite test env (dist/ vorhanden, in aktueller Validierung beobachtet, als vorbestehend eingeordnet)
 - shared-crypto `pairwise-did.test.ts`: 60s timeout bei 1000 DID generation (vorbestehend, intermittent)
 
 ### Session 7 (2026-03-06)
