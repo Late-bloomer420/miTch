@@ -34,7 +34,7 @@ WalletService is a God Object accumulating every wallet concern. Planned split:
 - `src/packages/secure-memory/src/ephemeral_key.ts` (Node, hash-proof + timeout)
 
 **Finding:** F-04 (audit 2026-03)
-**Status:** Phase 1 complete (interface + shared-crypto conformance)
+**Status:** Complete (interface + all implementations conform)
 
 Common `IEphemeralKey` interface defined in `shared-crypto/src/interfaces/IEphemeralKey.ts`:
 ```typescript
@@ -49,9 +49,9 @@ interface IEphemeralKey {
 - `ephemeral.ts` (CryptoKey variant) → `implements IEphemeralKey` + added `isShredded()` alias
 - Interface exported from `@mitch/shared-crypto`
 
-**Phase 2 (planned):**
-- `secure-memory/ephemeral_key.ts` — different lifecycle model (`use()` + auto-shred, private `shred()`). Conformance requires design decision on whether to expose public `shred()` alongside `use()`.
-- Adapt `WalletService.ts` callers to use `IEphemeralKey` where applicable.
+**Phase 2 (done):**
+- `secure-memory/ephemeral_key.ts` → `implements IEphemeralKey` + public `shred()` (delegates to internal shred with `success=false`). Existing `use()` auto-shred pattern preserved.
+- `WalletService.ts` already calls `.shred()` on concrete `EphemeralKey` — no adapter needed.
 
 ---
 
