@@ -377,6 +377,25 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))
 
+  src/packages/mdoc:
+    dependencies:
+      cborg:
+        specifier: ^4.2.0
+        version: 4.5.8
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.33
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))
+
   src/packages/mock-issuer:
     dependencies:
       jose:
@@ -1718,6 +1737,10 @@ packages:
 
   caniuse-lite@1.0.30001770:
     resolution: {integrity: sha512-x/2CLQ1jHENRbHg5PSId2sXq1CIO1CISvwWAj027ltMVG2UNgW+w9oH2+HzgEIRFembL8bUlXtfbBHR1fCg2xw==}
+
+  cborg@4.5.8:
+    resolution: {integrity: sha512-6/viltD51JklRhq4L7jC3zgy6gryuG5xfZ3kzpE+PravtyeQLeQmCYLREhQH7pWENg5pY4Yu/XCd6a7dKScVlw==}
+    hasBin: true
 
   chai@4.5.0:
     resolution: {integrity: sha512-RITGBfijLkBddZvnn8jdqoTypxvqbOLYQkGGxXzeFjVHvudaPw0HNFD9x928/eUwYWd2dPCugVqspGALTZZQKw==}
@@ -4291,6 +4314,8 @@ snapshots:
   callsites@3.1.0: {}
 
   caniuse-lite@1.0.30001770: {}
+
+  cborg@4.5.8: {}
 
   chai@4.5.0:
     dependencies:

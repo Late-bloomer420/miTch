@@ -349,6 +349,12 @@ export interface InteractionMetadata {
     };
 }
 
+/**
+ * Supported credential encoding formats.
+ * 'sd-jwt' = SD-JWT VC (current default), 'mso_mdoc' = ISO 18013-5 mdoc (CBOR/COSE).
+ */
+export type CredentialFormat = 'sd-jwt' | 'mso_mdoc';
+
 export interface StoredCredentialMetadata {
     id: string;
     issuer: string;
@@ -358,4 +364,6 @@ export interface StoredCredentialMetadata {
     claims: string[];
     /** Credential lifecycle status */
     status?: 'active' | 'dispensed' | 'revoked' | 'expired';
+    /** Credential encoding format (default: 'sd-jwt') */
+    format?: CredentialFormat;
 }
