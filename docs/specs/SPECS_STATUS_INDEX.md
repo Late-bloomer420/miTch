@@ -21,11 +21,11 @@
 
 | Status | Anzahl |
 |--------|--------|
-| ACTIVE REFERENCE | 28 |
+| ACTIVE REFERENCE | 25 |
 | IMPLEMENTED | 35 |
-| PARTIALLY STALE | 30 |
+| PARTIALLY STALE | 34 |
 | ARCHIVE CANDIDATE | 17 |
-| NEEDS REVIEW | 2 |
+| NEEDS REVIEW | 1 |
 | **Gesamt** | **112** |
 
 ---
@@ -88,8 +88,8 @@
 | 41 | 41_Localhost_Test_Quickstart.md | Localhost Test Quickstart | PARTIALLY STALE | Ggf. Update nötig für aktuellen pnpm dev Flow | Repo-Vergleich |
 | 42 | 42_Pilot_Critical_Config.md | Pilot Critical Config | ACTIVE REFERENCE | Erforderliche Env-Konfiguration | Spec Inhalt |
 | 43 | 43_Pilot_Next_Steps_Plan.md | Pilot Next Steps Plan | PARTIALLY STALE | Teils erledigt, teils noch relevant | STATE.md |
-| 44 | 44_Evidence_Runbook.md | Evidence Runbook | ACTIVE REFERENCE | Reproduzierbare Pilot-Evidenz | DOCS_CANON.md |
-| 45 | 45_Adjudication_Workflow.md | Adjudication Workflow | ACTIVE REFERENCE | False-Deny-Messung | Spec Inhalt |
+| 44 | 44_Evidence_Runbook.md | Evidence Runbook | PARTIALLY STALE | Prozess relevant, aber `npm run evidence` Befehle veraltet (pnpm) | DOCS_CANON.md + Repo-Vergleich |
+| 45 | 45_Adjudication_Workflow.md | Adjudication Workflow | PARTIALLY STALE | Konzept relevant, aber `npm run adjudicate` Befehle veraltet (pnpm) | Spec Inhalt + Repo-Vergleich |
 | 46 | 46_Security_Attack_Testing.md | Security Attack Testing | ACTIVE REFERENCE | Adversarial Testing Scope | Spec Inhalt |
 | 47 | 47_Risk_Register_Extended_Human_and_Governance.md | Risk Register Extended | PARTIALLY STALE | Einige Risiken mitigiert | STATE.md Findings closed |
 | 48 | 48_Mitigations_ProofFatigue_PolicyTamper_Recovery_GDPR.md | Mitigations ProofFatigue etc. | IMPLEMENTED | proof-fatigue.ts, recovery.ts | src/packages/policy-engine/ |
@@ -101,7 +101,7 @@
 | # | Datei | Titel | Status | Begründung | Evidenz |
 |---|-------|-------|--------|------------|---------|
 | 51 | 51_RP_Onboarding_Pack.md | RP Onboarding Pack | ACTIVE REFERENCE | Pilot-Onboarding-Essentials | 105 Pilot closure |
-| 52 | 52_RP_First_Success_Examples.md | RP First Success Examples | ACTIVE REFERENCE | Copy-Paste-Beispiele | Spec Inhalt |
+| 52 | 52_RP_First_Success_Examples.md | RP First Success Examples | PARTIALLY STALE | Beispiele nützlich, aber PowerShell/npm-Befehle veraltet | Spec Inhalt + Repo-Vergleich |
 | 53 | 53_TEE_Readiness_Gap.md | TEE Readiness Gap | ACTIVE REFERENCE | Gap-Analyse, T-31 offen | REFACTORING_ROADMAP TEE |
 | 54 | 54_External_Security_Findings_Integration.md | External Security Findings | PARTIALLY STALE | Aktionsplan teilweise abgearbeitet | STATE.md Findings |
 | 55 | 55_External_Findings_Expanded_Systemic_Risks.md | External Findings Expanded | PARTIALLY STALE | Einige Findings adressiert | STATE.md |
@@ -149,7 +149,7 @@
 | 92 | 92_Cost_KPI_Estimation_v1.md | Cost KPI Estimation | IMPLEMENTED | kpi.ts Kostenberechnung | src/packages/policy-engine/ |
 | 93 | 93_PQ_Readiness_Crypto_Agility_v1.md | PQ Readiness Crypto Agility | IMPLEMENTED | crypto-agility.ts, pqc.ts | src/packages/shared-crypto/ |
 | 94 | 94_WebAuthn_Crypto_Verification_Scaffold_v3.md | WebAuthn Crypto Verification Scaffold | NEEDS REVIEW | Scaffold-Konzept, Umsetzungsgrad unklar | Manuelle Prüfung nötig |
-| 95 | 95_WebAuthn_Native_Verifier_Hook_v1.md | WebAuthn Native Verifier Hook | NEEDS REVIEW | Hook-Konzept, Umsetzungsgrad unklar | Manuelle Prüfung nötig |
+| 95 | 95_WebAuthn_Native_Verifier_Hook_v1.md | WebAuthn Native Verifier Hook | IMPLEMENTED | webauthn-verifier Modul mit step-up-auth.ts, verifier.ts | src/packages/webauthn-verifier/ |
 | 96 | 96_WebAuthn_Native_Hook_Bound_Adapter_Evidence.md | WebAuthn Native Hook Bound Adapter | PARTIALLY STALE | Konzept, nicht vollständig gebaut | Spec vs. Repo |
 | 97 | 97_WebAuthn_Config_Health_Guardrail.md | WebAuthn Config Health Guardrail | PARTIALLY STALE | Konzept, nicht vollständig verdrahtet | Spec vs. Repo |
 | 98 | 98_WebAuthn_Native_Mode_Usage_Visibility.md | WebAuthn Native Mode Usage Visibility | PARTIALLY STALE | Konzept, nicht vollständig verdrahtet | Spec vs. Repo |
@@ -167,7 +167,7 @@
 | 105 | 105_Visual_Control_Panel.md | Visual Control Panel | ACTIVE REFERENCE | NOW/NEXT/LATER/DEFER Leitdokument | STATE.md |
 | 106 | 106_Document_Map_By_Purpose.md | Document Map By Purpose | PARTIALLY STALE | Fehlt 107-112, braucht Update | Datei selbst |
 | 107 | 107_Positioning_Guardrail_Not_WorldCoin2.md | Positioning Guardrail | ACTIVE REFERENCE | Narrative Guardrail | 105 Positioning |
-| 108 | 108_Policy_Conflict_Resolution_and_Anti_Oracle.md | Policy Conflict Resolution | IMPLEMENTED | engine.ts Konfliktbehandlung | src/packages/policy-engine/ |
+| 108 | 108_Policy_Conflict_Resolution_and_Anti_Oracle.md | Policy Conflict Resolution | PARTIALLY STALE | engine.ts hat Konfliktbehandlung, aber Spec ist als DRAFT markiert | src/packages/policy-engine/ + Spec DRAFT |
 | 109 | 109_Presentation_Binding_AntiReplay_Spec_v1.md | Presentation Binding AntiReplay | IMPLEMENTED | presentation-binding.ts | src/packages/shared-crypto/ |
 | 110 | 110_eID_Issuer_Simulator_Fidelity.md | eID Issuer Simulator Fidelity | ACTIVE REFERENCE | Simulator-Constraints | Spec Inhalt |
 | 111 | 111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md | Unlinkability Phase 1 Pairwise DIDs | IMPLEMENTED | pairwise-did.ts | src/packages/shared-crypto/ |
@@ -180,13 +180,13 @@
 ### Aktiv wichtig (NOW / NEXT)
 - **01, 02, 04, 05**: Kern-Prinzipien und Bedrohungsmodell
 - **19, 21, 22**: Retention, Deny-Codes, Go/No-Go
-- **33, 38-40, 42, 44-46**: Business Case, KPIs, Pilot-Config, Evidence, Adversarial Testing
-- **49-53, 59-60**: Governance, Onboarding, TEE Gap, Supply Chain, Jurisdiktion
+- **33, 38-40, 42, 46**: Business Case, KPIs, Pilot-Config, Adversarial Testing
+- **49-51, 53, 59-60**: Governance, Onboarding, TEE Gap, Supply Chain, Jurisdiktion
 - **103, 105, 107, 110, 112**: Entscheidungsrahmen, Control Panel, Positionierung, Simulator, Isolation
 
 ### Umgesetzt (historischer Kontext)
 35 Specs beschreiben Konzepte, die im Code leben. Sie haben Design-Kontextwert, aber die Implementation ist die Wahrheitsquelle:
-- 20, 32, 48, 57-58, 61-65, 67-70, 74-80, 82-85, 88, 90-93, 100, 108-109, 111
+- 20, 32, 48, 57-58, 61-65, 67-70, 74-80, 82-85, 88, 90-93, 95, 100, 109, 111
 
 ### Nur noch Archivwert
 17 Specs sind reine Planungs-Artefakte ohne aktiven Referenzwert:
@@ -194,7 +194,7 @@
 
 ### Nächste Kandidaten für Arbeit
 Basierend auf 105 (NOW/NEXT) und dem PARTIALLY STALE Status:
-1. **WebAuthn Native Verifier (94-102)**: Größter Block PARTIALLY STALE Specs — Umsetzungsgrad klären
+1. **WebAuthn Native Verifier (94, 96-102)**: Größter Block PARTIALLY STALE Specs — Umsetzungsgrad klären
 2. **Dashboard/Alerting-Verdrahtung (66, 72-73, 81, 86-87, 89)**: KPI-Engine existiert, UI/Alerting fehlt
 3. **Cache-Safety (71)**: Revoked-Only-Cache ist Design-Spec ohne vollständige Implementation
 4. **00_README.md Update**: Dateiliste auf 112 Specs vervollständigen
