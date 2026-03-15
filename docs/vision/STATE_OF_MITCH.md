@@ -6,7 +6,7 @@
 
 | Component | Status | Evidence |
 |---|---|---|
-| Policy Engine (fail-closed, 31+ deny codes) | ✅ Production-ready | 845+ tests, 0 false allows |
+| Policy Engine (fail-closed, 31+ deny codes) | ✅ Production-ready | 1411 tests, 0 false allows |
 | SD-JWT VC + Selective Disclosure | ✅ Implemented | shared-crypto |
 | OID4VP / OID4VCI / SIOPv2 / DPoP / HAIP | ✅ Implemented | oid4vp, oid4vci |
 | AES-256-GCM encrypted storage | ✅ Implemented | secure-storage |
@@ -36,7 +36,7 @@ Bulletproofs range proofs for specific claims. Research horizon. PQC readiness (
 | CI/CD (GitHub Actions) | ✅ 4/4 green |
 | Test Coverage | ⚠️ ~50-65% (P0 gaps being closed) |
 | Standalone Demo (GitHub Pages) | ✅ Live |
-| 25 packages + 3 apps | ✅ All building |
+| 26 packages + 3 apps | ✅ All building |
 | CIR Compliance | 82% |
 | Audit Findings | ✅ All closed (F-01 to F-18) |
 

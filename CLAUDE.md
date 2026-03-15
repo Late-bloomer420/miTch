@@ -15,7 +15,7 @@ pnpm install
 # Build all packages (respects dependency graph)
 pnpm build
 
-# Run all tests (~1400+ individual tests across 40 turbo tasks)
+# Run all tests (1411 individual tests across 40 turbo tasks)
 pnpm test
 
 # Run tests for a single package
@@ -24,7 +24,7 @@ pnpm --filter @mitch/policy-engine test
 # Run a single test file
 cd src/packages/policy-engine && npx vitest run src/__tests__/engine.test.ts
 
-# Lint (0 errors expected; ~10 no-explicit-any warnings)
+# Lint (0 errors, 0 warnings)
 pnpm lint
 
 # Format
@@ -35,7 +35,7 @@ pnpm format
 
 ## Architecture
 
-**Monorepo layout:** `src/packages/` (25 packages) + `src/apps/` (3 apps)
+**Monorepo layout:** `src/packages/` (26 packages) + `src/apps/` (3 apps)
 
 ### Core packages
 

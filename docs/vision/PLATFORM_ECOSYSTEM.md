@@ -118,7 +118,7 @@ Anything involving user data as a revenue input is not.
 | Long term | Verifier profiles as standard interface for business data requirements | Requires ecosystem adoption |
 | Long term | General ZK for complex computations | Research horizon |
 
-**Note:** As of March 2026, the miTch repository contains 25 packages + 3 apps.
+**Note:** As of March 2026, the miTch repository contains 26 packages + 3 apps.
 
 ---
 

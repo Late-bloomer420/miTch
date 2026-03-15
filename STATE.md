@@ -28,8 +28,8 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 40/40 turbo tasks pass; 1411 individual tests (25 packages); 60/60 wallet-pwa tests
-- **Lint:** 0 errors, 10 warnings (`@typescript-eslint/no-explicit-any` only)
+- **Tests:** 40/40 turbo tasks pass; 1411 individual tests (26 packages); 60/60 wallet-pwa tests
+- **Lint:** 0 errors, 0 warnings
 - **Audit:** 7 npm vulnerabilities (4 high, 3 moderate — `undici` ≥7.0.0 <7.24.0, `flatted` <3.4.0; alle in devDependency-Ketten)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)

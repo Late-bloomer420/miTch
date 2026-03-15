@@ -102,7 +102,7 @@ Principled separation of concerns:
 
 ## Current Implementation Status (March 2026)
 
-- **Layer 1 is built:** 25 packages, 845+ tests, policy engine with 31+ deny codes, SD-JWT VC, OID4VP, pairwise DIDs, crypto-shredding, PQC readiness
+- **Layer 1 is built:** 26 packages, 1411 tests, policy engine with 31+ deny codes, SD-JWT VC, OID4VP, pairwise DIDs, crypto-shredding, PQC readiness
 - **Layer 2 not started**
 - **Layer 3 not started**
 - Reference STATE_OF_MITCH.md for full details

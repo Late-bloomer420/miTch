@@ -203,12 +203,12 @@ graph TD
 
 ---
 
-## Technische Kennzahlen (Session 6 — 2026-03-06)
+## Technische Kennzahlen
 
 | Metrik | Wert |
 |---|---|
-| Turbo Tasks | 38/38 grün |
-| Individual Tests | 760+ |
+| Turbo Tasks | 40/40 grün |
+| Individual Tests | 1411 |
 | npm Vulnerabilities | 0 |
 | ESLint Errors | 0 |
 | ESLint Warnings | 0 |

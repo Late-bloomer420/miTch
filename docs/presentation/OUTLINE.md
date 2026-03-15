@@ -98,7 +98,7 @@ Implementierte Security Properties:
 - **Revocation:** StatusList2021 Fail-Closed (Zweifel = Deny)
 
 Test Coverage:
-- 760+ Unit/Integration-Tests — alle grün
+- 1411 Unit/Integration-Tests — alle grün
 - 0 npm Vulnerabilities
 - 0 ESLint Errors/Warnings
 
