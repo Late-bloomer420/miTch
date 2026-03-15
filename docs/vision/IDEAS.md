@@ -26,14 +26,55 @@
 - Design: UX_DAILY_REVIEW.md (detailliert), WHY_USERS_CARE.md (Evidenz)
 - Fehlend: gesamte UI-Schicht, Notification-System, Monthly Summaries
 
-### Offene Fragen:
-- Wie granular? Pro-Feld oder pro-Credential?
-- Push-Notifications oder nur In-App?
-- Ab wann wird ein Verifier als "overreaching" markiert? (Threshold-Definition)
+### Offene Fragen (TODO Jonas — Antworten hier eintragen):
+- **Aha-Moment:** Was ist der erste Screen den ein neuer Nutzer sieht — bevor er ueberhaupt eine Transaktion gemacht hat? Was hooked ihn?
+- **Granularitaet:** Pro-Feld oder pro-Credential?
+- **Notifications:** Push-Notifications oder nur In-App?
+- **Overreaching-Threshold:** Ab wann wird ein Verifier als "overreaching" markiert? Wer definiert das?
+- **MVP-Definition:** Was ist die kleinste Version die schon Wert liefert? (z.B. nur Daily Review ohne Longitudinal View?)
+- **Differenzierung Apple/Google:** Apple hat Screen Time + App Privacy Report, Google hat My Activity Dashboard — was macht miTch fundamental anders? (Vermutung: feldgranular + Escalation + verifieruebergreifend + re-identification scoring)
+- **Re-Identifikations-Score:** "Geburtsdatum + PLZ = 87% re-identifizierbar" — gibt es nutzbare Forschung? (k-Anonymity, l-Diversity, Forschung zu Quasi-Identifiern?)
 
 ---
 
-## 2. Collective Signal / Anti-Surveillance Scorecard
+## 2. Personal Data Import & Analysis
+
+**Idee:** Nutzer laedt seine Plattform-Daten (Apple Analytics, Google Takeout, Facebook Download, etc.) manuell in miTch — miTch analysiert und uebersetzt sie in verstaendliche Sprache.
+
+### Das Problem:
+- Apple, Google, Facebook etc. erlauben per GDPR Art. 20 den Download der eigenen Daten
+- Diese Exports sind riesige JSON/CSV-Dumps (oft Hunderte MB)
+- Kein normaler Mensch oeffnet, versteht oder analysiert diese Dateien
+- Die Daten existieren — aber ohne Uebersetzer sind sie wertlos
+
+### Was miTch daraus macht:
+- **Sensor-Daten:** "Dein iPhone hat in den letzten 30 Tagen 847x deinen Standort erfasst. 12 Apps hatten Zugriff."
+- **Analyse-Daten:** "Diese 5 Apps haben Nutzungsdaten an Tracking-Netzwerke gesendet. Hier ist was sie wissen."
+- **Cross-Platform:** "Google kennt deine Suchhistorie, Apple kennt deine App-Nutzung — zusammen ergibt das dieses Bild von dir."
+- **Zeitverlauf:** "Deine Datenexposition ist in den letzten 6 Monaten um 34% gestiegen — hauptsaechlich durch diese 2 Apps."
+
+### Warum das ein Game-Changer ist:
+- **Kein neues Recht noetig** — die Daten existieren, der Download ist legal, die Analyse ist lokal
+- **Sofortiger Wert** — Nutzer sieht beim ersten Import schon was Plattformen ueber ihn wissen
+- **Trust-Builder** — bevor miTch eine einzige Transaktion vermittelt, zeigt es dem Nutzer schon Wert
+- **Differenzierung:** Kein Konkurrent macht das — Apple/Google zeigen ihre eigenen Daten, aber keiner aggregiert uebergreifend und uebersetzt fuer den Nutzer
+- **Verbindung zum Aha-Moment (Idee 1):** Der erste Data Import KOENNTE der Onboarding-Moment sein — "Hier ist was die Welt ueber dich weiss. miTch hilft dir das zu kontrollieren."
+
+### Technisch:
+- Alles lokal — Import-Dateien werden nie hochgeladen
+- Parser fuer gaengige Export-Formate: Apple Privacy Report (JSON), Google Takeout (JSON/mbox), Facebook Download (JSON/HTML)
+- Analyse laeuft im Browser oder lokal auf dem Device
+- Ergebnisse werden im audit-log gespeichert (gleiche Infrastruktur wie Transaktions-Log)
+
+### Offene Fragen (TODO Jonas):
+- Welche Plattformen zuerst? (Apple + Google sind die wichtigsten, Facebook/Instagram/WhatsApp als Erweiterung?)
+- Wie aktuell halten? Export-Formate aendern sich — Wartungsaufwand?
+- Automatisierung spaeter moeglich? (Apple Shortcuts, Google API?) Oder bewusst manuell lassen?
+- Wie vermeidet man dass miTch selbst zum Datensilo wird? (Antwort: lokal, kein Upload, kein Sync)
+
+---
+
+## 3. Collective Signal / Anti-Surveillance Scorecard (verbunden mit 1 + 2)
 
 **Idee:** Nutzer flaggen Verifier die zu viel verlangen — aggregiert, anonym, ohne individuelle Attribution.
 
@@ -54,7 +95,7 @@
 
 ---
 
-## 3. Privacy-as-a-Service API
+## 4. Privacy-as-a-Service API
 
 **Idee:** Verifier zahlt pro Proof-Request statt pro PII-Datensatz.
 
@@ -75,7 +116,7 @@
 
 ---
 
-## 4. Offline-First Verification
+## 5. Offline-First Verification
 
 **Idee:** QR-basierter Proof-Austausch ohne Internet.
 
@@ -97,7 +138,7 @@
 
 ---
 
-## 5. Delegated Proofs
+## 6. Delegated Proofs
 
 **Idee:** Proofs im Namen anderer erstellen ohne deren Identity preiszugeben.
 
@@ -118,7 +159,7 @@
 
 ---
 
-## 6. Composable Predicates
+## 7. Composable Predicates
 
 **Idee:** Mehrere Bedingungen als ein einziger Proof statt separate Anfragen.
 
@@ -137,7 +178,7 @@
 
 ---
 
-## 7. Compliance Badge / Trust Seal
+## 8. Compliance Badge / Trust Seal
 
 **Idee:** Verifier die miTch nutzen kriegen ein verifizierbares "Zero-PII Verified" Badge.
 
@@ -153,7 +194,7 @@
 
 ---
 
-## 8. Gemeinde-Wallet Pilot (Innsbruck)
+## 9. Gemeinde-Wallet Pilot (Innsbruck)
 
 **Idee:** Innsbruck als erste Stadt die miTch fuer Buerger-Services nutzt.
 
