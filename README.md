@@ -3,7 +3,7 @@
 > **Privacy-preserving proof mediation for digital identity.**
 > Verifiers get cryptographic proofs. Never raw data. Never PII.
 
-[![Tests](https://img.shields.io/badge/tests-845%2B%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+[![Tests](https://img.shields.io/badge/tests-1411%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GDPR Art. 25](https://img.shields.io/badge/GDPR-Art.%2025%20by%20Design-blue)](docs/ops/EVIDENCE_PACK_P0.md)
 [![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-compatible-blue)](docs/compliance)
@@ -35,7 +35,7 @@ pnpm dev        # wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
 ```
 
 ```bash
-pnpm test       # 845+ tests across 25 packages
+pnpm test       # 1411+ tests across 26 packages
 pnpm lint       # 0 errors
 pnpm build      # compile all packages
 ```
@@ -62,14 +62,14 @@ Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (s
 
 ## Architecture
 
-pnpm monorepo (Turborepo) — **25 packages, 3 apps**.
+pnpm monorepo (Turborepo) — **26 packages, 3 apps**.
 
 ### Core
 
 | Package | Purpose |
 |---|---|
 | `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
-| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs |
+| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
 | `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
 | `@mitch/shared-types` | Shared TypeScript types across all packages |
 
@@ -80,6 +80,7 @@ pnpm monorepo (Turborepo) — **25 packages, 3 apps**.
 | `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
 | `@mitch/oid4vp` | OpenID for Verifiable Presentations + SIOPv2 |
 | `@mitch/oid4vp-verifier` | Verifier-side OID4VP request handling |
+| `@mitch/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
 | `@mitch/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
 | `@mitch/verifier-browser` | Browser-side verifier integration |
 
@@ -159,7 +160,7 @@ pnpm monorepo (Turborepo) — **25 packages, 3 apps**.
 |---|---|
 | Architecture | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
 | Demo Script | [docs/presentation/DEMO_SCRIPT.md](docs/presentation/DEMO_SCRIPT.md) |
-| Specs (107) | [docs/specs/](docs/specs/) |
+| Specs (114) | [docs/specs/](docs/specs/) |
 | ADRs (8) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
 | P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
 | Compliance Matrix | [docs/compliance/EUDI_CIR_MATRIX.md](docs/compliance/EUDI_CIR_MATRIX.md) |
