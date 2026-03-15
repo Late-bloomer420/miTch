@@ -4,13 +4,13 @@
 Classify denied/flagged cases to measure true false-deny rate and improve policy quality.
 
 ## Fast path (CLI)
-```bash
+```powershell
 cd miTch
 pnpm run adjudicate -- <requestId> <legit|false_deny|false_allow>
 ```
 
 Example:
-```bash
+```powershell
 pnpm run adjudicate -- req-123 false_deny
 ```
 

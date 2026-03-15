@@ -4,13 +4,13 @@
 Produce reproducible pilot evidence for core scenarios.
 
 ## Command
-```bash
+```powershell
 cd miTch
 pnpm run evidence
 ```
 
 ## Export pack (recommended)
-```bash
+```powershell
 pnpm run evidence:export
 ```
 Creates a timestamped folder under `data/evidence/<timestamp>/`.
@@ -28,7 +28,7 @@ JSON summary printed to console (can be copied into weekly KPI report).
 
 ## KPI threshold check (recommended)
 After evidence export, run:
-```bash
+```powershell
 pnpm run kpi:check
 ```
 Threshold defaults are aligned with:
