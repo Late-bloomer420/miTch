@@ -9,15 +9,15 @@ Thanks for contributing.
 - No misleading security claims (TEE/attestation/etc.).
 
 ## Workflow
-1. Fork/branch from `main`.
+1. Fork/branch from `master`.
 2. Keep PRs focused and small.
 3. Add or update tests for behavior changes.
 4. Update docs/specs if contract/policy behavior changes.
 5. Open PR with clear risk notes.
 
 ## Required checks before PR
-- `npm run compile`
-- `npm test`
+- `pnpm build`
+- `pnpm test`
 - Verify deny-code mapping remains deterministic.
 - Verify no new raw-PII logging paths.
 

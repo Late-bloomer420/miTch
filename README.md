@@ -161,7 +161,7 @@ pnpm monorepo (Turborepo) — **26 packages, 3 apps**.
 | Architecture | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
 | Demo Script | [docs/presentation/DEMO_SCRIPT.md](docs/presentation/DEMO_SCRIPT.md) |
 | Specs (114) | [docs/specs/](docs/specs/) |
-| ADRs (8) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
+| ADRs (12) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
 | P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
 | Compliance Matrix | [docs/compliance/EUDI_CIR_MATRIX.md](docs/compliance/EUDI_CIR_MATRIX.md) |
 | Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |

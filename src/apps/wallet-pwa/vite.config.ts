@@ -34,7 +34,7 @@ export default defineConfig({
     },
 
     server: {
-        port: 5173,
+        port: 5174,
         strictPort: false, // Allow fallback if port used
         host: true, // Expose to network
         allowedHosts: true, // Allow ngrok/localtunnel/serveo hosts

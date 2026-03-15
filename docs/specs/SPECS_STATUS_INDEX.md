@@ -1,7 +1,7 @@
 # docs/specs — Status Index
 
 **Date:** 2026-03-14
-**Purpose:** Zentrale Statusübersicht aller 112 Spec-Dateien. Klassifizierung auf Basis von STATE.md, DOCS_CANON.md, REFACTORING_ROADMAP.md, 105_Visual_Control_Panel.md und belegbarem Repo-Stand.
+**Purpose:** Zentrale Statusübersicht aller 114 Spec-Dateien. Klassifizierung auf Basis von STATE.md, DOCS_CANON.md, REFACTORING_ROADMAP.md, 105_Visual_Control_Panel.md und belegbarem Repo-Stand.
 
 ---
 
@@ -26,7 +26,7 @@
 | PARTIALLY STALE | 35 |
 | ARCHIVE CANDIDATE | 17 |
 | NEEDS REVIEW | 0 |
-| **Gesamt** | **112** |
+| **Gesamt** | **114** |
 
 ---
 
