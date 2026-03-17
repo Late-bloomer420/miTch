@@ -171,6 +171,9 @@ importers:
       '@mitch/audit-log':
         specifier: workspace:*
         version: link:../../packages/audit-log
+      '@mitch/data-flow':
+        specifier: workspace:*
+        version: link:../../packages/data-flow
       '@mitch/oid4vp':
         specifier: workspace:*
         version: link:../../packages/oid4vp
