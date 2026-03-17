@@ -84,6 +84,34 @@ describe('DataFlowPanel', () => {
     expect(screen.getByText('age >= 18')).toBeInTheDocument();
   });
 
+  it('shows withheld claims as tags when claims_requested present', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        timestamp: '2026-03-15T10:00:00Z',
+        metadata: {
+          decision_id: DEC_ID,
+          verifier_did: 'did:mitch:verifier-hospital',
+          claims_shared: ['age'],
+          claims_requested: ['age', 'name', 'address'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
+    ];
+    render(<DataFlowPanel entries={entries} />);
+    expect(screen.getByText('name')).toBeInTheDocument();
+    expect(screen.getByText('address')).toBeInTheDocument();
+  });
+
+  it('does not show withheld section when claims_requested missing', () => {
+    render(<DataFlowPanel entries={buildTypicalEntries()} />);
+    // buildTypicalEntries has no claims_requested → no withheld tags
+    expect(screen.queryByText('name')).not.toBeInTheDocument();
+    expect(screen.queryByText('address')).not.toBeInTheDocument();
+  });
+
   it('expands event timeline on click', () => {
     render(<DataFlowPanel entries={buildTypicalEntries()} />);
     // Timeline should not be visible initially

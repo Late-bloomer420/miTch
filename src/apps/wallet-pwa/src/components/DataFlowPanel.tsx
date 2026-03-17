@@ -80,6 +80,12 @@ const TransactionCard: React.FC<{
             {claim}
           </span>
         ))}
+        {txn.claimsWithheld !== null && txn.claimsWithheld.length > 0 &&
+          txn.claimsWithheld.map((claim) => (
+            <span key={`withheld-${claim}`} className="dataflow-card__tag dataflow-card__tag--withheld">
+              {claim}
+            </span>
+          ))}
         {txn.claimsShared.length === 0 && txn.provenClaims.length === 0 && (
           <span className="dataflow-card__tag dataflow-card__tag--none">Keine Daten geteilt</span>
         )}

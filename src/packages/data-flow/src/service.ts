@@ -41,6 +41,12 @@ export class DataFlowService {
       const vpEvent = group.find(e => e.action === 'VP_GENERATED');
 
       const claimsShared = (vpEvent?.metadata?.claims_shared as string[]) ?? [];
+      const claimsRequested = (vpEvent?.metadata?.claims_requested as string[] | undefined) ?? null;
+      let claimsWithheld: string[] | null = null;
+      if (claimsRequested !== null) {
+        const sharedSet = new Set(claimsShared);
+        claimsWithheld = claimsRequested.filter(c => !sharedSet.has(c));
+      }
       const provenClaims = (vpEvent?.metadata?.proven_claims as string[]) ?? [];
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
@@ -78,6 +84,8 @@ export class DataFlowService {
         verifierId,
         verifierLabel: extractVerifierLabel(verifierId),
         claimsShared,
+        claimsRequested,
+        claimsWithheld,
         provenClaims,
         credentialTypes,
         usedZKP,

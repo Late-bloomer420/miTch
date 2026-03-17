@@ -210,6 +210,112 @@ describe('DataFlowService', () => {
     expect(txns[0].usedZKP).toBe(false);
   });
 
+  it('computes claimsWithheld as set difference (requested - shared)', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          claims_requested: ['age', 'name', 'address'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+          verifier_did: 'did:mitch:verifier-test',
+        },
+      }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsRequested).toEqual(['age', 'name', 'address']);
+    expect(txns[0].claimsWithheld).toEqual(['name', 'address']);
+  });
+
+  it('claimsWithheld is empty when all requested claims shared', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age', 'name'],
+          claims_requested: ['age', 'name'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+          verifier_did: 'did:mitch:verifier-test',
+        },
+      }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsWithheld).toEqual([]);
+  });
+
+  it('claimsWithheld is null when claims_requested missing (legacy)', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+          verifier_did: 'did:mitch:verifier-test',
+        },
+      }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsRequested).toBeNull();
+    expect(txns[0].claimsWithheld).toBeNull();
+  });
+
+  it('claimsRequested is null when no VP_GENERATED event', () => {
+    const entries = [
+      makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
+      makeEntry({ action: 'KEY_DESTROYED', metadata: { decision_id: DEC_ID } }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsRequested).toBeNull();
+    expect(txns[0].claimsWithheld).toBeNull();
+  });
+
+  it('claimsWithheld handles duplicates in requested', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          claims_requested: ['age', 'name', 'name'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+          verifier_did: 'did:mitch:verifier-test',
+        },
+      }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsWithheld).toEqual(['name', 'name']);
+  });
+
+  it('claimsRequested carries full requested list', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          claims_requested: ['age', 'birthDate', 'address'],
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+          used_zkp: false,
+          verifier_did: 'did:mitch:verifier-test',
+        },
+      }),
+    ];
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].claimsRequested).toEqual(['age', 'birthDate', 'address']);
+  });
+
   it('sets startedAt and completedAt from event timestamps', () => {
     const t0 = '2026-03-15T10:00:00Z';
     const t1 = '2026-03-15T10:01:00Z';

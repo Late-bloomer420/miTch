@@ -5,6 +5,8 @@ export interface DataFlowTransaction {
   verifierId: string | null;
   verifierLabel: string;
   claimsShared: string[];
+  claimsRequested: string[] | null;
+  claimsWithheld: string[] | null;
   provenClaims: string[];
   credentialTypes: string[];
   usedZKP: boolean;
