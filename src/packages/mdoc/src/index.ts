@@ -12,7 +12,6 @@
  * Future (not yet implemented):
  * - COSE Mac0
  * - mdoc document parsing and construction
- * - MSO digest verification
  */
 
 // CBOR codec
@@ -64,3 +63,16 @@ export {
     MDL_NAMESPACE,
     MDL_ELEMENTS,
 } from './mdoc-types.js';
+
+// MSO digest verification
+export {
+    digestItem,
+    verifyMsoDigests,
+    extractAndVerifyMso,
+} from './mso.js';
+
+export type {
+    InvalidDigestItem,
+    MsoDigestResult,
+    MsoVerifyResult,
+} from './mso.js';
