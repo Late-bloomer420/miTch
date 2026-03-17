@@ -774,6 +774,7 @@ export class WalletService {
             verifier_did: verifierDID,
             credential_types: bundles.map(b => b.credentialType),
             claims_shared: bundles.flatMap(b => Object.keys(b.disclosure)),
+            claims_requested: requirements.flatMap(r => r.requested_claims ?? []),
             proven_claims: bundles.flatMap(b =>
                 Object.keys(b.provenClaims).filter(k => b.provenClaims[k])
             ),

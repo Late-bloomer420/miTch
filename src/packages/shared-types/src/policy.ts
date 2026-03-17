@@ -298,6 +298,8 @@ export interface DecisionCapsule {
         proven_claims: string[];
         selected_credential_id: string;
         issuer_trust_refs: string[];
+        /** Original verifier-requested claims (for audit completeness / claimsWithheld) */
+        requested_claims?: string[];
     }[];
 
     nonce?: string; // Anti-replay nonce (must match verifier request)

@@ -240,6 +240,7 @@ export class PolicyEngine {
             proven_claims: string[];
             selected_credential_id: string;
             issuer_trust_refs: string[];
+            requested_claims?: string[];
         }> = [];
         const allSelectedIds: string[] = [];
 
@@ -307,7 +308,8 @@ export class PolicyEngine {
                 allowed_claims: intersection.effectiveClaims, // Bounded Disclosure
                 proven_claims: intersection.effectiveProvenClaims,
                 selected_credential_id: bestCred.id,
-                issuer_trust_refs: [bestCred.issuer]
+                issuer_trust_refs: [bestCred.issuer],
+                requested_claims: req.requestedClaims,
             });
         }
 
