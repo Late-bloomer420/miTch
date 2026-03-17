@@ -37,7 +37,7 @@
 
 ### Recent additions (since Session 10+)
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding (Phase 1). VP_GENERATED Audit-Event in WalletService. DataFlowPanel in wallet-pwa.
-- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types — 40 tests green
+- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types + MSO digest verification foundation (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`) — vollständige mdoc-Unterstützung bleibt offen
 - **PQC Readiness:** `shared-crypto/src/pqc.ts` (ML-DSA, ML-KEM via @noble/post-quantum) + `crypto-agility.ts` (algorithm registry, negotiation)
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 
