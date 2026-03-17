@@ -28,7 +28,7 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 41/41 turbo tasks pass; 1442 individual tests (27 packages); 66/66 wallet-pwa tests
+- **Tests:** 42/42 turbo tasks pass; 1470 individual tests (27 packages); 93/93 mdoc tests; 66/66 wallet-pwa tests
 - **Lint:** 0 errors, 0 warnings
 - **Audit:** 7 npm vulnerabilities (4 high, 3 moderate — `undici` ≥7.0.0 <7.24.0, `flatted` <3.4.0; alle in devDependency-Ketten)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
@@ -37,7 +37,7 @@
 
 ### Recent additions (since Session 10+)
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding (Phase 1). VP_GENERATED Audit-Event in WalletService. DataFlowPanel in wallet-pwa.
-- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types + MSO digest verification foundation (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`) — vollständige mdoc-Unterstützung bleibt offen
+- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types, MSO digest verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`), DeviceAuth groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — Sign1 only) — 93 tests; vollständige mdoc-Unterstützung (Offline-Verifikation, Wallet-Integration) bleibt offen
 - **PQC Readiness:** `shared-crypto/src/pqc.ts` (ML-DSA, ML-KEM via @noble/post-quantum) + `crypto-agility.ts` (algorithm registry, negotiation)
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 

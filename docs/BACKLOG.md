@@ -84,7 +84,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — Fundament vorhanden: `@mitch/mdoc` Package (CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen); Teilfunktion vorhanden: MSO Digest Verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`); weiterhin offen: DeviceAuth / Holder Binding, vollständige Offline-Verifikation, Hybrid Issuance, Wallet-/Verifier-Integration | ISO.18013-5 |
+| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — Fundament vorhanden: `@mitch/mdoc` Package (CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen); MSO Digest Verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`); DeviceAuth Groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — Sign1 only, kein Mac0); weiterhin offen: vollständige Offline-Verifikation, Hybrid Issuance, Wallet-/Verifier-Integration | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
