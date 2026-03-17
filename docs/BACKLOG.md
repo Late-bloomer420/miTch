@@ -59,6 +59,9 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 1.3 Transparency Layer (Phase 3)
 | ID | Prio | Beschreibung |
 |---|---|---|
+| U-18 | ✅ | `@mitch/data-flow` — Transaction view: Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding-Status (Phase 1) |
+| U-19 | ✅ | DataFlowPanel in wallet-pwa — Verifier-Label, Claim-Tags, Shredding-Status, Event-Timeline |
+| U-19a | 🟡 | `claimsWithheld` — requested vs. authorized diff (braucht VerifierRequest-Logging im Audit) |
 | U-20 | 🟡 | Identitäts-Firewall — Tracker-/Cookie-Zugriffe abfangen + loggen |
 | U-21 | 🟡 | UI: Echtzeit-Benachrichtigung bei Identifier-Zugriff |
 | U-22 | 🟢 | Anti-Fingerprinting: Wallet-Uniformität (Request-Normalisierung, Padding) |
