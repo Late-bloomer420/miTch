@@ -16,22 +16,7 @@ import type {
 import { encode, encodeEmbeddedCbor, decode } from './cbor.js';
 import { verifySign1 } from './cose.js';
 import type { Sign1VerifyResult } from './cose.js';
-
-/**
- * Safely retrieve a value from a Map or plain object.
- * CBOR decode returns plain objects (not Maps), so we handle both.
- */
-function mapGet<V>(mapOrObj: Map<string | number, V> | Record<string | number, V>, key: string | number): V | undefined {
-  if (mapOrObj instanceof Map) return mapOrObj.get(key);
-  return (mapOrObj as Record<string | number, V>)[key];
-}
-
-/** Copy Uint8Array to a clean ArrayBuffer (avoids SharedArrayBuffer TS issues). */
-function toArrayBuffer(data: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(data.byteLength);
-  copy.set(data);
-  return copy.buffer;
-}
+import { mapGet, toArrayBuffer } from './util.js';
 
 /** Maps ISO 18013-5 digest algorithm names to WebCrypto algorithm identifiers. */
 const DIGEST_ALG_MAP: Record<DigestAlgorithm, string> = {

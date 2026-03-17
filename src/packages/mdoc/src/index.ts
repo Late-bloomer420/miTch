@@ -76,3 +76,20 @@ export type {
     MsoDigestResult,
     MsoVerifyResult,
 } from './mso.js';
+
+// COSE_Key import/export
+export {
+    importCoseKey,
+    exportCoseKey,
+    COSE_KEY,
+} from './cose-key.js';
+
+// Device authentication
+export {
+    verifyDeviceSignature,
+    verifyDeviceAuth,
+} from './device-auth.js';
+
+export type {
+    DeviceAuthResult,
+} from './device-auth.js';
