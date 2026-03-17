@@ -22,6 +22,7 @@ import {
     type AuthorizationRequest,
 } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
+import { DataFlowPanel } from './components/DataFlowPanel';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     {
@@ -87,6 +88,7 @@ export default function App() {
     const [currentPolicy, setCurrentPolicy] = useState<PolicyManifest | null>(null);
     const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
     const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
+    const [showDataFlow, setShowDataFlow] = useState(false);
     const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
     const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
         () => !sessionStorage.getItem('guidedDemoCompleted')
@@ -952,6 +954,18 @@ export default function App() {
                     getRecentLogs={useCallback(() => walletRef.current.getRecentAuditLogs(), [])}
                     getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
                 />
+            </div>
+
+            <div className="wallet-section" style={{ marginTop: 10 }}>
+                <button
+                    onClick={() => setShowDataFlow(!showDataFlow)}
+                    className="btn-demo-secondary"
+                >
+                    {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
+                </button>
+                {showDataFlow && (
+                    <DataFlowPanel entries={walletRef.current.getRecentAuditLogs(200)} />
+                )}
             </div>
 
             <div className="wallet-section" style={{ marginBottom: 20 }}>

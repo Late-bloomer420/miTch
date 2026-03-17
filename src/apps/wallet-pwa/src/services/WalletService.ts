@@ -768,6 +768,18 @@ export class WalletService {
 
         logs.push(`✅ Presentation Bundle Prepared (${bundles.length} VCs)`);
 
+        // Log what was shared (Data Transparency Foundation)
+        await this.auditLog.append('VP_GENERATED', capsule.decision_id, {
+            decision_id: capsule.decision_id,
+            verifier_did: verifierDID,
+            credential_types: bundles.map(b => b.credentialType),
+            claims_shared: bundles.flatMap(b => Object.keys(b.disclosure)),
+            proven_claims: bundles.flatMap(b =>
+                Object.keys(b.provenClaims).filter(k => b.provenClaims[k])
+            ),
+            used_zkp: bundles.some(b => Object.keys(b.zkpProofs || {}).length > 0),
+        });
+
         // 3. Generate Ephemeral Proof Key (Asymmetric ECDSA)
         const proofKeys = await generateKeyPair();
         const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);

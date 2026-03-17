@@ -16,6 +16,7 @@ export default defineConfig({
             '@mitch/predicates': path.resolve(__dirname, '../../packages/predicates/src'),
             '@mitch/layer-resolver': path.resolve(__dirname, '../../packages/layer-resolver/src'),
             '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
+            '@mitch/data-flow': path.resolve(__dirname, '../../packages/data-flow/src'),
         },
     },
 
@@ -30,6 +31,7 @@ export default defineConfig({
             '@mitch/predicates',
             '@mitch/layer-resolver',
             '@mitch/oid4vp',
+            '@mitch/data-flow',
         ],
     },
 

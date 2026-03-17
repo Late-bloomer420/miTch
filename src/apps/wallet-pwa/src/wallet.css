@@ -970,3 +970,164 @@
 .status-transition {
     transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
+
+/* ── UX-09: Data Flow Panel ─────────────────────────────────────────────── */
+
+.dataflow-panel {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
+.dataflow-panel__title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #1a1a2e;
+}
+
+.dataflow-panel__empty {
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+}
+
+.dataflow-panel__list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dataflow-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    transition: box-shadow 0.2s ease;
+}
+
+.dataflow-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dataflow-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    cursor: pointer;
+}
+
+.dataflow-card__verifier {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dataflow-card__verifier strong {
+    font-size: 14px;
+    color: #1a1a2e;
+}
+
+.dataflow-card__time {
+    font-size: 11px;
+    color: #888;
+}
+
+.dataflow-card__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dataflow-card__shredded {
+    font-size: 11px;
+    font-weight: 600;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.dataflow-card__active {
+    font-size: 11px;
+    font-weight: 600;
+    color: #d97706;
+    background: #fffbeb;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.dataflow-card__toggle {
+    font-size: 10px;
+    color: #999;
+}
+
+.dataflow-card__claims {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.dataflow-card__tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.dataflow-card__tag--claim {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.dataflow-card__tag--proven {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.dataflow-card__tag--none {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.dataflow-card__timeline {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dataflow-event {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.dataflow-event__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dataflow-event__dot--key { background: #f59e0b; }
+.dataflow-event__dot--credential { background: #3b82f6; }
+.dataflow-event__dot--presentation { background: #8b5cf6; }
+.dataflow-event__dot--policy { background: #6b7280; }
+.dataflow-event__dot--consent { background: #10b981; }
+
+.dataflow-event__time {
+    color: #888;
+    font-size: 11px;
+    min-width: 70px;
+}
+
+.dataflow-event__label {
+    color: #374151;
+}
