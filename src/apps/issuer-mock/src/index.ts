@@ -4,8 +4,23 @@ import { generateKeyPair, signVC } from '@mitch/shared-crypto';
 import type { AgeCredential, CredentialRequest, CredentialResponse } from '@mitch/shared-types';
 
 const app = express();
-// Enable CORS for Wallet PWA
-app.use(cors({ origin: true })); // Allow all origins for PoC, or specific 'http://localhost:5173'
+const allowedOrigins = new Set([
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5175',
+]);
+// Restrictive CORS for local wallet development only
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Origin not allowed by issuer-mock CORS policy'));
+    }
+}));
 app.use(express.json());
 
 // Global Issuer KeyPair (In-Memory for PoC)

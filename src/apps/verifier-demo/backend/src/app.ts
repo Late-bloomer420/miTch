@@ -1,4 +1,5 @@
 import express, { type Express } from 'express';
+import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 import { VerifierSDK } from '@mitch/verifier-sdk';
 import { NonceStore } from './nonce-store';
@@ -94,6 +95,13 @@ process.on('SIGTERM', () => nonceStore.close());
 const rateLimiter = new FixedWindowRateLimiter(60_000, 10, {
     maxEntries: 100_000,
     pruneIntervalMs: 30_000
+});
+
+const presentRouteLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 /**
@@ -260,7 +268,7 @@ app.post('/wallet-present', async (req, res) => {
             lastDisclosedClaims = validation.disclosedClaims ?? null;
             lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
             metrics.inc('oid4vp_success');
-            console.log(`[OID4VP] ✅ Presentation verified — scenario: ${scenarioId}`, auditEntry);
+            console.log('[OID4VP] ✅ Presentation verified — scenario: %s', scenarioId, auditEntry);
             return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt, auditEntry });
         } else {
             lastVerificationStatus = 'FAILED';
@@ -406,7 +414,7 @@ app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
 });
 
 // 2. Receive and Verify Presentation (The "Consumer" of the SDK)
-app.post('/present', async (req, res) => {
+app.post('/present', presentRouteLimiter, async (req, res) => {
     try {
         const requesterId = getRequesterId(req);
         // T-39: Binding to Requester ID (IP or Header)

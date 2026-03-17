@@ -1,10 +1,18 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { VerifierSDK } from '@mitch/verifier-sdk';
 
 const app = express();
 const port = 3001;
 
 app.use(express.json());
+
+const presentLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Pilot State (In-memory for PoC)
 let lastVerificationStatus: 'WAITING' | 'VERIFIED' | 'FAILED' = 'WAITING';
@@ -23,7 +31,7 @@ app.get('/status', (req, res) => {
 });
 
 // 2. Receive and Verify Presentation (The "Consumer" of the SDK)
-app.post('/present', async (req, res) => {
+app.post('/present', presentLimiter, async (req, res) => {
     console.log('📥 Received presentation package from wallet');
 
     try {
