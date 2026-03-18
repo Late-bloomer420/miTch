@@ -112,6 +112,26 @@ describe('DataFlowPanel', () => {
     expect(screen.queryByText('address')).not.toBeInTheDocument();
   });
 
+  it('shows summary points for ZKP transaction', () => {
+    // buildTypicalEntries has usedZKP: true, provenClaims: ['age >= 18'],
+    // fullyShredded: true → should show summary
+    render(<DataFlowPanel entries={buildTypicalEntries()} />);
+    expect(screen.getByText(/bewiesen statt offengelegt/)).toBeInTheDocument();
+    expect(screen.getByText(/Daten vergessen/)).toBeInTheDocument();
+  });
+
+  it('does not show summary for minimal transaction', () => {
+    const entries = [
+      makeEntry({
+        action: 'KEY_CREATED',
+        metadata: { decision_id: DEC_ID },
+      }),
+    ];
+    render(<DataFlowPanel entries={entries} />);
+    expect(screen.queryByText(/bewiesen/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/zurückgehalten/)).not.toBeInTheDocument();
+  });
+
   it('expands event timeline on click', () => {
     render(<DataFlowPanel entries={buildTypicalEntries()} />);
     // Timeline should not be visible initially

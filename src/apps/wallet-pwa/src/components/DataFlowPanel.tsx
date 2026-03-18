@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { AuditLogEntry } from '@mitch/shared-types';
-import { DataFlowService } from '@mitch/data-flow';
+import { DataFlowService, summarizeTransaction } from '@mitch/data-flow';
 import type { DataFlowTransaction } from '@mitch/data-flow';
 
 interface DataFlowPanelProps {
@@ -47,6 +47,7 @@ const TransactionCard: React.FC<{
   onToggle: () => void;
 }> = ({ txn, expanded, onToggle }) => {
   const timeStr = new Date(txn.startedAt).toLocaleString();
+  const summary = useMemo(() => summarizeTransaction(txn), [txn]);
 
   return (
     <div className="dataflow-card">
@@ -90,6 +91,14 @@ const TransactionCard: React.FC<{
           <span className="dataflow-card__tag dataflow-card__tag--none">Keine Daten geteilt</span>
         )}
       </div>
+
+      {summary.points.length > 0 && (
+        <div className="dataflow-card__summary">
+          {summary.points.map((point, i) => (
+            <span key={i} className="dataflow-card__summary-point">{point}</span>
+          ))}
+        </div>
+      )}
 
       {expanded && (
         <div className="dataflow-card__timeline">
