@@ -121,7 +121,7 @@ Basierend auf: `memory/miTch_security_patterns_memory.md`
 | S-03 | ✅ | Input Validation Schema (Whitelist-basiert) für Policy Parser | Claim-Name Injection |
 | S-04 | ✅ | Komponenten-Isolations-Modell (Engine/Consent/Audit) | Internal Privilege Escalation |
 | S-05 | ✅ | Zero Trust intern dokumentieren + implementieren | Chained Attacks |
-| S-10 | 🔴 | Formales Threat Model (STRIDE + Mitigations für Shredding, Blind Provider, Human-in-the-Loop) — ADR-009 dokumentiert (PROPOSED); Review + Acceptance Evidence offen | BSI TR-02102 + EUDI-CIR Risiko-Assessment |
+| S-10 | 🟡 | Formales Threat Model (STRIDE) — ADR-009: STRIDE-Tabelle vollständig (22 Einträge, alle belegt), 3 Szenarien, 4 Gaps dokumentiert. Status PROPOSED — externer Security Review offen (menschliche Vorbedingung) | BSI TR-02102 + EUDI-CIR Risiko-Assessment |
 
 ---
 
@@ -167,7 +167,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich: `docs/compliance/A
 | ADR-006 | Recovery Strategy (Device Loss) | PROPOSED | dokumentiert; REFACTORING_ROADMAP |
 | ADR-007 | AI Orchestrator Integration (Scoped Delegation) | PROPOSED | dokumentiert |
 | ADR-008 | Batch Credentials Strategy (Unlinkable Multi-Credential) | PROPOSED | dokumentiert |
-| ADR-009 | Threat Model (STRIDE) | PROPOSED | dokumentiert; S-10 offen |
+| ADR-009 | Threat Model (STRIDE) | PROPOSED | STRIDE-Tabelle + Szenarien + Gaps vollständig; externer Review offen |
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
 | ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 Fundament vorhanden, vollständige Umsetzung offen |
