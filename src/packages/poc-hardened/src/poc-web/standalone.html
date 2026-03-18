@@ -1664,6 +1664,8 @@
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇨🇭 E-ID</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇳🇴 🇸🇪 Nordic eID</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">eIDAS 2.0</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇪🇺 EHDS (EU) 2025/327</span>
+      <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">ISO 18013-5</span>
     </div>
     <div style="margin-top:0.5rem">
       <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
@@ -1672,6 +1674,7 @@
       <span class="gdpr-badge">✅ Art. 7 Consent</span>
       <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
       <span class="gdpr-badge">✅ Art. 32 Security</span>
+      <span class="gdpr-badge">✅ CIR 82%</span>
     </div>
   </div>
 
@@ -2643,7 +2646,7 @@
     <div class="vsec">
       <div class="vsec-label">Where We're Going</div>
       <h2 class="vsec-title">Your data life, reviewed daily.<br>Like a bank statement — for your privacy.</h2>
-      <p class="vsec-body">Every transaction that touches your wallet is logged — what was shared, what was withheld, what was forgotten. At the end of the day, you review it. No pressure. No decision. Just clarity.</p>
+      <p class="vsec-body">Every transaction that touches your wallet is logged — what was shared, what was withheld, what was forgotten. At the end of the day, you review your complete data flow and claims lifecycle. No pressure. No decision. Just clarity.</p>
 
       <div class="review-day-header">
         <span>📅 Monday, 9 March 2026 — 4 interactions</span>
@@ -2848,7 +2851,39 @@
     </div>
   </div>
 
-  <!-- ══ SECTION E: STATE OF MITCH ═════════════════════════════════════ -->
+  <!-- ══ SECTION E: ARCHITECTURE ═══════════════════════════════════════ -->
+  <div class="vsec-divider">
+    <div class="vsec">
+      <div class="vsec-label">Under the Hood</div>
+      <h2 class="vsec-title">27 Packages. Built for Zero-Trust.</h2>
+      <p class="vsec-body">miTch is modular by design. Our monorepo is divided into five specialized layers, each rigorously tested and hardened against modern threats.</p>
+
+      <div class="roadmap-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Core (4)</div>
+          <div class="roadmap-desc" style="margin-top: 0.5rem;">State machines, base cryptographic primitives, and memory-safe utilities.</div>
+        </div>
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Protocol (6)</div>
+          <div class="roadmap-desc" style="margin-top: 0.5rem;">Handling <strong>mdoc (ISO 18013-5)</strong>, OpenID4VP, and SD-JWT verifiable credentials securely.</div>
+        </div>
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Storage &amp; Security (7)</div>
+          <div class="roadmap-desc" style="margin-top: 0.5rem;">Including the new <strong>phase0-security</strong> package and robust PQC (Post-Quantum) readiness modules.</div>
+        </div>
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Identity &amp; Compliance (4)</div>
+          <div class="roadmap-desc" style="margin-top: 0.5rem;">Managing policy engines, consent tracking, and regulatory audit chains.</div>
+        </div>
+        <div class="roadmap-card built">
+          <div class="roadmap-layer">Demo &amp; Testing (6)</div>
+          <div class="roadmap-desc" style="margin-top: 0.5rem;">End-to-end simulation harnesses and testing environments including the <strong>data-flow</strong> visualization package.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION F: STATE OF MITCH ═════════════════════════════════════ -->
   <style>
     .stats-footer { background: var(--surface2); border-top: 1px solid var(--border); padding: 3rem 1.5rem; margin-top: 4rem; text-align: center; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto 2rem; }
@@ -2862,16 +2897,16 @@
   <footer class="stats-footer">
     <div class="stats-grid">
       <div class="stat-item">
-        <span class="stat-val">25</span>
+        <span class="stat-val">27</span>
         <span class="stat-lbl">Packages</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">845+</span>
+        <span class="stat-val">1470</span>
         <span class="stat-lbl">Unit Tests</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">4/4</span>
-        <span class="stat-lbl">CI Green</span>
+        <span class="stat-val">42</span>
+        <span class="stat-lbl">Turbo Tasks</span>
       </div>
       <div class="stat-item">
         <span class="stat-val">5</span>
@@ -2888,6 +2923,7 @@
     <div class="tech-badges">
       <span class="tech-badge">SD-JWT VC</span>
       <span class="tech-badge">OID4VP</span>
+      <span class="tech-badge">ISO 18013-5</span>
       <span class="tech-badge">AES-256-GCM</span>
       <span class="tech-badge">HKDF</span>
       <span class="tech-badge">Post-Quantum ready</span>
