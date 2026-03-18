@@ -3,7 +3,7 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-03-17
+**Date:** 2026-03-18
 **Branch:** `master` (default)
 **Release tag:** `pilot-ready-p0`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -36,8 +36,10 @@
 - **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
 
 ### Recent additions (since Session 10+)
-- **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding (Phase 1). VP_GENERATED Audit-Event in WalletService. DataFlowPanel in wallet-pwa.
-- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types, MSO digest verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`), DeviceAuth groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — Sign1 only) — 93 tests; vollständige mdoc-Unterstützung (Offline-Verifikation, Wallet-Integration) bleibt offen
+- **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
+- **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
+- **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
+- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types, MSO digest verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`), DeviceAuth groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — Sign1 only, kein Mac0) — 93 tests; vollständige mdoc-Unterstützung (vollständige Offline-Verifikation, Wallet-/Verifier-Integration, Hybrid Issuance) bleibt offen.
 - **PQC Readiness:** `shared-crypto/src/pqc.ts` (ML-DSA, ML-KEM via @noble/post-quantum) + `crypto-agility.ts` (algorithm registry, negotiation)
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 

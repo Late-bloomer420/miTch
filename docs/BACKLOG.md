@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-03-14 (E-11 Fundament)
+**Stand:** 2026-03-18 (Data Flow Phase 1-3, E-11 Fortschritt)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -60,8 +60,8 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung |
 |---|---|---|
 | U-18 | ✅ | `@mitch/data-flow` — Transaction view: Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding-Status (Phase 1) |
-| U-19 | ✅ | DataFlowPanel in wallet-pwa — Verifier-Label, Claim-Tags, Shredding-Status, Event-Timeline |
-| U-19a | 🟡 | `claimsWithheld` — requested vs. authorized diff (braucht VerifierRequest-Logging im Audit) |
+| U-19 | ✅ | DataFlowPanel in wallet-pwa — Verifier-Label, Claim-Tags, Shredding-Status, Event-Timeline + plain-language summary aus auditierbaren Transaktionsfeldern |
+| U-19a | ✅ | `claimsWithheld` — requested vs. shared diff aus `claims_requested` vs. `claims_shared`, im DataFlowPanel sichtbar |
 | U-20 | 🟡 | Identitäts-Firewall — Tracker-/Cookie-Zugriffe abfangen + loggen |
 | U-21 | 🟡 | UI: Echtzeit-Benachrichtigung bei Identifier-Zugriff |
 | U-22 | 🟢 | Anti-Fingerprinting: Wallet-Uniformität (Request-Normalisierung, Padding) |
@@ -84,7 +84,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — Fundament vorhanden: `@mitch/mdoc` Package (CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen); MSO Digest Verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`); DeviceAuth Groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — Sign1 only, kein Mac0); weiterhin offen: vollständige Offline-Verifikation, Hybrid Issuance, Wallet-/Verifier-Integration | ISO.18013-5 |
+| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — Fundament vorhanden: `@mitch/mdoc` Package (CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen); MSO Digest Verification (`digestItem`, `verifyMsoDigests`, `extractAndVerifyMso`); DeviceAuth Groundwork (`importCoseKey`, `verifyDeviceSignature`, `verifyDeviceAuth` — COSE_Sign1 only, kein Mac0 / keine vollständige DeviceAuth-Abdeckung); weiterhin offen: vollständige Offline-Verifikation, Hybrid Issuance, Wallet-/Verifier-Integration | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
