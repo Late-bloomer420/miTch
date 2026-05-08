@@ -32,3 +32,7 @@ export * from './rate-limiter';
 export * from './jurisdiction';
 export * from './config-profiles';
 export * from './allow-assertion';
+
+export * from './reasonCodes';
+export * from './evaluateDisclosureRequest';
+export type { Verdict, ResponseMode, DisclosureRequest, Policy, Decision } from './types';
