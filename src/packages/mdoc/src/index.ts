@@ -18,6 +18,7 @@
 export {
     encode,
     decode,
+    decodeMdoc,
     encodeEmbeddedCbor,
     decodeEmbeddedCbor,
     CBOR_TAGS,
@@ -93,3 +94,46 @@ export {
 export type {
     DeviceAuthResult,
 } from './device-auth.js';
+
+// MSO validity + docType verification
+export {
+    verifyMsoValidity,
+    verifyDocType,
+} from './validity.js';
+
+export type {
+    ValidityResult,
+} from './validity.js';
+
+// x5chain certificate extraction
+export {
+    extractX5Chain,
+    importPublicKeyFromCert,
+    extractSpkiFromCert,
+    COSE_HEADER_X5CHAIN,
+} from './x5chain.js';
+
+export type {
+    X5ChainResult,
+    TrustAnchorVerifier,
+} from './x5chain.js';
+
+// mdoc document parser
+export {
+    parseDeviceResponse,
+} from './mdoc-parser.js';
+
+export type {
+    DeviceResponse,
+} from './mdoc-parser.js';
+
+// Full offline verification
+export {
+    verifyMdocOffline,
+} from './verifier.js';
+
+export type {
+    MdocVerificationResult,
+    MdocVerifyOptions,
+    VerificationStep,
+} from './verifier.js';

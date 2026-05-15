@@ -36,6 +36,13 @@ decodeTags[CBOR_TAGS.EMBEDDED_CBOR] = (innerBytes: any) => cborgDecode(innerByte
 const DECODE_OPTIONS = { tags: decodeTags };
 
 /**
+ * Decode options with `useMaps: true` for mdoc structures that contain
+ * CBOR maps with integer keys (COSE_Key, digest maps, etc.).
+ * Without this, cborg throws on integer map keys.
+ */
+const DECODE_MAPS_OPTIONS = { tags: decodeTags, useMaps: true };
+
+/**
  * Encode a JavaScript value to CBOR bytes.
  *
  * Supports all CBOR major types: integers, byte strings, text strings,
@@ -53,6 +60,17 @@ export function encode(value: unknown): Uint8Array {
  */
 export function decode<T = unknown>(data: Uint8Array): T {
     return cborgDecode(data, DECODE_OPTIONS) as T;
+}
+
+/**
+ * Decode CBOR bytes with Map support for integer keys.
+ *
+ * ISO 18013-5 mdoc structures (MSO, COSE_Key, digest maps) use CBOR maps
+ * with integer keys. Standard cborg decode rejects these without `useMaps`.
+ * Returns Maps instead of plain objects.
+ */
+export function decodeMdoc<T = unknown>(data: Uint8Array): T {
+    return cborgDecode(data, DECODE_MAPS_OPTIONS) as T;
 }
 
 /**

@@ -13,7 +13,7 @@ import type {
   MobileSecurityObject,
   NameSpace,
 } from './mdoc-types.js';
-import { encode, encodeEmbeddedCbor, decode } from './cbor.js';
+import { encode, encodeEmbeddedCbor, decodeMdoc } from './cbor.js';
 import { verifySign1 } from './cose.js';
 import type { Sign1VerifyResult } from './cose.js';
 import { mapGet, toArrayBuffer } from './util.js';
@@ -173,10 +173,11 @@ export async function extractAndVerifyMso(
     return { valid: false, reason: 'COSE_Sign1 payload is null' };
   }
 
-  // Step 2: Decode MSO from CBOR payload
+  // Step 2: Decode MSO from CBOR payload (useMaps for integer-keyed COSE/digest maps)
   let mso: MobileSecurityObject;
   try {
-    mso = decode<MobileSecurityObject>(signResult.payload);
+    const decoded = decodeMdoc<Map<string, unknown>>(signResult.payload);
+    mso = mapToMso(decoded);
   } catch {
     return { valid: false, reason: 'MSO payload is not valid CBOR' };
   }
@@ -193,4 +194,66 @@ export async function extractAndVerifyMso(
   }
 
   return { valid: true, mso };
+}
+
+/**
+ * Convert a decoded CBOR Map to a typed MobileSecurityObject.
+ * CBOR decode with useMaps returns Maps — we extract the MSO fields.
+ */
+function mapToMso(m: Map<string, unknown>): MobileSecurityObject {
+  return {
+    version: m.get('version') as string,
+    digestAlgorithm: m.get('digestAlgorithm') as DigestAlgorithm,
+    valueDigests: normalizeValueDigests(m.get('valueDigests')),
+    deviceKeyInfo: mapToDeviceKeyInfo(m.get('deviceKeyInfo')),
+    docType: m.get('docType') as string,
+    validityInfo: mapToValidityInfo(m.get('validityInfo')),
+  };
+}
+
+/**
+ * Normalize valueDigests to Map<string, Map<number, Uint8Array>>.
+ * CBOR decode may return string keys for digest IDs (when the MSO was
+ * encoded from a plain object), so we coerce keys to numbers.
+ */
+function normalizeValueDigests(raw: unknown): MobileSecurityObject['valueDigests'] {
+  const result = new Map<NameSpace, Map<number, Uint8Array>>();
+  if (!(raw instanceof Map)) return result;
+
+  for (const [ns, digestMap] of raw) {
+    const normalized = new Map<number, Uint8Array>();
+    if (digestMap instanceof Map) {
+      for (const [key, value] of digestMap) {
+        normalized.set(typeof key === 'string' ? parseInt(key, 10) : key, value as Uint8Array);
+      }
+    }
+    result.set(ns as string, normalized);
+  }
+  return result;
+}
+
+function mapToDeviceKeyInfo(raw: unknown): MobileSecurityObject['deviceKeyInfo'] {
+  if (raw instanceof Map) {
+    return { deviceKey: raw.get('deviceKey') as Map<number, unknown> };
+  }
+  const obj = raw as Record<string, unknown>;
+  return { deviceKey: obj?.deviceKey as Map<number, unknown> };
+}
+
+function mapToValidityInfo(raw: unknown): MobileSecurityObject['validityInfo'] {
+  if (raw instanceof Map) {
+    return {
+      signed: raw.get('signed') as Date,
+      validFrom: raw.get('validFrom') as Date,
+      validUntil: raw.get('validUntil') as Date,
+      expectedUpdate: raw.get('expectedUpdate') as Date | undefined,
+    };
+  }
+  const obj = raw as Record<string, unknown>;
+  return {
+    signed: obj?.signed as Date,
+    validFrom: obj?.validFrom as Date,
+    validUntil: obj?.validUntil as Date,
+    expectedUpdate: obj?.expectedUpdate as Date | undefined,
+  };
 }
