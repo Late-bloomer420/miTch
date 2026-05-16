@@ -28,7 +28,7 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 42/42 turbo tasks pass; 1565 individual tests (26 packages); 134/134 mdoc tests; 70/70 wallet-pwa tests
+- **Tests:** 43/43 turbo tasks pass; 1568 individual tests (26 packages); 134/134 mdoc tests; 73/73 wallet-pwa tests
 - **Lint:** 0 errors, 0 warnings
 - **Audit:** 7 npm vulnerabilities (4 high, 3 moderate — `undici` ≥7.0.0 <7.24.0, `flatted` <3.4.0; alle in devDependency-Ketten)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
@@ -39,7 +39,7 @@
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
 - **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
 - **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
-- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types, MSO digest verification, DeviceAuth (Sign1 only, kein Mac0), **vollständige Offline-Verifikation** (`verifyMdocOffline()` — 5-Step fail-closed Pipeline: Issuer Auth, MSO Digests, Validity, DocType, Device Auth), x5chain Zertifikatsextraktion + SPKI-Parser, `decodeMdoc()` für integer-keyed CBOR Maps, DeviceResponse Parser — 134 tests; offen: Wallet-/Verifier-Integration, Hybrid Issuance, COSE_Mac0.
+- **`@mitch/mdoc`** package: CBOR codec, COSE Sign1 ES256, ISO 18013-5 types, MSO digest verification, DeviceAuth (Sign1 only, kein Mac0), **vollständige Offline-Verifikation** (`verifyMdocOffline()` — 5-Step fail-closed Pipeline: Issuer Auth, MSO Digests, Validity, DocType, Device Auth), x5chain Zertifikatsextraktion + SPKI-Parser, `decodeMdoc()` für integer-keyed CBOR Maps, DeviceResponse Parser — 134 tests; **Wallet-Integration** (`addMdocCredential`, mdoc-Presentation-Path, Demo-mDL-Seed, 3 Integrationstests); offen: Verifier-Integration, Hybrid Issuance, COSE_Mac0.
 - **PQC Readiness:** `shared-crypto/src/pqc.ts` (ML-DSA, ML-KEM via @noble/post-quantum) + `crypto-agility.ts` (algorithm registry, negotiation)
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 
