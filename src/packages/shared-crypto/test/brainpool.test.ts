@@ -75,24 +75,35 @@ describe('brainpoolP256r1', () => {
     });
 });
 
-// ─── C-01: brainpoolP384r1 ────────────────────────────────────────────────────
+// ─── C-01: brainpoolP384r1 (RFC 5639 §3.6) ──────────────────────────────────
 
 describe('brainpoolP384r1', () => {
     const CURVE: BrainpoolCurve = 'brainpoolP384r1';
     const testMessage = new TextEncoder().encode('BSI Key Binding P384');
 
-    it('generates a key pair (stub: uses P256r1 impl pending BSI P384 param verification)', () => {
+    it('generates a key pair with correct sizes', () => {
         const kp = generateBrainpoolKeyPair(CURVE);
         expect(kp.curve).toBe(CURVE);
-        // Stub implementation uses brainpoolP256r1 parameters until BSI-verified P384 params are confirmed
         expect(kp.privateKey).toBeInstanceOf(Uint8Array);
         expect(kp.publicKey).toBeInstanceOf(Uint8Array);
-        expect(kp.privateKey.length).toBeGreaterThan(0);
+        expect(kp.privateKey.length).toBe(48); // 384-bit scalar
+        expect(kp.publicKey.length).toBe(49);  // compressed point (1 + 48)
+    });
+
+    it('generates unique key pairs', () => {
+        const kp1 = generateBrainpoolKeyPair(CURVE);
+        const kp2 = generateBrainpoolKeyPair(CURVE);
+        expect(kp1.privateKey).not.toEqual(kp2.privateKey);
+        expect(kp1.publicKey).not.toEqual(kp2.publicKey);
     });
 
     it('signs and verifies a message', () => {
         const kp = generateBrainpoolKeyPair(CURVE);
         const sig = signWithBrainpool(testMessage, kp);
+        expect(sig.curve).toBe(CURVE);
+        expect(sig.signature).toBeInstanceOf(Uint8Array);
+        expect(sig.signature.length).toBeGreaterThan(0);
+
         const isValid = verifyWithBrainpool(testMessage, sig, kp.publicKey);
         expect(isValid).toBe(true);
     });
@@ -104,11 +115,52 @@ describe('brainpoolP384r1', () => {
         expect(verifyWithBrainpool(tampered, sig, kp.publicKey)).toBe(false);
     });
 
+    it('rejects signature with wrong key', () => {
+        const kp1 = generateBrainpoolKeyPair(CURVE);
+        const kp2 = generateBrainpoolKeyPair(CURVE);
+        const sig = signWithBrainpool(testMessage, kp1);
+        expect(verifyWithBrainpool(testMessage, sig, kp2.publicKey)).toBe(false);
+    });
+
     it('ECDH produces same shared secret from both sides', () => {
         const kp1 = generateBrainpoolKeyPair(CURVE);
         const kp2 = generateBrainpoolKeyPair(CURVE);
         const s1 = brainpoolECDH(kp1.privateKey, kp2.publicKey, CURVE);
         const s2 = brainpoolECDH(kp2.privateKey, kp1.publicKey, CURVE);
         expect(s1).toEqual(s2);
+    });
+
+    it('exports public key object with crv=brainpoolP384r1', () => {
+        const kp = generateBrainpoolKeyPair(CURVE);
+        const obj = brainpoolPublicKeyToObject(kp);
+        expect(obj.kty).toBe('EC');
+        expect(obj.crv).toBe('brainpoolP384r1');
+        expect(obj.x).toBeDefined();
+    });
+});
+
+// ─── Cross-curve isolation ───────────────────────────────────────────────────
+
+describe('cross-curve isolation', () => {
+    const testMessage = new TextEncoder().encode('cross-curve test');
+
+    it('P256 signature does not verify with P384 key', () => {
+        const kp256 = generateBrainpoolKeyPair('brainpoolP256r1');
+        const kp384 = generateBrainpoolKeyPair('brainpoolP384r1');
+        const sig = signWithBrainpool(testMessage, kp256);
+        // Attempt to verify P256 sig with P384 curve label — should fail or throw
+        expect(() => {
+            const faked = { ...sig, curve: 'brainpoolP384r1' as BrainpoolCurve };
+            verifyWithBrainpool(testMessage, faked, kp384.publicKey);
+        }).toThrow();
+    });
+
+    it('P256 and P384 keys have different sizes', () => {
+        const kp256 = generateBrainpoolKeyPair('brainpoolP256r1');
+        const kp384 = generateBrainpoolKeyPair('brainpoolP384r1');
+        expect(kp256.privateKey.length).toBe(32);
+        expect(kp384.privateKey.length).toBe(48);
+        expect(kp256.publicKey.length).toBe(33);
+        expect(kp384.publicKey.length).toBe(49);
     });
 });
