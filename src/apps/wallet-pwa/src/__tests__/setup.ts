@@ -24,8 +24,9 @@ if (typeof globalThis.indexedDB === 'undefined') {
             setTimeout(() => req.onsuccess?.({ target: req }), 0);
             return req;
         },
-        put: (value: unknown, key: string) => {
-            mockStore.set(key, value);
+        put: (value: any, key?: string) => {
+            const k = key ?? value?.id;
+            mockStore.set(k, value);
             const req = { result: key, onsuccess: null as any, onerror: null as any };
             setTimeout(() => req.onsuccess?.({ target: req }), 0);
             return req;

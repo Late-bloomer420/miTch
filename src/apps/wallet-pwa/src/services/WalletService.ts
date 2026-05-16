@@ -26,6 +26,7 @@ import {
 } from '@mitch/shared-crypto';
 
 
+import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@mitch/mdoc';
 import { DEMO_POLICY } from '../data/DemoPolicy';
 import { ProofOfExistence } from './DocumentService';
 import {
@@ -33,6 +34,20 @@ import {
     CommonPredicates,
     type PredicateRequest
 } from '@mitch/predicates';
+
+// ─── mdoc base64 helpers ──────────────────────────────────────────────────
+function uint8ArrayToBase64(data: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
+    return btoa(binary);
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
 
 const POLICY_STORAGE_KEY = 'mitch_user_policy';
 
@@ -119,6 +134,15 @@ const EHDS_PRESCRIPTION = {
     }
 };
 // End T-30 definitions
+
+// ISO 18013-5 mdoc mDL Seed Credential
+// Stored as IssuerSigned nameSpaces (pre-built CBOR, no real MSO signature for demo)
+const MDOC_MDL_CREDENTIAL = {
+    id: 'mdoc-mdl-001',
+    issuer: 'did:example:gov-transport',
+    docType: 'org.iso.18013.5.1.mDL',
+    claims: ['family_name', 'given_name', 'birth_date', 'age_over_18', 'age_over_21', 'issuing_country'],
+};
 
 // ... (other imports)
 
@@ -476,6 +500,34 @@ export class WalletService {
                 issuedAt: EHDS_PRESCRIPTION.issuedAt
             });
         }
+
+        // 4. mdoc mDL Credential (ISO 18013-5)
+        if (!metas.find(m => m.id === MDOC_MDL_CREDENTIAL.id)) {
+            console.log('Seeding mdoc mDL Credential...');
+            const mdocItems = [
+                { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'family_name', elementValue: 'Mustermann' },
+                { digestID: 1, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'given_name', elementValue: 'Erika' },
+                { digestID: 2, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'birth_date', elementValue: '1990-05-15' },
+                { digestID: 3, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'age_over_18', elementValue: true },
+                { digestID: 4, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'age_over_21', elementValue: true },
+                { digestID: 5, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'issuing_country', elementValue: 'DE' },
+            ];
+            const mdocCbor = mdocEncode({
+                nameSpaces: new Map([['org.iso.18013.5.1', mdocItems]]),
+            });
+            const mdocPayload = {
+                _mdoc: true,
+                docType: MDOC_MDL_CREDENTIAL.docType,
+                cborBase64: uint8ArrayToBase64(mdocCbor),
+            };
+            await this.storage.save(MDOC_MDL_CREDENTIAL.id, mdocPayload, {
+                issuer: MDOC_MDL_CREDENTIAL.issuer,
+                type: ['VerifiableCredential', MDOC_MDL_CREDENTIAL.docType],
+                issuedAt: new Date().toISOString(),
+                claims: MDOC_MDL_CREDENTIAL.claims,
+                format: 'mso_mdoc',
+            });
+        }
     }
 
     async seedMalicious() {
@@ -704,6 +756,35 @@ export class WalletService {
             });
             logs.push(`🔓 VC [${req.credential_type}] Decrypted`);
 
+            // ── mdoc credential path ────────────────────────────────────
+            if (credMeta.format === 'mso_mdoc' && credentialData._mdoc) {
+                const mdocPayload = credentialData as { _mdoc: true; docType: string; cborBase64: string };
+                const mdocClaims = this.extractMdocClaims(mdocPayload.cborBase64);
+
+                const disclosure: Record<string, unknown> = {};
+                for (const claim of req.allowed_claims) {
+                    if (mdocClaims[claim] !== undefined) disclosure[claim] = mdocClaims[claim];
+                }
+
+                bundles.push({
+                    credentialType: req.credential_type,
+                    disclosure,
+                    provenClaims: {},
+                    zkpProofs: {},
+                });
+
+                logs.push(`📄 mdoc [${mdocPayload.docType}] selective disclosure: ${Object.keys(disclosure).join(', ')}`);
+
+                await this.auditLog.append('VP_GENERATED', selectedId, {
+                    context: 'MDOC_PRESENTATION',
+                    decision_id: capsule.decision_id,
+                    claims_shared: Object.keys(disclosure),
+                    claims_requested: req.allowed_claims,
+                });
+                continue;
+            }
+
+            // ── SD-JWT credential path (default) ────────────────────────
             // Selective Disclosure & ZKP
             const disclosure: Record<string, unknown> = {};
             const provenClaims: Record<string, boolean> = {};
@@ -951,6 +1032,47 @@ export class WalletService {
     }
 
     /**
+     * Store an mdoc credential (ISO 18013-5) received via OID4VCI.
+     *
+     * The credential is stored as a JSON-serializable wrapper containing
+     * the raw CBOR bytes (base64-encoded), docType, and extracted claims.
+     * Format is tagged as 'mso_mdoc' in metadata.
+     */
+    async addMdocCredential(
+        id: string,
+        mdocCborBytes: Uint8Array,
+        docType: string,
+        issuerDid: string,
+        claimNames: string[]
+    ): Promise<void> {
+        await this.ensureSeeded();
+        if (!this.storage) throw new Error('Wallet locked');
+
+        // Store as JSON wrapper with base64-encoded CBOR for SecureStorage compatibility
+        const payload = {
+            _mdoc: true,
+            docType,
+            cborBase64: uint8ArrayToBase64(mdocCborBytes),
+        };
+
+        const meta: StoredCredentialMetadata = {
+            id,
+            issuer: issuerDid,
+            type: ['VerifiableCredential', docType],
+            issuedAt: new Date().toISOString(),
+            claims: claimNames,
+            format: 'mso_mdoc',
+        };
+
+        await this.storage.save(id, payload, meta);
+        await this.auditLog.append('KEY_USED', id, {
+            context: 'MDOC_ISSUANCE',
+            issuer: issuerDid,
+            docType,
+        });
+    }
+
+    /**
      * Get recent logs for the UI.
      */
     getRecentAuditLogs(limit: number = 5): AuditLogEntry[] {
@@ -1045,6 +1167,41 @@ export class WalletService {
     async loadCredential<T = Record<string, unknown>>(id: string): Promise<T | null> {
         if (!this.storage) throw new Error('Wallet locked');
         return this.storage.load<T>(id);
+    }
+
+    /**
+     * Extract claims from an mdoc credential's CBOR payload.
+     * Flattens all namespace elements into a single Record for
+     * compatibility with the existing selective disclosure pipeline.
+     */
+    private extractMdocClaims(cborBase64: string): Record<string, unknown> {
+        const cborBytes = base64ToUint8Array(cborBase64);
+        const decoded = mdocDecodeMdoc<Map<string, unknown>>(cborBytes);
+
+        const claims: Record<string, unknown> = {};
+
+        // mdoc stores data in nameSpaces → IssuerSignedItem[]
+        // We flatten all namespace elements into a single claims map
+        const nameSpaces = decoded.get('nameSpaces') as Map<string, unknown[]> | undefined;
+        if (nameSpaces instanceof Map) {
+            for (const [_ns, items] of nameSpaces) {
+                if (!Array.isArray(items)) continue;
+                for (const item of items) {
+                    if (item instanceof Map) {
+                        const id = item.get('elementIdentifier') as string;
+                        const value = item.get('elementValue');
+                        if (id) claims[id] = value;
+                    } else if (item && typeof item === 'object') {
+                        const obj = item as Record<string, unknown>;
+                        if (obj.elementIdentifier) {
+                            claims[obj.elementIdentifier as string] = obj.elementValue;
+                        }
+                    }
+                }
+            }
+        }
+
+        return claims;
     }
 
     /**

@@ -189,6 +189,9 @@ importers:
       '@mitch/data-flow':
         specifier: workspace:*
         version: link:../../packages/data-flow
+      '@mitch/mdoc':
+        specifier: workspace:*
+        version: link:../../packages/mdoc
       '@mitch/oid4vp':
         specifier: workspace:*
         version: link:../../packages/oid4vp

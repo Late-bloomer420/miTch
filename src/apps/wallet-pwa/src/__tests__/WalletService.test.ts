@@ -157,3 +157,55 @@ describe('WalletService — Key Splitting & Recovery', () => {
     await expect(wallet.recoverFromFragments(shares)).resolves.not.toThrow();
   });
 });
+
+describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+  });
+
+  it('mdoc mDL credential is seeded with format mso_mdoc', async () => {
+    const creds = await wallet.getCredentials();
+    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    expect(mdoc).toBeDefined();
+    expect(mdoc!.format).toBe('mso_mdoc');
+    expect(mdoc!.type).toContain('org.iso.18013.5.1.mDL');
+  });
+
+  it('mdoc credential payload roundtrips through addMdocCredential + loadCredential', async () => {
+    const { encode } = await import('@mitch/mdoc');
+    const items = [
+      { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'test_claim', elementValue: 42 },
+    ];
+    const cbor = encode({ nameSpaces: new Map([['test.ns', items]]) });
+
+    await wallet.addMdocCredential(
+      'mdoc-test-roundtrip',
+      cbor,
+      'test.docType',
+      'did:example:test',
+      ['test_claim']
+    );
+
+    const creds = await wallet.getCredentials();
+    const meta = creds.find(c => c.id === 'mdoc-test-roundtrip');
+    expect(meta).toBeDefined();
+    expect(meta!.format).toBe('mso_mdoc');
+
+    const data = await wallet.loadCredential<Record<string, unknown>>('mdoc-test-roundtrip');
+    expect(data).not.toBeNull();
+    expect(data!._mdoc).toBe(true);
+    expect(data!.docType).toBe('test.docType');
+    expect(typeof data!.cborBase64).toBe('string');
+  });
+
+  it('mdoc claims list matches seeded elements', async () => {
+    const creds = await wallet.getCredentials();
+    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    expect(mdoc!.claims).toContain('family_name');
+    expect(mdoc!.claims).toContain('age_over_18');
+    expect(mdoc!.claims).toContain('issuing_country');
+  });
+});
