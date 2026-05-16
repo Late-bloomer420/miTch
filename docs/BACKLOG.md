@@ -91,8 +91,8 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.3 Kryptographie (BSI/SOG-IS Konformität)
 | ID | Prio | Beschreibung |
 |---|---|---|
-| E-20 | ✅ | brainpoolP256r1 Support (noble-curves, RFC 5639 §3.4) — 10 tests |
-| E-21 | 🟡 | brainpoolP384r1 Support (stub — BSI param verification pending) |
+| E-20 | ✅ | brainpoolP256r1 Support (noble-curves, RFC 5639 §3.4) — 7 tests |
+| E-21 | ✅ | brainpoolP384r1 Support (RFC 5639 §3.6, SHA-384) — keygen, sign, verify, ECDH, key export, 7 tests + 2 cross-curve isolation |
 | E-22 | 🟢 | brainpoolP512r1 Support (optional, höchste Sicherheit) |
 | E-23 | ✅ | ECDH secp256r1 + HMAC-SHA2 MAC Verification — 10 tests |
 
