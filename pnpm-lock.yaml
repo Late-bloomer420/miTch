@@ -498,6 +498,9 @@ importers:
 
   src/packages/oid4vp-verifier:
     dependencies:
+      '@mitch/mdoc':
+        specifier: workspace:*
+        version: link:../mdoc
       '@mitch/oid4vp':
         specifier: workspace:*
         version: link:../oid4vp

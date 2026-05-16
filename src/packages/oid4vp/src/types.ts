@@ -16,7 +16,25 @@ export interface InputDescriptor {
     id: string;
     name?: string;
     purpose?: string;
+    format?: VPFormats;
     constraints?: DescriptorConstraints;
+}
+
+/** ISO 18013-5 mdoc-specific constraints for namespace/element filtering. */
+export interface MdocConstraints {
+    /** Required docType (e.g., "org.iso.18013.5.1.mDL") */
+    doctype_value: string;
+    /** Namespace-scoped element requests */
+    namespaces?: Record<string, MdocNamespaceConstraint>;
+}
+
+export interface MdocNamespaceConstraint {
+    [elementIdentifier: string]: MdocElementConstraint;
+}
+
+export interface MdocElementConstraint {
+    /** Whether the element is required for the presentation to be accepted */
+    intent_to_retain: boolean;
 }
 
 export interface DescriptorConstraints {
@@ -53,6 +71,7 @@ export interface VPFormats {
     'sd-jwt'?: { alg: string[] };
     'jwt_vp'?: { alg: string[] };
     'ldp_vp'?: { proof_type: string[] };
+    'mso_mdoc'?: { alg: string[] };
 }
 
 // ─── VP Token ─────────────────────────────────────────────────────
@@ -86,7 +105,7 @@ export interface PresentationSubmission {
 
 export interface DescriptorMapEntry {
     id: string;
-    format: 'sd-jwt' | 'jwt_vp' | 'ldp_vp';
+    format: 'sd-jwt' | 'jwt_vp' | 'ldp_vp' | 'mso_mdoc';
     path: string;
     path_nested?: DescriptorMapEntry;
 }

@@ -9,7 +9,8 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/oid4vp": "workspace:*"
+        "@mitch/oid4vp": "workspace:*",
+        "@mitch/mdoc": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^25.3.5",
