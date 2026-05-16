@@ -3,8 +3,13 @@ import {
     createSign1,
     verifySign1,
     decodeCoseSign1,
+    createMac0,
+    verifyMac0,
+    decodeCoseMac0,
+    deriveSessionMacKey,
     COSE_HEADER,
     COSE_ALG,
+    COSE_MAC_ALG,
 } from '../src/cose';
 import { encode } from '../src/cbor';
 
@@ -12,6 +17,8 @@ import { encode } from '../src/cbor';
 
 let keyPair: CryptoKeyPair;
 let otherKeyPair: CryptoKeyPair;
+let ecdhKeyPairA: CryptoKeyPair;
+let ecdhKeyPairB: CryptoKeyPair;
 
 beforeAll(async () => {
     // Generate ES256 (P-256) key pair for testing
@@ -25,6 +32,17 @@ beforeAll(async () => {
         { name: 'ECDSA', namedCurve: 'P-256' },
         false,
         ['sign', 'verify'],
+    );
+    // ECDH key pairs for Mac0 / key derivation tests
+    ecdhKeyPairA = await crypto.subtle.generateKey(
+        { name: 'ECDH', namedCurve: 'P-256' },
+        false,
+        ['deriveBits', 'deriveKey'],
+    );
+    ecdhKeyPairB = await crypto.subtle.generateKey(
+        { name: 'ECDH', namedCurve: 'P-256' },
+        false,
+        ['deriveBits', 'deriveKey'],
     );
 });
 
@@ -312,12 +330,204 @@ describe('COSE_Sign1 determinism', () => {
     });
 });
 
+// ─── COSE_Mac0 create + verify ──────────────────────────────────────────────
+
+describe('COSE_Mac0 create + verify', () => {
+    async function makeMacKey(): Promise<CryptoKey> {
+        return deriveSessionMacKey(ecdhKeyPairA.privateKey, ecdhKeyPairB.publicKey);
+    }
+
+    test('roundtrip: MAC then verify succeeds', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode({ deviceNameSpaces: {} });
+
+        const mac0 = await createMac0({ payload, macKey });
+        expect(mac0).toBeInstanceOf(Uint8Array);
+        expect(mac0[0]).toBe(0xd1); // Tag 17
+
+        const result = await verifyMac0(mac0, macKey);
+        expect(result.valid).toBe(true);
+        expect(result.payload).toBeInstanceOf(Uint8Array);
+        expect(result.protectedHeaders.get(COSE_HEADER.ALG)).toBe(COSE_MAC_ALG.HMAC_256_256);
+    });
+
+    test('roundtrip: payload content survives MAC+verify', async () => {
+        const macKey = await makeMacKey();
+        const originalData = { claim: 'age_over_18', value: true };
+        const payload = encode(originalData);
+
+        const mac0 = await createMac0({ payload, macKey });
+        const result = await verifyMac0(mac0, macKey);
+        expect(result.valid).toBe(true);
+
+        const { decode } = await import('../src/cbor');
+        const recovered = decode<typeof originalData>(result.payload!);
+        expect(recovered.claim).toBe('age_over_18');
+        expect(recovered.value).toBe(true);
+    });
+
+    test('verify fails with wrong key', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode({ test: 'data' });
+        const mac0 = await createMac0({ payload, macKey });
+
+        // Derive a different key
+        const wrongKey = await deriveSessionMacKey(ecdhKeyPairB.privateKey, ecdhKeyPairB.publicKey);
+        const result = await verifyMac0(mac0, wrongKey);
+        expect(result.valid).toBe(false);
+        expect(result.payload).toBeNull();
+    });
+
+    test('verify fails when payload is tampered', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode({ test: 'original' });
+        const mac0 = await createMac0({ payload, macKey });
+
+        // Parse, tamper payload, rebuild
+        const parsed = decodeCoseMac0(mac0);
+        const tamperedPayload = encode({ test: 'tampered' });
+        const tamperedArray = [
+            parsed.protectedHeaders,
+            parsed.unprotectedHeaders,
+            tamperedPayload,
+            parsed.tag,
+        ];
+        const tamperedBytes = prependTag17(encode(tamperedArray));
+
+        const result = await verifyMac0(tamperedBytes, macKey);
+        expect(result.valid).toBe(false);
+    });
+
+    test('verify succeeds with matching externalAad', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode('test');
+        const aad = new TextEncoder().encode('session-transcript');
+
+        const mac0 = await createMac0({ payload, macKey, externalAad: aad });
+        const result = await verifyMac0(mac0, macKey, aad);
+        expect(result.valid).toBe(true);
+    });
+
+    test('verify fails with mismatched externalAad', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode('test');
+        const aad = new TextEncoder().encode('context-binding');
+
+        const mac0 = await createMac0({ payload, macKey, externalAad: aad });
+        const wrongAad = new TextEncoder().encode('wrong-context');
+        const result = await verifyMac0(mac0, macKey, wrongAad);
+        expect(result.valid).toBe(false);
+    });
+
+    test('verify fails when tag is corrupted', async () => {
+        const macKey = await makeMacKey();
+        const payload = encode('test');
+        const mac0 = await createMac0({ payload, macKey });
+
+        const corrupted = new Uint8Array(mac0);
+        corrupted[corrupted.length - 1] ^= 0xff;
+        corrupted[corrupted.length - 2] ^= 0xff;
+
+        const result = await verifyMac0(corrupted, macKey);
+        expect(result.valid).toBe(false);
+    });
+});
+
+// ─── COSE_Mac0 decode (structural) ──────────────────────────────────────────
+
+describe('COSE_Mac0 decode (structural)', () => {
+    test('decodeCoseMac0 returns all components', async () => {
+        const macKey = await deriveSessionMacKey(ecdhKeyPairA.privateKey, ecdhKeyPairB.publicKey);
+        const payload = encode({ data: 42 });
+        const mac0 = await createMac0({ payload, macKey });
+
+        const parsed = decodeCoseMac0(mac0);
+        expect(parsed.protectedHeaders).toBeInstanceOf(Uint8Array);
+        expect(parsed.decodedProtectedHeaders).toBeInstanceOf(Map);
+        expect(parsed.decodedProtectedHeaders.get(COSE_HEADER.ALG)).toBe(COSE_MAC_ALG.HMAC_256_256);
+        expect(parsed.payload).toBeInstanceOf(Uint8Array);
+        // HMAC-SHA-256 tag is 32 bytes
+        expect(parsed.tag.length).toBe(32);
+    });
+
+    test('decodeCoseMac0 rejects non-array input', () => {
+        expect(() => decodeCoseMac0(encode('not-an-array'))).toThrow('expected 4-element array');
+    });
+
+    test('decodeCoseMac0 rejects wrong-length array', () => {
+        expect(() => decodeCoseMac0(encode([new Uint8Array(0), {}]))).toThrow('expected 4-element array');
+    });
+});
+
+// ─── deriveSessionMacKey (ECDH + HKDF) ─────────────────────────────────────
+
+describe('deriveSessionMacKey', () => {
+    test('both sides derive the same key (symmetric)', async () => {
+        // A→B and B→A should produce the same shared secret
+        const keyAB = await deriveSessionMacKey(ecdhKeyPairA.privateKey, ecdhKeyPairB.publicKey);
+        const keyBA = await deriveSessionMacKey(ecdhKeyPairB.privateKey, ecdhKeyPairA.publicKey);
+
+        // Verify symmetry: MAC with one key, verify with the other
+        const payload = encode({ test: 'symmetry' });
+        const mac0 = await createMac0({ payload, macKey: keyAB });
+        const result = await verifyMac0(mac0, keyBA);
+        expect(result.valid).toBe(true);
+    });
+
+    test('different key pairs produce different MAC keys', async () => {
+        const key1 = await deriveSessionMacKey(ecdhKeyPairA.privateKey, ecdhKeyPairB.publicKey);
+        // Same party with itself — different shared secret
+        const key2 = await deriveSessionMacKey(ecdhKeyPairA.privateKey, ecdhKeyPairA.publicKey);
+
+        const payload = encode({ test: 'isolation' });
+        const mac0 = await createMac0({ payload, macKey: key1 });
+        const result = await verifyMac0(mac0, key2);
+        expect(result.valid).toBe(false);
+    });
+
+    test('custom salt and info produce different keys', async () => {
+        const key1 = await deriveSessionMacKey(
+            ecdhKeyPairA.privateKey,
+            ecdhKeyPairB.publicKey,
+            new Uint8Array(32),
+            new TextEncoder().encode('EMacKey'),
+        );
+        const key2 = await deriveSessionMacKey(
+            ecdhKeyPairA.privateKey,
+            ecdhKeyPairB.publicKey,
+            new Uint8Array(32),
+            new TextEncoder().encode('DifferentInfo'),
+        );
+
+        const payload = encode({ test: 'info-isolation' });
+        const mac0 = await createMac0({ payload, macKey: key1 });
+        const result = await verifyMac0(mac0, key2);
+        expect(result.valid).toBe(false);
+    });
+});
+
+// ─── COSE_MAC_ALG constants ─────────────────────────────────────────────────
+
+describe('COSE_MAC_ALG constants', () => {
+    test('HMAC_256_256 is 5', () => {
+        expect(COSE_MAC_ALG.HMAC_256_256).toBe(5);
+    });
+});
+
 // ─── Helper ─────────────────────────────────────────────────────────────────
 
 /** Prepend CBOR Tag 18 to raw array bytes */
 function prependTag18(arrayBytes: Uint8Array): Uint8Array {
     const result = new Uint8Array(1 + arrayBytes.length);
     result[0] = 0xd2; // Tag 18
+    result.set(arrayBytes, 1);
+    return result;
+}
+
+/** Prepend CBOR Tag 17 to raw array bytes */
+function prependTag17(arrayBytes: Uint8Array): Uint8Array {
+    const result = new Uint8Array(1 + arrayBytes.length);
+    result[0] = 0xd1; // Tag 17
     result.set(arrayBytes, 1);
     return result;
 }

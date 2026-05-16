@@ -71,6 +71,11 @@ export interface MdocVerifyOptions {
   trustAnchorVerifier?: TrustAnchorVerifier;
   /** Current time for validity checks (defaults to now). */
   now?: Date;
+  /**
+   * Reader's ECDH private key (required for COSE_Mac0 device authentication).
+   * Used for ECDH key agreement with the device to derive the MAC key.
+   */
+  eReaderPrivateKey?: CryptoKey;
 }
 
 /**
@@ -179,7 +184,8 @@ export async function verifyMdocOffline(
     const deviceResult = await verifyDeviceAuth(
       document.deviceSigned.deviceAuth,
       mso,
-      sessionTranscript
+      sessionTranscript,
+      opts.eReaderPrivateKey,
     );
     steps.push({
       step: 'device-auth',

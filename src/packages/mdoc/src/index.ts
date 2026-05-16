@@ -29,15 +29,23 @@ export {
     createSign1,
     verifySign1,
     decodeCoseSign1,
+    createMac0,
+    verifyMac0,
+    decodeCoseMac0,
+    deriveSessionMacKey,
     COSE_HEADER,
     COSE_ALG,
+    COSE_MAC_ALG,
 } from './cose.js';
 
 export type {
     CoseHeaderMap,
     CoseSign1Structure,
+    CoseMac0Structure,
     Sign1CreateOptions,
     Sign1VerifyResult,
+    Mac0CreateOptions,
+    Mac0VerifyResult,
 } from './cose.js';
 
 // mdoc types
@@ -88,6 +96,7 @@ export {
 // Device authentication
 export {
     verifyDeviceSignature,
+    verifyDeviceMac,
     verifyDeviceAuth,
 } from './device-auth.js';
 

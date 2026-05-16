@@ -289,6 +289,228 @@ export function decodeCoseSign1(coseSign1Bytes: Uint8Array): CoseSign1Structure 
     };
 }
 
+// ─── COSE_Mac0 (RFC 9052 §6) ────────────────────────────────────────────────
+
+/** Tag 17 header byte: major type 6 (tag) with value 17 = 0xd1 */
+const TAG_17_HEADER = new Uint8Array([0xd1]);
+
+/** COSE MAC algorithm: HMAC 256/256 (IANA value 5) */
+export const COSE_MAC_ALG = {
+    /** HMAC w/ SHA-256 (256-bit key, 256-bit tag) */
+    HMAC_256_256: 5,
+} as const;
+
+/** Options for creating a COSE_Mac0 */
+export interface Mac0CreateOptions {
+    /** Payload to MAC (CBOR-encoded content) */
+    payload: Uint8Array;
+    /** HMAC-SHA-256 key (raw symmetric key from ECDH + HKDF) */
+    macKey: CryptoKey;
+    /** Additional protected headers */
+    extraProtectedHeaders?: Map<number, unknown>;
+    /** Unprotected headers */
+    unprotectedHeaders?: Map<number, unknown>;
+    /** External additional authenticated data (default: empty) */
+    externalAad?: Uint8Array;
+}
+
+/** Result of COSE_Mac0 verification */
+export interface Mac0VerifyResult {
+    /** Whether the MAC tag is valid */
+    valid: boolean;
+    /** Decoded payload (if MAC valid) */
+    payload: Uint8Array | null;
+    /** Decoded protected headers */
+    protectedHeaders: CoseHeaderMap;
+}
+
+/** Decoded COSE_Mac0 structure */
+export interface CoseMac0Structure {
+    protectedHeaders: Uint8Array;
+    decodedProtectedHeaders: CoseHeaderMap;
+    unprotectedHeaders: CoseHeaderMap;
+    payload: Uint8Array | null;
+    tag: Uint8Array;
+}
+
+/**
+ * Build the MAC_structure for COSE_Mac0 signing/verification.
+ *
+ * MAC_structure = [
+ *   context : "MAC0",
+ *   body_protected : bstr,
+ *   external_aad : bstr,
+ *   payload : bstr
+ * ]
+ */
+function buildMacStructure0(
+    protectedHeaderBytes: Uint8Array,
+    payload: Uint8Array,
+    externalAad: Uint8Array = new Uint8Array(0),
+): Uint8Array {
+    return encode(['MAC0', protectedHeaderBytes, externalAad, payload]);
+}
+
+/**
+ * Create a COSE_Mac0 structure.
+ *
+ * Returns CBOR-encoded COSE_Mac0 tagged with Tag 17.
+ * Algorithm: HMAC 256/256.
+ */
+export async function createMac0(opts: Mac0CreateOptions): Promise<Uint8Array> {
+    const { payload, macKey, externalAad } = opts;
+
+    const protectedMap = new Map<number, unknown>();
+    protectedMap.set(COSE_HEADER.ALG, COSE_MAC_ALG.HMAC_256_256);
+    if (opts.extraProtectedHeaders) {
+        for (const [k, v] of opts.extraProtectedHeaders) {
+            protectedMap.set(k, v);
+        }
+    }
+
+    const protectedHeaderBytes = encodeProtectedHeaders(protectedMap);
+    const macStructure = buildMacStructure0(protectedHeaderBytes, payload, externalAad);
+
+    const tagBuffer = await crypto.subtle.sign(
+        'HMAC',
+        macKey,
+        toArrayBuffer(macStructure),
+    );
+    const tag = new Uint8Array(tagBuffer);
+
+    const unprotected = opts.unprotectedHeaders ?? new Map<number, unknown>();
+    const coseArray = [protectedHeaderBytes, unprotected, payload, tag];
+
+    const arrayBytes = encode(coseArray);
+    const result = new Uint8Array(TAG_17_HEADER.length + arrayBytes.length);
+    result.set(TAG_17_HEADER, 0);
+    result.set(arrayBytes, TAG_17_HEADER.length);
+    return result;
+}
+
+/**
+ * Decode a COSE_Mac0 structure without verifying the tag.
+ */
+export function decodeCoseMac0(coseMac0Bytes: Uint8Array): CoseMac0Structure {
+    const decoded = coseDecode<unknown[]>(coseMac0Bytes);
+
+    if (!Array.isArray(decoded) || decoded.length !== 4) {
+        throw new Error('Invalid COSE_Mac0: expected 4-element array');
+    }
+
+    const [protectedHeaderBytes, unprotectedRaw, payloadRaw, tagRaw] = decoded;
+
+    if (!(protectedHeaderBytes instanceof Uint8Array)) {
+        throw new Error('Invalid COSE_Mac0: protected headers must be a byte string');
+    }
+    if (!(tagRaw instanceof Uint8Array)) {
+        throw new Error('Invalid COSE_Mac0: tag must be a byte string');
+    }
+
+    const protectedMap: CoseHeaderMap = protectedHeaderBytes.length > 0
+        ? coseDecode<CoseHeaderMap>(protectedHeaderBytes)
+        : new Map<number, unknown>();
+
+    const unprotectedHeaders: CoseHeaderMap = unprotectedRaw instanceof Map
+        ? unprotectedRaw
+        : new Map<number, unknown>();
+
+    const payload = payloadRaw instanceof Uint8Array ? payloadRaw
+        : payloadRaw === null ? null
+        : null;
+
+    return {
+        protectedHeaders: protectedHeaderBytes,
+        decodedProtectedHeaders: protectedMap,
+        unprotectedHeaders,
+        payload,
+        tag: tagRaw,
+    };
+}
+
+/**
+ * Verify a COSE_Mac0 structure.
+ *
+ * Accepts CBOR-encoded COSE_Mac0 (with or without Tag 17).
+ */
+export async function verifyMac0(
+    coseMac0Bytes: Uint8Array,
+    macKey: CryptoKey,
+    externalAad: Uint8Array = new Uint8Array(0),
+): Promise<Mac0VerifyResult> {
+    const parsed = decodeCoseMac0(coseMac0Bytes);
+
+    const alg = parsed.decodedProtectedHeaders.get(COSE_HEADER.ALG);
+    if (alg !== COSE_MAC_ALG.HMAC_256_256) {
+        return { valid: false, payload: null, protectedHeaders: parsed.decodedProtectedHeaders };
+    }
+
+    const macStructure = buildMacStructure0(
+        parsed.protectedHeaders,
+        parsed.payload ?? new Uint8Array(0),
+        externalAad,
+    );
+
+    const valid = await crypto.subtle.verify(
+        'HMAC',
+        macKey,
+        toArrayBuffer(parsed.tag),
+        toArrayBuffer(macStructure),
+    );
+
+    return {
+        valid,
+        payload: valid ? parsed.payload : null,
+        protectedHeaders: parsed.decodedProtectedHeaders,
+    };
+}
+
+// ─── ECDH Session Key Derivation (ISO 18013-5 §9.1.1.5) ────────────────────
+
+/**
+ * Derive a shared HMAC key from ECDH key agreement.
+ *
+ * ISO 18013-5 uses ECDH (P-256) between device and reader, then
+ * derives a symmetric key for COSE_Mac0 via HKDF-SHA-256.
+ *
+ * @param privateKey - One party's ECDH private key
+ * @param publicKey - Other party's ECDH public key
+ * @param salt - HKDF salt (typically session transcript hash or empty)
+ * @param info - HKDF info (typically "EMacKey" per ISO 18013-5)
+ * @returns CryptoKey suitable for HMAC-SHA-256
+ */
+export async function deriveSessionMacKey(
+    privateKey: CryptoKey,
+    publicKey: CryptoKey,
+    salt: Uint8Array = new Uint8Array(32),
+    info: Uint8Array = new TextEncoder().encode('EMacKey'),
+): Promise<CryptoKey> {
+    // ECDH key agreement → shared secret
+    const sharedSecret = await crypto.subtle.deriveBits(
+        { name: 'ECDH', public: publicKey },
+        privateKey,
+        256,
+    );
+
+    // Import shared secret as HKDF base key
+    const hkdfKey = await crypto.subtle.importKey(
+        'raw',
+        sharedSecret,
+        'HKDF',
+        false,
+        ['deriveKey'],
+    );
+
+    // HKDF → HMAC-SHA-256 key
+    return crypto.subtle.deriveKey(
+        { name: 'HKDF', hash: 'SHA-256', salt: toArrayBuffer(salt), info: toArrayBuffer(info) },
+        hkdfKey,
+        { name: 'HMAC', hash: 'SHA-256', length: 256 },
+        false,
+        ['sign', 'verify'],
+    );
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
