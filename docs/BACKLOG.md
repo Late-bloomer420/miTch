@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-05-16 (E-11 Offline Verification + Wallet Integration)
+**Stand:** 2026-05-16 (E-11 mdoc komplett — COSE_Mac0 + ECDH Key Derivation)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -84,7 +84,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@mitch/mdoc`: CBOR Codec, COSE Sign1, Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 147 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements); offen: COSE_Mac0 | ISO.18013-5 |
+| E-11 | ✅ | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@mitch/mdoc`: CBOR Codec, COSE Sign1, **COSE_Mac0** (HMAC-SHA-256, ECDH+HKDF Key Derivation), Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 169 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements) | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
@@ -170,7 +170,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich: `docs/compliance/A
 | ADR-009 | Threat Model (STRIDE) | PROPOSED | STRIDE-Tabelle + Szenarien + Gaps vollständig; externer Review offen |
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
-| ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 Offline-Verifikation (147 tests) + Wallet (73/73) + Verifier (52/52) + Hybrid Issuance (builder + issuer-mock); offen: COSE_Mac0 |
+| ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 komplett: Offline-Verifikation + COSE_Mac0 (169 tests) + Wallet (73/73) + Verifier (52/52) + Hybrid Issuance (builder + issuer-mock) |
 
 ---
 
