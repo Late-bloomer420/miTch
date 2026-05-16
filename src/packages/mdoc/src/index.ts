@@ -137,3 +137,17 @@ export type {
     MdocVerifyOptions,
     VerificationStep,
 } from './verifier.js';
+
+// mdoc document builder (issuance)
+export {
+    buildIssuerSignedItems,
+    buildMobileSecurityObject,
+    signMobileSecurityObject,
+    buildMdocDocument,
+} from './mdoc-builder.js';
+
+export type {
+    NamespaceClaims,
+    MdocBuildOptions,
+    MdocBuildResult,
+} from './mdoc-builder.js';

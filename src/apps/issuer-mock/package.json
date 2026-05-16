@@ -14,6 +14,7 @@
     "dependencies": {
         "@mitch/shared-crypto": "workspace:*",
         "@mitch/shared-types": "workspace:*",
+        "@mitch/mdoc": "workspace:*",
         "cors": "^2.8.5",
         "express": "^4.18.0"
     },

@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import { generateKeyPair, signVC } from '@mitch/shared-crypto';
+import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@mitch/mdoc';
+import type { ValidityInfo } from '@mitch/mdoc';
 import type { AgeCredential, CredentialRequest, CredentialResponse } from '@mitch/shared-types';
 
 const app = express();
@@ -59,6 +61,13 @@ app.get('/.well-known/openid-credential-issuer', (req, res) => {
                 types: ['VerifiableCredential', 'AgeCredential'],
                 cryptographic_binding_methods_supported: ['did:key'],
                 credential_signing_alg_values_supported: ['ES256']
+            },
+            {
+                id: 'mDL',
+                format: 'mso_mdoc',
+                types: [MDL_DOCTYPE],
+                cryptographic_binding_methods_supported: ['cose_key'],
+                credential_signing_alg_values_supported: ['ES256']
             }
         ]
     });
@@ -81,6 +90,73 @@ app.get('/.well-known/jwks.json', async (req, res) => {
             }
         ]
     });
+});
+
+// mdoc (ISO 18013-5) Credential Issuance Endpoint
+app.post('/credential/mdoc', async (req, res) => {
+    if (!issuerKeys) {
+        return res.status(503).json({ error: 'keys_not_initialized' });
+    }
+
+    console.log('📝 Received mdoc Credential Request');
+
+    // In a real implementation, device_key would come from the wallet's proof of possession.
+    // For PoC, we generate an ephemeral device key pair and return the public key.
+    const deviceKeyPair = await crypto.subtle.generateKey(
+        { name: 'ECDSA', namedCurve: 'P-256' },
+        true,
+        ['sign', 'verify'],
+    );
+
+    const now = new Date();
+    const validFrom = now.toISOString();
+    const validUntil = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+    try {
+        const result = await buildMdocDocument({
+            docType: MDL_DOCTYPE,
+            nameSpaces: {
+                [MDL_NAMESPACE]: {
+                    [MDL_ELEMENTS.FAMILY_NAME]: 'Mustermann',
+                    [MDL_ELEMENTS.GIVEN_NAME]: 'Erika',
+                    [MDL_ELEMENTS.BIRTH_DATE]: '1990-01-01',
+                    [MDL_ELEMENTS.AGE_OVER_18]: true,
+                    [MDL_ELEMENTS.AGE_OVER_21]: true,
+                    [MDL_ELEMENTS.ISSUING_COUNTRY]: 'DE',
+                    [MDL_ELEMENTS.ISSUING_AUTHORITY]: 'Bundesdruckerei GmbH',
+                },
+            },
+            issuerPrivateKey: issuerKeys.privateKey,
+            devicePublicKey: deviceKeyPair.publicKey,
+            validityInfo: {
+                signed: validFrom,
+                validFrom,
+                validUntil,
+            } as unknown as ValidityInfo,
+        });
+
+        // Base64url-encode the CBOR document for JSON transport
+        let binary = '';
+        for (let i = 0; i < result.documentCbor.length; i++) {
+            binary += String.fromCharCode(result.documentCbor[i]);
+        }
+        const credentialBase64 = btoa(binary)
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+        const response: CredentialResponse = {
+            format: 'mso_mdoc',
+            credential: credentialBase64,
+            c_nonce: crypto.randomUUID(),
+            c_nonce_expires_in: 86400,
+        };
+
+        console.log('✅ mdoc mDL Credential Issued');
+        return res.json(response);
+
+    } catch (error) {
+        console.error('mdoc issuance failed:', error);
+        return res.status(500).json({ error: 'server_error' });
+    }
 });
 
 // Credential Issuance Endpoint

@@ -50,7 +50,7 @@ export interface CredentialSupported {
     /**
      * Format (e.g., 'jwt_vc_json', 'ldp_vc')
      */
-    format: 'jwt_vc_json' | 'ldp_vc' | 'jwt_vc' | 'ldp';
+    format: 'jwt_vc_json' | 'ldp_vc' | 'jwt_vc' | 'ldp' | 'mso_mdoc';
 
     /**
      * Credential types
@@ -75,7 +75,7 @@ export interface CredentialRequest {
     /**
      * Format requested
      */
-    format: 'jwt_vc_json' | 'ldp_vc';
+    format: 'jwt_vc_json' | 'ldp_vc' | 'mso_mdoc';
 
     /**
      * Credential type(s) requested

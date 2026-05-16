@@ -54,6 +54,9 @@ importers:
 
   src/apps/issuer-mock:
     dependencies:
+      '@mitch/mdoc':
+        specifier: workspace:*
+        version: link:../../packages/mdoc
       '@mitch/shared-crypto':
         specifier: workspace:*
         version: link:../../packages/shared-crypto
