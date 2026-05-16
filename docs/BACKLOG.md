@@ -84,7 +84,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@mitch/mdoc` Package: CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen, MSO Digest Verification, DeviceAuth (Sign1), **vollständige Offline-Verifikation** (`verifyMdocOffline()` — 5-Step Pipeline), x5chain + SPKI-Parser, DeviceResponse Parser — 134 tests; **Wallet-Integration**: `addMdocCredential()`, mdoc-Presentation-Path in `generatePresentation()`, Demo-mDL-Seed (6 Elements), 3 Integrationstests (73/73 wallet-pwa); offen: Verifier-Integration, Hybrid Issuance, COSE_Mac0 | ISO.18013-5 |
+| E-11 | 🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@mitch/mdoc` Package: CBOR Codec, COSE Sign1 ES256, ISO-18013-5-Typen, MSO Digest Verification, DeviceAuth (Sign1), **Offline-Verifikation** (5-Step Pipeline), x5chain + SPKI-Parser, DeviceResponse Parser — 134 tests; **Wallet-Integration**: `addMdocCredential()`, mdoc-Presentation-Path, Demo-mDL-Seed (73/73 wallet-pwa); **Verifier-Integration**: `verifyMdocPresentation()` in oid4vp-verifier (base64url→offline verify→claim extraction, 9 tests), `mso_mdoc` in OID4VP-Typen, `MdocConstraints` (52/52 oid4vp-verifier); offen: Hybrid Issuance, COSE_Mac0 | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
@@ -170,7 +170,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich: `docs/compliance/A
 | ADR-009 | Threat Model (STRIDE) | PROPOSED | STRIDE-Tabelle + Szenarien + Gaps vollständig; externer Review offen |
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
-| ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 Offline-Verifikation (134 tests) + Wallet-Integration (addMdocCredential, Presentation-Path, Demo-Seed); Verifier-Integration offen |
+| ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 Offline-Verifikation (134 tests) + Wallet-Integration (73/73) + Verifier-Integration (52/52); offen: Hybrid Issuance, COSE_Mac0 |
 
 ---
 
