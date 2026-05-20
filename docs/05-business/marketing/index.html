@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>miTch - The Forgetting Layer</title>
+  <meta name="description" content="miTch is the privacy firewall for identity proofs. Verifiers get the minimum answer they need. Raw data stays out.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #071018;
+      --bg2: #0b1522;
+      --panel: rgba(13, 23, 35, 0.86);
+      --panel-strong: rgba(15, 28, 41, 0.95);
+      --line: rgba(183, 210, 220, 0.14);
+      --line-strong: rgba(120, 202, 215, 0.26);
+      --text: #e7f0f4;
+      --muted: #9db2bc;
+      --accent: #65d6e8;
+      --accent2: #f3b15f;
+      --accent3: #9ad4b4;
+      --danger: #f26c6c;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --max: 1180px;
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-display: "Space Grotesk", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(101, 214, 232, 0.08), transparent 28%),
+        linear-gradient(135deg, rgba(243, 177, 95, 0.06), transparent 34%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      font-family: var(--font-body);
+      letter-spacing: 0;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.12));
+      opacity: 0.55;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(7, 16, 24, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .topbar-inner,
+    .section-inner,
+    .hero-inner,
+    .footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      border: 1px solid rgba(101, 214, 232, 0.38);
+      background:
+        radial-gradient(circle at 32% 32%, rgba(101,214,232,0.9), rgba(101,214,232,0.12) 32%, transparent 33%),
+        linear-gradient(145deg, rgba(101,214,232,0.18), rgba(243,177,95,0.14));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 8px 24px rgba(101,214,232,0.18);
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      font: 700 1.02rem/1.1 var(--font-display);
+      letter-spacing: 0;
+    }
+
+    .brand-sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .nav a:hover {
+      border-color: rgba(101,214,232,0.35);
+      color: var(--text);
+      background: rgba(101,214,232,0.08);
+    }
+
+    .pill.accent {
+      color: #041019;
+      background: linear-gradient(135deg, var(--accent), #b9f0f6);
+      border-color: transparent;
+    }
+
+    .hero {
+      padding: 54px 0 32px;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 28px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(101,214,232,0.08);
+      border: 1px solid rgba(101,214,232,0.18);
+      color: var(--accent);
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .hero h1 {
+      margin-top: 18px;
+      font-size: clamp(3rem, 5.8vw, 5.7rem);
+      line-height: 0.92;
+      max-width: 11ch;
+    }
+
+    .hero-copy {
+      margin-top: 18px;
+      max-width: 62ch;
+      color: #c4d5db;
+      font-size: 1.06rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.94rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+    .button.primary {
+      background: linear-gradient(135deg, var(--accent), #b8eff5);
+      color: #041019;
+      box-shadow: 0 10px 28px rgba(101,214,232,0.24);
+    }
+    .button.secondary {
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.08);
+    }
+    .button.secondary:hover {
+      border-color: rgba(243,177,95,0.32);
+      background: rgba(243,177,95,0.08);
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .hero-meta .pill {
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .visual {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      min-height: 560px;
+    }
+
+    .visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 35%),
+        radial-gradient(circle at 25% 20%, rgba(101,214,232,0.10), transparent 26%),
+        radial-gradient(circle at 74% 24%, rgba(243,177,95,0.12), transparent 26%);
+      pointer-events: none;
+    }
+
+    .visual-media {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.92;
+    }
+
+    .visual-panel {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(5, 12, 18, 0.68);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .mini-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .mini-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .band {
+      padding: 22px 0;
+    }
+
+    .band-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 38px rgba(0,0,0,0.18);
+    }
+
+    .section-title {
+      font-size: clamp(1.7rem, 2.9vw, 2.7rem);
+      line-height: 1.02;
+      max-width: 16ch;
+    }
+
+    .section-lead {
+      margin-top: 12px;
+      color: #c2d4da;
+      line-height: 1.75;
+      max-width: 72ch;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .metric {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .metric strong {
+      display: block;
+      font: 700 1.05rem/1.1 var(--font-display);
+      margin-bottom: 6px;
+    }
+    .metric span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .info-box {
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .info-box h3 {
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+    }
+    .info-box p, .info-box li {
+      color: #c3d4da;
+      line-height: 1.7;
+    }
+    .info-box ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .step {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .step b {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      border-radius: 999px;
+      background: rgba(101,214,232,0.14);
+      color: var(--accent);
+      font-family: var(--font-display);
+    }
+    .step span {
+      display: block;
+      color: #c6d7dc;
+      line-height: 1.65;
+    }
+
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .use-case {
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      min-height: 152px;
+    }
+    .use-case h3 { font-size: 1.1rem; margin-bottom: 10px; }
+    .use-case p { color: #c4d5da; line-height: 1.65; }
+
+    .proof-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .proof {
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .proof .tag {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(101,214,232,0.08);
+      color: var(--accent);
+    }
+    .proof p { margin: 0; color: #c5d7dc; line-height: 1.65; }
+
+    .audience {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .audience-card {
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .audience-card h3 { font-size: 1.12rem; margin-bottom: 8px; }
+    .audience-card p { color: #c4d5da; line-height: 1.65; }
+
+    details {
+      padding: 18px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    details:last-child { border-bottom: 1px solid rgba(255,255,255,0.08); }
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.02rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "+";
+      color: var(--accent);
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+    details[open] summary::after { content: "–"; }
+    details p {
+      margin: 12px 0 0;
+      color: #c4d5da;
+      line-height: 1.7;
+      max-width: 76ch;
+    }
+
+    .cta-band {
+      margin: 22px 0 60px;
+    }
+    .cta-box {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 32px;
+      border-radius: calc(var(--radius) + 2px);
+      border: 1px solid rgba(101,214,232,0.16);
+      background:
+        linear-gradient(135deg, rgba(101,214,232,0.12), rgba(243,177,95,0.10)),
+        var(--panel-strong);
+      box-shadow: var(--shadow);
+    }
+    .cta-box h2 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.02;
+      max-width: 18ch;
+    }
+    .cta-box p {
+      margin: 12px 0 0;
+      color: #c3d4da;
+      max-width: 62ch;
+      line-height: 1.75;
+    }
+
+    .footer {
+      padding: 0 0 40px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .demo-link {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-inner,
+      .grid-2,
+      .metrics,
+      .stepper,
+      .use-cases,
+      .proof-strip,
+      .audience {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .hero h1 { max-width: 12ch; }
+      .visual { min-height: 480px; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner,
+      .hero-inner,
+      .grid-2,
+      .metrics,
+      .stepper,
+      .use-cases,
+      .proof-strip,
+      .audience {
+        grid-template-columns: 1fr;
+      }
+      .topbar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav { justify-content: flex-start; }
+      .hero { padding-top: 30px; }
+      .hero h1 { font-size: clamp(2.6rem, 14vw, 4rem); }
+      .band-inner, .cta-box { padding: 22px 18px; }
+      .visual { min-height: 420px; }
+      .visual-panel { left: 14px; right: 14px; bottom: 14px; padding: 14px; }
+      .mini-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <div>
+            <div class="brand-title">miTch</div>
+            <div class="brand-sub">The Forgetting Layer</div>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Primary">
+          <a href="#problem">Problem</a>
+          <a href="#solution">Solution</a>
+          <a href="#proof">Proof</a>
+          <a href="https://late-bloomer420.github.io/miTch/" target="_blank" rel="noreferrer">Live demo</a>
+          <a class="pill accent" href="#final-cta">Request a pilot</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-inner">
+          <div>
+            <span class="eyebrow">Privacy firewall for identity proofs</span>
+            <h1>Prove only what is needed.</h1>
+            <p class="hero-copy">
+              miTch sits between the wallet and the verifier. It turns identity checks into
+              minimal proofs, keeps raw data out of the request path, and records what happened
+              in a clear audit trail.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="https://late-bloomer420.github.io/miTch/" target="_blank" rel="noreferrer">Open the live demo</a>
+              <a class="button secondary" href="#solution">See how it works</a>
+            </div>
+            <div class="hero-meta" aria-label="Key properties">
+              <span class="pill">Selective disclosure</span>
+              <span class="pill">Fail-closed policy</span>
+              <span class="pill">Full audit trail</span>
+              <span class="pill">No raw PII custody</span>
+            </div>
+          </div>
+
+          <figure class="visual">
+            <img class="visual-media" src="./hero.png" alt="miTch wallet concept image showing selective disclosure between requested and withheld identity claims">
+            <figcaption class="visual-panel">
+              <div class="mini-row">
+                <div class="mini">
+                  <div class="mini-label">Requested</div>
+                  <div class="mini-value">Age, status, eligibility</div>
+                </div>
+                <div class="mini">
+                  <div class="mini-label">Allowed</div>
+                  <div class="mini-value">Minimum proof only</div>
+                </div>
+                <div class="mini">
+                  <div class="mini-label">Withheld</div>
+                  <div class="mini-value">Raw identity stays put</div>
+                </div>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="band" id="problem">
+        <div class="band-inner">
+          <h2 class="section-title">Identity checks should not become data leaks.</h2>
+          <p class="section-lead">
+            Most verification flows still ask for too much. That creates retention risk,
+            compliance overhead, and a trust problem that starts before the user has even
+            consented.
+          </p>
+          <div class="metrics">
+            <div class="metric"><strong>Over-collection</strong><span>The verifier often gets a copy when a proof would suffice.</span></div>
+            <div class="metric"><strong>Retention risk</strong><span>Raw identity data creates a liability that outlives the transaction.</span></div>
+            <div class="metric"><strong>Policy drift</strong><span>Promised controls are weak if the flow is already too broad.</span></div>
+            <div class="metric"><strong>Trust loss</strong><span>Users notice when a simple check turns into a permanent record.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="solution">
+        <div class="band-inner">
+          <h2 class="section-title">Built to mediate proofs, not store identities.</h2>
+          <p class="section-lead">
+            miTch evaluates policy locally, reduces disclosure to the minimum, and makes every
+            decision visible. The result is a control surface for trust, not another data broker.
+          </p>
+          <div class="grid-2">
+            <div class="info-box">
+              <h3>What miTch enforces</h3>
+              <ul>
+                <li>Selective disclosure by design</li>
+                <li>Fail-closed handling of ambiguity</li>
+                <li>Decision capsules and audit evidence</li>
+                <li>Cross-verifier unlinkability</li>
+              </ul>
+            </div>
+            <div class="info-box">
+              <h3>What users get</h3>
+              <ul>
+                <li>Less data handed over in every session</li>
+                <li>Clear consent with visible boundaries</li>
+                <li>A system that forgets once the purpose is done</li>
+                <li>Proof without unnecessary exposure</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="band-inner">
+          <h2 class="section-title">One request in. One minimal proof out.</h2>
+          <p class="section-lead">
+            The flow is intentionally simple. The verifier asks. The policy engine checks. The wallet
+            reveals only what is allowed. The audit trail records the result.
+          </p>
+          <div class="stepper">
+            <div class="step"><b>1</b><span>Verifier asks for a claim.</span></div>
+            <div class="step"><b>2</b><span>miTch checks policy locally.</span></div>
+            <div class="step"><b>3</b><span>Wallet releases only the allowed proof.</span></div>
+            <div class="step"><b>4</b><span>The decision is logged and auditable.</span></div>
+            <div class="step"><b>5</b><span>Unused data stays withheld.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="band-inner">
+          <h2 class="section-title">Where selective disclosure matters most.</h2>
+          <p class="section-lead">
+            The same pattern scales across regulated and high-trust flows. The verifier gets the
+            answer, not the entire person.
+          </p>
+          <div class="use-cases">
+            <article class="use-case">
+              <h3>Age verification</h3>
+              <p>Prove eligibility without handing over birth date, address, or a persistent identifier.</p>
+            </article>
+            <article class="use-case">
+              <h3>Healthcare access</h3>
+              <p>Support sensitive checks with narrow disclosure and a clear audit boundary.</p>
+            </article>
+            <article class="use-case">
+              <h3>Professional eligibility</h3>
+              <p>Show role or license status without exposing the full employment record.</p>
+            </article>
+            <article class="use-case">
+              <h3>Public-sector authorization</h3>
+              <p>Confirm the right attribute for the right purpose, and nothing more.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="proof">
+        <div class="band-inner">
+          <h2 class="section-title">This is not a concept. It is a working system.</h2>
+          <p class="section-lead">
+            The launch story should show implementation proof, not only claims. That means a live demo,
+            visible policy behavior, and an audit model that is easy to understand.
+          </p>
+          <div class="proof-strip">
+            <article class="proof">
+              <span class="tag">Live demo</span>
+              <p>Use the GitHub Pages demo to show the system in motion.</p>
+            </article>
+            <article class="proof">
+              <span class="tag">Policy engine</span>
+              <p>Make the fail-closed decision visible in the flow.</p>
+            </article>
+            <article class="proof">
+              <span class="tag">Audit trail</span>
+              <p>Show the user that the decision is recorded, not hidden.</p>
+            </article>
+            <article class="proof">
+              <span class="tag">Coverage</span>
+              <p>Back the story with the repo's actual tests and implementation.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="band-inner">
+          <h2 class="section-title">Built for the people who need to buy the story.</h2>
+          <p class="section-lead">
+            Different audiences care about different proof points. Keep the message narrow and concrete.
+          </p>
+          <div class="audience">
+            <article class="audience-card">
+              <h3>Enterprise</h3>
+              <p>Reduce exposure, retention risk, and privacy overhead in regulated flows.</p>
+            </article>
+            <article class="audience-card">
+              <h3>Product teams</h3>
+              <p>Ship proof flows without building a data-hoarding layer.</p>
+            </article>
+            <article class="audience-card">
+              <h3>Public sector</h3>
+              <p>Support identity checks without centralizing unnecessary personal data.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="band-inner">
+          <h2 class="section-title">Questions buyers will ask.</h2>
+          <p class="section-lead">
+            Keep the answers short. The page should remove doubt, not create another product brochure.
+          </p>
+          <details>
+            <summary>Is miTch a wallet?</summary>
+            <p>No. It works with wallets and mediates disclosure between the wallet and the verifier.</p>
+          </details>
+          <details>
+            <summary>Does miTch store identity data?</summary>
+            <p>No central identity custody. The design is built around minimization, not accumulation.</p>
+          </details>
+          <details>
+            <summary>What happens when policy is unclear?</summary>
+            <p>The system fails closed. Ambiguity is not an allow signal.</p>
+          </details>
+          <details>
+            <summary>How does auditability work?</summary>
+            <p>Every decision is logged as a clear event, so the disclosure story remains explainable.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="cta-band" id="final-cta">
+        <div class="cta-box">
+          <span class="eyebrow">Next step</span>
+          <h2>Make the next identity flow smaller.</h2>
+          <p>
+            Use miTch when the verifier needs a proof, not a copy. Open the live demo to see the
+            flow in action, or use this structure as the basis for a pilot conversation.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://late-bloomer420.github.io/miTch/" target="_blank" rel="noreferrer">Open the live demo</a>
+            <a class="button secondary" href="./03-launch-script.md">Read the launch script</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>miTch - The Forgetting Layer</span>
+        <span><a class="demo-link" href="https://late-bloomer420.github.io/miTch/" target="_blank" rel="noreferrer">https://late-bloomer420.github.io/miTch/</a></span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
