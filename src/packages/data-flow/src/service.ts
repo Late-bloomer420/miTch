@@ -1,4 +1,4 @@
-import type { AuditLogEntry, AuditEventType } from '@mitch/shared-types';
+import type { AuditLogEntry, AuditEventType, IdentityFirewallMetadata } from '@mitch/shared-types';
 import type { DataFlowTransaction, DataFlowEvent } from './types';
 import { eventLabel } from './labels';
 
@@ -51,6 +51,12 @@ export class DataFlowService {
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
       const verifierId = (vpEvent?.metadata?.verifier_did as string) ?? null;
+      const identityAccesses = group
+        .filter(e => e.action === 'IDENTITY_ACCESS_DETECTED')
+        .map(e => e.metadata)
+        .filter((metadata): metadata is Record<string, unknown> => !!metadata)
+        .map(metadata => metadata as unknown as IdentityFirewallMetadata)
+        .map(({ decision_id: _decisionId, ...access }) => access);
 
       // Lifecycle
       const keyCreated = group.filter(e => e.action === 'KEY_CREATED');
@@ -89,6 +95,8 @@ export class DataFlowService {
         provenClaims,
         credentialTypes,
         usedZKP,
+        identityAccesses,
+        identityAccessCount: identityAccesses.length,
         lifecycle: {
           keysCreated,
           keysDestroyed,

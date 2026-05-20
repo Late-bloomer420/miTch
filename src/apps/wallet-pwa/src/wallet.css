@@ -1059,6 +1059,15 @@
     border-radius: 6px;
 }
 
+.dataflow-card__identity {
+    font-size: 11px;
+    font-weight: 600;
+    color: #7c2d12;
+    background: #fff7ed;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
 .dataflow-card__toggle {
     font-size: 10px;
     color: #999;
@@ -1086,6 +1095,11 @@
 .dataflow-card__tag--proven {
     background: #f0fdf4;
     color: #15803d;
+}
+
+.dataflow-card__tag--identity {
+    background: #fff7ed;
+    color: #9a3412;
 }
 
 .dataflow-card__tag--none {
@@ -1121,6 +1135,7 @@
 .dataflow-event__dot--presentation { background: #8b5cf6; }
 .dataflow-event__dot--policy { background: #6b7280; }
 .dataflow-event__dot--consent { background: #10b981; }
+.dataflow-event__dot--identity { background: #ea580c; }
 
 .dataflow-event__time {
     color: #888;

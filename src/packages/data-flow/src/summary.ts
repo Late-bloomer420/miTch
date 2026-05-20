@@ -54,5 +54,13 @@ export function summarizeTransaction(txn: DataFlowTransaction): TransactionSumma
     points.push('Keine Rohdaten geteilt');
   }
 
+  if (txn.identityAccessCount > 0) {
+    if (txn.identityAccessCount === 1) {
+      points.push('1 Identifier-Zugriff sichtbar gemacht');
+    } else {
+      points.push(`${txn.identityAccessCount} Identifier-Zugriffe sichtbar gemacht`);
+    }
+  }
+
   return { points };
 }

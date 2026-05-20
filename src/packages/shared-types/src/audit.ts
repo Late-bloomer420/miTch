@@ -19,7 +19,51 @@ export type AuditEventType =
     | 'POLICY_EVALUATED'     // Policy check performed
     | 'POLICY_BLOCKED'       // Request blocked by policy
     | 'USER_CONSENT_GRANTED' // User approved credential sharing
-    | 'USER_CONSENT_DENIED'; // User denied credential sharing
+    | 'USER_CONSENT_DENIED'  // User denied credential sharing
+    | 'IDENTITY_ACCESS_DETECTED'; // Identifier/tracker surface observed
+
+export type IdentityAccessType =
+    | 'cookie'
+    | 'storage'
+    | 'browser_api'
+    | 'network_metadata'
+    | 'tracker_domain'
+    | 'fingerprinting_signal';
+
+export type IdentityAccessSurface =
+    | 'document.cookie'
+    | 'localStorage'
+    | 'sessionStorage'
+    | 'navigator.userAgent'
+    | 'network'
+    | 'unknown';
+
+export type IdentityFieldClass = 'identifier' | 'tracking' | 'fingerprint' | 'metadata';
+
+export type IdentityPersistence = 'session' | 'device' | 'cloud' | 'unknown';
+
+export type IdentityLinkability = 'none' | 'session' | 'cross_session' | 'cross_context';
+
+export type IdentitySeverity = 'info' | 'warning' | 'critical';
+
+/**
+ * PII-minimal metadata for Identity Firewall transparency events.
+ * Must not contain raw cookie values, IP addresses, user-agent strings,
+ * device IDs, credential IDs, or full URLs with path/query/fragment.
+ */
+export interface IdentityFirewallMetadata {
+    decision_id: string;
+    verifier_did?: DID;
+    access_type: IdentityAccessType;
+    surface: IdentityAccessSurface;
+    actor_label: string;
+    field_class: IdentityFieldClass;
+    persistence: IdentityPersistence;
+    linkability: IdentityLinkability;
+    severity: IdentitySeverity;
+    blocked: false;
+    source: 'privacy_audit_service' | 'wallet_runtime';
+}
 
 /**
  * Audit log entry with hash chain

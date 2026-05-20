@@ -2,7 +2,7 @@
 
 Stand: 2026-05-20
 Backlog-Bezug: U-20, U-21
-Status: Review 1 locked, Review 2 pending
+Status: Implementation v1 complete, Abschlussreview pending
 
 ## Sprint-Ziel
 
@@ -458,6 +458,32 @@ Reviewer/Security gibt frei, wenn:
 - Es keine neuen stabilen Cross-RP-Korrelatoren gibt.
 - Failure der Identity-Firewall-Anzeige keinen Proof-Flow blockiert und keine Rohdaten offenlegt.
 
+## Implementation v1 vom 2026-05-20
+
+Umgesetzt:
+
+- `IDENTITY_ACCESS_DETECTED` als eigener Audit-Event-Typ.
+- PII-minimale `IdentityFirewallMetadata`-Typen in `shared-types`.
+- `DataFlowTransaction.identityAccesses` und `identityAccessCount`.
+- DataFlow-Label und Summary fuer Identity-Firewall-Ereignisse.
+- WalletService-Methode `recordIdentityFirewallEvents(...)`.
+- Anbindung in `App.handlePrivacyAuditAccept(...)` vor Proof-Erzeugung.
+- DataFlowPanel-Badge, Tag und Timeline-Dot fuer Identity-Firewall-Ereignisse.
+- Tests fuer shared-types, data-flow, WalletService und DataFlowPanel.
+
+Validierung:
+
+- `@mitch/shared-types` TypeScript-Lint gruen.
+- `shared-types/test/runtime-validation.test.ts`: 63 Tests gruen ueber direkte Vitest-Binary.
+- `data-flow` Source-Typecheck gruen ueber temporaere Source-Alias-tsconfig.
+- `data-flow` Tests: 48 Tests gruen ueber direkte Vitest-Binary mit temporaerer Alias-Config.
+- Wallet-PWA geaenderte Dateien transpilieren per esbuild.
+
+Offene lokale Tooling-Einschraenkung:
+
+- `pnpm install --frozen-lockfile` scheitert lokal mit `ENOENT` auf `_tmp_*`.
+- `data-flow` und `wallet-pwa` Package-Filter-Tests koennen deshalb nicht ueber ihre normalen Package-Scripts laufen, weil lokale `node_modules`-Links fuer Vitest/jsdom fehlen.
+
 ## Nicht im MVP
 
 - Keine vollstaendige Browser-Extension.
@@ -469,10 +495,10 @@ Reviewer/Security gibt frei, wenn:
 
 ## Naechster Schritt
 
-Review 2 vorbereiten:
+Abschlussreview vorbereiten:
 
-1. Typ-Erweiterungen in `shared-types` und `data-flow` exakt festlegen.
-2. Mapping von `TrackingPoint` zu `IDENTITY_ACCESS_DETECTED` definieren.
-3. WalletService-Methode fuer auditierbare Identity-Firewall-Events spezifizieren.
-4. UI-Rendering in `DataFlowPanel` und CSS-Klassen festlegen.
-5. Merge-blockierende Tests fuer shared-types, data-flow und wallet-pwa definieren.
+1. Code-Diff gegen Review-1- und Review-2-Kriterien pruefen.
+2. Normale Package-Tests ausfuehren, sobald pnpm-Workspace-Linking lokal repariert ist.
+3. Product/Policy bestaetigt UI-Text: Sichtbarmachung, kein Blocking-Versprechen.
+4. Reviewer/Security prueft Metadata auf Roh-Identifier und Cross-RP-Korrelatoren.
+5. Danach U-20/U-21 im Backlog je nach Review-Ergebnis als MVP-complete markieren.

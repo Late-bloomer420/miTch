@@ -260,7 +260,7 @@ export default function App() {
         }
     };
 
-    const handlePrivacyAuditAccept = (context: PrivacyContext) => {
+    const handlePrivacyAuditAccept = async (context: PrivacyContext) => {
         const consent: PrivacyConsent = {
             status: 'ACCEPT',
             acceptedTrackers: context.detectedTrackers.map(t => t.actor),
@@ -270,7 +270,23 @@ export default function App() {
         setPrivacyConsent(consent);
         setShowPrivacyAudit(false);
         addLog(`🛡️ Acknowledged tracking by: ${consent.acceptedTrackers.join(', ')}`, 'success');
-        proceedWithProof(evaluationResult || undefined);
+
+        try {
+            const capsule = evaluationResult?.decisionCapsule;
+            const entries = await walletRef.current.recordIdentityFirewallEvents(
+                capsule?.decision_id,
+                capsule?.verifier_did,
+                context.detectedTrackers
+            );
+            if (entries.length > 0) {
+                addLog(`🛡️ Identity Firewall logged ${entries.length} transparency events`, 'info');
+            }
+        } catch (error) {
+            console.warn('[IdentityFirewall] Failed to record transparency events:', error);
+            addLog('⚠️ Identity Firewall logging unavailable; continuing proof flow', 'warning');
+        }
+
+        await proceedWithProof(evaluationResult || undefined);
     };
 
     const handleMultiProofDemo = async () => {

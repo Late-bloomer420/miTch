@@ -11,7 +11,11 @@ import {
     DecisionCapsule,
     AuditLogEntry,
     AuditLogExport,
-    StoredCredentialMetadata
+    StoredCredentialMetadata,
+    IdentityFirewallMetadata,
+    IdentityPersistence,
+    IdentityLinkability,
+    IdentitySeverity
 } from '@mitch/shared-types';
 import {
     EphemeralKey,
@@ -34,6 +38,7 @@ import {
     CommonPredicates,
     type PredicateRequest
 } from '@mitch/predicates';
+import type { TrackingPoint } from './PrivacyAuditService';
 
 // ─── mdoc base64 helpers ──────────────────────────────────────────────────
 function uint8ArrayToBase64(data: Uint8Array): string {
@@ -53,6 +58,98 @@ const POLICY_STORAGE_KEY = 'mitch_user_policy';
 
 // Default Policy for the PoC (Now persistent)
 const DEFAULT_POLICY: PolicyManifest = DEMO_POLICY;
+
+function sanitizeIdentityActorLabel(actor: string | undefined): string {
+    const fallback = 'Unknown actor';
+    const raw = (actor ?? '').trim();
+    if (!raw) return fallback;
+
+    try {
+        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) {
+            const parsed = new URL(raw);
+            return parsed.hostname.substring(0, 80) || fallback;
+        }
+    } catch {
+        // Fall through to conservative string cleanup.
+    }
+
+    const withoutQuery = raw.replace(/[?#].*$/, '');
+    const withoutPath = withoutQuery.includes('/') && withoutQuery.includes('.')
+        ? withoutQuery.split('/')[0]
+        : withoutQuery;
+    return (withoutPath.trim() || fallback).substring(0, 80);
+}
+
+function mapRiskLevel(riskLevel: TrackingPoint['riskLevel']): IdentitySeverity {
+    if (riskLevel === 'HIGH') return 'critical';
+    if (riskLevel === 'MEDIUM') return 'warning';
+    return 'info';
+}
+
+function mapPersistence(tracker: TrackingPoint): IdentityPersistence {
+    const persistences = tracker.dataExposed.map(d => d.persistence);
+    if (persistences.includes('CLOUD')) return 'cloud';
+    if (persistences.includes('DEVICE')) return 'device';
+    if (persistences.includes('SESSION')) return 'session';
+    return 'unknown';
+}
+
+function mapLinkability(tracker: TrackingPoint): IdentityLinkability {
+    const linkable = tracker.dataExposed.filter(d => d.linkable);
+    if (linkable.length === 0) return 'none';
+    if (linkable.some(d => d.persistence === 'CLOUD')) return 'cross_context';
+    if (linkable.some(d => d.persistence === 'DEVICE')) return 'cross_session';
+    return 'session';
+}
+
+function mapTrackingPointToIdentityMetadata(
+    decisionId: string,
+    verifierDid: string | undefined,
+    tracker: TrackingPoint
+): IdentityFirewallMetadata {
+    const base = {
+        decision_id: decisionId,
+        ...(verifierDid ? { verifier_did: verifierDid } : {}),
+        actor_label: sanitizeIdentityActorLabel(tracker.actor),
+        persistence: mapPersistence(tracker),
+        linkability: mapLinkability(tracker),
+        severity: mapRiskLevel(tracker.riskLevel),
+        blocked: false as const,
+        source: 'privacy_audit_service' as const,
+    };
+
+    switch (tracker.layer) {
+        case 'BROWSER':
+            return {
+                ...base,
+                access_type: 'browser_api',
+                surface: 'navigator.userAgent',
+                field_class: 'fingerprint',
+            };
+        case 'NETWORK':
+            return {
+                ...base,
+                access_type: 'network_metadata',
+                surface: 'network',
+                field_class: 'metadata',
+            };
+        case 'OS':
+            return {
+                ...base,
+                access_type: 'fingerprinting_signal',
+                surface: 'unknown',
+                field_class: 'fingerprint',
+            };
+        case 'SDK':
+        case 'SERVER':
+            return {
+                ...base,
+                access_type: 'tracker_domain',
+                surface: 'unknown',
+                field_class: 'tracking',
+            };
+    }
+}
 
 const SEED_CREDENTIAL = {
     id: 'vc-age-789',
@@ -1070,6 +1167,30 @@ export class WalletService {
             issuer: issuerDid,
             docType,
         });
+    }
+
+    /**
+     * Record PII-minimal Identity Firewall transparency events for a proof flow.
+     */
+    async recordIdentityFirewallEvents(
+        decisionId: string | undefined,
+        verifierDid: string | undefined,
+        trackers: TrackingPoint[]
+    ): Promise<AuditLogEntry[]> {
+        if (!decisionId) return [];
+
+        const entries: AuditLogEntry[] = [];
+        for (const tracker of trackers) {
+            const metadata = mapTrackingPointToIdentityMetadata(decisionId, verifierDid, tracker);
+            const entry = await this.auditLog.append(
+                'IDENTITY_ACCESS_DETECTED',
+                `identity-firewall:${metadata.access_type}`,
+                metadata as unknown as Record<string, unknown>
+            );
+            entries.push(entry);
+        }
+
+        return entries;
     }
 
     /**
