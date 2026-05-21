@@ -30,6 +30,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { fileURLToPath } from 'url';
 import { registerEvaluateDisclosure } from './tools/evaluate-disclosure.js';
 
 const SERVER_NAME = 'mitch-mcp-server';
@@ -74,8 +75,15 @@ async function main(): Promise<void> {
   process.stderr.write(`[mitch-mcp] connected — waiting for requests\n`);
 }
 
-main().catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err);
-  process.stderr.write(`[mitch-mcp] fatal: ${message}\n`);
-  process.exit(1);
-});
+// Only run main() when this module is the entry point — not when imported (e.g. by tests).
+// Compares the script path that Node was launched with against this module's own URL.
+const isEntryPoint =
+  process.argv[1] !== undefined && process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isEntryPoint) {
+  main().catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`[mitch-mcp] fatal: ${message}\n`);
+    process.exit(1);
+  });
+}
