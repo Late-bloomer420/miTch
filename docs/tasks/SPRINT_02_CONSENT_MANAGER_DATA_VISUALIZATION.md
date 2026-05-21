@@ -1,7 +1,7 @@
 # Sprint 2: Consent Manager Data Visualization
 
 Stand: 2026-05-21
-Status: Implementation v4 complete
+Status: Implementation v5 complete
 
 ## Ziel
 
@@ -231,3 +231,20 @@ Sicherheitsentscheidung:
 Was noch fehlt:
 
 - Pagination oder Archivierung, falls die History wachsen soll
+
+## Implementation v5
+
+Umgesetzt zusaetzlich:
+
+- Pagination fuer die Receipt-History-Liste
+- stabilere Navigation bei groesseren Historien
+
+Was die fu?nfte Version leistet:
+
+- begrenzt die sichtbare Liste auf kleinere Seiten
+- entkoppelt Anzeige und Export nicht von der gesammelten History
+- behält die Detailansicht und den Filterfluss unverändert
+
+Was noch fehlt:
+
+- Archivierung oder Server-Export, falls die History langfristig wachsen soll

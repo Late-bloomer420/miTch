@@ -79,6 +79,8 @@ export function ConsentManagerPanel({
   const [verifierFilter, setVerifierFilter] = useState('');
   const [timeframe, setTimeframe] = useState<'all' | '24h' | '7d' | '30d'>('all');
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 5;
 
   const model = buildConsentManagerViewModel({
     request,
@@ -98,15 +100,30 @@ export function ConsentManagerPanel({
     });
   }, [receiptHistory, timeframe, verifierFilter]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredHistory.length / pageSize));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pagedHistory = useMemo(
+    () => filteredHistory.slice(currentPage * pageSize, currentPage * pageSize + pageSize),
+    [currentPage, filteredHistory]
+  );
+
   useEffect(() => {
     if (filteredHistory.length === 0) {
       setSelectedReceiptId(null);
+      setPage(0);
       return;
     }
     if (!selectedReceiptId || !filteredHistory.some(entry => entry.receipt.id === selectedReceiptId)) {
       setSelectedReceiptId(filteredHistory[0].receipt.id);
     }
-  }, [filteredHistory, selectedReceiptId]);
+    if (page !== currentPage) {
+      setPage(currentPage);
+    }
+  }, [currentPage, filteredHistory, page, selectedReceiptId]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [timeframe, verifierFilter]);
 
   const selectedReceipt = filteredHistory.find(entry => entry.receipt.id === selectedReceiptId) ?? null;
 
@@ -266,7 +283,7 @@ export function ConsentManagerPanel({
         </div>
         {filteredHistory.length > 0 ? (
           <div className="consent-manager-panel__history">
-            {filteredHistory.map(entry => {
+            {pagedHistory.map(entry => {
               const isSelected = entry.receipt.id === selectedReceiptId;
               return (
                 <button
@@ -303,6 +320,27 @@ export function ConsentManagerPanel({
           </div>
         ) : (
           <div className="consent-manager-panel__empty">No stored consent receipts yet</div>
+        )}
+        {filteredHistory.length > pageSize && (
+          <div className="consent-manager-panel__pagination">
+            <button
+              className="btn-demo-secondary"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={currentPage === 0}
+            >
+              Previous
+            </button>
+            <span className="consent-manager-panel__pagination-label">
+              Page {currentPage + 1} of {pageCount}
+            </span>
+            <button
+              className="btn-demo-secondary"
+              onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+              disabled={currentPage >= pageCount - 1}
+            >
+              Next
+            </button>
+          </div>
         )}
       </article>
 

@@ -169,3 +169,4 @@ Implementation notes:
 - receipt history is stored in session-scoped storage, not long-lived localStorage
 - UI must keep receipts free of raw PII
 - receipt history is display-only metadata until export/pagination work is added
+- pagination limits the visible history without changing the underlying exported set

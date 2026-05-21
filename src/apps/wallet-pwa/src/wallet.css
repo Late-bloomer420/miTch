@@ -1417,6 +1417,20 @@
     color: #92400e;
 }
 
+.consent-manager-panel__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.consent-manager-panel__pagination-label {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 @media (max-width: 720px) {
     .consent-manager-panel__summary {
         grid-template-columns: 1fr;
@@ -1453,5 +1467,14 @@
     .consent-manager-panel__filter-select {
         width: 100%;
         min-width: 0;
+    }
+
+    .consent-manager-panel__pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .consent-manager-panel__pagination .btn-demo-secondary {
+        width: 100%;
     }
 }
