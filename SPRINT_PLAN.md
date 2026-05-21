@@ -372,6 +372,44 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 
 ---
 
+## Block D — Compliance & Transparency (Erasure & Reporting)
+
+**Grundlage:** EUDI CIR 2024/2982 Art. 6 & 7, ARF (I9) Interface
+**Erstellt:** 2026-05-21
+**Ziel:** Umsetzung der regulatorischen Anforderungen für Datenlöschung und Meldemechanismen.
+
+---
+
+#### E-40: Data Erasure Request (I9 Interface)
+
+- **Status:** Planned
+- **Problem:** CIR 2024/2982 Art. 6 mandatiert, dass der User vom Wallet aus die Löschung seiner Daten beim Verifier anfordern kann. miTch hat aktuell keine Schnittstelle dafür.
+- **Konkreter Fix:** 
+  1. `WalletService.requestDataErasure(decisionId: string)` implementieren.
+  2. Authentifizierter OID4VP-Initiated Flow zum `erasure_endpoint` des Verifiers.
+  3. Payload: VP (PID) + `transaction_data` mit `transaction_type: "data_erasure"`.
+  4. UI: "Request Erasure" Button im `DataFlowPanel`.
+- **Aufwand:** M
+- **Abhängigkeiten:** keine
+- **Test-Strategie:** E2E-Test mit `verifier-backend` Mock-Endpoint. Bestätigung der Löschungsanforderung im Audit-Log.
+
+---
+
+#### E-41: Reporting Mechanism for Suspicious RPs
+
+- **Status:** Planned
+- **Problem:** CIR 2024/2982 Art. 7 mandatiert einen Meldeweg für verdächtige Relying Parties an Aufsichtsbehörden.
+- **Konkreter Fix:**
+  1. `WalletService.reportRelyingParty(decisionId: string, reason: string)` implementieren.
+  2. Report-Objekt (RP-Metadata, Attributes, Reason, Timestamp) erstellen und signieren.
+  3. POST an einen (Mock) Supervisory Authority Endpoint.
+  4. UI: "Report Suspicious" Button in `ConsentModal` und `DataFlowPanel`.
+- **Aufwand:** M
+- **Abhängigkeiten:** keine
+- **Test-Strategie:** Mock-Authority erhält valides, signiertes Report-Objekt.
+
+---
+
 ## Reihenfolge-Zusammenfassung
 
 ```
@@ -394,6 +432,10 @@ Block B (Phase 6 Gate, diese Woche):
   6. F-04 — EphemeralKey-Interface           (M)
   7. F-15 — Test-Coverage                    (M, braucht F-01-Entscheidung)
   8. F-16 — WalletService-Plan in Roadmap    (S Doku, L Implementierung = Backlog)
+
+Block D (Compliance & Transparency, diese Woche):
+  1. E-40 — Data Erasure (I9)        (M, regulatorisch mandatory)
+  2. E-41 — Reporting Mechanism      (M, regulatorisch mandatory)
 
 Block C (Backlog):
   F-07, F-14 — kein Pilot-Blocker

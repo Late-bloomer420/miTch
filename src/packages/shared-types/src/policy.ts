@@ -201,6 +201,18 @@ export interface VerifierRequest {
     /** Optional callback URL if different from origin */
     serviceEndpoint?: string;
 
+    /** 
+     * CIR 2024/2982 (I9): Endpoint for Data Erasure Requests.
+     * If provided, the wallet can use this to initiate a deletion request.
+     */
+    erasureEndpoint?: string;
+
+    /**
+     * CIR 2024/2982 Art. 7: Endpoint for reporting suspicious activity to authorities.
+     * Can be provided by the RP or discovered via trust registries.
+     */
+    reportEndpoint?: string;
+
     /** T-88: Ephemeral Key for SME Kit (Client-Side Encryption) */
     ephemeralResponseKey?: CryptoKey;
 
@@ -310,6 +322,11 @@ export interface DecisionCapsule {
     expires_at: string; // ISO 8601
     wallet_attestation?: string; // Signature or TEE proof
     presence_proof?: string; // WebAuthn/Passkey signature over decision_id
+
+    /** CIR 2024/2982: Persisted erasure endpoint for later use */
+    erasure_endpoint?: string;
+    /** CIR 2024/2982: Persisted report endpoint for later use */
+    report_endpoint?: string;
 
     // Legacy fields (deprecated, for backward compatibility)
     allowed_claims?: string[];

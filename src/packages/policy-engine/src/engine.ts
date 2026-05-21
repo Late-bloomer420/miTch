@@ -658,6 +658,11 @@ export class PolicyEngine {
                 requires_presence: reasonCodes.includes(ReasonCode.PRESENCE_REQUIRED),
                 // Tight Expiry (5 minutes) to prevent replay of this decision
                 expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+
+                // CIR 2024/2982: Capture endpoints for later use in transaction history
+                erasure_endpoint: request.erasureEndpoint,
+                report_endpoint: request.reportEndpoint,
+
                 // Keep legacy fields for PWA compatibility
                 allowed_claims: authorizedRequirements[0]?.allowed_claims || [],
                 proven_claims: authorizedRequirements[0]?.proven_claims || [],

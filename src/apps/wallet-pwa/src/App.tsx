@@ -167,7 +167,9 @@ export default function App() {
             requestedClaims: [],
             requestedProvenClaims: ['age >= 18'],
             origin: CONFIG.VERIFIER_ENDPOINT.replace(/\/present$/, ''),
-            serviceEndpoint: CONFIG.VERIFIER_ENDPOINT
+            serviceEndpoint: CONFIG.VERIFIER_ENDPOINT,
+            erasureEndpoint: 'https://verifier.mitch.demo/api/v1/erasure',
+            reportEndpoint: 'https://authority.mitch.demo/api/v1/report'
         };
         setCurrentRequest(request);
 
@@ -239,6 +241,15 @@ export default function App() {
 
                 if (response.ok) {
                     addLog('✅ Verifier acknowledged receipt', 'success');
+                    
+                    // Log the actual transmission with endpoints for later transparency
+                    await walletRef.current.logVpSent(result.decisionCapsule!.decision_id, {
+                        verifier_id: result.decisionCapsule!.verifier_did,
+                        decision_id: result.decisionCapsule!.decision_id,
+                        erasure_endpoint: result.decisionCapsule!.erasure_endpoint,
+                        report_endpoint: result.decisionCapsule!.report_endpoint,
+                        status: 'SUCCESS'
+                    });
                 } else {
                     const error = await response.json();
                     addLog(`⚠️ Verifier rejected: ${error.details || error.error}`, 'warning');
@@ -964,7 +975,18 @@ export default function App() {
                     {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
                 </button>
                 {showDataFlow && (
-                    <DataFlowPanel entries={walletRef.current.getRecentAuditLogs(200)} />
+                    <DataFlowPanel 
+                        entries={walletRef.current.getRecentAuditLogs(200)} 
+                        onAction={async (type, decisionId) => {
+                            if (type === 'erasure') {
+                                const res = await walletRef.current.requestDataErasure(decisionId);
+                                if (res.success) addLog(res.message, 'success');
+                            } else if (type === 'report') {
+                                const res = await walletRef.current.reportRelyingParty(decisionId, 'User reported via UI');
+                                if (res.success) addLog(res.message, 'warning');
+                            }
+                        }}
+                    />
                 )}
             </div>
 

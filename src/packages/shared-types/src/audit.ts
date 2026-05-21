@@ -19,7 +19,9 @@ export type AuditEventType =
     | 'POLICY_EVALUATED'     // Policy check performed
     | 'POLICY_BLOCKED'       // Request blocked by policy
     | 'USER_CONSENT_GRANTED' // User approved credential sharing
-    | 'USER_CONSENT_DENIED'; // User denied credential sharing
+    | 'USER_CONSENT_DENIED'  // User denied credential sharing
+    | 'ERASURE_REQUESTED'    // Data erasure request sent to RP (CIR 2024/2982 I9)
+    | 'REPORT_SENT';         // Suspicious RP reported to authority (CIR 2024/2982 Art. 7)
 
 /**
  * Audit log entry with hash chain

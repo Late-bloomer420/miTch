@@ -5,11 +5,12 @@ import type { DataFlowTransaction } from '@mitch/data-flow';
 
 interface DataFlowPanelProps {
   entries: AuditLogEntry[];
+  onAction?: (type: 'erasure' | 'report', decisionId: string) => void;
 }
 
 const service = new DataFlowService();
 
-export const DataFlowPanel: React.FC<DataFlowPanelProps> = ({ entries }) => {
+export const DataFlowPanel: React.FC<DataFlowPanelProps> = ({ entries, onAction }) => {
   const transactions = useMemo(() => service.buildTransactions(entries), [entries]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -34,6 +35,7 @@ export const DataFlowPanel: React.FC<DataFlowPanelProps> = ({ entries }) => {
             onToggle={() =>
               setExpandedId(expandedId === txn.transactionId ? null : txn.transactionId)
             }
+            onAction={onAction}
           />
         ))}
       </div>
@@ -45,9 +47,12 @@ const TransactionCard: React.FC<{
   txn: DataFlowTransaction;
   expanded: boolean;
   onToggle: () => void;
-}> = ({ txn, expanded, onToggle }) => {
+  onAction?: (type: 'erasure' | 'report', decisionId: string) => void;
+}> = ({ txn, expanded, onToggle, onAction }) => {
   const timeStr = new Date(txn.startedAt).toLocaleString();
   const summary = useMemo(() => summarizeTransaction(txn), [txn]);
+
+  const hasErasureEndpoint = txn.events.some(e => e.action === 'VP_SENT' && (e as any).metadata?.erasure_endpoint);
 
   return (
     <div className="dataflow-card">
@@ -101,18 +106,48 @@ const TransactionCard: React.FC<{
       )}
 
       {expanded && (
-        <div className="dataflow-card__timeline">
-          {txn.events.map((evt) => (
-            <div key={evt.auditEntryId} className="dataflow-event">
-              <span className={`dataflow-event__dot dataflow-event__dot--${evt.category}`} />
-              <span className="dataflow-event__time">
-                {new Date(evt.timestamp).toLocaleTimeString()}
-              </span>
-              <span className="dataflow-event__label">{evt.label}</span>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="dataflow-card__timeline">
+            {txn.events.map((evt) => (
+              <div key={evt.auditEntryId} className="dataflow-event">
+                <span className={`dataflow-event__dot dataflow-event__dot--${evt.category}`} />
+                <span className="dataflow-event__time">
+                  {new Date(evt.timestamp).toLocaleTimeString()}
+                </span>
+                <span className="dataflow-event__label">{evt.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="dataflow-card__actions" style={{ marginTop: 15, display: 'flex', gap: 10 }}>
+            <button
+              className="btn-compliance btn-compliance--erasure"
+              onClick={() => onAction?.('erasure', txn.transactionId)}
+              title="Datenlöschung gemäß DSGVO Art. 17 anfordern"
+              disabled={!hasErasureEndpoint}
+              style={{
+                  background: '#1e293b', border: '1px solid #475569', borderRadius: 4,
+                  color: hasErasureEndpoint ? '#cbd5e1' : '#64748b', fontSize: 11,
+                  padding: '4px 8px', cursor: hasErasureEndpoint ? 'pointer' : 'not-allowed'
+              }}
+            >
+              🗑️ Löschung anfordern
+            </button>
+            <button
+              className="btn-compliance btn-compliance--report"
+              onClick={() => onAction?.('report', txn.transactionId)}
+              title="Diesen Verifier der Aufsichtsbehörde melden"
+              style={{
+                  background: '#1e293b', border: '1px solid #475569', borderRadius: 4,
+                  color: '#f87171', fontSize: 11, padding: '4px 8px', cursor: 'pointer'
+              }}
+            >
+              🚩 Melden
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
 };
+

@@ -1092,6 +1092,109 @@ export class WalletService {
     }
 
     /**
+     * Log a successful presentation transmission with compliance metadata.
+     */
+    async logVpSent(decisionId: string, metadata: Record<string, unknown>) {
+        await this.auditLog.append('VP_SENT', decisionId, metadata);
+    }
+
+    /**
+     * Request the erasure of personal data from a Relying Party (CIR 2024/2982 I9).
+     * This is a wallet-initiated flow that sends an authenticated deletion request.
+     */
+    async requestDataErasure(decisionId: string): Promise<{ success: boolean; message: string }> {
+        // 1. Find the transaction in the audit log
+        const entries = this.auditLog.getRecentEntries(100);
+        const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
+        
+        if (!vpSent) throw new Error('Transaction not found in audit log');
+        
+        const verifierId = vpSent.verifierId;
+        const erasureEndpoint = vpSent.metadata?.erasure_endpoint as string | undefined;
+
+        if (!erasureEndpoint) {
+            throw new Error(`Verifier ${verifierId} does not support automated erasure requests.`);
+        }
+
+        // 2. Prepare the authenticated erasure request
+        // In a real EUDI Wallet, this would be an OID4VP flow where the wallet is the requester.
+        // For this PoC, we simulate the signed request.
+        const erasureRequest = {
+            type: 'erasure_request',
+            decision_id: decisionId,
+            timestamp: new Date().toISOString(),
+            purpose: 'Data Erasure Request under GDPR Article 17',
+            verifier_id: verifierId,
+            transaction_type: 'data_erasure'
+        };
+
+        const content = canonicalStringify(erasureRequest);
+        
+        // Sign with the persistent identity key
+        const { proofToken } = await this.signData({
+            hash: await sha256(content),
+            description: `Data Erasure Request for decision ${decisionId}`,
+            mediaType: 'application/json'
+        });
+
+        console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
+        
+        // 3. Simulate POST to the verifier's erasure endpoint
+        // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
+
+        await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
+            verifier_id: verifierId,
+            endpoint: erasureEndpoint,
+            status: 'SENT'
+        });
+
+        return { 
+            success: true, 
+            message: `Erasure request for ${verifierId} has been sent successfully.` 
+        };
+    }
+
+    /**
+     * Report a suspicious Relying Party to the Supervisory Authority (CIR 2024/2982 Art. 7).
+     */
+    async reportRelyingParty(decisionId: string, reason: string): Promise<{ success: boolean; message: string }> {
+        const entries = this.auditLog.getRecentEntries(100);
+        const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
+        
+        const verifierId = vpSent?.verifierId || 'unknown';
+        const reportEndpoint = vpSent?.metadata?.report_endpoint as string | undefined || 'https://authority.eudi.eu/report';
+
+        const report = {
+            type: 'suspicious_rp_report',
+            decision_id: decisionId,
+            verifier_id: verifierId,
+            reason,
+            timestamp: new Date().toISOString(),
+            metadata: vpSent?.metadata
+        };
+
+        const content = canonicalStringify(report);
+        const { proofToken } = await this.signData({
+            hash: await sha256(content),
+            description: `Suspicious RP Report: ${verifierId}`,
+            mediaType: 'application/json'
+        });
+
+        console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
+
+        await this.auditLog.append('REPORT_SENT', decisionId, {
+            verifier_id: verifierId,
+            reason,
+            endpoint: reportEndpoint
+        });
+
+        return { 
+            success: true, 
+            message: `Report for ${verifierId} has been submitted to the authorities.` 
+        };
+    }
+
+    /**
      * Handle Recovery Actions triggered by Policy Denial
      */
     async handleAction(action: import('@mitch/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {

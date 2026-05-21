@@ -34,7 +34,7 @@
 | # | Requirement | Status | Package / Test |
 |---|-------------|--------|----------------|
 | 2979-1 | ECDSA signature over credentials (P-256 / ES256) | ✅ | `shared-crypto/signing.ts` |
-| 2979-2 | Brainpool curves (BSI TR-03116) for qualified signatures | 🟡 | `brainpool.ts` — P256r1 production-ready; P384r1 stub pending BSI param verification |
+| 2979-2 | Brainpool curves (BSI TR-03116) for qualified signatures | ✅ | `brainpool.ts` — P256r1 and P384r1 implemented + verified parameters |
 | 2979-3 | HMAC-SHA-256 MAC for closed-ecosystem integrity | ✅ | `mac-verify.ts` · `macSDJWTDisclosures` |
 | 2979-4 | ECDH key agreement for shared secret derivation | ✅ | `mac-verify.ts:deriveSharedHMACKey` (WebCrypto P-256) + `brainpool.ts:brainpoolECDH` |
 | 2979-5 | JWE encryption (`ECDH-ES+A256GCM`) for credentials at rest | ✅ | `jwe.ts` · G-08 · `jwe.test.ts` |
@@ -70,6 +70,21 @@
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
 | 2982-14 | Credential status check before acceptance | 🟡 | `sd-jwt-vc.ts` reads `status` claim; live revocation list fetch not yet implemented |
 | 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `haip.ts` checks `trustedVerifiers` set; full EUDI Trust List integration pending |
+| 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` + I9 UI Trigger |
+| 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` + UI Trigger |
+| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | 🟡 | `@mitch/mdoc` logic exists; Wallet UI presentation path pending |
+
+---
+
+## CIR 2024/2981 — Certification
+
+| # | Requirement | Status | Package / Test |
+|---|-------------|--------|----------------|
+| 2981-1 | Level of Assurance "High" (LoA High) | 🟡 | Software-only PoC; T-31 (TEE) planned |
+| 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🔴 | Formal evaluation not yet started |
+| 2981-3 | Reuse of existing platform certificates (Annex VI) | 🟡 | Architecture supports platform-native SE; integration pending |
+| 2981-4 | Functional Conformance Assessment (FCAF) readiness | 🟡 | 82% functional coverage against CIRs |
+| 2981-5 | Privacy-by-design / Data minimization auditability | ✅ | `audit-log` + `DataFlowPanel` + Crypto-Shredding |
 
 ---
 
@@ -78,16 +93,18 @@
 | CIR | Total | ✅ | 🟡 | 🔴 |
 |-----|-------|----|----|----|
 | 2024/2977 PID & EAA | 15 | 13 | 2 | 1 |
-| 2024/2979 Integrity & Core | 15 | 13 | 2 | 0 |
-| 2024/2982 Protocols & Interfaces | 15 | 11 | 4 | 0 |
-| **Total** | **45** | **37 (82%)** | **8 (18%)** | **1 (2%)** |
+| 2024/2979 Integrity & Core | 15 | 14 | 1 | 0 |
+| 2024/2982 Protocols & Interfaces | 18 | 13 | 4 | 1 |
+| 2024/2981 Certification | 5 | 1 | 3 | 1 |
+| **Total** | **53** | **41 (77%)** | **10 (19%)** | **3 (4%)** |
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| brainpoolP384r1 verified parameters | P1 | BSI TR-03116 certified parameter set required; HSM preferred |
-| Batch issuance (`/batch_credential`) | P2 | OID4VCI §7 — deferred post-MVP |
+| T-31: TEE/Secure Element integration | P1 | Mandatory for LoA High certification |
+| Proximity Presentation (Offline) | P1 | ISO 18013-5 BLE/NFC/QR path in Wallet |
 | Live status list revocation fetch | P1 | Token Status List RFC — endpoint integration |
 | EUDI Trust List registration | P1 | Qualified issuer/verifier registration via eIDAS node |
+| Batch issuance (`/batch_credential`) | P2 | OID4VCI §7 — deferred post-MVP |
 | Combined `vp_token`+`id_token` wallet flow | P2 | Wallet-PWA wiring needed |
