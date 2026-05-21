@@ -64,12 +64,21 @@ describe('buildConsentManagerViewModel', () => {
     auditHash: 'abc123',
   };
 
+  const consentReceipt = {
+    id: 'consent-001',
+    verifier: 'did:mitch:verifier-liquor-store',
+    purpose: 'Age verification',
+    claimsShared: ['age'],
+    timestamp: '2026-05-21T10:00:01.000Z',
+  };
+
   it('builds the current decision view from request, result and audit entries', () => {
     const model = buildConsentManagerViewModel({
       request,
       result,
       auditEntries: entries,
       privacyConsent,
+      consentReceipt,
     });
 
     expect(model.state).toBe('prompt');
@@ -88,6 +97,7 @@ describe('buildConsentManagerViewModel', () => {
       result: null,
       auditEntries: [],
       privacyConsent: null,
+      consentReceipt: null,
     });
 
     expect(model.state).toBe('idle');

@@ -45,6 +45,27 @@ Evidence:
 - `src/apps/wallet-pwa/src/components/DataFlowPanel.tsx`
 - `src/apps/wallet-pwa/src/__tests__/DataFlowPanel.test.tsx`
 
+### Claim: consent manager combines decision, audit, and receipt history
+
+Evidence:
+
+- `src/apps/wallet-pwa/src/consent-manager/model.ts`
+- `src/apps/wallet-pwa/src/components/ConsentManagerPanel.tsx`
+- `src/apps/wallet-pwa/src/consent-manager/receipt-store.ts`
+- `src/apps/wallet-pwa/src/App.tsx`
+- `src/packages/oid4vp/src/demo-flow.ts`
+- `src/packages/oid4vp/src/__tests__/e2e-flow.test.ts`
+- `docs/tasks/SPRINT_02_CONSENT_MANAGER_DATA_VISUALIZATION.md`
+
+### Claim: receipt history can be exported without raw PII
+
+Evidence:
+
+- `src/apps/wallet-pwa/src/consent-manager/receipt-store.ts`
+- `src/apps/wallet-pwa/src/components/ConsentManagerPanel.tsx`
+- `src/apps/wallet-pwa/src/consent-manager/__tests__/receipt-store.test.ts`
+- `docs/03-architecture/decisions/DECISION_004_Consent_UX.md`
+
 ### Claim: identity and tracker visibility is part of the flow
 
 Evidence:
@@ -83,6 +104,9 @@ These claims should only be used if the supporting context is shown on the page.
 - `minimum proof`
 - `audit evidence`
 - `user-controlled disclosure`
+- `consent receipt history`
+- `session-scoped receipt history`
+- `metadata-only export`
 
 ## What the landing page should link to
 
@@ -90,4 +114,3 @@ These claims should only be used if the supporting context is shown on the page.
 - One technical proof source
 - One design / architecture reference
 - One concise FAQ or terminology note
-

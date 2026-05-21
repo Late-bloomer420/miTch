@@ -1,6 +1,7 @@
 # Sprint 2: Consent Manager Data Visualization
 
 Stand: 2026-05-21
+Status: Implementation v4 complete
 
 ## Ziel
 
@@ -149,3 +150,84 @@ Als naechstes bauen wir zuerst das **Consent Manager View Model** als gemeinsame
 
 Danach folgt die eigentliche UI-Integration.
 
+## Implementation v1
+
+Umgesetzt:
+
+- `src/apps/wallet-pwa/src/consent-manager/model.ts`
+- `src/apps/wallet-pwa/src/components/ConsentManagerPanel.tsx`
+- `src/apps/wallet-pwa/src/consent-manager/__tests__/model.test.ts`
+- `src/apps/wallet-pwa/src/App.tsx`
+- `src/apps/wallet-pwa/src/wallet.css`
+
+Was die erste Version leistet:
+
+- zieht Request, Decision, Audit und Identity-Signals in eine gemeinsame View
+- zeigt `requested`, `allowed`, `withheld`, `decision` und `evidence` in einer Karte
+- nutzt den bestehenden Audit-Snapshot statt eines zweiten Datenpfads
+- bindet die OID4VP Consent Receipt als Verlaufsevidence ein
+
+Was noch fehlt:
+
+- Filter nach Verifier und Zeit
+- Export-Ansicht fuer Consent Manager Evidence
+- eine eigene Detailansicht fuer einzelne Receipts
+
+## Naechster Schritt nach v1
+
+Die naechste Iteration sollte Filterung und Detailansicht fuer die Receipt History ergaenzen, damit der Manager nicht nur den Verlauf, sondern auch gezielt einzelne Verifier- und Zeitfenster zeigt.
+
+## Implementation v2
+
+Umgesetzt zusaetzlich:
+
+- persistente Consent Receipt History im Wallet
+- Receipt-History-Panel mit Outcome, Verifier, Zeit und Claims
+- direkte Ableitung aus der bereits erzeugten OID4VP Session Cleanup Evidence
+
+Was die zweite Version leistet:
+
+- zeigt den letzten Consent Receipt plus die gespeicherten Vorgänger
+- speichert Receipts lokal in der Wallet-Session
+- vermeidet eine zweite Historienquelle
+- macht den Verlauf pro Verifier sichtbar, ohne Rohdaten zu spiegeln
+
+Was noch fehlt:
+
+- Export-Ansicht fuer Consent Manager Evidence
+- Pagination oder Archivierung, falls die History wachsen soll
+
+## Implementation v3
+
+Umgesetzt zusaetzlich:
+
+- Verifier- und Purpose-Filter
+- Zeitfenster-Filter
+- Receipt-Detailansicht mit Auswahl
+- strikt validierte Session-Storage-History ohne Roh-PII
+
+Sicherheitsentscheidung:
+
+- Receipt-History ist absichtlich auf Session-Storage begrenzt
+- kaputte oder fremde Storage-Eintraege werden verworfen
+- es werden nur Metadaten angezeigt, keine inhaltlichen Claims-Werte
+
+Was noch fehlt:
+
+- Pagination oder Archivierung, falls die History wachsen soll
+
+## Implementation v4
+
+Umgesetzt zusaetzlich:
+
+- JSON-Export der gefilterten Receipt-History
+- Export bleibt metadatenbasiert und zeigt keine Roh-PII
+
+Sicherheitsentscheidung:
+
+- Export nutzt denselben reduzierten Datensatz wie die Detailansicht
+- Filter und Export wirken nur auf die lokal vorhandene Session-History
+
+Was noch fehlt:
+
+- Pagination oder Archivierung, falls die History wachsen soll

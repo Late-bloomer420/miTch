@@ -1,6 +1,7 @@
 import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@mitch/shared-types';
 import { DataFlowService } from '@mitch/data-flow';
 import type { DataFlowTransaction, IdentityFirewallAccess } from '@mitch/data-flow';
+import type { ConsentReceipt } from '@mitch/oid4vp';
 import type { PrivacyConsent } from '../services/PrivacyAuditService';
 
 const dataFlowService = new DataFlowService();
@@ -26,6 +27,7 @@ export interface ConsentManagerViewModel {
   transaction: DataFlowTransaction | null;
   evidence: ConsentManagerEvidenceItem[];
   privacyConsent: PrivacyConsent | null;
+  consentReceipt: ConsentReceipt | null;
   hasDetails: boolean;
 }
 
@@ -61,6 +63,7 @@ function collectEvidence(
   result: PolicyEvaluationResult | null,
   transaction: DataFlowTransaction | null,
   privacyConsent: PrivacyConsent | null,
+  consentReceipt: ConsentReceipt | null,
 ): ConsentManagerEvidenceItem[] {
   const evidence: ConsentManagerEvidenceItem[] = [];
 
@@ -93,6 +96,15 @@ function collectEvidence(
     );
   }
 
+  if (consentReceipt) {
+    evidence.push(
+      { label: 'Consent receipt', value: consentReceipt.id },
+      { label: 'Receipt verifier', value: consentReceipt.verifier },
+      { label: 'Receipt claims', value: String(consentReceipt.claimsShared.length) },
+      { label: 'Receipt timestamp', value: consentReceipt.timestamp },
+    );
+  }
+
   return evidence;
 }
 
@@ -101,6 +113,7 @@ export interface BuildConsentManagerInput {
   result: PolicyEvaluationResult | null;
   auditEntries: AuditLogEntry[];
   privacyConsent: PrivacyConsent | null;
+  consentReceipt: ConsentReceipt | null;
 }
 
 export function buildConsentManagerViewModel({
@@ -108,6 +121,7 @@ export function buildConsentManagerViewModel({
   result,
   auditEntries,
   privacyConsent,
+  consentReceipt,
 }: BuildConsentManagerInput): ConsentManagerViewModel {
   const transactions = dataFlowService.buildTransactions(auditEntries);
   const decisionId = result?.decisionCapsule?.decision_id ?? null;
@@ -144,8 +158,9 @@ export function buildConsentManagerViewModel({
     identityAccessCount: transaction?.identityAccessCount ?? 0,
     identityAccesses,
     transaction,
-    evidence: collectEvidence(result, transaction, privacyConsent),
+    evidence: collectEvidence(result, transaction, privacyConsent, consentReceipt),
     privacyConsent,
+    consentReceipt,
     hasDetails:
       requestedClaims.length > 0 ||
       requestedProvenClaims.length > 0 ||
@@ -154,7 +169,7 @@ export function buildConsentManagerViewModel({
       (withheldClaims?.length ?? 0) > 0 ||
       identityAccesses.length > 0 ||
       Boolean(result?.decisionCapsule) ||
-      Boolean(privacyConsent),
+      Boolean(privacyConsent) ||
+      Boolean(consentReceipt),
   };
 }
-

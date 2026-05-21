@@ -15,12 +15,14 @@ import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
 import { ConsentManagerPanel } from './components/ConsentManagerPanel';
 import { CONFIG } from './config';
+import { appendConsentReceiptHistory, loadConsentReceiptHistory } from './consent-manager/receipt-store';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
     buildSDJWTPresentation,
     buildSessionCleanup,
     SCENARIO_VCT,
     type AuthorizationRequest,
+    type ConsentReceipt,
 } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
@@ -91,6 +93,8 @@ export default function App() {
     const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
     const [showDataFlow, setShowDataFlow] = useState(false);
     const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
+    const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
+    const [consentReceiptHistory, setConsentReceiptHistory] = useState(() => loadConsentReceiptHistory());
     const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
         () => !sessionStorage.getItem('guidedDemoCompleted')
     );
@@ -593,6 +597,12 @@ export default function App() {
                 disclosedClaims,
                 outcome: result.ok ? 'SUCCESS' : 'DENIED',
             });
+            setLastConsentReceipt(consentReceipt);
+            setConsentReceiptHistory(appendConsentReceiptHistory({
+                receipt: consentReceipt,
+                outcome: result.ok ? 'SUCCESS' : 'DENIED',
+                decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
+            }));
             addLog(`📝 Audit: ${auditEntry.outcome} — receipt ${consentReceipt.id}`, 'info');
 
             setLogs(prev => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
@@ -971,6 +981,8 @@ export default function App() {
                     result={evaluationResult}
                     auditEntries={recentAuditEntries}
                     privacyConsent={_privacyConsent}
+                    consentReceipt={lastConsentReceipt}
+                    receiptHistory={consentReceiptHistory}
                     onOpenDataFlow={() => setShowDataFlow(true)}
                 />
             </div>
