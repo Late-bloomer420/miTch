@@ -383,8 +383,8 @@ Parallel (immer):
 | T-B2 ePrescription Nullifier | ✅ `f62bf7b` | 🟡 Wichtig |
 | T-B3 ReasonCodes | ✅ `cc344a4` | 🟡 Wichtig |
 | T-C1 Forschungs-Demo | ✅ `9a7aed5` | 🟢 Demo |
-| T-C2 Kontrollregister-UI | ❌ Offen | 🟢 Demo |
-| T-C3 Sprachlocale | ❌ Offen | 🟢 Demo |
+| T-C2 Kontrollregister-UI | ✅ `eudi-comp` | 🟢 Demo |
+| T-C3 Sprachlocale | ✅ `eudi-comp` | 🟢 Demo |
 | T-C4 Cross-Border-Szenario | ✅ `9a7aed5` | 🟢 Demo |
 | T-D1 EHDS Compliance Map | ✅ `5fb787a` | ⬜ Nice-to-have |
 

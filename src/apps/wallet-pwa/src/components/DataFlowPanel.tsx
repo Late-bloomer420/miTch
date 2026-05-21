@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { AuditLogEntry } from '@mitch/shared-types';
 import { DataFlowService, summarizeTransaction } from '@mitch/data-flow';
 import type { DataFlowTransaction } from '@mitch/data-flow';
+import { translateClaim } from '../utils/i18n';
 
 interface DataFlowPanelProps {
   entries: AuditLogEntry[];
@@ -78,18 +79,18 @@ const TransactionCard: React.FC<{
       <div className="dataflow-card__claims">
         {txn.claimsShared.map((claim) => (
           <span key={claim} className="dataflow-card__tag dataflow-card__tag--claim">
-            {claim}
+            {translateClaim(claim)}
           </span>
         ))}
         {txn.provenClaims.map((claim) => (
           <span key={claim} className="dataflow-card__tag dataflow-card__tag--proven">
-            {claim}
+            {translateClaim(claim)}
           </span>
         ))}
         {txn.claimsWithheld !== null && txn.claimsWithheld.length > 0 &&
           txn.claimsWithheld.map((claim) => (
             <span key={`withheld-${claim}`} className="dataflow-card__tag dataflow-card__tag--withheld">
-              {claim}
+              {translateClaim(claim)}
             </span>
           ))}
         {txn.claimsShared.length === 0 && txn.provenClaims.length === 0 && (

@@ -23,6 +23,7 @@ import {
 } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
+import { ProximityView } from './components/ProximityView';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     {
@@ -97,6 +98,8 @@ export default function App() {
     const [flashAllow, setFlashAllow] = useState(false);
     const [copyLabel, setCopyLabel] = useState('Copy Log');
     const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>('idle');
+    const [showProximity, setShowProximity] = useState(false);
+    const [isIdentityRegistered, setIsIdentityRegistered] = useState(false);
 
     // Parse OID4VP deep-link params on load (verifier-demo → wallet-pwa)
     const [incomingOID4VP] = useState<{ scenario: string; endpoint: string; verifier: string } | null>(() => {
@@ -136,6 +139,9 @@ export default function App() {
                 try {
                     const isAvailable = await WebAuthnService.isAvailable();
                     const isRegistered = await WebAuthnService.isRegistered();
+                    const identityRegistered = await WebAuthnService.isIdentityRegistered();
+                    setIsIdentityRegistered(identityRegistered);
+
                     if (isAvailable && !isRegistered) {
                         addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
                         await WebAuthnService.registerPasskey();
@@ -480,6 +486,22 @@ export default function App() {
         }
     };
 
+    const handleProximityDemo = () => {
+        addLog('📡 Initializing ISO 18013-5 Proximity Presentation...', 'info');
+        setShowProximity(true);
+    };
+
+    const handleRegisterHardwareIdentity = async () => {
+        addLog('🛡️ Registering Hardware-bound Identity Key (LoA High)...', 'info');
+        try {
+            await walletRef.current.registerIdentityKey();
+            setIsIdentityRegistered(true);
+            addLog('✅ Hardware-bound Identity Key registered successfully.', 'success');
+        } catch (e) {
+            addLog(`❌ Registration failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        }
+    };
+
     // UX-05: Render log with slide-in animation (key includes index for animation re-trigger)
     const renderLogLine = (l: string, i: number) => {
         if (l.startsWith('DONE')) return (
@@ -728,6 +750,38 @@ export default function App() {
             <h1 className="wallet-title">
                 miTch <span className="wallet-title-accent">Smart Wallet</span>
             </h1>
+
+            {/* Hardware Identity Status */}
+            <div style={{
+                background: isIdentityRegistered ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                border: `1px solid ${isIdentityRegistered ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                borderRadius: 8, padding: '8px 12px', marginBottom: 16,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{isIdentityRegistered ? '🛡️' : '⚠️'}</span>
+                    <div style={{ fontSize: 11 }}>
+                        <div style={{ color: isIdentityRegistered ? '#10b981' : '#f59e0b', fontWeight: 700 }}>
+                            {isIdentityRegistered ? 'Identity: Hardware-Bound (LoA High)' : 'Identity: Software-Only (LoA Substantial)'}
+                        </div>
+                        <div style={{ color: '#94a3b8' }}>
+                            {isIdentityRegistered ? 'Primary key is non-extractable in Secure Element.' : 'Upgrade to hardware-binding for higher security.'}
+                        </div>
+                    </div>
+                </div>
+                {!isIdentityRegistered && (
+                    <button
+                        onClick={handleRegisterHardwareIdentity}
+                        style={{
+                            background: '#f59e0b', color: '#000', border: 'none',
+                            borderRadius: 4, padding: '4px 10px', fontSize: 10,
+                            fontWeight: 800, cursor: 'pointer'
+                        }}
+                    >
+                        BIND TO HW
+                    </button>
+                )}
+            </div>
 
             {/* OID4VP: incoming request banner */}
             {incomingOID4VP && (
@@ -1081,8 +1135,27 @@ export default function App() {
                     >
                         🇪🇸 Cross-Border
                     </button>
+                    <button
+                        onClick={handleProximityDemo}
+                        disabled={status !== 'IDLE'}
+                        className="btn-demo-secondary"
+                        style={{ borderColor: '#3b82f644', color: '#93c5fd' }}
+                    >
+                        📡 Proximity (Offline)
+                    </button>
                 </div>
             </div>
+
+            {showProximity && (
+                <ProximityView 
+                    wallet={walletRef.current}
+                    onComplete={() => {
+                        setShowProximity(false);
+                        addLog('✅ Proximity Presentation Complete', 'success');
+                    }}
+                    onCancel={() => setShowProximity(false)}
+                />
+            )}
 
             {/* Start Guided Demo button */}
             {status === 'IDLE' && !guidedDemoActive && (

@@ -62,3 +62,6 @@ pnpm-lock.yaml.*
 # docs/          ← Dokumentation
 # archive/       ← Git-Bundles
 .claude/
+
+.gemini/
+gha-creds-*.json

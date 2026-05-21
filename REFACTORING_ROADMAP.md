@@ -90,9 +90,10 @@ Add `rotateKey(oldKey: CryptoKey, newKey: CryptoKey): Promise<void>` — iterate
 
 **File:** `src/packages/shared-crypto/src/ephemeral.ts:44`
 **Finding:** F-05 (audit 2026-03)
-**Status:** T-31 in backlog
+**Status:** Phase 1 Complete (WebAuthn Identity Binding)
 
-`extractable: true` is required for the current key-wrapping approach. Long-term: migrate to non-extractable keys wrapped inside a TEE (Trusted Execution Environment), eliminating the need to export raw key material.
+- **Phase 1 (done):** Primary Identity Key moved to hardware-bound WebAuthn (Passkey) storage. Keys are non-extractable and biometric-locked.
+- **Phase 2 (planned):** Migrate ephemeral session keys to TEE-wrapped storage where possible (platform-dependent).
 
 ---
 

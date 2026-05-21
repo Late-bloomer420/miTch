@@ -20,7 +20,12 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'currentMedication': 'Current Medication',
         'pastIllnesses': 'Past Illnesses',
         'vaccinationStatus': 'Vaccination Status',
-        'geneticData': 'Genetic Data'
+        'geneticData': 'Genetic Data',
+        'activeProblems': 'Active Problems',
+        'emergencyContacts': 'Emergency Contacts',
+        'medication': 'Medication',
+        'dosageInstruction': 'Dosage Instruction',
+        'refillsRemaining': 'Refills Remaining'
     },
     de: {
         'bloodGroup': 'Blutgruppe',
@@ -31,7 +36,12 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'currentMedication': 'Aktuelle Medikation',
         'pastIllnesses': 'Vorerkrankungen',
         'vaccinationStatus': 'Impfstatus',
-        'geneticData': 'Genetische Daten'
+        'geneticData': 'Genetische Daten',
+        'activeProblems': 'Aktive Diagnosen',
+        'emergencyContacts': 'Notfallkontakte',
+        'medication': 'Medikation',
+        'dosageInstruction': 'Dosierungsanweisung',
+        'refillsRemaining': 'Verbleibende Rezepte'
     },
     es: {
         'bloodGroup': 'Grupo Sanguíneo',
@@ -42,7 +52,12 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'currentMedication': 'Medicación Actual',
         'pastIllnesses': 'Enfermedades Pasadas',
         'vaccinationStatus': 'Estado de Vacunación',
-        'geneticData': 'Datos Genéticos'
+        'geneticData': 'Datos Genéticos',
+        'activeProblems': 'Problemas Activos',
+        'emergencyContacts': 'Contactos de Emergencia',
+        'medication': 'Medicamentos',
+        'dosageInstruction': 'Instrucciones de Dosis',
+        'refillsRemaining': 'Recargas Restantes'
     },
     nl: {
         'bloodGroup': 'Bloedgroep',
@@ -53,7 +68,12 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'currentMedication': 'Huidige Medicatie',
         'pastIllnesses': 'Eerdere Ziekten',
         'vaccinationStatus': 'Vaccinatiestatus',
-        'geneticData': 'Genetische Gegevens'
+        'geneticData': 'Genetische Gegevens',
+        'activeProblems': 'Actieve Problemen',
+        'emergencyContacts': 'Contacten voor Noodgevallen',
+        'medication': 'Medicatie',
+        'dosageInstruction': 'Doseringsinstructie',
+        'refillsRemaining': 'Resterende Navullingen'
     }
 };
 
@@ -67,25 +87,41 @@ const REASON_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'CONSENT_REQUIRED': '✋ Explicit consent required',
         'SENSITIVE_CLAIM': '⚠️ Contains sensitive data',
         'PRESENCE_REQUIRED': '🔐 Biometric presence required',
-        'HIGH_RISK_VERIFIER': '🚨 Unknown / high-risk verifier'
+        'HIGH_RISK_VERIFIER': '🚨 Unknown / high-risk verifier',
+        'HDAB_PERMIT_REQUIRED': '🏥 Research permit (HDAB) required',
+        'SECONDARY_USE_DENIED': '🚫 Secondary use blocked by policy',
+        'GEO_SCOPE_VIOLATION': '🌍 Verifier outside allowed region',
+        'BREAK_GLASS_ACTIVATED': '🚨 EMERGENCY: Break-Glass Activated'
     },
     de: {
         'CONSENT_REQUIRED': '✋ Explizite Zustimmung erforderlich',
         'SENSITIVE_CLAIM': '⚠️ Enthält sensible Daten',
         'PRESENCE_REQUIRED': '🔐 Biometrische Anwesenheit erforderlich',
-        'HIGH_RISK_VERIFIER': '🚨 Unbekannter / risikobehafteter Verifier'
+        'HIGH_RISK_VERIFIER': '🚨 Unbekannter / risikobehafteter Verifier',
+        'HDAB_PERMIT_REQUIRED': '🏥 Forschungsgenehmigung (HDAB) erforderlich',
+        'SECONDARY_USE_DENIED': '🚫 Sekundärnutzung durch Policy untersagt',
+        'GEO_SCOPE_VIOLATION': '🌍 Verifier außerhalb der erlaubten Region',
+        'BREAK_GLASS_ACTIVATED': '🚨 NOTFALL: Break-Glass aktiviert'
     },
     es: {
         'CONSENT_REQUIRED': '✋ Se requiere consentimiento explícito',
         'SENSITIVE_CLAIM': '⚠️ Contiene datos sensibles',
         'PRESENCE_REQUIRED': '🔐 Presencia biométrica requerida',
-        'HIGH_RISK_VERIFIER': '🚨 Verificador desconocido / alto riesgo'
+        'HIGH_RISK_VERIFIER': '🚨 Verificador desconocido / alto riesgo',
+        'HDAB_PERMIT_REQUIRED': '🏥 Permiso de investigación (HDAB) requerido',
+        'SECONDARY_USE_DENIED': '🚫 Uso secundario bloqueado por política',
+        'GEO_SCOPE_VIOLATION': '🌍 Verificador fuera de la región permitida',
+        'BREAK_GLASS_ACTIVATED': '🚨 EMERGENCIA: Break-Glass activado'
     },
     nl: {
         'CONSENT_REQUIRED': '✋ Expliciete toestemming vereist',
         'SENSITIVE_CLAIM': '⚠️ Bevat gevoelige gegevens',
         'PRESENCE_REQUIRED': '🔐 Biometrische aanwezigheid vereist',
-        'HIGH_RISK_VERIFIER': '🚨 Onbekende / hoog-risico verificateur'
+        'HIGH_RISK_VERIFIER': '🚨 Onbekende / hoog-risico verificateur',
+        'HDAB_PERMIT_REQUIRED': '🏥 Onderzoeksvergunning (HDAB) vereist',
+        'SECONDARY_USE_DENIED': '🚫 Secundair gebruik geblokkeerd door beleid',
+        'GEO_SCOPE_VIOLATION': '🌍 Verificateur buiten toegestane regio',
+        'BREAK_GLASS_ACTIVATED': '🚨 NOODGEVAL: Break-Glass geactiveerd'
     }
 };
 

@@ -36,3 +36,5 @@ export * from './allow-assertion';
 export * from './reasonCodes';
 export * from './evaluateDisclosureRequest';
 export type { Verdict, ResponseMode, DisclosureRequest, Policy, Decision } from './types';
+
+export * from './decisionCapsule';

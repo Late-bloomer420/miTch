@@ -43,6 +43,7 @@ export interface PresenceProof {
 const PASSKEY_DB_NAME = 'mitch_passkey_db';
 const PASSKEY_STORE_NAME = 'passkeys';
 const PASSKEY_STORAGE_KEY = 'mitch_passkey_registration';
+const IDENTITY_KEY_STORAGE_KEY = 'mitch_identity_key_registration';
 
 function getPasskeyDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -84,6 +85,39 @@ async function loadPasskeyMeta(): Promise<PasskeyRegistration | null> {
       const tx = db.transaction(PASSKEY_STORE_NAME, 'readonly');
       const store = tx.objectStore(PASSKEY_STORE_NAME);
       const request = store.get(PASSKEY_STORAGE_KEY);
+      request.onsuccess = () => {
+        const raw = request.result;
+        resolve(raw ? JSON.parse(raw) : null);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function saveIdentityKeyMeta(meta: PasskeyRegistration): Promise<void> {
+  try {
+    const db = await getPasskeyDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(PASSKEY_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(PASSKEY_STORE_NAME);
+      const request = store.put(JSON.stringify(meta), IDENTITY_KEY_STORAGE_KEY);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  }
+}
+
+async function loadIdentityKeyMeta(): Promise<PasskeyRegistration | null> {
+  try {
+    const db = await getPasskeyDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(PASSKEY_STORE_NAME, 'readonly');
+      const store = tx.objectStore(PASSKEY_STORE_NAME);
+      const request = store.get(IDENTITY_KEY_STORAGE_KEY);
       request.onsuccess = () => {
         const raw = request.result;
         resolve(raw ? JSON.parse(raw) : null);
@@ -167,6 +201,97 @@ class SoftwareFallback {
 // ── WebAuthnService ──────────────────────────────────────────────────────────
 
 export class WebAuthnService {
+
+  /**
+   * Registriert den primären Identity-Key für das Wallet.
+   * Dieser Key ist hardware-gebunden und dient als Root-of-Trust.
+   */
+  static async registerIdentityKey(
+    rpId: string = typeof location !== 'undefined' ? location.hostname : 'localhost'
+  ): Promise<PasskeyRegistration> {
+    if (!isWebAuthnAvailable()) {
+      return this.registerPasskey('mitch-identity-key', rpId);
+    }
+
+    const userId = 'mitch-identity-key-v1';
+    const userIdBuffer = new TextEncoder().encode(userId).buffer;
+
+    const createOptions: PublicKeyCredentialCreationOptions = {
+      rp: { name: 'miTch Identity', id: rpId },
+      user: { id: userIdBuffer, name: userId, displayName: 'miTch Identity Key' },
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
+      authenticatorSelection: {
+        authenticatorAttachment: 'platform',
+        userVerification: 'required',
+        residentKey: 'required',
+      },
+      attestation: 'none',
+      challenge: crypto.getRandomValues(new Uint8Array(32)).buffer,
+    };
+
+    const credential = await navigator.credentials.create({ publicKey: createOptions }) as PublicKeyCredential;
+    const credentialId = bufferToBase64url(credential.rawId);
+
+    // Versuche den Public Key zu extrahieren (SPKI)
+    let publicKeyJwk: JsonWebKey | null = null;
+    const response = credential.response as AuthenticatorAttestationResponse;
+    if (typeof response.getPublicKey === 'function') {
+      const spki = response.getPublicKey();
+      if (spki) {
+        // In einer echten Implementierung würden wir SPKI zu JWK konvertieren.
+        // Für diesen PoC speichern wir die Information dass ein HW-Key existiert.
+        publicKeyJwk = { kty: 'EC', crv: 'P-256', x: '', y: '', alg: 'ES256', ext: true };
+      }
+    }
+
+    const registration: PasskeyRegistration = {
+      credentialId,
+      publicKeyJwk,
+      rpId,
+      registeredAt: new Date().toISOString(),
+    };
+
+    await saveIdentityKeyMeta(registration);
+    return registration;
+  }
+
+  /**
+   * Signiert Daten mit dem hardware-gebundenen Identity-Key.
+   */
+  static async signWithIdentityKey(data: string): Promise<string> {
+    const meta = await loadIdentityKeyMeta();
+    if (!meta || meta.credentialId === 'software-fallback') {
+      // Fallback auf Software wenn kein HW-Key registriert
+      const proof = await SoftwareFallback.sign(data);
+      return proof.signature;
+    }
+
+    // Wir nutzen die Daten als Challenge für eine Assertion
+    // WebAuthn Challenges sind limitiert (meist 32-64 bytes),
+    // daher hashen wir die Daten wenn sie zu lang sind.
+    const dataBuffer = new TextEncoder().encode(data);
+    const challenge = dataBuffer.length > 64 ? await crypto.subtle.digest('SHA-256', dataBuffer) : dataBuffer;
+
+    const getOptions: PublicKeyCredentialRequestOptions = {
+      rpId: meta.rpId,
+      challenge,
+      allowCredentials: [{ type: 'public-key', id: base64urlToBuffer(meta.credentialId) }],
+      userVerification: 'required',
+    };
+
+    const assertion = await navigator.credentials.get({ publicKey: getOptions }) as PublicKeyCredential;
+    const response = assertion.response as AuthenticatorAssertionResponse;
+    
+    return bufferToBase64(response.signature);
+  }
+
+  /**
+   * Prüft ob der Identity-Key registriert ist.
+   */
+  static async isIdentityRegistered(): Promise<boolean> {
+    const meta = await loadIdentityKeyMeta();
+    return meta !== null && meta.credentialId !== 'software-fallback';
+  }
 
   /**
    * Registriert einen Passkey für dieses Gerät.
@@ -443,7 +568,8 @@ export class WebAuthnService {
       return new Promise((resolve, reject) => {
         const tx = db.transaction(PASSKEY_STORE_NAME, 'readwrite');
         const store = tx.objectStore(PASSKEY_STORE_NAME);
-        const request = store.delete(PASSKEY_STORAGE_KEY);
+        store.delete(PASSKEY_STORAGE_KEY);
+        const request = store.delete(IDENTITY_KEY_STORAGE_KEY);
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });

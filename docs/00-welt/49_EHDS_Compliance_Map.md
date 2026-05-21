@@ -20,10 +20,10 @@ Dieses Dokument bildet die systematische Zuordnung zwischen den Anforderungen de
 | Sekundärnutzungs-Widerspruch | Art. 11 | PolicyManifest `denySecondaryUse` | `policy-engine`, `shared-types` | ✅ |
 | HDAB-Permit-Pflicht | Art. 46 | TrustedIssuer hdab-Rolle + `requiresHdabPermit` | `policy-engine`, `shared-types` | ✅ |
 | Cross-Border-Freizügigkeit | GDPR Art. 1 | Verifier-Pattern EU-Wildcard + `geoScope` | `policy-engine` | ✅ |
-| Notfallzugriff (Break-Glass) | Art. 8(5) | `allowBreakGlass` + audit alert | `policy-engine` | 🔧 In Progress |
+| Notfallzugriff (Break-Glass) | Art. 8(5) | `allowBreakGlass` + audit alert | `policy-engine` | ✅ |
 | Geo-Scope Drittländer | GDPR Art. 46 | GeoScope (`eu-only` / `eu-plus-adequacy` / `global`) | `policy-engine` | ✅ |
-| ePrescription Single-Use | Art. 14 | Credential status + nullifier | `policy-engine` | 🔧 In Progress |
-| Sprachlocale Medizinbegriffe | §3.3 | i18n-Map (planned) | `wallet-pwa` | ❌ Planned |
+| ePrescription Single-Use | Art. 14 | Credential status + nullifier | `policy-engine` | ✅ |
+| Sprachlocale Medizinbegriffe | §3.3 | i18n-Map (`CLAIM_DICTIONARY`) | `wallet-pwa` | ✅ |
 | Audit Export Schema | Art. 31 | `audit-export-schema.ts` + V1 spec | `audit-log` | ✅ |
 | Verifiable Presentation | Art. 12 | SD-JWT VP + selective disclosure | `shared-crypto` | ✅ |
 | Credential Revocation | Art. 9 | StatusList2021 revocation check | `shared-crypto` | ✅ |

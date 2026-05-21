@@ -105,6 +105,21 @@ export interface MobileSecurityObject {
     validityInfo: ValidityInfo;
 }
 
+// ─── Device Engagement ──────────────────────────────────────────────────────
+
+/**
+ * ISO 18013-5 §8.2.1.1 — Device Engagement structure.
+ * Displayed as a QR code or sent over NFC for initial handover.
+ */
+export interface DeviceEngagement {
+    /** Protocol version (e.g., "1.0") */
+    version: string;
+    /** Security parameters [cipherSuite, deviceKey] */
+    security: [number, Map<number, unknown>];
+    /** Optional retrieval methods (BLE, NFC, etc.) */
+    deviceRetrievalMethods?: unknown[];
+}
+
 // ─── Device Authentication ──────────────────────────────────────────────────
 
 /**

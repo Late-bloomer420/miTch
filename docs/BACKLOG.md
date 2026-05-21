@@ -100,13 +100,15 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
 | E-30 | 🟡 | CIR 2024/2977 Compliance (PID + EAA Anforderungen) | EU Implementing Reg |
-| E-31 | 🟡 | CIR 2024/2979 Compliance (Integrity + Core Functionalities) | EU Implementing Reg |
-| E-32 | 🟡 | CIR 2024/2982 Compliance (Protocols + Interfaces) | EU Implementing Reg |
+| E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool) | EU Implementing Reg |
+| E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity) | EU Implementing Reg |
 | E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + Gap-Analyse | EU Implementing Reg |
+
 | E-34 | 🟢 | CIR 2025/846 Cross-Border Identity Matching | EU Implementing Reg |
 | E-35 | 🟢 | CIR 2025/848 Relying Party Registration | EU Implementing Reg |
 | E-36 | 🟢 | DSGVO Verarbeitungsverzeichnis (Art. 30) | DSGVO |
 | E-37 | 🟢 | Betroffenenrechte-Implementierung (Auskunft, Löschung, Berichtigung) | DSGVO |
+| E-38 | ✅ | EHDS Compliance (T-C2, T-C3) — Secondary Use Opt-Out + Localized Terms | EHDS |
 
 ---
 

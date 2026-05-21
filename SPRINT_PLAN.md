@@ -406,15 +406,25 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 
 #### E-50: mdoc Proximity UI (Wallet-PWA)
 
-- **Status:** Planned
-- **Problem:** `@mitch/mdoc` Logik für Offline-Verifikation und DeviceAuth existiert, aber das PWA hat keinen UI-Pfad um eine DeviceResponse (QR/BLE) anzuzeigen oder zu empfangen.
-- **Konkreter Fix:** 
-  1. `ProximityView` Komponente erstellen (QR-Code Generator für DeviceEngagement).
-  2. BLE/NFC Bridge (Web Bluetooth / Web NFC) evaluieren oder Mocking für Browser-Demo.
-  3. Presentation-Path in `WalletService` für mdoc-Formate vervollständigen.
-- **Aufwand:** L
-- **Abhängigkeiten:** `@mitch/mdoc` (vorhanden)
-- **Test-Strategie:** E2E-Demo mit einem zweiten Device (Verifier-Simulator).
+- **Status:** ✅ Implemented
+- **Problem:** `@mitch/mdoc` Logik existiert, aber PWA UI-Pfad fehlte.
+- **Fix:** `ProximityView` (QR + State Machine), `ProximityService` (Mock Transport), `WalletService.generateProximityResponse` (ISO 18013-5 DeviceResponse) implementiert.
+
+---
+
+## Block F — TEE & Hardware Binding
+
+**Grundlage:** CIR 2024/2981 (LoA High)
+**Erstellt:** 2026-05-21
+**Ziel:** Migration von Software-Keys zu Hardware-Backing.
+
+---
+
+#### T-31: TEE Research & Design
+
+- **Status:** ✅ Research Complete
+- **Problem:** PWA Einschränkungen für nativen SE-Zugriff.
+- **Fix:** [ADR-013](./docs/architecture/decisions/ADR-013_TEE_Hardware_Binding_PWA.md) erstellt. Strategie: WebAuthn (Platform Authenticator) für Identity Key + Crypto-Attestation.
 
 ---
 
@@ -424,11 +434,8 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 Block A (Sofort, 1–2 Tage):
   ...
 Block D (Compliance & Transparency): ✅ Done
-  1. E-40 — Data Erasure (I9)        (✅)
-  2. E-41 — Reporting Mechanism      (✅)
-
-Block E (Proximity & Offline):
-  1. E-50 — mdoc Proximity UI        (L, regulatorisch mandatory für 18013-5)
+Block E (Proximity & Offline):       ✅ Done
+Block F (TEE Research):              ✅ Done
 
 Block C (Backlog):
   F-07, F-14 — kein Pilot-Blocker

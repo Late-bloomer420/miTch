@@ -197,3 +197,16 @@ export async function buildMdocDocument(
 
   return { document, documentCbor, mso };
 }
+
+/**
+ * Build a DeviceResponse structure containing one or more mdoc documents.
+ * ISO 18013-5 §8.3.
+ */
+export function buildDeviceResponse(documents: MdocDocument[]): Uint8Array {
+  const response: Map<string, unknown> = new Map();
+  response.set('version', '1.0');
+  response.set('documents', documents);
+  response.set('status', 0); // OK
+
+  return encode(response);
+}

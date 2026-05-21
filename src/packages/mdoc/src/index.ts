@@ -153,6 +153,7 @@ export {
     buildMobileSecurityObject,
     signMobileSecurityObject,
     buildMdocDocument,
+    buildDeviceResponse,
 } from './mdoc-builder.js';
 
 export type {
@@ -160,3 +161,9 @@ export type {
     MdocBuildOptions,
     MdocBuildResult,
 } from './mdoc-builder.js';
+
+// Device Engagement (Proximity)
+export {
+    buildDeviceEngagement,
+    createEngagementUri,
+} from './engagement.js';
