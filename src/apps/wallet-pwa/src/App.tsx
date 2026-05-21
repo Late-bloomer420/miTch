@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
 
@@ -13,6 +13,7 @@ import { WebAuthnService } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
+import { ConsentManagerPanel } from './components/ConsentManagerPanel';
 import { CONFIG } from './config';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
@@ -111,6 +112,7 @@ export default function App() {
 
     const logContainerRef = useRef<HTMLDivElement>(null);
     const walletRef = useRef<WalletService>(new WalletService());
+    const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
 
     const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
         const time = new Date().toLocaleTimeString();
@@ -964,10 +966,20 @@ export default function App() {
             </div>
 
             <div className="wallet-section" style={{ marginTop: 20 }}>
+                <ConsentManagerPanel
+                    request={currentRequest}
+                    result={evaluationResult}
+                    auditEntries={recentAuditEntries}
+                    privacyConsent={_privacyConsent}
+                    onOpenDataFlow={() => setShowDataFlow(true)}
+                />
+            </div>
+
+            <div className="wallet-section" style={{ marginTop: 20 }}>
                 <ComplianceDashboard
                     onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
                     onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
-                    getRecentLogs={useCallback(() => walletRef.current.getRecentAuditLogs(), [])}
+                    getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
                     getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
                 />
             </div>
@@ -980,7 +992,7 @@ export default function App() {
                     {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
                 </button>
                 {showDataFlow && (
-                    <DataFlowPanel entries={walletRef.current.getRecentAuditLogs(200)} />
+                    <DataFlowPanel entries={recentAuditEntries} />
                 )}
             </div>
 
