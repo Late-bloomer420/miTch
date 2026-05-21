@@ -7,13 +7,22 @@
  *
  * Fail-closed: any ambiguity → DENY. Never default to ALLOW.
  *
- * Status: STUB — returns DENY / NOT_IMPLEMENTED until @mitch/policy-engine is wired.
- * See docs/mcp-server-architecture.md §4–§5 for the full spec.
+ * Status: STUB — returns DENY / NOT_IMPLEMENTED.
  *
- * Wiring checklist (when ready):
- *   1. Import PolicyEngine from @mitch/policy-engine
- *   2. Replace the stub body with: engine.evaluate(input.verifier_request, input.context)
- *   3. Return the real DecisionCapsule from the result
+ * Wiring is INTENTIONALLY frozen until a concrete consumer story exists. The
+ * gating question is: who calls this tool and where does their Policy come
+ * from? See docs/mcp-server-architecture.md §9.4 + §10.3. Embedding a default
+ * policy would produce real DENY/PROMPT/ALLOW decisions against an
+ * unauthorized rule set — that conflicts with the project's fail-closed,
+ * autorisierte-Policy-only stance. Better to keep returning DENY/NOT_IMPLEMENTED
+ * and treat any caller as "no policy configured".
+ *
+ * Wiring checklist (when the consumer is decided):
+ *   1. Resolve the Policy (from file / from policy-engine.catalog / from caller)
+ *   2. Map the agent-friendly input to a `DisclosureRequest` (see types.ts)
+ *   3. Call `evaluateDisclosureRequest(req, policy)` from @mitch/policy-engine
+ *   4. Wrap the result with `createDecisionCapsule({decision, policy, request, timestamp})`
+ *   5. Replace the stub body and return the real DecisionCapsule
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

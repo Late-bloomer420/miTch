@@ -192,15 +192,30 @@ Dependencies (intern, workspace:*):
    ja — aber dann mit Pairwise-DID-Scoping, damit nur der Verifier seine
    eigenen Decisions sieht.
 
-4. **Erste Zielgruppe**: Claude Desktop / Claude Code / beides /
-   Cowork? Beeinflusst Distribution (DXT-Bundle vs. npm-Paket).
+4. **Erste Zielgruppe — entschieden 2026-05-21**: Compliance-Auditor-LLM
+   (lokal lauffähig). Begründung: Ein lokales Modell wertet
+   Decision-Logs aus, Ergebnisse bleiben on-device, Daten können bei
+   Bedarf gelöscht werden — kein Datenabfluss nach außen. Das macht das
+   primäre Tool-Inventar zu den Read-Tools (`mitch_get_decision`,
+   `mitch_list_decisions`, `mitch_explain_denial`), nicht zu
+   `mitch_evaluate_disclosure`. Distribution: npm-Paket reicht, kein
+   DXT-Bundle nötig (lokale Modelle laufen meist über eigenen Stack).
 
 ## 10. Nächste konkrete Schritte
 
 1. Diesen Vorschlag durchgehen, Änderungen einkippen.
 2. Package-Skelett anlegen (Task #9): `pnpm create` + tsconfig + initiale
    Stub-Tools (return DENY mit Reason `NOT_IMPLEMENTED`).
-3. `mitch_evaluate_disclosure` als erstes echtes Tool implementieren —
-   das ist der einzige Pfad, der `policy-engine.evaluate()` 1:1
-   durchreicht. Direkt mit Tests.
-4. Inspector-Smoke-Test, dann Schritt für Schritt die Read-Tools.
+3. **Stub-Phase eingefroren** (Stand 2026-05-21): `mitch_evaluate_disclosure`
+   bleibt vorerst DENY-Stub. Wiring blockiert auf erste Anwender-Story —
+   siehe §9.4. Begründung: ohne konkreten Konsumenten ist die
+   Policy-Quellen-Frage (embedded vs. file vs. agent-supplied) nicht
+   sauber zu entscheiden, und ein embedded Default produziert echte
+   Decisions ohne autorisierte Policy.
+4. **Nächster Schritt für die gewählte Zielgruppe (Auditor-LLM)**:
+   Read-Tools implementieren (`mitch_list_decisions`,
+   `mitch_get_decision`, `mitch_explain_denial`) gegen den vorhandenen
+   `@mitch/audit-log`. Diese sind read-only, brauchen keine Policy-Quelle,
+   und liefern dem Auditor-LLM direkt Mehrwert.
+5. Inspector-Smoke-Test, dann `mitch_evaluate_disclosure` wenn Bedarf
+   konkret wird.
