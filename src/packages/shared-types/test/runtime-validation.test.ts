@@ -34,7 +34,7 @@ import type { QuantizedBudgetSignal } from '../src/ad-preferences.js';
 
 // ── enum / union types (imported for shape checks) ───────────────────────────
 
-import type { AuditEventType, AuditLogEntry } from '../src/audit.js';
+import type { AuditEventType, AuditLogEntry, IdentityFirewallMetadata } from '../src/audit.js';
 import type { AdVerificationResponse } from '../src/ad-response.js';
 import type { OID4VCIError } from '../src/oid4vci.js';
 import type { AnchorRef } from '../src/anchor.js';
@@ -226,6 +226,7 @@ describe('AuditEventType — all event types are valid strings', () => {
         'VP_GENERATED', 'VP_SENT',
         'POLICY_EVALUATED', 'POLICY_BLOCKED',
         'USER_CONSENT_GRANTED', 'USER_CONSENT_DENIED',
+        'IDENTITY_ACCESS_DETECTED',
     ];
 
     it('all expected event types are non-empty strings', () => {
@@ -235,8 +236,8 @@ describe('AuditEventType — all event types are valid strings', () => {
         }
     });
 
-    it('11 distinct event types', () => {
-        expect(new Set(EXPECTED).size).toBe(11);
+    it('12 distinct event types', () => {
+        expect(new Set(EXPECTED).size).toBe(12);
     });
 
     it('AuditLogEntry satisfies shape at runtime', () => {
@@ -249,6 +250,25 @@ describe('AuditEventType — all event types are valid strings', () => {
         };
         expect(entry.action).toBe('POLICY_EVALUATED');
         expect(entry.id).toBeTruthy();
+    });
+
+    it('IdentityFirewallMetadata supports PII-minimal MVP event shape', () => {
+        const metadata: IdentityFirewallMetadata = {
+            decision_id: 'decision-identity-001',
+            verifier_did: 'did:mitch:verifier-test',
+            access_type: 'browser_api',
+            surface: 'navigator.userAgent',
+            actor_label: 'Google Chrome',
+            field_class: 'fingerprint',
+            persistence: 'cloud',
+            linkability: 'cross_context',
+            severity: 'critical',
+            blocked: false,
+            source: 'privacy_audit_service',
+        };
+
+        expect(metadata.blocked).toBe(false);
+        expect(metadata.actor_label).not.toContain('?');
     });
 });
 

@@ -1,3 +1,7 @@
+import type { IdentityFirewallMetadata } from '@mitch/shared-types';
+
+export type IdentityFirewallAccess = Omit<IdentityFirewallMetadata, 'decision_id'>;
+
 export interface DataFlowTransaction {
   transactionId: string;
   startedAt: string;
@@ -10,6 +14,8 @@ export interface DataFlowTransaction {
   provenClaims: string[];
   credentialTypes: string[];
   usedZKP: boolean;
+  identityAccesses: IdentityFirewallAccess[];
+  identityAccessCount: number;
   lifecycle: {
     keysCreated: number;
     keysDestroyed: number;
@@ -23,6 +29,6 @@ export interface DataFlowEvent {
   auditEntryId: string;
   timestamp: string;
   label: string;
-  category: 'key' | 'credential' | 'presentation' | 'policy' | 'consent';
+  category: 'key' | 'credential' | 'presentation' | 'policy' | 'consent' | 'identity';
   detail?: string;
 }

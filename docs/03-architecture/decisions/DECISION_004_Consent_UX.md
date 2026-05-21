@@ -156,3 +156,17 @@ interface ConsentDecision {
 6. Activity feed UI (read-only)
 7. Verifier policy registration (basic)
 8. Policy validation (reject unregistered claims)
+
+---
+
+## Wallet Consent Manager Addendum
+
+The wallet now groups request, decision, audit evidence, and consent receipts into one visual manager view. The implementation should stay as a derived view over existing audit and receipt data, not as a second source of truth.
+
+Implementation notes:
+
+- current receipt is created during OID4VP session cleanup
+- receipt history is stored in session-scoped storage, not long-lived localStorage
+- UI must keep receipts free of raw PII
+- receipt history is display-only metadata until export/pagination work is added
+- pagination limits the visible history without changing the underlying exported set

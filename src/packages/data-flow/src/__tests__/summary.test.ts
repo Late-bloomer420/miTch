@@ -15,6 +15,8 @@ function makeTxn(overrides: Partial<DataFlowTransaction> = {}): DataFlowTransact
     provenClaims: [],
     credentialTypes: [],
     usedZKP: false,
+    identityAccesses: [],
+    identityAccessCount: 0,
     lifecycle: {
       keysCreated: 0,
       keysDestroyed: 0,
@@ -124,6 +126,12 @@ describe('summarizeTransaction', () => {
     });
     const summary = summarizeTransaction(txn);
     expect(summary.points.find(p => p.includes('Keine Rohdaten'))).toBeUndefined();
+  });
+
+  it('shows count for identity firewall accesses', () => {
+    const txn = makeTxn({ identityAccessCount: 2 });
+    const summary = summarizeTransaction(txn);
+    expect(summary.points).toContain('2 Identifier-Zugriffe sichtbar gemacht');
   });
 
   // Full scenario

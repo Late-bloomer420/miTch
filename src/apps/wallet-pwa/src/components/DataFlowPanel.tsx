@@ -63,6 +63,11 @@ const TransactionCard: React.FC<{
           <span className="dataflow-card__time">{timeStr}</span>
         </div>
         <div className="dataflow-card__status">
+          {txn.identityAccessCount > 0 && (
+            <span className="dataflow-card__identity" title="Identifier-Zugriffe sichtbar gemacht">
+              {txn.identityAccessCount} Identifier
+            </span>
+          )}
           {txn.lifecycle.fullyShredded ? (
             <span className="dataflow-card__shredded" title="Alle Schlüssel vernichtet">
               Vergessen
@@ -93,6 +98,11 @@ const TransactionCard: React.FC<{
               {translateClaim(claim)}
             </span>
           ))}
+        {txn.identityAccessCount > 0 && (
+          <span className="dataflow-card__tag dataflow-card__tag--identity">
+            Identifier sichtbar gemacht
+          </span>
+        )}
         {txn.claimsShared.length === 0 && txn.provenClaims.length === 0 && (
           <span className="dataflow-card__tag dataflow-card__tag--none">Keine Daten geteilt</span>
         )}

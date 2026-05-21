@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
+import type { TrackingPoint } from '../services/PrivacyAuditService';
 
 // Fresh WalletService instance per test (state isolation)
 function makeWallet() {
@@ -207,5 +208,66 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
     expect(mdoc!.claims).toContain('family_name');
     expect(mdoc!.claims).toContain('age_over_18');
     expect(mdoc!.claims).toContain('issuing_country');
+  });
+});
+
+describe('WalletService — Identity Firewall Audit Events', () => {
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+  });
+
+  const browserTracker: TrackingPoint = {
+    layer: 'BROWSER',
+    actor: 'https://tracker.example/path?cookie=raw-value',
+    riskLevel: 'HIGH',
+    riskReason: 'Browser fingerprinting signal',
+    dataExposed: [
+      {
+        field: 'Browsing History',
+        visibility: 'ENCRYPTED',
+        linkable: true,
+        persistence: 'CLOUD',
+      },
+    ],
+    detection: { method: 'HEURISTIC', confidence: 99 },
+    mitigations: [],
+  };
+
+  it('returns no events when decision_id is missing', async () => {
+    const entries = await wallet.recordIdentityFirewallEvents(
+      undefined,
+      'did:mitch:verifier-test',
+      [browserTracker]
+    );
+
+    expect(entries).toEqual([]);
+  });
+
+  it('records PII-minimal identity firewall events', async () => {
+    const entries = await wallet.recordIdentityFirewallEvents(
+      'decision-identity-001',
+      'did:mitch:verifier-test',
+      [browserTracker]
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].action).toBe('IDENTITY_ACCESS_DETECTED');
+    expect(entries[0].metadata).toMatchObject({
+      decision_id: 'decision-identity-001',
+      verifier_did: 'did:mitch:verifier-test',
+      access_type: 'browser_api',
+      surface: 'navigator.userAgent',
+      actor_label: 'tracker.example',
+      field_class: 'fingerprint',
+      persistence: 'cloud',
+      linkability: 'cross_context',
+      severity: 'critical',
+      blocked: false,
+      source: 'privacy_audit_service',
+    });
+    expect(JSON.stringify(entries[0].metadata)).not.toContain('raw-value');
   });
 });

@@ -328,6 +328,32 @@ describe('DataFlowService', () => {
     expect(txns[0].completedAt).toBe(t1);
   });
 
+  it('extracts identity firewall accesses from audit metadata', () => {
+    const entries = [
+      makeEntry({
+        action: 'IDENTITY_ACCESS_DETECTED',
+        metadata: {
+          decision_id: DEC_ID,
+          verifier_did: 'did:mitch:verifier-test',
+          access_type: 'browser_api',
+          surface: 'navigator.userAgent',
+          actor_label: 'Google Chrome',
+          field_class: 'fingerprint',
+          persistence: 'cloud',
+          linkability: 'cross_context',
+          severity: 'critical',
+          blocked: false,
+          source: 'privacy_audit_service',
+        },
+      }),
+    ];
+
+    const txns = service.buildTransactions(entries);
+    expect(txns[0].identityAccessCount).toBe(1);
+    expect(txns[0].identityAccesses[0].actor_label).toBe('Google Chrome');
+    expect(txns[0].identityAccesses[0]).not.toHaveProperty('decision_id');
+  });
+
   it('maps events with correct labels and categories', () => {
     const entries = [
       makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
@@ -341,6 +367,11 @@ describe('DataFlowService', () => {
     expect(txns[0].events[1].category).toBe('presentation');
     expect(txns[0].events[2].label).toBe('Schlüssel vernichtet');
     expect(txns[0].events[2].category).toBe('key');
+  });
+  it('returns correct label for IDENTITY_ACCESS_DETECTED', () => {
+    const result = eventLabel('IDENTITY_ACCESS_DETECTED');
+    expect(result.label).toBe('Identifier-Zugriff erkannt');
+    expect(result.category).toBe('identity');
   });
 });
 

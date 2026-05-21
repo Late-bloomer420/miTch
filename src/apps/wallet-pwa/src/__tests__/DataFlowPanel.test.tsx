@@ -112,6 +112,35 @@ describe('DataFlowPanel', () => {
     expect(screen.queryByText('address')).not.toBeInTheDocument();
   });
 
+  it('shows identity firewall badge and timeline event', () => {
+    const entries = [
+      makeEntry({
+        action: 'IDENTITY_ACCESS_DETECTED',
+        timestamp: '2026-03-15T10:00:00Z',
+        metadata: {
+          decision_id: DEC_ID,
+          verifier_did: 'did:mitch:verifier-liquor-store',
+          access_type: 'browser_api',
+          surface: 'navigator.userAgent',
+          actor_label: 'Google Chrome',
+          field_class: 'fingerprint',
+          persistence: 'cloud',
+          linkability: 'cross_context',
+          severity: 'critical',
+          blocked: false,
+          source: 'privacy_audit_service',
+        },
+      }),
+    ];
+
+    render(<DataFlowPanel entries={entries} />);
+    expect(screen.getByText('1 Identifier')).toBeInTheDocument();
+    expect(screen.getByText('Identifier sichtbar gemacht')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Unbekannter Verifier'));
+    expect(screen.getByText('Identifier-Zugriff erkannt')).toBeInTheDocument();
+  });
+
   it('shows summary points for ZKP transaction', () => {
     // buildTypicalEntries has usedZKP: true, provenClaims: ['age >= 18'],
     // fullyShredded: true → should show summary
