@@ -382,31 +382,39 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 
 #### E-40: Data Erasure Request (I9 Interface)
 
-- **Status:** Planned
-- **Problem:** CIR 2024/2982 Art. 6 mandatiert, dass der User vom Wallet aus die Löschung seiner Daten beim Verifier anfordern kann. miTch hat aktuell keine Schnittstelle dafür.
-- **Konkreter Fix:** 
-  1. `WalletService.requestDataErasure(decisionId: string)` implementieren.
-  2. Authentifizierter OID4VP-Initiated Flow zum `erasure_endpoint` des Verifiers.
-  3. Payload: VP (PID) + `transaction_data` mit `transaction_type: "data_erasure"`.
-  4. UI: "Request Erasure" Button im `DataFlowPanel`.
-- **Aufwand:** M
-- **Abhängigkeiten:** keine
-- **Test-Strategie:** E2E-Test mit `verifier-backend` Mock-Endpoint. Bestätigung der Löschungsanforderung im Audit-Log.
+- **Status:** ✅ Implemented
+- **Problem:** CIR 2024/2982 Art. 6 mandatiert, dass der User vom Wallet aus die Löschung seiner Daten beim Verifier anfordern kann.
+- **Fix:** `WalletService.requestDataErasure` implementiert + UI-Trigger im DataFlowPanel. Authentifizierter Request mit Identity-Key Signatur.
 
 ---
 
 #### E-41: Reporting Mechanism for Suspicious RPs
 
+- **Status:** ✅ Implemented
+- **Problem:** CIR 2024/2982 Art. 7 mandatiert einen Meldeweg für verdächtige Relying Parties.
+- **Fix:** `WalletService.reportRelyingParty` implementiert + UI-Trigger im DataFlowPanel.
+
+---
+
+## Block E — Proximity Presentation (Offline mdoc)
+
+**Grundlage:** ISO/IEC 18013-5, CIR 2024/2982 Art. 18
+**Erstellt:** 2026-05-21
+**Ziel:** Umsetzung des Offline-Flows (BLE/NFC/QR) im Wallet-PWA.
+
+---
+
+#### E-50: mdoc Proximity UI (Wallet-PWA)
+
 - **Status:** Planned
-- **Problem:** CIR 2024/2982 Art. 7 mandatiert einen Meldeweg für verdächtige Relying Parties an Aufsichtsbehörden.
-- **Konkreter Fix:**
-  1. `WalletService.reportRelyingParty(decisionId: string, reason: string)` implementieren.
-  2. Report-Objekt (RP-Metadata, Attributes, Reason, Timestamp) erstellen und signieren.
-  3. POST an einen (Mock) Supervisory Authority Endpoint.
-  4. UI: "Report Suspicious" Button in `ConsentModal` und `DataFlowPanel`.
-- **Aufwand:** M
-- **Abhängigkeiten:** keine
-- **Test-Strategie:** Mock-Authority erhält valides, signiertes Report-Objekt.
+- **Problem:** `@mitch/mdoc` Logik für Offline-Verifikation und DeviceAuth existiert, aber das PWA hat keinen UI-Pfad um eine DeviceResponse (QR/BLE) anzuzeigen oder zu empfangen.
+- **Konkreter Fix:** 
+  1. `ProximityView` Komponente erstellen (QR-Code Generator für DeviceEngagement).
+  2. BLE/NFC Bridge (Web Bluetooth / Web NFC) evaluieren oder Mocking für Browser-Demo.
+  3. Presentation-Path in `WalletService` für mdoc-Formate vervollständigen.
+- **Aufwand:** L
+- **Abhängigkeiten:** `@mitch/mdoc` (vorhanden)
+- **Test-Strategie:** E2E-Demo mit einem zweiten Device (Verifier-Simulator).
 
 ---
 
@@ -414,28 +422,13 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 
 ```
 Block A (Sofort, 1–2 Tage):
-  1. F-10 — CI reparieren          (S, kein Code, alles andere profitiert davon)
-  2. F-02 — ReDoS fixen            (S, Sicherheit, Voraussetzung für F-09)
-  3. F-03 — Echter SHA-256         (S, Integrität)
-  4. F-11 — Stale files löschen    (S, Hygiene)
-  5. F-08 — getRawDocument() Guard (S)
-  6. F-06 — importKey Error-Handling (S)
-  7. F-17 — Algorithm-Probe        (S)
-  8. F-13 — CSP-Header             (S)
+  ...
+Block D (Compliance & Transparency): ✅ Done
+  1. E-40 — Data Erasure (I9)        (✅)
+  2. E-41 — Reporting Mechanism      (✅)
 
-Block B (Phase 6 Gate, diese Woche):
-  1. F-18 — REFACTORING_ROADMAP.md erstellen (S, Voraussetzung für F-04, F-16)
-  2. F-01 — Recovery: Option A oder B        (M, kritischstes inhaltliches Finding)
-  3. F-12 — L2-Stub-Status dokumentieren     (S)
-  4. F-05 — Extractable-Kommentar            (S)
-  5. F-09 — Verifier Binding Phase 1         (M, braucht F-02)
-  6. F-04 — EphemeralKey-Interface           (M)
-  7. F-15 — Test-Coverage                    (M, braucht F-01-Entscheidung)
-  8. F-16 — WalletService-Plan in Roadmap    (S Doku, L Implementierung = Backlog)
-
-Block D (Compliance & Transparency, diese Woche):
-  1. E-40 — Data Erasure (I9)        (M, regulatorisch mandatory)
-  2. E-41 — Reporting Mechanism      (M, regulatorisch mandatory)
+Block E (Proximity & Offline):
+  1. E-50 — mdoc Proximity UI        (L, regulatorisch mandatory für 18013-5)
 
 Block C (Backlog):
   F-07, F-14 — kein Pilot-Blocker
