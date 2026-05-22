@@ -24,7 +24,18 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/03-architecture/mvp/` �
 | [ADR-008](ADR-008.md) | Fail-Closed Policy Engine with Deny-Bias | Accepted |
 | [ADR-009](ADR-009.md) | Native WebAuthn Verifier statt HMAC-Proxy-Mode-System | Accepted (retrospective) |
 
+## Lifecycle: aus Strategie wird Implementation
+
+ADRs hier dokumentieren **umgesetzte Tech-Entscheidungen** mit konkreten Code-Pfaden. Wenn eine Implementation-ADR entsteht, gibt es in vielen Fällen eine vorherige Strategie-ADR in [`docs/03-architecture/mvp/`](../../03-architecture/mvp/) — die bleibt dort als historischer Strategie-Snapshot stehen und wird gegenseitig verlinkt. Beispiele:
+
+| Strategie in `mvp/` | Implementation hier |
+|---|---|
+| `ADR-001_Credential_Stack_Decision` (PROPOSED) | `ADR-001` SD-JWT VC (Accepted) |
+| `ADR-003_Revocation_Strategy` (PROPOSED) | `ADR-006` StatusList2021 (Accepted) |
+
+Wenn du einen neuen ADR hier hinzufügst: prüfe, ob es eine korrespondierende Strategie-ADR gibt und verlinke sie unter „Related" am Ende deines Dokuments.
+
 ## Verwandte Sammlungen
 
-- [`docs/03-architecture/mvp/`](../../03-architecture/mvp/) — formale Architektur-Strategie-ADRs (ADR-001–012)
-- [`docs/03-architecture/decisions/`](../../03-architecture/decisions/) — frühe, lightweight Decision Notes (Phase 0)
+- [`docs/03-architecture/mvp/`](../../03-architecture/mvp/) — formale Architektur-Strategie-ADRs (ADR-001–013)
+- [`docs/03-architecture/decisions/`](../../03-architecture/decisions/) — frühe, lightweight Decision Notes (Phase 0, eingefroren)

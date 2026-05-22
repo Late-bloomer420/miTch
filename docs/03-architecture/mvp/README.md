@@ -33,8 +33,20 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/compliance/ADR/` — do
 | [ADR-010](ADR-010_TEE_Integration_Strategy.md) | TEE Integration Strategy | PROPOSED |
 | [ADR-011](ADR-011_Claim_Level_Encryption_Strategy.md) | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED |
 | [ADR-012](ADR-012_ISO_18013-5_mdoc_Offline_Verification_Strategy.md) | ISO 18013-5 mdoc & Offline Verification | PROPOSED |
+| [ADR-013](ADR-013_TEE_Hardware_Binding_PWA.md) | TEE & Hardware Binding in PWA (LoA High) | PROPOSED |
+
+## Lifecycle: PROPOSED → ACCEPTED
+
+ADRs in dieser Sammlung beschreiben **Strategien**. Sobald eine Strategie tatsächlich umgesetzt wird, entsteht in [`docs/compliance/ADR/`](../../compliance/ADR/) ein begleitender ADR mit Status `Accepted` und konkreten Code-Pfaden. Beispiele für diesen Lifecycle:
+
+| Strategie hier | Implementation dort |
+|---|---|
+| `ADR-001_Credential_Stack_Decision` | `compliance/ADR/ADR-001` (SD-JWT VC) |
+| `ADR-003_Revocation_Strategy` | `compliance/ADR/ADR-006` (StatusList2021) |
+
+Wenn du eine Strategie in dieser Sammlung umsetzt: lass die `PROPOSED`-ADR hier stehen (historisch), füge ein `Accepted`-Pendant in `compliance/ADR/` hinzu und verlinke beide gegenseitig.
 
 ## Verwandte Sammlungen
 
-- [`docs/03-architecture/decisions/`](../decisions/) — frühe, lightweight Decision Notes (Phase 0)
-- [`docs/compliance/ADR/`](../../compliance/ADR/) — compliance- und implementierungsnahe ADRs
+- [`docs/03-architecture/decisions/`](../decisions/) — frühe, lightweight Decision Notes (Phase 0, eingefroren)
+- [`docs/compliance/ADR/`](../../compliance/ADR/) — compliance- und implementierungsnahe ADRs (umgesetzte Strategien)
