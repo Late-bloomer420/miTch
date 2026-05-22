@@ -237,10 +237,10 @@ importers:
         version: 18.3.7(@types/react@18.3.28)
       '@vitejs/plugin-basic-ssl':
         specifier: ^2.1.4
-        version: 2.1.4(vite@5.4.21(@types/node@20.19.33))
+        version: 2.1.4(vite@7.3.1(@types/node@20.19.33)(tsx@4.21.0))
       '@vitejs/plugin-react':
         specifier: ^4.7.0
-        version: 4.7.0(vite@5.4.21(@types/node@20.19.33))
+        version: 4.7.0(vite@7.3.1(@types/node@20.19.33)(tsx@4.21.0))
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0(@noble/hashes@2.0.1)
@@ -248,8 +248,8 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
       vite:
-        specifier: ^5.4.21
-        version: 5.4.21(@types/node@20.19.33)
+        specifier: ^7.1.12
+        version: 7.3.1(@types/node@20.19.33)(tsx@4.21.0)
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))(tsx@4.21.0)
@@ -4102,21 +4102,9 @@ snapshots:
       '@typescript-eslint/types': 8.56.1
       eslint-visitor-keys: 5.0.1
 
-  '@vitejs/plugin-basic-ssl@2.1.4(vite@5.4.21(@types/node@20.19.33))':
+  '@vitejs/plugin-basic-ssl@2.1.4(vite@7.3.1(@types/node@20.19.33)(tsx@4.21.0))':
     dependencies:
-      vite: 5.4.21(@types/node@20.19.33)
-
-  '@vitejs/plugin-react@4.7.0(vite@5.4.21(@types/node@20.19.33))':
-    dependencies:
-      '@babel/core': 7.29.0
-      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
-      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.29.0)
-      '@rolldown/pluginutils': 1.0.0-beta.27
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.17.0
-      vite: 5.4.21(@types/node@20.19.33)
-    transitivePeerDependencies:
-      - supports-color
+      vite: 7.3.1(@types/node@20.19.33)(tsx@4.21.0)
 
   '@vitejs/plugin-react@4.7.0(vite@5.4.21(@types/node@25.3.5))':
     dependencies:
@@ -4127,6 +4115,18 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
       vite: 5.4.21(@types/node@25.3.5)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitejs/plugin-react@4.7.0(vite@7.3.1(@types/node@20.19.33)(tsx@4.21.0))':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
+      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.29.0)
+      '@rolldown/pluginutils': 1.0.0-beta.27
+      '@types/babel__core': 7.20.5
+      react-refresh: 0.17.0
+      vite: 7.3.1(@types/node@20.19.33)(tsx@4.21.0)
     transitivePeerDependencies:
       - supports-color
 

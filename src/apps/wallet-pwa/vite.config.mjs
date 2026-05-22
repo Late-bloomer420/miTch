@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
     plugins: [react()],
@@ -21,7 +25,6 @@ export default defineConfig({
         },
     },
 
-    // Optimize dependencies (avoid pre-bundling workspace packages)
     optimizeDeps: {
         exclude: [
             '@mitch/shared-types',
@@ -39,8 +42,8 @@ export default defineConfig({
 
     server: {
         port: 5174,
-        strictPort: false, // Allow fallback if port used
-        host: true, // Expose to network
-        allowedHosts: true, // Allow ngrok/localtunnel/serveo hosts
+        strictPort: false,
+        host: true,
+        allowedHosts: true,
     },
 });
