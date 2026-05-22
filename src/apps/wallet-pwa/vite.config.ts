@@ -17,6 +17,7 @@ export default defineConfig({
             '@mitch/layer-resolver': path.resolve(__dirname, '../../packages/layer-resolver/src'),
             '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
             '@mitch/data-flow': path.resolve(__dirname, '../../packages/data-flow/src'),
+            '@mitch/mdoc': path.resolve(__dirname, '../../packages/mdoc/src'),
         },
     },
 
@@ -32,6 +33,7 @@ export default defineConfig({
             '@mitch/layer-resolver',
             '@mitch/oid4vp',
             '@mitch/data-flow',
+            '@mitch/mdoc',
         ],
     },
 
