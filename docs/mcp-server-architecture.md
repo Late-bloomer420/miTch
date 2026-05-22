@@ -212,10 +212,20 @@ Dependencies (intern, workspace:*):
    Policy-Quellen-Frage (embedded vs. file vs. agent-supplied) nicht
    sauber zu entscheiden, und ein embedded Default produziert echte
    Decisions ohne autorisierte Policy.
-4. **Nächster Schritt für die gewählte Zielgruppe (Auditor-LLM)**:
-   Read-Tools implementieren (`mitch_list_decisions`,
-   `mitch_get_decision`, `mitch_explain_denial`) gegen den vorhandenen
-   `@mitch/audit-log`. Diese sind read-only, brauchen keine Policy-Quelle,
-   und liefern dem Auditor-LLM direkt Mehrwert.
-5. Inspector-Smoke-Test, dann `mitch_evaluate_disclosure` wenn Bedarf
-   konkret wird.
+4. **Read-Tools ebenfalls eingefroren — Stand 2026-05-22**: Auch
+   `mitch_list_decisions`, `mitch_get_decision`, `mitch_explain_denial`
+   bleiben unimplementiert, bis ein konkreter Anwendungsfall steht.
+   Gating-Frage: was leistet der MCP-Server, was ein lokales LLM mit der
+   exportierten `AuditLogExport.json` als File-Input nicht selbst kann?
+   Vermutete Mehrwerte (strukturierte Tool-Calls statt Freitext-Parsing,
+   Reason-Code-Anreicherung, Hash-Chain-Verifikation) brauchen einen
+   echten Bedarf — sonst ist der einfachere Pfad „Wallet-Export →
+   LLM-Chat mit JSON" überlegen.
+5. **Trigger zum Auftauen**: konkrete User-Story mit Mengen-/Frequenz-
+   Schätzung. Insbesondere wenn (a) Audit-Logs > ~10k Entries werden und
+   Token-Effizienz zählt, (b) Reports an externe Dritte gehen und
+   Hash-Chain-Verifikation ein Verkaufsargument ist, oder (c) eine
+   wiederkehrende Audit-Routine entsteht, die strukturierte Queries
+   braucht. Bis dahin: nichts bauen, Stub-Disziplin halten.
+6. Inspector-Smoke-Test, sobald irgendein Tool wirklich implementiert
+   wird.
