@@ -53,7 +53,7 @@ const TransactionCard: React.FC<{
   const timeStr = new Date(txn.startedAt).toLocaleString();
   const summary = useMemo(() => summarizeTransaction(txn), [txn]);
 
-  const hasErasureEndpoint = txn.events.some(e => e.action === 'VP_SENT' && (e as any).metadata?.erasure_endpoint);
+  const hasErasureEndpoint = txn.events.some(e => e.action === 'VP_SENT' && e.metadata?.erasure_endpoint);
 
   return (
     <div className="dataflow-card">

@@ -25,6 +25,7 @@ import {
     RecoveryService,
     WebAuthnService,
     signData,
+    sha256,
     resolveDID,
     detectKeyAlgorithm
 } from '@mitch/shared-crypto';
@@ -1348,12 +1349,16 @@ export class WalletService {
         };
 
         const content = canonicalStringify(erasureRequest);
-        
+
         // Sign with the persistent identity key
         const { proofToken } = await this.signData({
+            type: 'ProofOfExistence',
             hash: await sha256(content),
+            hashAlg: 'SHA-256',
             description: `Data Erasure Request for decision ${decisionId}`,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            createdAt: new Date().toISOString(),
+            byteLength: new TextEncoder().encode(content).length
         });
 
         console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
@@ -1394,9 +1399,13 @@ export class WalletService {
 
         const content = canonicalStringify(report);
         const { proofToken } = await this.signData({
+            type: 'ProofOfExistence',
             hash: await sha256(content),
+            hashAlg: 'SHA-256',
             description: `Suspicious RP Report: ${verifierId}`,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            createdAt: new Date().toISOString(),
+            byteLength: new TextEncoder().encode(content).length
         });
 
         console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
