@@ -734,9 +734,6 @@ importers:
 
   src/packages/shared-types:
     devDependencies:
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.33
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
@@ -745,7 +742,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.9
-        version: 2.1.9(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))
+        version: 2.1.9(@types/node@25.3.5)(jsdom@28.1.0(@noble/hashes@2.0.1))
 
   src/packages/verifier-browser:
     dependencies:
