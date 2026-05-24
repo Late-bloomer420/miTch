@@ -5,18 +5,17 @@
     "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": false,
     "sourceMap": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "target": "ES2020"
+    "target": "ES2020",
+    "typeRoots": ["../../../node_modules/.pnpm/@types+node@20.19.33/node_modules/@types"],
+    "paths": {
+      "@modelcontextprotocol/sdk/server/mcp.js": ["../../../node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.d.ts"],
+      "@modelcontextprotocol/sdk/server/stdio.js": ["../../../node_modules/.pnpm/@modelcontextprotocol+sdk@1.29.0_zod@3.25.76/node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.d.ts"],
+      "zod": ["../../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/index.d.ts"]
+    }
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts"
-  ],
-  "exclude": [
-    "src/__tests__/**",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["src/__tests__/**", "**/*.test.ts"]
 }
