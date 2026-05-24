@@ -78,8 +78,10 @@ export class DataFlowService {
         return {
           auditEntryId: e.id,
           timestamp: e.timestamp,
+          action: e.action,
           label,
           category,
+          metadata: e.metadata,
         };
       });
 

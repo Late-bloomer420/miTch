@@ -1,4 +1,4 @@
-import type { IdentityFirewallMetadata } from '@mitch/shared-types';
+import type { AuditEventType, IdentityFirewallMetadata } from '@mitch/shared-types';
 
 export type IdentityFirewallAccess = Omit<IdentityFirewallMetadata, 'decision_id'>;
 
@@ -28,7 +28,9 @@ export interface DataFlowTransaction {
 export interface DataFlowEvent {
   auditEntryId: string;
   timestamp: string;
+  action: AuditEventType;
   label: string;
   category: 'key' | 'credential' | 'presentation' | 'policy' | 'consent' | 'identity';
   detail?: string;
+  metadata?: Record<string, unknown>;
 }
