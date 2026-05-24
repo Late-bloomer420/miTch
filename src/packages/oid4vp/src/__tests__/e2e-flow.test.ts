@@ -138,11 +138,15 @@ describe('T-01: OID4VP E2E — Liquor Store (age verification)', () => {
             request,
             disclosedClaims: { age: 24 },
             outcome: 'SUCCESS',
+            decisionId: 'decision-oid4vp-001',
         });
 
+        expect(cleanup.consentReceipt.schemaVersion).toBe(1);
         expect(cleanup.consentReceipt.verifier).toBe(VERIFIER_CLIENT_ID);
         expect(cleanup.consentReceipt.claimsShared).toContain('age');
         expect(cleanup.consentReceipt.id).toMatch(/^consent-/);
+        expect(cleanup.consentReceipt.outcome).toBe('SUCCESS');
+        expect(cleanup.consentReceipt.decisionId).toBe('decision-oid4vp-001');
         expect(cleanup.auditEntry.outcome).toBe('SUCCESS');
         expect(cleanup.auditEntry.claimsShared).toEqual(['age']);
     });

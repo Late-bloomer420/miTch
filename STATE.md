@@ -3,7 +3,7 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-05-16
+**Date:** 2026-05-25
 **Branch:** `master` (default)
 **Release tag:** `pilot-ready-p0`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -13,6 +13,8 @@
 ## Canonical references (single source of truth)
 
 - Documentation authority map: [`docs/DOCS_CANON.md`](docs/DOCS_CANON.md)
+- Architecture analysis process v2: [`docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`](docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md)
+- Coding-agent handoff: [`docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`](docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md)
 - P0 evidence and closure status: [`docs/ops/EVIDENCE_PACK_P0.md`](docs/ops/EVIDENCE_PACK_P0.md)
 - Latest pilot dry run record: [`docs/pilot/PILOT_DRY_RUN_01.md`](docs/pilot/PILOT_DRY_RUN_01.md)
 - Findings backlog: [`docs/pilot/FINDINGS_BACKLOG.md`](docs/pilot/FINDINGS_BACKLOG.md)
@@ -26,6 +28,11 @@
 - Purpose: keep pilot scope narrow and avoid parallel drift across multiple use-cases.
 
 ## Current status
+
+### Architecture handoff (2026-05-25)
+- Use the architecture analysis process v2 as the review standard for the next coding-agent pass.
+- Review rule: ambiguous architecture status is `UNKNOWN => FAIL`.
+- Start from the coding-agent handoff document and run `git status --short --branch` before continuing.
 
 ### Operational Health
 - **Tests:** 43/43 turbo tasks pass; 1618 individual tests (26 packages); 169/169 mdoc tests; 218/218 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests

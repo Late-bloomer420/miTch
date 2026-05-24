@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@mitch/shared-types';
 import type { PrivacyConsent } from '../services/PrivacyAuditService';
-import type { ConsentReceipt } from '@mitch/oid4vp';
+import type { ConsentReceipt } from '../consent-manager/types';
 import { buildConsentManagerViewModel } from '../consent-manager/model';
 import { buildConsentReceiptExport, type StoredConsentReceiptEntry } from '../consent-manager/receipt-store';
 
@@ -93,9 +93,9 @@ export function ConsentManagerPanel({
   const filteredHistory = useMemo(() => {
     const query = verifierFilter.trim().toLowerCase();
     return receiptHistory.filter(entry => {
-      const verifier = entry.receipt.verifier.toLowerCase();
-      const purpose = entry.receipt.purpose.toLowerCase();
-      return matchesTimeframe(entry.receipt.timestamp, timeframe)
+      const verifier = entry.verifier.toLowerCase();
+      const purpose = entry.purpose.toLowerCase();
+      return matchesTimeframe(entry.timestamp, timeframe)
         && (!query || verifier.includes(query) || purpose.includes(query));
     });
   }, [receiptHistory, timeframe, verifierFilter]);
@@ -113,8 +113,8 @@ export function ConsentManagerPanel({
       setPage(0);
       return;
     }
-    if (!selectedReceiptId || !filteredHistory.some(entry => entry.receipt.id === selectedReceiptId)) {
-      setSelectedReceiptId(filteredHistory[0].receipt.id);
+    if (!selectedReceiptId || !filteredHistory.some(entry => entry.id === selectedReceiptId)) {
+      setSelectedReceiptId(filteredHistory[0].id);
     }
     if (page !== currentPage) {
       setPage(currentPage);
@@ -125,12 +125,20 @@ export function ConsentManagerPanel({
     setPage(0);
   }, [timeframe, verifierFilter]);
 
-  const selectedReceipt = filteredHistory.find(entry => entry.receipt.id === selectedReceiptId) ?? null;
+  const selectedReceipt = filteredHistory.find(entry => entry.id === selectedReceiptId) ?? null;
 
-  const handleExportHistory = () => {
-    const report = buildConsentReceiptExport(filteredHistory);
+  const handleExportHistory = async (scope: 'filtered' | 'full') => {
+    const entries = scope === 'filtered' ? filteredHistory : receiptHistory;
+    const report = await buildConsentReceiptExport(entries, {
+      scope,
+      filters: {
+        verifierQuery: verifierFilter.trim(),
+        timeframe,
+      },
+      auditAnchorHash: auditEntries.at(-1)?.currentHash ?? null,
+    });
     const ts = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `mitch-consent-receipts-${ts}.json`;
+    const filename = `mitch-consent-receipts-${scope}-${ts}.json`;
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -148,7 +156,7 @@ export function ConsentManagerPanel({
         <div>
           <h3 className="consent-manager-panel__title">Consent Manager</h3>
           <p className="consent-manager-panel__subtitle">
-            Requested, allowed, withheld, decision and evidence in one view.
+            Requested, allowed, withheld, decision and evidence in one view. OID4VP W-05 receipts are the only persisted consent history right now.
           </p>
         </div>
         <StateBadge state={model.state} />
@@ -276,37 +284,40 @@ export function ConsentManagerPanel({
               <option value="7d">Last 7d</option>
               <option value="30d">Last 30d</option>
             </select>
-            <button className="btn-demo-secondary" onClick={handleExportHistory} disabled={filteredHistory.length === 0}>
-              Export JSON
+            <button className="btn-demo-secondary" onClick={() => { void handleExportHistory('filtered'); }} disabled={filteredHistory.length === 0}>
+              Export filtered JSON
+            </button>
+            <button className="btn-demo-secondary" onClick={() => { void handleExportHistory('full'); }} disabled={receiptHistory.length === 0}>
+              Export full history JSON
             </button>
           </div>
         </div>
         {filteredHistory.length > 0 ? (
           <div className="consent-manager-panel__history">
             {pagedHistory.map(entry => {
-              const isSelected = entry.receipt.id === selectedReceiptId;
+              const isSelected = entry.id === selectedReceiptId;
               return (
                 <button
-                  key={entry.receipt.id}
+                  key={entry.id}
                   type="button"
                   className={`consent-manager-panel__history-item${isSelected ? ' consent-manager-panel__history-item--selected' : ''}`}
-                  onClick={() => setSelectedReceiptId(entry.receipt.id)}
+                  onClick={() => setSelectedReceiptId(entry.id)}
                 >
                   <div className="consent-manager-panel__history-topline">
-                    <strong>{entry.receipt.id}</strong>
+                    <strong>{entry.id}</strong>
                     <span className={`consent-manager-panel__history-pill consent-manager-panel__history-pill--${entry.outcome.toLowerCase()}`}>
                       {entry.outcome}
                     </span>
                   </div>
                   <div className="consent-manager-panel__history-meta">
-                    <span>{entry.receipt.verifier}</span>
-                    <span>{formatReceiptTime(entry.receipt.timestamp)}</span>
+                    <span>{entry.verifier}</span>
+                    <span>{formatReceiptTime(entry.timestamp)}</span>
                     {entry.decisionId && <span>Decision {entry.decisionId}</span>}
                   </div>
                   <div className="consent-manager-panel__chips">
-                    {entry.receipt.claimsShared.length > 0 ? (
-                      entry.receipt.claimsShared.map(claim => (
-                        <span key={`${entry.receipt.id}-${claim}`} className="consent-manager-panel__chip consent-manager-panel__chip--allowed">
+                    {entry.claimsShared.length > 0 ? (
+                      entry.claimsShared.map(claim => (
+                        <span key={`${entry.id}-${claim}`} className="consent-manager-panel__chip consent-manager-panel__chip--allowed">
                           {claimLabel(claim)}
                         </span>
                       ))
@@ -350,19 +361,19 @@ export function ConsentManagerPanel({
           <div className="consent-manager-panel__detail">
             <div className="consent-manager-panel__detail-row">
               <span className="consent-manager-panel__label">Receipt ID</span>
-              <span className="consent-manager-panel__value">{selectedReceipt.receipt.id}</span>
+              <span className="consent-manager-panel__value">{selectedReceipt.id}</span>
             </div>
             <div className="consent-manager-panel__detail-row">
               <span className="consent-manager-panel__label">Verifier</span>
-              <span className="consent-manager-panel__value">{selectedReceipt.receipt.verifier}</span>
+              <span className="consent-manager-panel__value">{selectedReceipt.verifier}</span>
             </div>
             <div className="consent-manager-panel__detail-row">
               <span className="consent-manager-panel__label">Purpose</span>
-              <span className="consent-manager-panel__value">{selectedReceipt.receipt.purpose}</span>
+              <span className="consent-manager-panel__value">{selectedReceipt.purpose}</span>
             </div>
             <div className="consent-manager-panel__detail-row">
               <span className="consent-manager-panel__label">Timestamp</span>
-              <span className="consent-manager-panel__value">{formatReceiptTime(selectedReceipt.receipt.timestamp)}</span>
+              <span className="consent-manager-panel__value">{formatReceiptTime(selectedReceipt.timestamp)}</span>
             </div>
             <div className="consent-manager-panel__detail-row">
               <span className="consent-manager-panel__label">Decision</span>
@@ -375,9 +386,9 @@ export function ConsentManagerPanel({
             <div className="consent-manager-panel__detail-block">
               <div className="consent-manager-panel__label">Shared claims</div>
               <div className="consent-manager-panel__chips">
-                {selectedReceipt.receipt.claimsShared.length > 0 ? (
-                  selectedReceipt.receipt.claimsShared.map(claim => (
-                    <span key={`detail-${selectedReceipt.receipt.id}-${claim}`} className="consent-manager-panel__chip consent-manager-panel__chip--allowed">
+                {selectedReceipt.claimsShared.length > 0 ? (
+                  selectedReceipt.claimsShared.map(claim => (
+                    <span key={`detail-${selectedReceipt.id}-${claim}`} className="consent-manager-panel__chip consent-manager-panel__chip--allowed">
                       {claimLabel(claim)}
                     </span>
                   ))

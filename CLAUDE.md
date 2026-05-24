@@ -2,6 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working Memory
+
+**Projekt:** miTch — "The Forgetting Layer" (Privacy-preserving proof mediation middleware)
+**Status:** Pilot-Ready (`pilot-ready-p0`), 1618 Tests ✅, Phase 2–3 laufend
+**Repo:** https://github.com/Late-bloomer420/miTch.git | **Branch:** `master`
+
+### Nächste Prioritäten (P1)
+- U-10/U-11: BBS+ / SD-JWT Ephemeral Keys (Proof-Randomisierung)
+- E-30–E-33: EU Regulatory Compliance (CIR 2024/2977–2982)
+- U-20/U-21: Identitäts-Firewall + UI-Benachrichtigungen
+- S-10: STRIDE Threat Model (wartet auf externen Security Review)
+
+### Memory-Dateien
+- `TASKS.md` — Produktivitäts-Tracker (offene Tasks)
+- `memory/glossary.md` — Alle Acronyme & internen Begriffe
+- `memory/projects/mitch-core.md` — Projektdetails & Phasen
+- `memory/context/stack.md` — Tech Stack, Ports, Schlüsseldateien
+- `dashboard.html` — Produktivitäts-Dashboard (im Browser öffnen)
+
+---
+
 ## Project Overview
 
 miTch is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — ZK-style credential verification with crypto-shredding, fail-closed policy engine, GDPR Art. 25 + eIDAS 2.0 / EUDI compatible. TypeScript monorepo with pnpm workspaces.

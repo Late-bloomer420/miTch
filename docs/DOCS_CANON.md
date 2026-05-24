@@ -12,11 +12,15 @@ This file defines the authoritative document per topic area and serves as naviga
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
+| `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md` | Wiederholbarer Architekturprüfprozess mit Privacy-Firewall Reason Codes | Wie prüfen wir Architektur? |
+| `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md` | Übergabe-Snapshot für Coding Agents | Was muss der nächste Agent zuerst lesen? |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
 
 ## Authoritative Sources
 
 - **P0 closure evidence (security + fail-closed test proof):** `docs/ops/EVIDENCE_PACK_P0.md`
+- **Architecture analysis process:** `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`
+- **Coding agent handoff:** `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`
 - **Pilot execution record:** `docs/pilot/PILOT_DRY_RUN_01.md`
 - **Pilot findings source:** `docs/pilot/PILOT_DRY_RUN_01_FINDINGS.md`
 - **Pilot findings tracking/backlog:** `docs/pilot/FINDINGS_BACKLOG.md`
@@ -29,6 +33,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
+- **Architecture Process v2:** `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`
+- **Coding Agent Handoff:** `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`
 
 ## Architecture Decision Records (3 Sammlungen)
 
@@ -45,3 +51,5 @@ This file defines the authoritative document per topic area and serves as naviga
 - If README conflicts with the Evidence Pack, the Evidence Pack is authoritative.
 - If STATE.md conflicts with a protocol spec, the spec is authoritative.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
+- If architecture status is ambiguous, use `ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`: `UNKNOWN => FAIL` until code, tests, specs, or ADRs prove the claim.
+- Treat `docs/03-architecture/decisions/` as historical Decision Notes. New binding architecture choices should be recorded as formal ADRs, not only as Decision Note edits.

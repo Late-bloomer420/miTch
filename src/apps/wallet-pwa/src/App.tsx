@@ -22,8 +22,8 @@ import {
     buildSessionCleanup,
     SCENARIO_VCT,
     type AuthorizationRequest,
-    type ConsentReceipt,
 } from '@mitch/oid4vp';
+import type { ConsentReceipt } from './consent-manager/types';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 
@@ -527,7 +527,7 @@ export default function App() {
     };
 
     // OID4VP: present SD-JWT VP to verifier via direct_post
-    const presentOID4VP = async (authRequest: AuthorizationRequest, scenarioId: string) => {
+    const presentOID4VP = async (authRequest: AuthorizationRequest, scenarioId: string, decisionId: string | null = null) => {
         let holderKeys: CryptoKeyPair | null = null;
         let issuerKeys: CryptoKeyPair | null = null;
 
@@ -596,13 +596,10 @@ export default function App() {
                 request: authRequest,
                 disclosedClaims,
                 outcome: result.ok ? 'SUCCESS' : 'DENIED',
+                decisionId,
             });
             setLastConsentReceipt(consentReceipt);
-            setConsentReceiptHistory(appendConsentReceiptHistory({
-                receipt: consentReceipt,
-                outcome: result.ok ? 'SUCCESS' : 'DENIED',
-                decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
-            }));
+            setConsentReceiptHistory(appendConsentReceiptHistory(consentReceipt));
             addLog(`📝 Audit: ${auditEntry.outcome} — receipt ${consentReceipt.id}`, 'info');
 
             setLogs(prev => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
@@ -667,7 +664,7 @@ export default function App() {
                 addLog(`✅ Policy ALLOWED. Building SD-JWT VP...`, 'success');
                 setFlashAllow(true);
                 setTimeout(() => setFlashAllow(false), 900);
-                await presentOID4VP(authRequest, scenario);
+                await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null);
             }
         } catch (e) {
             addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -838,7 +835,7 @@ export default function App() {
                         if (pendingAuth && pendingScenario) {
                             delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
                             delete (window as unknown as Record<string, unknown>)._pendingScenario;
-                            presentOID4VP(pendingAuth, pendingScenario);
+                            presentOID4VP(pendingAuth, pendingScenario, evaluationResult?.decisionCapsule?.decision_id ?? null);
                         } else {
                             proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
                         }
@@ -846,6 +843,19 @@ export default function App() {
                     onReject={() => {
                         setStatus('DENIED');
                         addLog('🚫 User rejected via Secure UI', 'error');
+                        const pendingAuth = (window as unknown as Record<string, unknown>)._pendingAuthRequest as AuthorizationRequest | undefined;
+                        if (pendingAuth) {
+                            delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
+                            delete (window as unknown as Record<string, unknown>)._pendingScenario;
+                            const { consentReceipt } = buildSessionCleanup({
+                                request: pendingAuth,
+                                disclosedClaims: {},
+                                outcome: 'DENIED',
+                                decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
+                            });
+                            setLastConsentReceipt(consentReceipt);
+                            setConsentReceiptHistory(appendConsentReceiptHistory(consentReceipt));
+                        }
                         setShowConsent(false);
                     }}
                     onLog={addLog}

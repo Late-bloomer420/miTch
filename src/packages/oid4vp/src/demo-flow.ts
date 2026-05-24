@@ -247,7 +247,7 @@ export async function buildSDJWTPresentation(
     const cnf = await buildCNFClaim(holderKeyPair.publicKey);
 
     // Build SD-JWT VC payload
-    const payload: Omit<SDJWTVCPayload, '_sd_alg'> & { vct: string; iss: string } = {
+    const payload: SDJWTVCPayload = {
         iss: issuerDid,
         vct,
         iat: now,
@@ -386,11 +386,14 @@ export async function validateSDJWTPresentation(
 // ─── W-05: Session Cleanup ────────────────────────────────────────────────────
 
 export interface ConsentReceipt {
+    schemaVersion: 1;
     id: string;
     verifier: string;
     purpose: string;
     claimsShared: string[];
     timestamp: string;
+    outcome: 'SUCCESS' | 'DENIED' | 'ERROR';
+    decisionId: string | null;
 }
 
 export interface SessionCleanupResult {
@@ -414,19 +417,23 @@ export function buildSessionCleanup(opts: {
     request: AuthorizationRequest;
     disclosedClaims: Record<string, unknown>;
     outcome: 'SUCCESS' | 'DENIED' | 'ERROR';
+    decisionId?: string | null;
 }): SessionCleanupResult {
-    const { request, disclosedClaims, outcome } = opts;
+    const { request, disclosedClaims, outcome, decisionId = null } = opts;
     const timestamp = new Date().toISOString();
     const presentationId = randomHex(8);
     const claimsShared = Object.keys(disclosedClaims);
 
     return {
         consentReceipt: {
+            schemaVersion: 1,
             id: `consent-${presentationId}`,
             verifier: request.client_id,
             purpose: request.presentation_definition.purpose ?? 'Verification',
             claimsShared,
             timestamp,
+            outcome,
+            decisionId,
         },
         auditEntry: {
             presentationId,

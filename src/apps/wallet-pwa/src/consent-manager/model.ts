@@ -1,7 +1,7 @@
 import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@mitch/shared-types';
 import { DataFlowService } from '@mitch/data-flow';
 import type { DataFlowTransaction, IdentityFirewallAccess } from '@mitch/data-flow';
-import type { ConsentReceipt } from '@mitch/oid4vp';
+import type { ConsentReceipt } from './types';
 import type { PrivacyConsent } from '../services/PrivacyAuditService';
 
 const dataFlowService = new DataFlowService();
@@ -102,6 +102,8 @@ function collectEvidence(
       { label: 'Receipt verifier', value: consentReceipt.verifier },
       { label: 'Receipt claims', value: String(consentReceipt.claimsShared.length) },
       { label: 'Receipt timestamp', value: consentReceipt.timestamp },
+      { label: 'Receipt outcome', value: consentReceipt.outcome },
+      { label: 'Receipt decision ID', value: consentReceipt.decisionId ?? 'none' },
     );
   }
 

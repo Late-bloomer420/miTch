@@ -165,8 +165,22 @@ The wallet now groups request, decision, audit evidence, and consent receipts in
 
 Implementation notes:
 
-- current receipt is created during OID4VP session cleanup
+- current receipt is created during OID4VP session cleanup and carries schemaVersion, outcome and decisionId
 - receipt history is stored in session-scoped storage, not long-lived localStorage
 - UI must keep receipts free of raw PII
 - receipt history is display-only metadata until export/pagination work is added
 - pagination limits the visible history without changing the underlying exported set
+- scope is intentionally OID4VP W-05 only for now; other demo flows are not persisted as consent receipts
+- export is split into `filtered` and `full` history, each with export metadata and a receipt-set hash anchor
+
+### Current Retention Decision
+
+The implementation is currently session-scoped because the wallet still treats consent receipts as operational evidence for the active browser session. That is sufficient for the demo and validation path, but it does not yet meet the long-lived encrypted archive model described above.
+
+Planned target remains:
+
+- encrypted persistent storage on device
+- monthly retention layout
+- lightweight index for fast queries
+- detailed receipts retained for 1 year
+- summary entries retained for 5 years

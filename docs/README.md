@@ -8,6 +8,8 @@
 | [`BACKLOG.md`](BACKLOG.md) | Offene Arbeit, erledigte Meilensteine, ADR-Übersicht |
 | [`specs/SPECS_STATUS_INDEX.md`](specs/SPECS_STATUS_INDEX.md) | Statusübersicht aller 112 Specs |
 | [`../STATE.md`](../STATE.md) | Aktueller Betriebszustand |
+| [`03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`](03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md) | Wiederholbarer Architekturprüfprozess (`UNKNOWN => FAIL`) |
+| [`03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`](03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md) | Übergabe-Snapshot für den nächsten Coding Agent |
 | [`REFACTORING_ROADMAP.md`](REFACTORING_ROADMAP.md) | Deferred Architekturarbeit (PoC → Production) |
 
 ## Canonical Locations
@@ -19,6 +21,8 @@
 | `01-grundversorgung/` | Phase-specific overrides (if any differ from specs) | Mostly emptied after dedup |
 | `03-architecture/decisions/` | Frühe Phase-0 Decision Notes | DECISION_001–007; [README](03-architecture/decisions/README.md) |
 | `03-architecture/mvp/` | Formale Architektur-Strategie-ADRs | ADR-001–012; [README](03-architecture/mvp/README.md) |
+| `03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md` | Architekturprüfprozess und aktuelle Findings | Arbeitsstandard für Reviews; kein ADR |
+| `03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md` | Coding-Agent-Übergabe | Startpunkt für Folgearbeit |
 | `compliance/ADR/` | Compliance- und implementierungsnahe ADRs | ADR-001–009; [README](compliance/ADR/README.md) |
 | `04-legal/` | Legal documents | Unique content |
 | `05-business/` | Business documents | Unique content |
@@ -30,3 +34,5 @@
 ## Rule
 
 **Do not duplicate spec docs.** If a numbered spec (e.g. `42_Pilot_Critical_Config.md`) exists in `specs/`, do not copy it elsewhere. Link or reference it instead.
+
+For architecture reviews, use `03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md`. Ambiguous status is treated as `UNKNOWN => FAIL` until code, tests, specs, or ADRs prove the claim.
