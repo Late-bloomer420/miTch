@@ -23,6 +23,10 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Capability handshake + downgrade handling:** `docs/protocol/CAP_NEGOTIATION_V1.md`
 - **Metadata budget + anti-correlation controls:** `docs/ops/METADATA_BUDGET_V1.md`
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
+- **Paperclip company operating model:** `docs/company/PAPERCLIP_COMPANY_PLAN.md`
+- **Paperclip agent hiring drafts:** `docs/company/PAPERCLIP_AGENT_HIRES.md`
+- **Paperclip execution task graph:** `docs/company/PAPERCLIP_TASK_GRAPH.md`
+- **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
 
 ## Navigation
 
