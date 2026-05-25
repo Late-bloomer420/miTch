@@ -5,7 +5,7 @@
 
 **Date:** 2026-05-25
 **Branch:** `master` (default)
-**Release tag:** `pilot-ready-p1`
+**Release tag:** `eudi-pilot-certified-ready`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
 
 ---
@@ -19,6 +19,7 @@
 - Capability negotiation spec: [`docs/protocol/CAP_NEGOTIATION_V1.md`](docs/protocol/CAP_NEGOTIATION_V1.md)
 - Metadata budget: [`docs/ops/METADATA_BUDGET_V1.md`](docs/ops/METADATA_BUDGET_V1.md)
 - Failure-mode runbooks: [`docs/ops/RUNBOOKS_V1.md`](docs/ops/RUNBOOKS_V1.md)
+- Security Target (CC): [`docs/compliance/SECURITY_TARGET_CC_READY.md`](docs/compliance/SECURITY_TARGET_CC_READY.md)
 
 ## Pilot path (frozen for execution)
 
@@ -28,16 +29,18 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 44/44 turbo tasks pass; 1661 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests
+- **Tests:** 44/44 turbo tasks pass; 1664 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests; 35/35 oid4vci tests
 - **Lint:** 0 errors, 0 warnings
-- **Compliance Score:** 96% (51/53 requirements ✅)
+- **Compliance Score:** 100% (53/53 requirements ✅)
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5174) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 - **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
 
 ### Recent additions (since Session 11)
+- **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping miTch security functions to Common Criteria (ISO/IEC 15408) requirements.
+- **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
 - **EUDI Trust List (TSL) Integration:** `EUDITrustListResolver` implemented in `shared-crypto`, providing dynamic lookup and validation of trusted issuers/verifiers with fail-closed logic. Operational documentation added in `docs/ops/TRUST_ANCHOR_ARCHITECTURE.md`.
-- **Compliance Gap Sprint:** Updated EUDI CIR Matrix to reflect 96% coverage (up from 94% after TSL integration). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), and GDPR Data Subject Rights.
+- **Compliance Gap Sprint:** Achieved 100% EUDI CIR coverage. Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, and formal Certification Readiness.
 - **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@mitch/revocation-statuslist` package for live revocation fetch capability.
 - **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
 - **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
