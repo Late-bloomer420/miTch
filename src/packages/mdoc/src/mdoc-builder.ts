@@ -71,7 +71,7 @@ export interface MdocBuildResult {
  */
 export function buildIssuerSignedItems(
   claims: NamespaceClaims,
-  startDigestID: number = 0,
+  startDigestID: number = 0
 ): IssuerSignedItem[] {
   const items: IssuerSignedItem[] = [];
   let digestID = startDigestID;
@@ -131,7 +131,7 @@ export async function buildMobileSecurityObject(opts: {
 export async function signMobileSecurityObject(
   mso: MobileSecurityObject,
   issuerPrivateKey: CryptoKey,
-  extraProtectedHeaders?: Map<number, unknown>,
+  extraProtectedHeaders?: Map<number, unknown>
 ): Promise<Uint8Array> {
   return createSign1({
     payload: encode(mso),
@@ -149,17 +149,16 @@ export async function signMobileSecurityObject(
  *
  * @returns MdocBuildResult with document, CBOR bytes, and MSO
  */
-export async function buildMdocDocument(
-  opts: MdocBuildOptions,
-): Promise<MdocBuildResult> {
+export async function buildMdocDocument(opts: MdocBuildOptions): Promise<MdocBuildResult> {
   const alg = opts.digestAlgorithm ?? 'SHA-256';
 
   // 1. Build IssuerSignedItems per namespace
   const nameSpaceItems = new Map<NameSpace, IssuerSignedItem[]>();
   for (const [ns, claims] of Object.entries(opts.nameSpaces)) {
-    const existingCount = nameSpaceItems.size > 0
-      ? Array.from(nameSpaceItems.values()).reduce((sum, items) => sum + items.length, 0)
-      : 0;
+    const existingCount =
+      nameSpaceItems.size > 0
+        ? Array.from(nameSpaceItems.values()).reduce((sum, items) => sum + items.length, 0)
+        : 0;
     nameSpaceItems.set(ns, buildIssuerSignedItems(claims, existingCount));
   }
 
@@ -177,7 +176,7 @@ export async function buildMdocDocument(
   const issuerAuth = await signMobileSecurityObject(
     mso,
     opts.issuerPrivateKey,
-    opts.extraProtectedHeaders,
+    opts.extraProtectedHeaders
   );
 
   // 4. Assemble IssuerSigned

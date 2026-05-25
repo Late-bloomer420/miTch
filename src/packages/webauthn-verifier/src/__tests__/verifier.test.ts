@@ -30,9 +30,7 @@ describe('WebAuthnNativeVerifier', () => {
 
     await verifier.registerAuthenticator(userDID, authenticator);
 
-    const stored = verifier.getAuthenticatorInfo(
-      authenticator.credentialID.toString('base64url')
-    );
+    const stored = verifier.getAuthenticatorInfo(authenticator.credentialID.toString('base64url'));
     expect(stored).toBeDefined();
     expect(stored?.counter).toBe(0);
   });
@@ -44,11 +42,13 @@ describe('WebAuthnNativeVerifier', () => {
       id: 'test-id',
       rawId: Buffer.from('test-credential-id').toString('base64url'),
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify({
-          type: 'webauthn.get',
-          challenge: 'wrong-challenge',
-          origin: 'https://mitch.example.com',
-        })).toString('base64url'),
+        clientDataJSON: Buffer.from(
+          JSON.stringify({
+            type: 'webauthn.get',
+            challenge: 'wrong-challenge',
+            origin: 'https://mitch.example.com',
+          })
+        ).toString('base64url'),
         authenticatorData: Buffer.alloc(37).toString('base64url'), // Minimal auth data
         signature: 'test-signature',
       },
@@ -77,11 +77,13 @@ describe('WebAuthnNativeVerifier', () => {
       id: 'test-id',
       rawId: Buffer.from('test-credential-id').toString('base64url'),
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify({
-          type: 'webauthn.get',
-          challenge: challenge.challenge,
-          origin: 'https://mitch.example.com',
-        })).toString('base64url'),
+        clientDataJSON: Buffer.from(
+          JSON.stringify({
+            type: 'webauthn.get',
+            challenge: challenge.challenge,
+            origin: 'https://mitch.example.com',
+          })
+        ).toString('base64url'),
         authenticatorData: Buffer.alloc(37).toString('base64url'),
         signature: 'test-signature',
       },
@@ -104,11 +106,13 @@ describe('WebAuthnNativeVerifier', () => {
       id: 'unknown-id',
       rawId: Buffer.from('unknown-credential').toString('base64url'),
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify({
-          type: 'webauthn.get',
-          challenge: challenge.challenge,
-          origin: 'https://mitch.example.com',
-        })).toString('base64url'),
+        clientDataJSON: Buffer.from(
+          JSON.stringify({
+            type: 'webauthn.get',
+            challenge: challenge.challenge,
+            origin: 'https://mitch.example.com',
+          })
+        ).toString('base64url'),
         authenticatorData: Buffer.alloc(37).toString('base64url'),
         signature: 'test-signature',
       },
@@ -176,11 +180,13 @@ describe('WebAuthnNativeVerifier', () => {
       id: 'test-id',
       rawId: credentialID.toString('base64url'),
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify({
-          type: 'webauthn.get',
-          challenge: challenge.challenge,
-          origin: 'https://mitch.example.com',
-        })).toString('base64url'),
+        clientDataJSON: Buffer.from(
+          JSON.stringify({
+            type: 'webauthn.get',
+            challenge: challenge.challenge,
+            origin: 'https://mitch.example.com',
+          })
+        ).toString('base64url'),
         authenticatorData: authData.toString('base64url'),
         signature: 'test-signature',
       },
@@ -220,11 +226,13 @@ describe('WebAuthnNativeVerifier', () => {
       id: 'test-id',
       rawId: credentialID.toString('base64url'),
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify({
-          type: 'webauthn.get',
-          challenge: challenge.challenge,
-          origin: 'https://mitch.example.com',
-        })).toString('base64url'),
+        clientDataJSON: Buffer.from(
+          JSON.stringify({
+            type: 'webauthn.get',
+            challenge: challenge.challenge,
+            origin: 'https://mitch.example.com',
+          })
+        ).toString('base64url'),
         authenticatorData: authData.toString('base64url'),
         signature: 'test-signature',
       },

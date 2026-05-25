@@ -88,30 +88,36 @@ describe('D-01 Scenario 1: Liquor Store — Age Verification (ALLOW)', () => {
 
   const policy: PolicyManifest = {
     version: '2.0',
-    rules: [{
-      id: 'liquor-store-age',
-      verifierPattern: LIQUOR_STORE_DID, // exact match
-      allowedClaims: [],
-      provenClaims: ['age >= 18'],
-      requiresTrustedIssuer: true,
-      priority: 10,
-      requiresUserConsent: false,
-    }],
+    rules: [
+      {
+        id: 'liquor-store-age',
+        verifierPattern: LIQUOR_STORE_DID, // exact match
+        allowedClaims: [],
+        provenClaims: ['age >= 18'],
+        requiresTrustedIssuer: true,
+        priority: 10,
+        requiresUserConsent: false,
+      },
+    ],
     trustedIssuers: [{ did: GOV_ISSUER, name: 'Gov Issuer', credentialTypes: ['AgeCredential'] }],
     globalSettings: { blockUnknownVerifiers: false },
   };
 
-  beforeEach(() => { engine = new PolicyEngine(); });
+  beforeEach(() => {
+    engine = new PolicyEngine();
+  });
 
   it('policy evaluates to ALLOW or PROMPT for valid age credential', async () => {
     const request: VerifierRequest = {
       verifierId: LIQUOR_STORE_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{
-        credentialType: 'AgeCredential',
-        requestedClaims: [],
-        requestedProvenClaims: ['age >= 18'],
-      }],
+      requirements: [
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: [],
+          requestedProvenClaims: ['age >= 18'],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, baseContext(), [ageCredential()], policy);
@@ -146,7 +152,8 @@ describe('D-01 Scenario 1: Liquor Store — Age Verification (ALLOW)', () => {
       generatePairwiseDID({ verifierOrigin: LIQUOR_STORE_DID, sessionNonce: 'session-B' }),
     ]);
     expect(a.did).not.toBe(b.did);
-    a.destroy(); b.destroy();
+    a.destroy();
+    b.destroy();
   });
 
   it('VP Token built from age credential has correct descriptor', () => {
@@ -155,12 +162,14 @@ describe('D-01 Scenario 1: Liquor Store — Age Verification (ALLOW)', () => {
       credentials: [{ id: 'vc-age-789', format: 'sd-jwt', token: 'mock-jwt-token' }],
       definition: {
         id: 'age-check',
-        input_descriptors: [{
-          id: 'age-cred',
-          name: 'Age Credential',
-          purpose: 'Verify age >= 18',
-          constraints: { fields: [{ path: ['$.credentialSubject.age'] }] },
-        }],
+        input_descriptors: [
+          {
+            id: 'age-cred',
+            name: 'Age Credential',
+            purpose: 'Verify age >= 18',
+            constraints: { fields: [{ path: ['$.credentialSubject.age'] }] },
+          },
+        ],
       },
     });
 
@@ -173,7 +182,13 @@ describe('D-01 Scenario 1: Liquor Store — Age Verification (ALLOW)', () => {
     const request: VerifierRequest = {
       verifierId: LIQUOR_STORE_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{ credentialType: 'AgeCredential', requestedClaims: [], requestedProvenClaims: ['age >= 18'] }],
+      requirements: [
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: [],
+          requestedProvenClaims: ['age >= 18'],
+        },
+      ],
     };
 
     // 1. Policy Engine evaluates
@@ -213,15 +228,17 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
 
   const policy: PolicyManifest = {
     version: '2.0',
-    rules: [{
-      id: 'hospital-doctor-login',
-      verifierPattern: HOSPITAL_DID,
-      allowedClaims: ['role', 'licenseId'],
-      provenClaims: ['age >= 18'],
-      requiresTrustedIssuer: true,
-      priority: 20,
-      requiresUserConsent: true, // PROMPT — doctor must approve
-    }],
+    rules: [
+      {
+        id: 'hospital-doctor-login',
+        verifierPattern: HOSPITAL_DID,
+        allowedClaims: ['role', 'licenseId'],
+        provenClaims: ['age >= 18'],
+        requiresTrustedIssuer: true,
+        priority: 20,
+        requiresUserConsent: true, // PROMPT — doctor must approve
+      },
+    ],
     trustedIssuers: [
       { did: GOV_ISSUER, name: 'Gov Issuer', credentialTypes: ['AgeCredential'] },
       { did: HOSPITAL_ISSUER, name: 'Hospital', credentialTypes: ['EmploymentCredential'] },
@@ -229,15 +246,25 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
     globalSettings: { blockUnknownVerifiers: false },
   };
 
-  beforeEach(() => { engine = new PolicyEngine(); });
+  beforeEach(() => {
+    engine = new PolicyEngine();
+  });
 
   it('hospital request with credentials returns PROMPT (consent required by rule)', async () => {
     const request: VerifierRequest = {
       verifierId: HOSPITAL_DID,
       nonce: crypto.randomUUID(),
       requirements: [
-        { credentialType: 'AgeCredential', requestedClaims: [], requestedProvenClaims: ['age >= 18'] },
-        { credentialType: 'EmploymentCredential', requestedClaims: ['role', 'licenseId'], requestedProvenClaims: [] },
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: [],
+          requestedProvenClaims: ['age >= 18'],
+        },
+        {
+          credentialType: 'EmploymentCredential',
+          requestedClaims: ['role', 'licenseId'],
+          requestedProvenClaims: [],
+        },
       ],
     };
 
@@ -258,7 +285,11 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
       verifierId: HOSPITAL_DID,
       nonce: crypto.randomUUID(),
       requirements: [
-        { credentialType: 'EmploymentCredential', requestedClaims: ['role', 'licenseId'], requestedProvenClaims: [] },
+        {
+          credentialType: 'EmploymentCredential',
+          requestedClaims: ['role', 'licenseId'],
+          requestedProvenClaims: [],
+        },
       ],
     };
 
@@ -275,7 +306,10 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
   it('each doctor login generates unique pairwise DID (cross-session unlinkability)', async () => {
     const dids = new Set<string>();
     for (let i = 0; i < 5; i++) {
-      const p = await generatePairwiseDID({ verifierOrigin: HOSPITAL_DID, sessionNonce: `login-${i}` });
+      const p = await generatePairwiseDID({
+        verifierOrigin: HOSPITAL_DID,
+        sessionNonce: `login-${i}`,
+      });
       dids.add(p.did);
       p.destroy();
     }
@@ -287,8 +321,16 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
       verifierId: HOSPITAL_DID,
       nonce: crypto.randomUUID(),
       requirements: [
-        { credentialType: 'AgeCredential', requestedClaims: [], requestedProvenClaims: ['age >= 18'] },
-        { credentialType: 'EmploymentCredential', requestedClaims: ['licenseId'], requestedProvenClaims: [] },
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: [],
+          requestedProvenClaims: ['age >= 18'],
+        },
+        {
+          credentialType: 'EmploymentCredential',
+          requestedClaims: ['licenseId'],
+          requestedProvenClaims: [],
+        },
       ],
     };
 
@@ -304,30 +346,42 @@ describe('D-01 Scenario 3: EHDS Emergency Room — Health Data (PROMPT)', () => 
 
   const policy: PolicyManifest = {
     version: '2.0',
-    rules: [{
-      id: 'ehds-break-glass',
-      verifierPattern: HOSPITAL_ER_DID,
-      allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
-      provenClaims: [],
-      requiresTrustedIssuer: true,
-      priority: 50,
-      requiresUserConsent: true,
-    }],
-    trustedIssuers: [{ did: EHEALTH_ISSUER, name: 'eHealth Authority', credentialTypes: ['PatientSummary', 'HealthRecord'] }],
+    rules: [
+      {
+        id: 'ehds-break-glass',
+        verifierPattern: HOSPITAL_ER_DID,
+        allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
+        provenClaims: [],
+        requiresTrustedIssuer: true,
+        priority: 50,
+        requiresUserConsent: true,
+      },
+    ],
+    trustedIssuers: [
+      {
+        did: EHEALTH_ISSUER,
+        name: 'eHealth Authority',
+        credentialTypes: ['PatientSummary', 'HealthRecord'],
+      },
+    ],
     globalSettings: { blockUnknownVerifiers: false },
   };
 
-  beforeEach(() => { engine = new PolicyEngine(); });
+  beforeEach(() => {
+    engine = new PolicyEngine();
+  });
 
   it('EHDS request with PatientSummary returns PROMPT or ALLOW', async () => {
     const request: VerifierRequest = {
       verifierId: HOSPITAL_ER_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies', 'activeProblems'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies', 'activeProblems'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(
@@ -342,10 +396,17 @@ describe('D-01 Scenario 3: EHDS Emergency Room — Health Data (PROMPT)', () => 
   });
 
   it('pairwise DID for emergency context is unique per patient per visit', async () => {
-    const visit1 = await generatePairwiseDID({ verifierOrigin: HOSPITAL_ER_DID, sessionNonce: 'visit-2026-01' });
-    const visit2 = await generatePairwiseDID({ verifierOrigin: HOSPITAL_ER_DID, sessionNonce: 'visit-2026-02' });
+    const visit1 = await generatePairwiseDID({
+      verifierOrigin: HOSPITAL_ER_DID,
+      sessionNonce: 'visit-2026-01',
+    });
+    const visit2 = await generatePairwiseDID({
+      verifierOrigin: HOSPITAL_ER_DID,
+      sessionNonce: 'visit-2026-02',
+    });
     expect(visit1.did).not.toBe(visit2.did);
-    visit1.destroy(); visit2.destroy();
+    visit1.destroy();
+    visit2.destroy();
   });
 
   it('cross-verifier: emergency DID differs from liquor-store DID (same nonce)', async () => {
@@ -353,18 +414,21 @@ describe('D-01 Scenario 3: EHDS Emergency Room — Health Data (PROMPT)', () => 
     const er = await generatePairwiseDID({ verifierOrigin: HOSPITAL_ER_DID, sessionNonce: nonce });
     const ls = await generatePairwiseDID({ verifierOrigin: LIQUOR_STORE_DID, sessionNonce: nonce });
     expect(er.did).not.toBe(ls.did);
-    er.destroy(); ls.destroy();
+    er.destroy();
+    ls.destroy();
   });
 
   it('DENY without health credential for EHDS request', async () => {
     const request: VerifierRequest = {
       verifierId: HOSPITAL_ER_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     // Only age credential — wrong type
@@ -380,31 +444,43 @@ describe('D-01 Scenario 4: Pharmacy — ePrescription ALLOW', () => {
 
   const freshPolicy: PolicyManifest = {
     version: '2.0',
-    rules: [{
-      id: 'pharmacy-rx',
-      verifierPattern: PHARMACY_DID,
-      allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
-      provenClaims: [],
-      requiresTrustedIssuer: true,
-      maxCredentialAgeDays: 30,
-      priority: 15,
-      requiresUserConsent: false,
-    }],
-    trustedIssuers: [{ did: EHEALTH_ISSUER, name: 'eHealth Authority', credentialTypes: ['Prescription', 'HealthRecord'] }],
+    rules: [
+      {
+        id: 'pharmacy-rx',
+        verifierPattern: PHARMACY_DID,
+        allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
+        provenClaims: [],
+        requiresTrustedIssuer: true,
+        maxCredentialAgeDays: 30,
+        priority: 15,
+        requiresUserConsent: false,
+      },
+    ],
+    trustedIssuers: [
+      {
+        did: EHEALTH_ISSUER,
+        name: 'eHealth Authority',
+        credentialTypes: ['Prescription', 'HealthRecord'],
+      },
+    ],
     globalSettings: { blockUnknownVerifiers: false },
   };
 
-  beforeEach(() => { engine = new PolicyEngine(); });
+  beforeEach(() => {
+    engine = new PolicyEngine();
+  });
 
   it('fresh prescription (1 day old) evaluates to ALLOW or PROMPT', async () => {
     const request: VerifierRequest = {
       verifierId: PHARMACY_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{
-        credentialType: 'Prescription',
-        requestedClaims: ['medication', 'refillsRemaining'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'Prescription',
+          requestedClaims: ['medication', 'refillsRemaining'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(
@@ -421,11 +497,13 @@ describe('D-01 Scenario 4: Pharmacy — ePrescription ALLOW', () => {
     const request: VerifierRequest = {
       verifierId: PHARMACY_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{
-        credentialType: 'Prescription',
-        requestedClaims: ['medication'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'Prescription',
+          requestedClaims: ['medication'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(
@@ -442,15 +520,29 @@ describe('D-01 Scenario 4: Pharmacy — ePrescription ALLOW', () => {
     const request: VerifierRequest = {
       verifierId: PHARMACY_DID,
       nonce: crypto.randomUUID(),
-      requirements: [{ credentialType: 'Prescription', requestedClaims: ['medication'], requestedProvenClaims: [] }],
+      requirements: [
+        {
+          credentialType: 'Prescription',
+          requestedClaims: ['medication'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     // 1. Evaluate
-    const result = await engine.evaluate(request, baseContext(), [prescriptionCredential(1)], freshPolicy);
+    const result = await engine.evaluate(
+      request,
+      baseContext(),
+      [prescriptionCredential(1)],
+      freshPolicy
+    );
     expect(['ALLOW', 'PROMPT']).toContain(result.verdict);
 
     // 2. Pairwise DID (unlinkable)
-    const pairwise = await generatePairwiseDID({ verifierOrigin: PHARMACY_DID, sessionNonce: request.nonce! });
+    const pairwise = await generatePairwiseDID({
+      verifierOrigin: PHARMACY_DID,
+      sessionNonce: request.nonce!,
+    });
 
     // 3. Build VP Token (minimal disclosure)
     const vp = buildVPToken({
@@ -458,7 +550,9 @@ describe('D-01 Scenario 4: Pharmacy — ePrescription ALLOW', () => {
       credentials: [{ id: 'vc-rx-999', format: 'sd-jwt', token: 'ey...' }],
       definition: {
         id: 'rx-check',
-        input_descriptors: [{ id: 'rx-cred', name: 'Prescription', purpose: 'Dispense medication', constraints: {} }],
+        input_descriptors: [
+          { id: 'rx-cred', name: 'Prescription', purpose: 'Dispense medication', constraints: {} },
+        ],
       },
     });
 

@@ -9,6 +9,7 @@ Blocking: Phase 5 Pilot (P0)
 ## 1) Problem Statement
 
 The policy engine lacks:
+
 - **Deterministic conflict resolution** when multiple rules match a request
 - **Versioned fail-closed behavior** for unknown policy schemas
 - **Anti-oracle deny reason codes** that prevent verifiers from probing policy internals
@@ -33,7 +34,7 @@ This is the **deny-wins** strategy. It is the only strategy compatible with fail
 ### 2.2 Determinism Requirements
 
 - **Same inputs → same output.** No randomness, no time-of-day variance, no probabilistic evaluation.
-- **Rule ordering is irrelevant.** The engine evaluates ALL matching rules and merges verdicts via deny-wins. Priority is used only for selecting the *primary* rule's metadata (matched rule ID, capsule fields), not for overriding deny decisions.
+- **Rule ordering is irrelevant.** The engine evaluates ALL matching rules and merges verdicts via deny-wins. Priority is used only for selecting the _primary_ rule's metadata (matched rule ID, capsule fields), not for overriding deny decisions.
 - **Unknown policy version → DENY.** If `policy.version` is not in the engine's known-versions set, the entire evaluation fails closed.
 - **Missing policy → DENY.** A null/undefined policy manifest produces DENY with code `DENY_POLICY_MISSING`.
 
@@ -61,6 +62,7 @@ function resolveConflict(verdicts: Verdict[]): Verdict {
 ### 3.1 Design Principle
 
 Deny responses must not leak policy internals. A verifier must not be able to distinguish between:
+
 - "User doesn't exist"
 - "Policy denied this request"
 - "Credential expired"
@@ -72,21 +74,21 @@ All of these produce the **same verifier-facing message**. Only the user and aud
 
 Each `DenyReasonCode` has three message tiers:
 
-| Audience | Purpose | Oracle Risk |
-|----------|---------|-------------|
-| **User** | Helpful, actionable, privacy-safe | None (user owns the data) |
-| **Verifier** | Generic, non-distinguishing | Minimized — same message for multiple codes |
-| **Audit** | Full detail, compliance review | N/A (access-controlled) |
+| Audience     | Purpose                           | Oracle Risk                                 |
+| ------------ | --------------------------------- | ------------------------------------------- |
+| **User**     | Helpful, actionable, privacy-safe | None (user owns the data)                   |
+| **Verifier** | Generic, non-distinguishing       | Minimized — same message for multiple codes |
+| **Audit**    | Full detail, compliance review    | N/A (access-controlled)                     |
 
 ### 3.3 Verifier Message Buckets
 
 To prevent oracle attacks, multiple deny codes map to the same verifier-facing message:
 
-| Verifier Message | Codes Mapped |
-|-----------------|-------------|
+| Verifier Message                         | Codes Mapped                                                                                                                                                         |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `"Verification could not be completed."` | EXPIRED, REVOKED, POLICY_MISMATCH, LAYER_VIOLATION, UNKNOWN_VERIFIER, BINDING_FAILED, NO_MATCHING_RULE, CREDENTIAL_TOO_OLD, UNTRUSTED_ISSUER, NO_SUITABLE_CREDENTIAL |
-| `"Request rate exceeded."` | RATE_LIMIT_EXCEEDED |
-| `"User action required."` | CONSENT_REQUIRED, PRESENCE_REQUIRED |
+| `"Request rate exceeded."`               | RATE_LIMIT_EXCEEDED                                                                                                                                                  |
+| `"User action required."`                | CONSENT_REQUIRED, PRESENCE_REQUIRED                                                                                                                                  |
 
 The first bucket is intentionally large — it is the "black hole" that absorbs all policy-distinguishing denials.
 
@@ -95,6 +97,7 @@ The first bucket is intentionally large — it is the "black hole" that absorbs 
 **Requirement:** All DENY paths must execute in approximately constant time relative to ALLOW paths.
 
 Implementation options (in order of preference):
+
 1. **Constant-time padding:** Add artificial delay so all paths take `max(observed_time, FLOOR_MS)`
 2. **Async batching:** Queue responses and flush on fixed intervals
 3. **Documentation-only (MVP):** Document the requirement, measure in tests, enforce in Phase 6
@@ -128,12 +131,14 @@ if (!KNOWN_POLICY_VERSIONS.has(policy.version)) {
 ## 5) Integration with Existing Catalog (Spec 21)
 
 This spec extends spec 21 by adding:
+
 - Audience-split messages to each code
 - The `DenyReasonCode` enum in TypeScript (previously only documented)
 - Anti-oracle bucketing logic
 - Conflict resolution algorithm
 
 Spec 21 codes remain canonical. New codes added here:
+
 - `DENY_POLICY_MISSING` — no policy manifest provided
 - `DENY_CONFLICT_RESOLUTION` — multiple rules conflict, deny-wins applied
 

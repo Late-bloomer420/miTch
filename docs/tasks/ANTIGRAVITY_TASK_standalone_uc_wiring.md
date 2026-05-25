@@ -23,6 +23,7 @@ Die standalone.html hat zwei getrennte Welten die nicht miteinander reden:
 ## Ziel
 
 Wenn der User einen Use Case wählt, soll die gesamte Demo sich anpassen:
+
 - Andere **Verifier-Identität** (nicht immer CoolShop.at)
 - Andere **Claims** (pre-selected, passend zum Use Case)
 - Andere **Policy Engine Logik** (verschiedene Verdicts)
@@ -30,6 +31,7 @@ Wenn der User einen Use Case wählt, soll die gesamte Demo sich anpassen:
 - Andere **Audit Log Einträge**
 
 Der User Flow soll sein:
+
 1. Use Case Tab auswählen (oder "Try in Demo →" Button im Use Case Walkthrough)
 2. Demo-Bereich scrollt rein / updated sich
 3. Credential wird mit passenden Claims issued
@@ -50,7 +52,7 @@ const SCENARIOS = {
     name: 'Ad-Tech Blind Provider',
     verifier: { name: 'AdNetwork GmbH', did: 'did:mitch:adnetwork-gmbh' },
     claims: {
-      nullifier: 'H(…a8f3c201)',        // generated
+      nullifier: 'H(…a8f3c201)', // generated
       budget_slot: 'slot_742 (1/1920)', // generated
       cohort_signal: 'interest_group_17',
     },
@@ -60,7 +62,7 @@ const SCENARIOS = {
     // Policy Engine behavior
     policy: {
       rule: 'ad_verification',
-      verdict: 'ALLOW',           // always auto-approve (zero PII)
+      verdict: 'ALLOW', // always auto-approve (zero PII)
       reason: 'Zero PII disclosed — deterministic verification only',
       checks: [
         '🔍 Verifier identity check (did:mitch:adnetwork-gmbh)',
@@ -79,7 +81,11 @@ const SCENARIOS = {
           { label: 'Cross-site fingerprinting', avg: 0.08, source: 'FLoC/Topics API alternative' },
           { label: 'Data broker enrichment', avg: 0.15, source: 'Oracle/Lotame pricing' },
           { label: 'GDPR consent banner', avg: 0.04, source: 'OneTrust enterprise' },
-          { label: 'Regulatory risk reserve', avg: 0.12, source: 'Average GDPR fine ÷ impressions' },
+          {
+            label: 'Regulatory risk reserve',
+            avg: 0.12,
+            source: 'Average GDPR fine ÷ impressions',
+          },
         ],
       },
       mitch: {
@@ -120,11 +126,23 @@ const SCENARIOS = {
       traditional: {
         label: 'Student Verification (Traditional)',
         items: [
-          { label: 'Physical ID check at counter', avg: 2.50, source: 'Staff cost per verification' },
-          { label: 'Student ID card production', avg: 5.00, source: 'ÖH Ausweis annual cost' },
-          { label: 'Database integration (Uni↔IVB)', avg: 0.80, source: 'API maintenance/year ÷ verifications' },
-          { label: 'PII storage (name, Matrikelnr.)', avg: 0.03, source: 'GDPR-compliant DB hosting' },
-          { label: 'Manual fraud checks', avg: 0.50, source: 'Spot-check staff allocation' },
+          {
+            label: 'Physical ID check at counter',
+            avg: 2.5,
+            source: 'Staff cost per verification',
+          },
+          { label: 'Student ID card production', avg: 5.0, source: 'ÖH Ausweis annual cost' },
+          {
+            label: 'Database integration (Uni↔IVB)',
+            avg: 0.8,
+            source: 'API maintenance/year ÷ verifications',
+          },
+          {
+            label: 'PII storage (name, Matrikelnr.)',
+            avg: 0.03,
+            source: 'GDPR-compliant DB hosting',
+          },
+          { label: 'Manual fraud checks', avg: 0.5, source: 'Spot-check staff allocation' },
         ],
       },
       mitch: {
@@ -169,12 +187,16 @@ const SCENARIOS = {
       traditional: {
         label: 'Hospital Admission (Traditional)',
         items: [
-          { label: 'Manual registration (reception staff)', avg: 8.00, source: '~15min × €32/hr' },
-          { label: 'Insurance verification API', avg: 0.50, source: 'SV-GKK/ÖGK interface' },
-          { label: 'Paper form digitization', avg: 1.20, source: 'Scanning + OCR pipeline' },
-          { label: 'EHR data entry', avg: 3.00, source: 'Manual entry time' },
-          { label: 'ELGA integration', avg: 0.30, source: 'ELGA GmbH transaction fee' },
-          { label: 'Data breach risk (medical)', avg: 0.45, source: 'IBM 2024: healthcare €10.93M avg' },
+          { label: 'Manual registration (reception staff)', avg: 8.0, source: '~15min × €32/hr' },
+          { label: 'Insurance verification API', avg: 0.5, source: 'SV-GKK/ÖGK interface' },
+          { label: 'Paper form digitization', avg: 1.2, source: 'Scanning + OCR pipeline' },
+          { label: 'EHR data entry', avg: 3.0, source: 'Manual entry time' },
+          { label: 'ELGA integration', avg: 0.3, source: 'ELGA GmbH transaction fee' },
+          {
+            label: 'Data breach risk (medical)',
+            avg: 0.45,
+            source: 'IBM 2024: healthcare €10.93M avg',
+          },
         ],
       },
       mitch: {
@@ -184,7 +206,11 @@ const SCENARIOS = {
           { label: 'Insurance status proof', avg: 0.01, source: 'Issuer-signed, no API call' },
           { label: 'Consent + audit trail', avg: 0, source: 'Built into wallet flow' },
           { label: 'ELGA bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
-          { label: 'Breach risk reduction', avg: 0.02, source: 'Minimal PII retained post-admission' },
+          {
+            label: 'Breach risk reduction',
+            avg: 0.02,
+            source: 'Minimal PII retained post-admission',
+          },
         ],
       },
       scaleNote: 'Bei 500.000 Aufnahmen/Jahr in Tirol',
@@ -226,17 +252,33 @@ const SCENARIOS = {
       traditional: {
         label: 'Health Data Research (Traditional)',
         items: [
-          { label: 'Ethics board application', avg: 15.00, source: 'Per-study cost amortized' },
-          { label: 'Data anonymization service', avg: 3.50, source: 'K-anonymity/l-diversity processing' },
-          { label: 'Secure data room access', avg: 2.00, source: 'Trusted Research Environment' },
-          { label: 'Re-identification risk insurance', avg: 1.50, source: 'Specialized cyber insurance' },
-          { label: 'Cross-border transfer (EDPB)', avg: 0.80, source: 'Legal review per jurisdiction' },
+          { label: 'Ethics board application', avg: 15.0, source: 'Per-study cost amortized' },
+          {
+            label: 'Data anonymization service',
+            avg: 3.5,
+            source: 'K-anonymity/l-diversity processing',
+          },
+          { label: 'Secure data room access', avg: 2.0, source: 'Trusted Research Environment' },
+          {
+            label: 'Re-identification risk insurance',
+            avg: 1.5,
+            source: 'Specialized cyber insurance',
+          },
+          {
+            label: 'Cross-border transfer (EDPB)',
+            avg: 0.8,
+            source: 'Legal review per jurisdiction',
+          },
         ],
       },
       mitch: {
         label: 'miTch EHDS Access',
         items: [
-          { label: 'Pseudonymized data proof', avg: 0.05, source: 'ZK proof generation (estimated)' },
+          {
+            label: 'Pseudonymized data proof',
+            avg: 0.05,
+            source: 'ZK proof generation (estimated)',
+          },
           { label: 'Consent verification', avg: 0, source: 'On-chain consent record' },
           { label: 'Automatic audit trail', avg: 0.01, source: 'Transparency log entry' },
           { label: 'Re-identification risk', avg: 0, source: 'Crypto-shredding prevents re-ID' },
@@ -250,7 +292,7 @@ const SCENARIOS = {
     name: 'Social Login (Pseudonymous)',
     verifier: { name: 'FlirtRadar.app', did: 'did:mitch:flirtradar' },
     claims: {
-      pseudonym_id: 'nym_' + 'a8f3c201',  // deterministic per-site
+      pseudonym_id: 'nym_' + 'a8f3c201', // deterministic per-site
       age_range: '18-25',
       is_human: true,
     },
@@ -272,10 +314,26 @@ const SCENARIOS = {
       traditional: {
         label: 'Social Login (Traditional)',
         items: [
-          { label: 'OAuth provider (Google/Facebook)', avg: 0, source: 'Free — but you ARE the product' },
-          { label: 'Profile data harvesting (hidden cost)', avg: 0.25, source: 'User data value to ad networks' },
-          { label: 'Cross-site tracking (shadow profile)', avg: 0.15, source: 'Aggregate profiling value' },
-          { label: 'Account takeover risk', avg: 0.08, source: 'Credential stuffing losses amortized' },
+          {
+            label: 'OAuth provider (Google/Facebook)',
+            avg: 0,
+            source: 'Free — but you ARE the product',
+          },
+          {
+            label: 'Profile data harvesting (hidden cost)',
+            avg: 0.25,
+            source: 'User data value to ad networks',
+          },
+          {
+            label: 'Cross-site tracking (shadow profile)',
+            avg: 0.15,
+            source: 'Aggregate profiling value',
+          },
+          {
+            label: 'Account takeover risk',
+            avg: 0.08,
+            source: 'Credential stuffing losses amortized',
+          },
           { label: 'GDPR consent (cookie banners)', avg: 0.04, source: 'CMP integration' },
         ],
       },
@@ -305,7 +363,7 @@ function activateScenario(key) {
 
   // 1. Update CLAIMS object to match scenario
   // Clear old claims, populate new ones
-  Object.keys(CLAIMS).forEach(k => delete CLAIMS[k]);
+  Object.keys(CLAIMS).forEach((k) => delete CLAIMS[k]);
   Object.assign(CLAIMS, sc.claims);
 
   // 2. Update claim checkboxes in wallet panel
@@ -315,9 +373,12 @@ function activateScenario(key) {
   updateVerifierName(sc.verifier.name, sc.verifier.did);
 
   // 4. Pre-select required claims, leave optional unchecked
-  sc.required.forEach(k => {
+  sc.required.forEach((k) => {
     const el = document.getElementById('c-' + k);
-    if (el) { el.checked = true; el.disabled = true; } // required = locked
+    if (el) {
+      el.checked = true;
+      el.disabled = true;
+    } // required = locked
   });
 
   // 5. Reset demo state + scroll to demo section
@@ -325,8 +386,9 @@ function activateScenario(key) {
   scrollToDemo();
 
   // 6. Visual indicator: which scenario is active
-  document.querySelectorAll('.uc-tab').forEach(t =>
-    t.classList.toggle('active', t.dataset.uc === key));
+  document
+    .querySelectorAll('.uc-tab')
+    .forEach((t) => t.classList.toggle('active', t.dataset.uc === key));
 }
 ```
 
@@ -341,12 +403,18 @@ async function startVerification() {
   // ... existing claim selection code ...
 
   const engineChecks = sc
-    ? sc.policy.checks  // Use scenario-specific checks
-    : [/* existing fallback checks */];
+    ? sc.policy.checks // Use scenario-specific checks
+    : [
+        /* existing fallback checks */
+      ];
 
-  const verdict = STATE.revoked ? 'DENY (revoked)'
-    : sc ? sc.policy.verdict
-    : (needsConsent ? 'PROMPT' : 'ALLOW');
+  const verdict = STATE.revoked
+    ? 'DENY (revoked)'
+    : sc
+      ? sc.policy.verdict
+      : needsConsent
+        ? 'PROMPT'
+        : 'ALLOW';
 
   // ... rest of engine animation ...
 
@@ -383,14 +451,20 @@ function renderScenarioCosts(costs) {
   const savingsPct = tradTotal > 0 ? ((1 - mitchTotal / tradTotal) * 100).toFixed(0) : '100';
 
   // Render items lists
-  document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(i =>
-    `<li style="..."><span>${i.label}</span><span style="color:var(--red)">€${i.avg.toFixed(3)}</span></li>`
-  ).join('');
+  document.getElementById('cost-traditional').innerHTML = costs.traditional.items
+    .map(
+      (i) =>
+        `<li style="..."><span>${i.label}</span><span style="color:var(--red)">€${i.avg.toFixed(3)}</span></li>`
+    )
+    .join('');
 
-  document.getElementById('cost-mitch').innerHTML = costs.mitch.items.map(i =>
-    `<li style="..."><span>${i.label}</span><span style="color:${i.avg === 0 ? 'var(--green)' : 'var(--yellow)'}">
+  document.getElementById('cost-mitch').innerHTML = costs.mitch.items
+    .map(
+      (i) =>
+        `<li style="..."><span>${i.label}</span><span style="color:${i.avg === 0 ? 'var(--green)' : 'var(--yellow)'}">
       ${i.avg === 0 ? '€0.000 ✅' : '€' + i.avg.toFixed(3)}</span></li>`
-  ).join('');
+    )
+    .join('');
 
   // Headers
   document.getElementById('cost-trad-total').innerHTML =
@@ -405,7 +479,9 @@ function renderScenarioCosts(costs) {
     </div>`;
 
   // Sources
-  const allSources = [...costs.traditional.items, ...costs.mitch.items].map(i => i.source).filter(Boolean);
+  const allSources = [...costs.traditional.items, ...costs.mitch.items]
+    .map((i) => i.source)
+    .filter(Boolean);
   document.getElementById('cost-sources').innerHTML = '📎 ' + [...new Set(allSources)].join(' · ');
 }
 ```
@@ -416,8 +492,11 @@ In jedem Use Case Walkthrough (letzer Step) einen Button einfügen:
 
 ```html
 <!-- Inside each UC pane's last step -->
-<button class="btn btn-primary" onclick="activateScenario('adtech')"
-  style="margin-top:1rem; width:100%">
+<button
+  class="btn btn-primary"
+  onclick="activateScenario('adtech')"
+  style="margin-top:1rem; width:100%"
+>
   🚀 Try this in the Interactive Demo →
 </button>
 ```
@@ -433,9 +512,14 @@ function rebuildClaimCheckboxes(sc) {
 
   Object.entries(sc.claims).forEach(([key, value]) => {
     const isRequired = sc.required.includes(key);
-    const displayValue = typeof value === 'boolean' ? (value ? '✅' : '❌')
-      : typeof value === 'string' && value.length > 20 ? value.substring(0, 20) + '…'
-      : value;
+    const displayValue =
+      typeof value === 'boolean'
+        ? value
+          ? '✅'
+          : '❌'
+        : typeof value === 'string' && value.length > 20
+          ? value.substring(0, 20) + '…'
+          : value;
 
     container.innerHTML += `
       <label class="claim-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0">
@@ -468,6 +552,7 @@ function updateVerifierName(name, did) {
 ```
 
 Dann in `startVerification()`, `doApprove()`, `doReject()`, `completeVerification()` etc.:
+
 - Ersetze alle hardcoded `'CoolShop.at'` durch `STATE.verifierName || 'CoolShop.at'`
 - Ersetze alle hardcoded `'did:mitch:verifier-coolshop'` durch `STATE.verifierDid || 'did:mitch:verifier-coolshop'`
 

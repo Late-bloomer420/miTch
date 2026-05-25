@@ -84,18 +84,28 @@ describe('age verification disclosure policy', () => {
     const decision = evaluateDisclosureRequest(requestWithoutNonce, policyFixture);
     expect(decision.verdict).toBe('DENY');
     expect(decision.responseMode).toBe('NONE');
-    expect(decision.reasonCodes).toEqual(expect.arrayContaining([REASON_CODES.NONCE_REQUIRED, REASON_CODES.FAIL_CLOSED]));
+    expect(decision.reasonCodes).toEqual(
+      expect.arrayContaining([REASON_CODES.NONCE_REQUIRED, REASON_CODES.FAIL_CLOSED])
+    );
   });
 
   it('fails closed on wrong purpose', () => {
-    const decision = evaluateDisclosureRequest({ ...requestFixture, purpose: 'marketing' }, policyFixture);
+    const decision = evaluateDisclosureRequest(
+      { ...requestFixture, purpose: 'marketing' },
+      policyFixture
+    );
     expect(decision.verdict).toBe('DENY');
     expect(decision.responseMode).toBe('NONE');
-    expect(decision.reasonCodes).toEqual(expect.arrayContaining([REASON_CODES.PURPOSE_MISMATCH, REASON_CODES.FAIL_CLOSED]));
+    expect(decision.reasonCodes).toEqual(
+      expect.arrayContaining([REASON_CODES.PURPOSE_MISMATCH, REASON_CODES.FAIL_CLOSED])
+    );
   });
 
   it('fails closed for unknown verifier', () => {
-    const decision = evaluateDisclosureRequest({ ...requestFixture, verifierDid: 'did:web:evil.example' }, policyFixture);
+    const decision = evaluateDisclosureRequest(
+      { ...requestFixture, verifierDid: 'did:web:evil.example' },
+      policyFixture
+    );
     expect(decision.verdict).toBe('DENY');
     expect(decision.responseMode).toBe('NONE');
     expect(decision.reasonCodes).toEqual(
@@ -104,7 +114,10 @@ describe('age verification disclosure policy', () => {
   });
 
   it('fails closed when no matching predicate exists', () => {
-    const decision = evaluateDisclosureRequest({ ...requestFixture, requestedPredicates: [] }, policyFixture);
+    const decision = evaluateDisclosureRequest(
+      { ...requestFixture, requestedPredicates: [] },
+      policyFixture
+    );
     expect(decision.verdict).toBe('DENY');
     expect(decision.responseMode).toBe('NONE');
     expect(decision.reasonCodes).toEqual(

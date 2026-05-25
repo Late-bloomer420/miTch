@@ -1,4 +1,5 @@
 # Module Concept: Student Discount — Innsbruck
+
 ## "The Invisible Student" — Proof of Enrolment Without Identity Exposure
 
 > Not implementation-ready. Concept and design only.
@@ -12,6 +13,7 @@
 day to get discounts at the bus, cinema, gym, coffee shop, and software vendors.
 
 A physical student ID exposes:
+
 - Full name
 - Date of birth
 - Photo
@@ -48,6 +50,7 @@ The student's wallet generates a new, unlinkable proof for every transaction.
 Two parallel paths — both available in Austria today:
 
 ### Path A — ID Austria
+
 Austria's national digital identity system is already in mass-market deployment in Tyrol.
 ID Austria issues a signed attribute bundle that includes student status (via eAMS/BMI integration).
 
@@ -56,6 +59,7 @@ ID Austria issues a signed attribute bundle that includes student status (via eA
 - Advantage: no university-specific integration needed; works across all Innsbruck institutions
 
 ### Path B — University OIDC / Shibboleth
+
 Both Universität Innsbruck and MCI run identity federations based on Shibboleth/OIDC.
 The student authenticates with their university credentials (same login as university portal).
 
@@ -72,6 +76,7 @@ The student authenticates with their university credentials (same login as unive
 The `student-discount-ibk` module runs inside the miTch sandbox.
 
 It receives from the wallet core only:
+
 - `identity.status` (active / inactive)
 - `identity.expiry` (date)
 - `identity.provider` (which institution issued it)
@@ -93,17 +98,17 @@ If not eligible → wallet returns DENY. No data is shared.
 
 At the point of sale (QR code scan or NFC tap):
 
-| Data field | Shared? | Why |
-|---|---|---|
-| `student_eligible: true` | ✅ Yes | Required for discount |
-| `issuer: Universität Innsbruck` | ✅ Yes | Optional — vendor may require specific institution |
-| `valid_until: [today 23:59]` | ✅ Yes | Proof expiry (prevents replay) |
-| `proof_id: [random]` | ✅ Yes | Unlinkable per transaction — new ID every scan |
-| Full name | ❌ No | Not needed for discount |
-| Matrikelnummer | ❌ No | Not needed for discount |
-| Date of birth | ❌ No | Not needed for discount |
-| Field of study | ❌ No | Not needed for discount |
-| Home address | ❌ No | Never |
+| Data field                      | Shared? | Why                                                |
+| ------------------------------- | ------- | -------------------------------------------------- |
+| `student_eligible: true`        | ✅ Yes  | Required for discount                              |
+| `issuer: Universität Innsbruck` | ✅ Yes  | Optional — vendor may require specific institution |
+| `valid_until: [today 23:59]`    | ✅ Yes  | Proof expiry (prevents replay)                     |
+| `proof_id: [random]`            | ✅ Yes  | Unlinkable per transaction — new ID every scan     |
+| Full name                       | ❌ No   | Not needed for discount                            |
+| Matrikelnummer                  | ❌ No   | Not needed for discount                            |
+| Date of birth                   | ❌ No   | Not needed for discount                            |
+| Field of study                  | ❌ No   | Not needed for discount                            |
+| Home address                    | ❌ No   | Never                                              |
 
 ---
 
@@ -136,6 +141,7 @@ If a vendor requests more than student status:
 This is the mechanism that creates systemic change over time.
 
 When a vendor requests data beyond what is needed for the stated purpose, the student can:
+
 1. **Block the request** (miTch default: deny over-requesting)
 2. **Mark the vendor as "overreaching"** — one tap
 
@@ -155,12 +161,14 @@ The power of 35,000 students in one city is the wedge.
 ## Why This Works as the Innsbruck Wedge
 
 ### For students (demand side)
+
 - Immediate, concrete value — save money without exposing identity
 - No verifier network needed at start — student controls both sides if sharing with a friend,
   classmate, or any vendor who accepts a QR scan
 - ID Austria is already on most Austrian students' phones — zero new infrastructure
 
 ### For vendors (supply side)
+
 - **IVB (Innsbrucker Verkehrsbetriebe):** bus discount verification without storing Matrikelnummern
 - **Kinos (Metropol, Cineplexx):** student pricing without ID copy liability
 - **Local gastronomy:** fast verification, no staff training needed, just scan the QR
@@ -168,6 +176,7 @@ The power of 35,000 students in one city is the wedge.
 - **DSGVO argument:** "You hold no Matrikelnummern → zero breach liability for student data"
 
 ### For the city / institutions
+
 - MCI and LFU reduce the surface area of student data flowing to third parties
 - Tirol Datenschutzbeauftragter: demonstrates Art. 5(1)(c) data minimisation in practice
 - Potential for Stadtmarketing Innsbruck to promote as "privacy-first student city"
@@ -191,13 +200,13 @@ student's behalf via PSD2 APIs (e.g. for the "rent covered" proof scenario).
 
 ## Relationship to Other Vision Components
 
-| Component | Role in this use case |
-|---|---|
-| Forgetting Layer (Layer 1) | Core: generates the minimal proof, destroys session data |
-| Daily Review (Layer 2) | Shows the student their transaction log + any overreaching flags |
-| Predicate Proofs (Layer 3) | The "is student" proof IS a predicate proof — proof of concept for the proof layer |
-| ID Austria identity bridge | The concrete, live answer to the "identity bridge" open question for Austria |
-| Collective Signal | New mechanism (not in other docs yet) — aggregated vendor flagging for systemic change |
+| Component                  | Role in this use case                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| Forgetting Layer (Layer 1) | Core: generates the minimal proof, destroys session data                               |
+| Daily Review (Layer 2)     | Shows the student their transaction log + any overreaching flags                       |
+| Predicate Proofs (Layer 3) | The "is student" proof IS a predicate proof — proof of concept for the proof layer     |
+| ID Austria identity bridge | The concrete, live answer to the "identity bridge" open question for Austria           |
+| Collective Signal          | New mechanism (not in other docs yet) — aggregated vendor flagging for systemic change |
 
 ---
 

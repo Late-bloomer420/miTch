@@ -2,7 +2,7 @@ import { chromium, Browser, LaunchOptions } from 'playwright';
 
 /**
  * Configuration for the "Mitch Secure Sandbox"
- * 
+ *
  * Enforces a hardware-independent rendering environment using Google SwiftShader.
  * This ensures that:
  * 1. Rendering is deterministic (pixel-perfect match across devices).
@@ -10,32 +10,29 @@ import { chromium, Browser, LaunchOptions } from 'playwright';
  * 3. Text rendering is normalized (no subpixel anti-aliasing).
  */
 export const SWIFTSHADER_ARGS = [
-    // Force software rendering via SwiftShader
-    '--use-gl=swiftshader',
-    '--disable-gpu',
+  // Force software rendering via SwiftShader
+  '--use-gl=swiftshader',
+  '--disable-gpu',
 
-    // Deterministic Font Rendering (Critical for Context Pinning)
-    '--font-render-hinting=none',
-    '--disable-font-subpixel-positioning',
-    '--disable-lcd-text',
+  // Deterministic Font Rendering (Critical for Context Pinning)
+  '--font-render-hinting=none',
+  '--disable-font-subpixel-positioning',
+  '--disable-lcd-text',
 
-    // Security Hardening
-    '--disable-extensions',
-    '--no-sandbox', // Often needed for CI, assess risk for local
-    '--disable-dev-shm-usage'
+  // Security Hardening
+  '--disable-extensions',
+  '--no-sandbox', // Often needed for CI, assess risk for local
+  '--disable-dev-shm-usage',
 ];
 
 /**
  * Launch a browser instance in the Secure UI Sandbox.
  */
 export async function launchSecureBrowser(options: LaunchOptions = {}): Promise<Browser> {
-    console.log('🛡️  Launching Secure UI Sandbox (SwiftShader Mode)...');
+  console.log('🛡️  Launching Secure UI Sandbox (SwiftShader Mode)...');
 
-    return chromium.launch({
-        ...options,
-        args: [
-            ...(options.args || []),
-            ...SWIFTSHADER_ARGS
-        ]
-    });
+  return chromium.launch({
+    ...options,
+    args: [...(options.args || []), ...SWIFTSHADER_ARGS],
+  });
 }

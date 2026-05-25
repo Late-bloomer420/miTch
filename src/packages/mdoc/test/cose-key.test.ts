@@ -11,7 +11,7 @@ beforeAll(async () => {
   keyPair = await crypto.subtle.generateKey(
     { name: 'ECDSA', namedCurve: 'P-256' },
     true, // extractable for export tests
-    ['sign', 'verify'],
+    ['sign', 'verify']
   );
 });
 

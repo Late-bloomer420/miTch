@@ -6,7 +6,9 @@ Purpose: single source of truth for all deny outcomes across API, engine, tests,
 ---
 
 ## 1) Structure
+
 Each deny result must provide:
+
 - `decision = DENY`
 - `decisionCode` (from this catalog)
 - optional `detailCode` (implementation-specific, non-PII)
@@ -16,28 +18,33 @@ Each deny result must provide:
 ## 2) Catalog
 
 ## Schema
+
 - `DENY_SCHEMA_MISSING_FIELD` - required field absent
 - `DENY_SCHEMA_UNKNOWN_FIELD` - field not recognized by schema policy
 - `DENY_SCHEMA_TYPE_MISMATCH` - field type invalid
 
 ## Policy
+
 - `DENY_POLICY_UNSUPPORTED_VERSION` - policy version unknown/unsupported
 - `DENY_POLICY_UNKNOWN_PREDICATE` - predicate not recognized
 - `DENY_POLICY_MINIMIZATION_VIOLATION` - request exceeds least-disclosure rule
 - `DENY_POLICY_PURPOSE_MISMATCH` - purpose not allowed by policy
 
 ## Binding
+
 - `DENY_BINDING_NONCE_REPLAY` - nonce reused or already consumed
 - `DENY_BINDING_HASH_MISMATCH` - canonical request hash mismatch
 - `DENY_BINDING_AUDIENCE_MISMATCH` - audience mismatch
 - `DENY_BINDING_EXPIRED` - expired request or outside skew window
 
 ## Crypto
+
 - `DENY_CRYPTO_VERIFY_FAILED` - proof/signature verification failed
 - `DENY_CRYPTO_UNSUPPORTED_ALG` - algorithm not allowed
 - `DENY_CRYPTO_KEY_STATUS_INVALID` - key revoked/invalid status
 
 ## Abuse / Platform
+
 - `DENY_RATE_LIMIT_EXCEEDED` - requester over quota
 - `DENY_REAUTH_REQUIRED` - high-risk prompt frequency threshold reached; recent re-auth required
 - `DENY_REAUTH_PROOF_INVALID` - re-auth evidence provided but invalid under configured strong re-auth mode
@@ -51,6 +58,7 @@ Each deny result must provide:
 ---
 
 ## 3) Mapping Requirements
+
 - Each reject path in code must map to exactly one catalog code.
 - Tests must assert code stability for each scenario.
 - Unknown internal exceptions must map to `DENY_INTERNAL_SAFE_FAILURE`.
@@ -58,11 +66,13 @@ Each deny result must provide:
 ---
 
 ## 4) Logging Constraints
+
 - Do not include raw payload fragments containing potential PII in deny details.
 - `detailCode` must be bounded and non-identifying.
 
 ---
 
 ## 5) Change Control
+
 - New codes require ADR reference and version update.
 - Removing/renaming codes is backward-incompatible.

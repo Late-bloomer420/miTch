@@ -25,6 +25,7 @@
 ## 🔄 Phase 2: Production Infrastructure (IN PROGRESS)
 
 ### CI/CD
+
 - [x] GitHub Actions CI configured
 - [x] Automated testing on PR
 - [x] Multi-node testing (18.x, 20.x)
@@ -37,6 +38,7 @@
 **Progress:** 50% (4/8)
 
 ### Security Hardening
+
 - [x] WebAuthn Native Verifier (ADR-002)
 - [x] Hardware-backed key storage design
 - [x] Counter-based replay protection
@@ -48,6 +50,7 @@
 **Progress:** 57% (4/7)
 
 ### Demo & Communication
+
 - [x] Interactive Liquor Store Demo
 - [ ] Investor presentation deck (PowerPoint/PDF)
 - [ ] Demo video recording (YouTube/Vimeo)
@@ -64,6 +67,7 @@
 ## ⏳ Phase 3: Production Pilot (Q2 2026)
 
 ### Real Issuer Integration
+
 - [ ] eID Issuer connector (Germany: AusweisApp2 / eIDAS)
 - [ ] Credential schema validation (W3C VC Data Model 2.0)
 - [ ] Status/Revocation integration (StatusList2021)
@@ -74,6 +78,7 @@
 **Progress:** 0% (0/6)
 
 ### Privacy Enhancements
+
 - [ ] StatusList2021 implementation (ADR-006)
 - [ ] Privacy-preserving revocation checks
 - [ ] Minimal metadata logging (audit log optimization)
@@ -84,6 +89,7 @@
 **Progress:** 0% (0/6)
 
 ### Legal & Compliance
+
 - [ ] External GDPR legal opinion (law firm)
 - [ ] Terms of Service (Pilot version)
 - [ ] Privacy Policy (GDPR Art. 13/14 compliant)
@@ -101,6 +107,7 @@
 ## 🔮 Phase 4: Production Launch (Q3 2026)
 
 ### Scale & Performance
+
 - [ ] Load testing (1000 req/s target)
 - [ ] CDN for static assets (Cloudflare/AWS)
 - [ ] Database optimization (if centralized logs)
@@ -111,6 +118,7 @@
 **Progress:** 0% (0/6)
 
 ### User Experience
+
 - [ ] Mobile wallet app (iOS/Android - React Native)
 - [ ] Browser extension (Chrome/Firefox/Safari)
 - [ ] User onboarding flow (tutorial)
@@ -121,6 +129,7 @@
 **Progress:** 0% (0/6)
 
 ### Advanced Security
+
 - [ ] Post-Quantum crypto roadmap (ADR-PQ)
 - [ ] Split-key backup (Shamir 2-of-3)
 - [ ] Duress PIN / Panic button
@@ -139,6 +148,7 @@
 ### MVP Pilot Release (Q2 2026)
 
 **Must Have:**
+
 - ✅ All Phase 1 items complete
 - 🔄 All Phase 2 items complete (41% progress)
 - ⏳ 50% of Phase 3 complete (issuer + revocation)
@@ -151,6 +161,7 @@
 ### Production Launch (Q3 2026)
 
 **Must Have:**
+
 - ⏳ All Phase 3 items complete
 - ⏳ 25% of Phase 4 complete (mobile apps)
 - ⏳ External security audit passed
@@ -165,6 +176,7 @@
 ## 🎯 Current Focus (Week of 2026-02-16)
 
 ### Immediate Priorities (This Week)
+
 1. ✅ Complete Phase 2 CI/CD setup
 2. ✅ WebAuthn Verifier implementation
 3. ✅ Interactive demo package
@@ -173,6 +185,7 @@
 6. [ ] **NEXT:** Create investor deck
 
 ### Sprint Goals (Next 2 Weeks)
+
 1. [ ] Begin eID issuer integration research
 2. [ ] StatusList2021 ADR-006 draft
 3. [ ] Cross-browser WebAuthn testing
@@ -183,16 +196,16 @@
 
 ## 📈 Metrics Dashboard
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| **Packages** | 20 | 25 | 🟢 80% |
-| **Tests** | 45 | 100+ | 🟡 45% |
-| **Test Coverage** | ~65% | 80% | 🟡 81% |
-| **Build Time** | 10.4s | <15s | 🟢 69% |
-| **E2E Flow** | <100ms | <100ms | 🟢 100% |
-| **ADRs** | 2 | 10 | 🟡 20% |
-| **Pilot Users** | 0 | 10 | 🔴 0% |
-| **Uptime** | N/A | 99.9% | 🔴 N/A |
+| Metric            | Current | Target | Status  |
+| ----------------- | ------- | ------ | ------- |
+| **Packages**      | 20      | 25     | 🟢 80%  |
+| **Tests**         | 45      | 100+   | 🟡 45%  |
+| **Test Coverage** | ~65%    | 80%    | 🟡 81%  |
+| **Build Time**    | 10.4s   | <15s   | 🟢 69%  |
+| **E2E Flow**      | <100ms  | <100ms | 🟢 100% |
+| **ADRs**          | 2       | 10     | 🟡 20%  |
+| **Pilot Users**   | 0       | 10     | 🔴 0%   |
+| **Uptime**        | N/A     | 99.9%  | 🔴 N/A  |
 
 **Overall Progress:** 27% (27/100 weighted tasks)
 
@@ -201,6 +214,7 @@
 ## 🚨 Blockers & Risks
 
 ### High Priority Blockers
+
 1. 🔴 **GitHub access required** - Need to push code
    - **Action:** Push to GitHub (user must authenticate)
    - **Owner:** User
@@ -212,6 +226,7 @@
    - **ETA:** 2-4 weeks
 
 ### Medium Priority Risks
+
 1. 🟡 **eID issuer integration complexity** - May require extensive testing
    - **Mitigation:** Start research early, allocate 4 weeks
    - **Impact:** Could delay pilot by 2 weeks
@@ -221,6 +236,7 @@
    - **Impact:** Reduced security for some users
 
 ### Low Priority Risks
+
 1. 🟢 **Post-quantum crypto timeline** - Standards still evolving
    - **Mitigation:** Monitor NIST PQC standards
    - **Impact:** None (Phase 4 item)
@@ -230,6 +246,7 @@
 ## 📝 Notes
 
 ### Recent Achievements (2026-02-16)
+
 - ✅ Completed MVP foundation (18 → 20 packages)
 - ✅ Implemented WebAuthn Native Verifier
 - ✅ Created interactive demo package
@@ -237,6 +254,7 @@
 - ✅ Documented ADR-002 (WebAuthn Strategy)
 
 ### Next Milestones
+
 1. **Week 3-4:** GitHub push + CI validation + demo video
 2. **Week 5-8:** eID issuer research + StatusList2021 ADR
 3. **Week 9-12:** Pilot onboarding (first 10 users)
@@ -251,4 +269,4 @@
 
 ---
 
-*This checklist is a living document. Update weekly.*
+_This checklist is a living document. Update weekly._

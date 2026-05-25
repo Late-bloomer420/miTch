@@ -8,6 +8,7 @@
 ## Implemented Components
 
 ### 1. ADR-001: Credential Stack Decision
+
 - ✅ Dokumentiert in `docs/03-architecture/mvp/ADR-001_Credential_Stack_Decision.md`
 - **Decision:** SD-JWT VC as primary stack
 - **Status:** ACCEPTED
@@ -15,6 +16,7 @@
 - **Libraries:** jose ^5.2.0 for ES256 signing
 
 ### 2. Mock Issuer Package
+
 - ✅ Package created: `@mitch/mock-issuer`
 - ✅ Functionality:
   - ES256 keypair generation (Elliptic Curve)
@@ -26,6 +28,7 @@
 - ✅ Tests: **14/14 passing** ✅
 
 **Test Coverage:**
+
 - Basic credential issuance
 - Age predicate computation (isOver18, isOver21)
 - Edge cases (birthday today, birthday tomorrow)
@@ -36,6 +39,7 @@
 - Different age requirements
 
 ### 3. E2E Test Suite
+
 - ✅ Test file: `src/packages/policy-engine/src/__tests__/e2e-liquor-store.test.ts`
 - ✅ Test scenarios: **11 tests passing** ✅
   1. ✅ ALLOW: User over 18, Layer 1 request (age verification)
@@ -64,13 +68,13 @@
 
 ### Package Status
 
-| Package | Build | Tests | Status |
-|---------|-------|-------|--------|
-| @mitch/mock-issuer | ✅ | 14/14 ✅ | READY |
-| @mitch/policy-engine | ✅ | 42/42 ✅ | READY |
-| @mitch/layer-resolver | ✅ | N/A | READY |
-| @mitch/shared-types | ✅ | N/A | READY |
-| All other packages | ✅ | Various | READY |
+| Package               | Build | Tests    | Status |
+| --------------------- | ----- | -------- | ------ |
+| @mitch/mock-issuer    | ✅    | 14/14 ✅ | READY  |
+| @mitch/policy-engine  | ✅    | 42/42 ✅ | READY  |
+| @mitch/layer-resolver | ✅    | N/A      | READY  |
+| @mitch/shared-types   | ✅    | N/A      | READY  |
+| All other packages    | ✅    | Various  | READY  |
 
 **Total packages:** 18 (up from 17)
 **New package:** @mitch/mock-issuer
@@ -82,24 +86,28 @@
 ### 1. ✅ Complete E2E Flow Demonstrable
 
 **Credential Issuance:**
+
 - Mock government issuer creates age credentials
 - ES256 digital signatures (Elliptic Curve cryptography)
 - JWT format with standard claims (iss, sub, iat, exp)
 - Birthdate stored in credential but can be hidden
 
 **Zero-Knowledge Predicate:**
+
 - Compute `isOver18` proof without revealing exact birthdate
 - Supports multiple age thresholds (16+, 18+, 21+, etc.)
 - Client-side computation (wallet-native)
 - Boolean result (true/false) shared with verifier
 
 **Layer-Based Policy Enforcement:**
+
 - Automated layer checking during policy evaluation
 - Layer 1 (GRUNDVERSORGUNG) verifiers can access age data
 - Layer 2 (VULNERABLE) data blocked for Layer 1 verifiers
 - Layer violation triggers DENY with user-friendly message
 
 **Policy Engine Integration:**
+
 - Full policy evaluation with layer awareness
 - Rate limiting and risk scoring
 - Trusted issuer verification
@@ -117,6 +125,7 @@
 ### 3. ✅ Layer Model Enforcement
 
 **Data Classification Working:**
+
 ```typescript
 age, birthDate, education → Layer 1 (GRUNDVERSORGUNG)
 healthRecord, medicalHistory, financialData → Layer 2 (VULNERABLE)
@@ -124,6 +133,7 @@ consent, publicKey → Layer 0 (WELT)
 ```
 
 **Layer Inheritance Working:**
+
 ```typescript
 Layer 0 (WELT): Universal principles
 Layer 1 (GRUNDVERSORGUNG): Layer 0 + children protections
@@ -131,6 +141,7 @@ Layer 2 (VULNERABLE): Layer 0 + Layer 1 + sensitive data protections
 ```
 
 **Enforcement Working:**
+
 - ✅ Layer 1 verifier CAN access Layer 1 data
 - ✅ Layer 1 verifier CANNOT access Layer 2 data
 - ✅ Layer 2 verifier CAN access Layer 1 data (inheritance)
@@ -184,6 +195,7 @@ Policy Engine Evaluation:
 ## Next Steps (Priority Order)
 
 ### P0 (Immediate) - Ready for Deployment
+
 1. ✅ **COMPLETED:** E2E flow working end-to-end
 2. 🔄 **GitHub Push** - Share with team/investors
    - Repository validated and ready
@@ -195,6 +207,7 @@ Policy Engine Evaluation:
    - Build artifacts for deployment
 
 ### P1 (Before Production)
+
 1. **Real Issuer Integration** - Replace mock with eID-Issuer
    - Connect to test eID infrastructure
    - Implement eIDAS 2.0 ARF compliance
@@ -209,6 +222,7 @@ Policy Engine Evaluation:
    - Test multi-credential requests
 
 ### P2 (Enhancement)
+
 1. **Revocation v2** - StatusList2021 implementation
 2. **Full SD-JWT Implementation** - Use @sd-jwt/core libraries
 3. **Performance Optimization** - <100ms verify flow
@@ -220,12 +234,14 @@ Policy Engine Evaluation:
 ## Performance Metrics
 
 ### Build Performance
+
 - Cold build: 10.4s (all 18 packages)
 - Cached build: ~3s (Turborepo)
 - Test execution: <1s per package
 - Total validation time: ~15s
 
 ### Runtime Performance (estimated)
+
 - Credential issuance: <50ms
 - Age proof computation: <1ms
 - Policy evaluation: <20ms
@@ -259,6 +275,7 @@ Policy Engine Evaluation:
 **✅ Working MVP Foundation** - Ready for Investor Demo
 
 **Demo Flow:**
+
 1. Show government issuer creating age credential
 2. Demonstrate ZK-proof: "User is over 18" without revealing birthdate
 3. Show liquor store policy (Layer 1 authorization)
@@ -267,6 +284,7 @@ Policy Engine Evaluation:
 6. Explain layer inheritance model
 
 **Key Messages:**
+
 - ✅ Privacy by design (selective disclosure + ZK-proofs)
 - ✅ Automated enforcement (layer model prevents unauthorized access)
 - ✅ Standards-compliant (JWT, ES256, W3C VC compatible)
@@ -277,12 +295,14 @@ Policy Engine Evaluation:
 ## Risk Assessment
 
 ### Mitigated Risks ✅
+
 - ✅ Architectural uncertainty → ADR-001 finalized
 - ✅ E2E flow gaps → Full flow tested and working
 - ✅ Layer enforcement unknowns → Automated and validated
 - ✅ Test coverage → 42 passing tests across stack
 
 ### Remaining Risks (Acceptable for MVP)
+
 - ⚠️ Mock issuer (not real eID) - **Acceptable:** Demo purposes, production roadmap defined
 - ⚠️ No revocation yet - **Acceptable:** StatusList2021 in P2 roadmap
 - ⚠️ Limited credential types - **Acceptable:** Age credential sufficient for MVP demo

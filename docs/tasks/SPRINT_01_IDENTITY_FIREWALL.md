@@ -161,7 +161,7 @@ Review-1-Ergebnis:
 Neue Action:
 
 ```typescript
-IDENTITY_ACCESS_DETECTED
+IDENTITY_ACCESS_DETECTED;
 ```
 
 Empfohlene Metadata-Felder:

@@ -51,5 +51,4 @@ miTch ist kein klassischer Identity Provider.
 
 miTch ist ein **regelbasierter Vertrauensrahmen**, anschlussfähig an bestehende Standards, ohne sich ihnen unterzuordnen.
 
-*Ende des Dokuments*
-
+_Ende des Dokuments_

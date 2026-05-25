@@ -5,17 +5,28 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type {
+  PolicyManifest,
+  VerifierRequest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 
 const EHDS_POLICY: PolicyManifest = {
   version: '1.2',
   globalSettings: {
     blockUnknownVerifiers: true,
-
   },
   trustedIssuers: [
-    { did: 'did:example:ehealth-authority', name: 'eHealth Authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
-    { did: 'did:example:gov-issuer', name: 'Government Issuer', credentialTypes: ['AgeCredential', 'VerifiableCredential'] },
+    {
+      did: 'did:example:ehealth-authority',
+      name: 'eHealth Authority',
+      credentialTypes: ['PatientSummary', 'VerifiableCredential'],
+    },
+    {
+      did: 'did:example:gov-issuer',
+      name: 'Government Issuer',
+      credentialTypes: ['AgeCredential', 'VerifiableCredential'],
+    },
   ],
   rules: [
     {
@@ -67,11 +78,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
     const request: VerifierRequest = {
       verifierId: 'hospital-madrid-er-1',
       origin: 'https://er.hospital-madrid.es',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], EHDS_POLICY);
@@ -85,11 +98,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
     const request: VerifierRequest = {
       verifierId: 'did:mitch:verifier-liquor-store',
       origin: 'https://liquor.example.com',
-      requirements: [{
-        credentialType: 'AgeCredential',
-        requestedClaims: [],
-        requestedProvenClaims: ['age >= 18'],
-      }],
+      requirements: [
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: [],
+          requestedProvenClaims: ['age >= 18'],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [AGE_CREDENTIAL], EHDS_POLICY);
@@ -108,11 +123,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
       verifierId: 'hospital-madrid-er-1',
       origin: 'https://er.hospital-madrid.es',
       usagePurpose: 'researchSecondary' as any,
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], policyWithOptOut);
@@ -130,11 +147,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
       verifierId: 'did:us:research-lab-42',
       origin: 'https://research.us.example.com',
       usagePurpose: 'researchSecondary' as any,
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     // Need a rule that matches this verifier
@@ -173,11 +192,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
       verifierId: 'hospital-madrid-er-1',
       origin: 'https://er.hospital-madrid.es',
       usagePurpose: 'researchSecondary' as any,
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], policyWithCountryDeny);
@@ -190,11 +211,13 @@ describe('EHDS Emergency: requiresPresence flow', () => {
       verifierId: 'hospital-madrid-er-1',
       origin: 'https://er.hospital-madrid.es',
       usagePurpose: 'researchSecondary' as any,
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [EHDS_CREDENTIAL], EHDS_POLICY);

@@ -6,15 +6,15 @@ This file defines the authoritative document per topic area and serves as naviga
 
 ## Document Hierarchy
 
-| Dokument | Zweck | Rolle |
-|----------|-------|-------|
-| `STATE.md` | Operativer Health-Snapshot (Tests, Lint, Audit, Demo) | Was läuft? |
-| `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
-| `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
-| `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
-| `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md` | Wiederholbarer Architekturprüfprozess mit Privacy-Firewall Reason Codes | Wie prüfen wir Architektur? |
-| `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md` | Übergabe-Snapshot für Coding Agents | Was muss der nächste Agent zuerst lesen? |
-| `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
+| Dokument                                                              | Zweck                                                                   | Rolle                                    |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------- |
+| `STATE.md`                                                            | Operativer Health-Snapshot (Tests, Lint, Audit, Demo)                   | Was läuft?                               |
+| `docs/BACKLOG.md`                                                     | Autoritatives Task-Tracking (erledigt / offen / geplant)                | Was ist erledigt, was fehlt?             |
+| `docs/specs/SPECS_STATUS_INDEX.md`                                    | Statusübersicht aller 112 Specs                                         | Spec-Navigation                          |
+| `docs/DOCS_CANON.md`                                                  | Dokumenten-Autorität und Navigation (diese Datei)                       | Einstiegspunkt                           |
+| `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md` | Wiederholbarer Architekturprüfprozess mit Privacy-Firewall Reason Codes | Wie prüfen wir Architektur?              |
+| `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`             | Übergabe-Snapshot für Coding Agents                                     | Was muss der nächste Agent zuerst lesen? |
+| `docs/REFACTORING_ROADMAP.md`                                         | Deferred Architekturarbeit (PoC → Production)                           | Größere Umbauten                         |
 
 ## Authoritative Sources
 
@@ -38,11 +38,11 @@ This file defines the authoritative document per topic area and serves as naviga
 
 ## Architecture Decision Records (3 Sammlungen)
 
-| Ort | Scope | Index |
-|-----|-------|-------|
-| `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007) | [README](03-architecture/decisions/README.md) |
-| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–012) | [README](03-architecture/mvp/README.md) |
-| `docs/compliance/ADR/` | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md) |
+| Ort                               | Scope                                                   | Index                                         |
+| --------------------------------- | ------------------------------------------------------- | --------------------------------------------- |
+| `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007)         | [README](03-architecture/decisions/README.md) |
+| `docs/03-architecture/mvp/`       | Formale Architektur-Strategie-ADRs (ADR-001–012)        | [README](03-architecture/mvp/README.md)       |
+| `docs/compliance/ADR/`            | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md)            |
 
 **Hinweis:** ADR-001–009 existieren in `mvp/` und `compliance/ADR/` mit unterschiedlichen Themen. Die READMEs in den jeweiligen Ordnern erklären die Abgrenzung.
 

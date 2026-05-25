@@ -12,17 +12,17 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/03-architecture/mvp/` â
 
 ## Index
 
-| ADR | Titel | Status |
-|-----|-------|--------|
-| [ADR-001](ADR-001.md) | SD-JWT VC as Credential Format (E-10) | Accepted |
-| [ADR-002](ADR-002.md) | DPoP (RFC 9449) for Proof of Key Possession (E-05) | Accepted |
-| [ADR-003](ADR-003.md) | SIOPv2 + OID4VP + HAIP for Presentation Protocol (E-03, E-04, E-13) | Accepted |
-| [ADR-004](ADR-004.md) | Brainpool Curves (BSI/SOG-IS) + ECDH-HMAC MAC (C-01, C-02) | Accepted (C-01 partial) |
-| [ADR-005](ADR-005.md) | Pairwise DIDs over Pseudonymous Attestations | Accepted |
-| [ADR-006](ADR-006.md) | StatusList2021 over OCSP for Revocation | Accepted |
-| [ADR-007](ADR-007.md) | Client-Side Crypto over Server-Side Processing | Accepted |
-| [ADR-008](ADR-008.md) | Fail-Closed Policy Engine with Deny-Bias | Accepted |
-| [ADR-009](ADR-009.md) | Native WebAuthn Verifier statt HMAC-Proxy-Mode-System | Accepted (retrospective) |
+| ADR                   | Titel                                                               | Status                   |
+| --------------------- | ------------------------------------------------------------------- | ------------------------ |
+| [ADR-001](ADR-001.md) | SD-JWT VC as Credential Format (E-10)                               | Accepted                 |
+| [ADR-002](ADR-002.md) | DPoP (RFC 9449) for Proof of Key Possession (E-05)                  | Accepted                 |
+| [ADR-003](ADR-003.md) | SIOPv2 + OID4VP + HAIP for Presentation Protocol (E-03, E-04, E-13) | Accepted                 |
+| [ADR-004](ADR-004.md) | Brainpool Curves (BSI/SOG-IS) + ECDH-HMAC MAC (C-01, C-02)          | Accepted (C-01 partial)  |
+| [ADR-005](ADR-005.md) | Pairwise DIDs over Pseudonymous Attestations                        | Accepted                 |
+| [ADR-006](ADR-006.md) | StatusList2021 over OCSP for Revocation                             | Accepted                 |
+| [ADR-007](ADR-007.md) | Client-Side Crypto over Server-Side Processing                      | Accepted                 |
+| [ADR-008](ADR-008.md) | Fail-Closed Policy Engine with Deny-Bias                            | Accepted                 |
+| [ADR-009](ADR-009.md) | Native WebAuthn Verifier statt HMAC-Proxy-Mode-System               | Accepted (retrospective) |
 
 ## Verwandte Sammlungen
 

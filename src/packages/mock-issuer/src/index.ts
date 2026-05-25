@@ -82,7 +82,7 @@ export class MockGovernmentIssuer {
       iss: this.issuerDID,
       sub: userDID,
       iat: now,
-      exp: now + (365 * 24 * 60 * 60), // Valid 1 year
+      exp: now + 365 * 24 * 60 * 60, // Valid 1 year
       birthdate: birthdate.toISOString().split('T')[0], // YYYY-MM-DD
       type: 'AgeCredential',
     };

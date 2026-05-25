@@ -15,45 +15,30 @@ describe('verifyMsoValidity', () => {
   }
 
   test('valid: now within range', () => {
-    const result = verifyMsoValidity(
-      makeValidity(),
-      new Date('2026-06-15T00:00:00Z')
-    );
+    const result = verifyMsoValidity(makeValidity(), new Date('2026-06-15T00:00:00Z'));
     expect(result.valid).toBe(true);
     expect(result.reason).toBeUndefined();
   });
 
   test('valid: now exactly at validFrom', () => {
-    const result = verifyMsoValidity(
-      makeValidity(),
-      new Date('2026-01-01T00:00:00Z')
-    );
+    const result = verifyMsoValidity(makeValidity(), new Date('2026-01-01T00:00:00Z'));
     expect(result.valid).toBe(true);
   });
 
   test('invalid: now before validFrom', () => {
-    const result = verifyMsoValidity(
-      makeValidity(),
-      new Date('2025-12-31T23:59:59Z')
-    );
+    const result = verifyMsoValidity(makeValidity(), new Date('2025-12-31T23:59:59Z'));
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('not yet valid');
   });
 
   test('invalid: now at validUntil (expired)', () => {
-    const result = verifyMsoValidity(
-      makeValidity(),
-      new Date('2027-01-01T00:00:00Z')
-    );
+    const result = verifyMsoValidity(makeValidity(), new Date('2027-01-01T00:00:00Z'));
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('expired');
   });
 
   test('invalid: now after validUntil', () => {
-    const result = verifyMsoValidity(
-      makeValidity(),
-      new Date('2028-01-01T00:00:00Z')
-    );
+    const result = verifyMsoValidity(makeValidity(), new Date('2028-01-01T00:00:00Z'));
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('expired');
   });
@@ -81,7 +66,11 @@ describe('verifyMsoValidity', () => {
 
   test('invalid: unparseable date strings', () => {
     const result = verifyMsoValidity(
-      { signed: 'not-a-date', validFrom: new Date(), validUntil: new Date() } as unknown as ValidityInfo,
+      {
+        signed: 'not-a-date',
+        validFrom: new Date(),
+        validUntil: new Date(),
+      } as unknown as ValidityInfo,
       new Date()
     );
     expect(result.valid).toBe(false);
@@ -89,10 +78,7 @@ describe('verifyMsoValidity', () => {
   });
 
   test('invalid: NaN dates', () => {
-    const result = verifyMsoValidity(
-      makeValidity({ signed: new Date('invalid') }),
-      new Date()
-    );
+    const result = verifyMsoValidity(makeValidity({ signed: new Date('invalid') }), new Date());
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('invalid dates');
   });
@@ -126,18 +112,12 @@ describe('verifyMsoValidity', () => {
 
 describe('verifyDocType', () => {
   test('valid: matching docTypes', () => {
-    const result = verifyDocType(
-      'org.iso.18013.5.1.mDL',
-      'org.iso.18013.5.1.mDL'
-    );
+    const result = verifyDocType('org.iso.18013.5.1.mDL', 'org.iso.18013.5.1.mDL');
     expect(result.valid).toBe(true);
   });
 
   test('invalid: mismatched docTypes', () => {
-    const result = verifyDocType(
-      'org.iso.18013.5.1.mDL',
-      'eu.europa.ec.eudi.pid.1'
-    );
+    const result = verifyDocType('org.iso.18013.5.1.mDL', 'eu.europa.ec.eudi.pid.1');
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('mismatch');
   });

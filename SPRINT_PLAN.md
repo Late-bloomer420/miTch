@@ -9,26 +9,26 @@
 
 ## Validierungs-Überblick
 
-| ID | Kategorie | Schwere | Status nach Validierung |
-|----|-----------|---------|------------------------|
-| F-01 | Kryptographie | HOCH | Bestätigt |
-| F-02 | Sicherheit | HOCH | Bestätigt |
-| F-03 | Sicherheit | MITTEL | Bestätigt |
-| F-04 | Architektur | MITTEL | Bestätigt |
-| F-05 | Sicherheit | MITTEL | Bestätigt |
-| F-06 | Korrektheit | NIEDRIG | Korrigiert (teilweise) |
-| F-07 | Architektur | MITTEL | Bestätigt (Kommentar ehrlich) |
-| F-08 | Sicherheit | NIEDRIG | Bestätigt |
-| F-09 | Architektur | MITTEL | Bestätigt |
-| F-10 | Infrastruktur | HOCH | Bestätigt, schlimmer als beschrieben |
-| F-11 | Hygiene | NIEDRIG | Bestätigt |
-| F-12 | Infrastruktur | MITTEL | Korrigiert (Merkle-Tree, Env-Vars in Session 6 erledigt; Stub-Doku fehlt noch) |
-| F-13 | Sicherheit | MITTEL | Bestätigt |
-| F-14 | Architektur | NIEDRIG | Bestätigt |
-| F-15 | Qualität | MITTEL | Bestätigt (phase0-security, layer-resolver weiter 0 Tests) |
-| F-16 | Architektur | BEKANNT | Korrigiert: REFACTORING_ROADMAP.md existiert nicht |
-| F-17 | Kryptographie | NIEDRIG | Bestätigt |
-| F-18 | Infrastruktur | MITTEL | **Neu** — REFACTORING_ROADMAP.md fehlt |
+| ID   | Kategorie     | Schwere | Status nach Validierung                                                        |
+| ---- | ------------- | ------- | ------------------------------------------------------------------------------ |
+| F-01 | Kryptographie | HOCH    | Bestätigt                                                                      |
+| F-02 | Sicherheit    | HOCH    | Bestätigt                                                                      |
+| F-03 | Sicherheit    | MITTEL  | Bestätigt                                                                      |
+| F-04 | Architektur   | MITTEL  | Bestätigt                                                                      |
+| F-05 | Sicherheit    | MITTEL  | Bestätigt                                                                      |
+| F-06 | Korrektheit   | NIEDRIG | Korrigiert (teilweise)                                                         |
+| F-07 | Architektur   | MITTEL  | Bestätigt (Kommentar ehrlich)                                                  |
+| F-08 | Sicherheit    | NIEDRIG | Bestätigt                                                                      |
+| F-09 | Architektur   | MITTEL  | Bestätigt                                                                      |
+| F-10 | Infrastruktur | HOCH    | Bestätigt, schlimmer als beschrieben                                           |
+| F-11 | Hygiene       | NIEDRIG | Bestätigt                                                                      |
+| F-12 | Infrastruktur | MITTEL  | Korrigiert (Merkle-Tree, Env-Vars in Session 6 erledigt; Stub-Doku fehlt noch) |
+| F-13 | Sicherheit    | MITTEL  | Bestätigt                                                                      |
+| F-14 | Architektur   | NIEDRIG | Bestätigt                                                                      |
+| F-15 | Qualität      | MITTEL  | Bestätigt (phase0-security, layer-resolver weiter 0 Tests)                     |
+| F-16 | Architektur   | BEKANNT | Korrigiert: REFACTORING_ROADMAP.md existiert nicht                             |
+| F-17 | Kryptographie | NIEDRIG | Bestätigt                                                                      |
+| F-18 | Infrastruktur | MITTEL  | **Neu** — REFACTORING_ROADMAP.md fehlt                                         |
 
 ---
 
@@ -59,18 +59,22 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
 
 - **Status:** Bestätigt
 - **Dateien:** `src/packages/policy-engine/src/engine.ts:606–607`
-- **Validierung:** `const requestHash = \`sha256(req:${request.verifierId})\`` — Literal-String, kein tatsächlicher Hash. Ebenso `policyHash`. Bestätigt.
+- **Validierung:** `const requestHash = \`sha256(req:${request.verifierId})\``— Literal-String, kein tatsächlicher Hash. Ebenso`policyHash`. Bestätigt.
 - **Konkreter Fix:** Beide durch echte SHA-256-Aufrufe ersetzen:
   ```typescript
-  const requestHash = await sha256Hash(JSON.stringify({
+  const requestHash = await sha256Hash(
+    JSON.stringify({
       verifierId: request.verifierId,
       nonce: request.nonce,
       requirements: request.requirements,
-  }));
-  const policyHash = await sha256Hash(JSON.stringify({
+    })
+  );
+  const policyHash = await sha256Hash(
+    JSON.stringify({
       version: policy.version,
-      rules: policy.rules.map(r => r.id),
-  }));
+      rules: policy.rules.map((r) => r.id),
+    })
+  );
   ```
   `sha256Hash` aus `@mitch/shared-crypto/hashing` importieren (dort bereits vorhanden).
   `createDecisionCapsule()` muss dafür `async` werden, sofern noch nicht.
@@ -145,9 +149,11 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
 - **Konkreter Fix:** Probe-Funktion ergänzen, aufgerufen einmalig beim Import:
   ```typescript
   export async function assertCryptoCapabilities(): Promise<void> {
-      await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-      await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
-      await crypto.subtle.importKey('raw', new Uint8Array(32), { name: 'HKDF' }, false, ['deriveBits']);
+    await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+    await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+    await crypto.subtle.importKey('raw', new Uint8Array(32), { name: 'HKDF' }, false, [
+      'deriveBits',
+    ]);
   }
   ```
   Aufruf in `WalletService.initialize()` vor dem ersten kryptographischen Vorgang.
@@ -164,7 +170,9 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
 - **Validierung:** `index.html` hat kein `<meta http-equiv="Content-Security-Policy">`. `vite.config.ts` konfiguriert keine `headers`. Bestätigt.
 - **Konkreter Fix:** Meta-Tag in `index.html`:
   ```html
-  <meta http-equiv="Content-Security-Policy" content="
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
     default-src 'self';
     script-src 'self';
     style-src 'self' 'unsafe-inline';
@@ -172,7 +180,8 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
     img-src 'self' data:;
     worker-src 'self' blob:;
     frame-ancestors 'none';
-  ">
+  "
+  />
   ```
   Anmerkung: `'unsafe-inline'` für styles ist ein Kompromiss mit Vite/React; Scripts müssen `'self'`-only bleiben. `connect-src` für lokale Issuer/Verifier-Ports anpassen wenn Deployment-URLs bekannt.
 - **Aufwand:** S
@@ -190,12 +199,15 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
   ```typescript
   let signingCryptoKey: CryptoKey;
   try {
-      signingCryptoKey = await crypto.subtle.importKey(
-          'pkcs8', signingPKCS8.slice(0) as unknown as Uint8Array<ArrayBuffer>,
-          { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']
-      );
+    signingCryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      signingPKCS8.slice(0) as unknown as Uint8Array<ArrayBuffer>,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign']
+    );
   } catch (e) {
-      throw new Error(`PAIRWISE_DID_KEYGEN_FAILED: ungültiger P-256-Skalar — ${e}`);
+    throw new Error(`PAIRWISE_DID_KEYGEN_FAILED: ungültiger P-256-Skalar — ${e}`);
   }
   ```
 - **Aufwand:** S
@@ -268,11 +280,13 @@ Erledigen bevor nächster Meilenstein (Pilot-Deployment). Sortierung: Abhängigk
 - **Konkreter Fix:** Phase 1 — einfacher Origin-Host-gegen-VerifierPattern-Check:
   ```typescript
   if (policy.globalSettings?.strictVerifierBinding && request.origin) {
-      const originHost = new URL(request.origin).hostname;
-      if (!this.matchesPattern(rule.verifierPattern, originHost)) {
-          console.warn(`[PolicyEngine] Verifier-Binding fehlgeschlagen: ${request.verifierId} von ${originHost}`);
-          return null; // Binding fehlgeschlagen → Kein Match
-      }
+    const originHost = new URL(request.origin).hostname;
+    if (!this.matchesPattern(rule.verifierPattern, originHost)) {
+      console.warn(
+        `[PolicyEngine] Verifier-Binding fehlgeschlagen: ${request.verifierId} von ${originHost}`
+      );
+      return null; // Binding fehlgeschlagen → Kein Match
+    }
   }
   ```
   Erfordert F-02 (ReDoS-Fix) als Voraussetzung, da `matchesPattern` hier aufgerufen wird.

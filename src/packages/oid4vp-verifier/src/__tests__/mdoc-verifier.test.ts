@@ -27,16 +27,14 @@ let issuerKeyPair: CryptoKeyPair;
 let deviceKeyPair: CryptoKeyPair;
 
 beforeAll(async () => {
-  issuerKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
-  deviceKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
+  issuerKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
+  deviceKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -68,16 +66,12 @@ function makeValidity(): ValidityInfo {
 }
 
 function makeSessionTranscript(): SessionTranscript {
-  return [
-    new Uint8Array([0x01, 0x02, 0x03]),
-    new Uint8Array([0x04, 0x05, 0x06]),
-    'handover-data',
-  ];
+  return [new Uint8Array([0x01, 0x02, 0x03]), new Uint8Array([0x04, 0x05, 0x06]), 'handover-data'];
 }
 
 async function buildMso(
   items: IssuerSignedItem[],
-  devicePublicKey: CryptoKey,
+  devicePublicKey: CryptoKey
 ): Promise<MobileSecurityObject> {
   const digestMap = new Map<number, Uint8Array>();
   for (const item of items) {
@@ -115,9 +109,16 @@ async function buildDeviceResponseBase64(opts?: {
     makeItem(3, MDL_ELEMENTS.ISSUING_COUNTRY, 'DE'),
   ];
 
-  const mso = await buildMso(items, opts?.wrongDeviceKey
-    ? (await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])).publicKey
-    : deviceKeyPair.publicKey,
+  const mso = await buildMso(
+    items,
+    opts?.wrongDeviceKey
+      ? (
+          await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+            'sign',
+            'verify',
+          ])
+        ).publicKey
+      : deviceKeyPair.publicKey
   );
 
   const issuerAuth = await createSign1({
@@ -200,7 +201,7 @@ describe('verifyMdocPresentation', () => {
     const wrongKey = await crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       false,
-      ['sign', 'verify'],
+      ['sign', 'verify']
     );
 
     const result = await verifyMdocPresentation({
@@ -226,7 +227,7 @@ describe('verifyMdocPresentation', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('failed verification'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('failed verification'))).toBe(true);
     expect(Object.keys(result.disclosedClaims)).toHaveLength(0);
   });
 
@@ -251,7 +252,7 @@ describe('verifyMdocPresentation', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('decode'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('decode'))).toBe(true);
   });
 
   it('rejects valid base64 but invalid CBOR', async () => {
@@ -263,7 +264,7 @@ describe('verifyMdocPresentation', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('parse') || e.includes('CBOR'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('parse') || e.includes('CBOR'))).toBe(true);
   });
 
   it('per-step diagnostics are available in document results', async () => {
@@ -278,7 +279,7 @@ describe('verifyMdocPresentation', () => {
     expect(result.valid).toBe(true);
     const steps = result.documents[0].verification.steps;
     expect(steps.length).toBeGreaterThanOrEqual(4);
-    const stepNames = steps.map(s => s.step);
+    const stepNames = steps.map((s) => s.step);
     expect(stepNames).toContain('issuer-auth');
     expect(stepNames).toContain('validity');
     expect(stepNames).toContain('doctype');

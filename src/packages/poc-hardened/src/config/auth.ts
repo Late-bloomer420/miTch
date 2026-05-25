@@ -5,8 +5,8 @@ export interface AuthConfig {
 }
 
 export const authConfig: AuthConfig = {
-  enabled: process.env.AUTH_TOKEN_REQUIRED === "1",
-  token: process.env.AUTH_TOKEN ?? "",
+  enabled: process.env.AUTH_TOKEN_REQUIRED === '1',
+  token: process.env.AUTH_TOKEN ?? '',
   nextToken: process.env.AUTH_TOKEN_NEXT,
 };
 

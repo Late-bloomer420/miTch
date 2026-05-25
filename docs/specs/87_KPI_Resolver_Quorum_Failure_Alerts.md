@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 `kpi:check` now evaluates quorum-failure drift thresholds:
+
 - `KPI_WARN_RESOLVER_QUORUM_FAILURES_TOTAL` (default: 5)
 - `KPI_CRIT_RESOLVER_QUORUM_FAILURES_TOTAL` (default: 20)
 

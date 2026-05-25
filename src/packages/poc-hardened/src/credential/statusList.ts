@@ -6,7 +6,7 @@
  * Verifier downloads entire list, checks locally → issuer can't tell which credential was checked.
  */
 
-import { gzipSync, gunzipSync } from "zlib";
+import { gzipSync, gunzipSync } from 'zlib';
 
 // ─── Publisher (Issuer side) ─────────────────────────────────────
 
@@ -25,14 +25,14 @@ export class StatusListPublisher {
   revoke(credentialIndex: number): void {
     const byteIndex = Math.floor(credentialIndex / 8);
     const bitIndex = 7 - (credentialIndex % 8);
-    if (byteIndex >= this.bitstring.length) throw new Error("index_out_of_range");
-    this.bitstring[byteIndex] |= (1 << bitIndex);
+    if (byteIndex >= this.bitstring.length) throw new Error('index_out_of_range');
+    this.bitstring[byteIndex] |= 1 << bitIndex;
   }
 
   unrevoke(credentialIndex: number): void {
     const byteIndex = Math.floor(credentialIndex / 8);
     const bitIndex = 7 - (credentialIndex % 8);
-    if (byteIndex >= this.bitstring.length) throw new Error("index_out_of_range");
+    if (byteIndex >= this.bitstring.length) throw new Error('index_out_of_range');
     this.bitstring[byteIndex] &= ~(1 << bitIndex);
   }
 
@@ -47,8 +47,8 @@ export class StatusListPublisher {
     const compressed = gzipSync(Buffer.from(this.bitstring));
     return {
       id: this.listUrl,
-      type: "StatusList2021",
-      encodedList: compressed.toString("base64"),
+      type: 'StatusList2021',
+      encodedList: compressed.toString('base64'),
       validUntil: new Date(Date.now() + this.ttlMs).toISOString(),
     };
   }
@@ -62,13 +62,13 @@ export class StatusListPublisher {
 
 export interface StatusList2021 {
   id: string;
-  type: "StatusList2021";
-  encodedList: string;    // base64(gzip(bitstring))
+  type: 'StatusList2021';
+  encodedList: string; // base64(gzip(bitstring))
   validUntil?: string;
 }
 
 export function checkRevocation(list: StatusList2021, credentialIndex: number): boolean {
-  const compressed = Buffer.from(list.encodedList, "base64");
+  const compressed = Buffer.from(list.encodedList, 'base64');
   const bitstring = gunzipSync(compressed);
   const byteIndex = Math.floor(credentialIndex / 8);
   const bitIndex = 7 - (credentialIndex % 8);

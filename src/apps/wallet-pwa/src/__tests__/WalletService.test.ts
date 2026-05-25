@@ -44,7 +44,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
       {
         verifierId: 'did:example:test-verifier',
         nonce: crypto.randomUUID(),
-        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['birthDate'] }]
+        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['birthDate'] }],
       },
       { userAgent: 'test', timestamp: Date.now() }
     );
@@ -57,7 +57,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
       {
         verifierId: 'did:mitch:known-verifier',
         nonce: crypto.randomUUID(),
-        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age'] }]
+        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age'] }],
       },
       { userAgent: 'test-agent', timestamp: Date.now() }
     );
@@ -107,13 +107,13 @@ describe('WalletService — Policy Persistence', () => {
       ...base,
       trustedIssuers: [
         ...base.trustedIssuers,
-        { did: 'did:example:new-issuer', name: 'Test Issuer', credentialTypes: ['TestCred'] }
-      ]
+        { did: 'did:example:new-issuer', name: 'Test Issuer', credentialTypes: ['TestCred'] },
+      ],
     };
     wallet.savePolicy(modified);
 
     const retrieved = wallet.getPolicy();
-    expect(retrieved.trustedIssuers.some(i => i.did === 'did:example:new-issuer')).toBe(true);
+    expect(retrieved.trustedIssuers.some((i) => i.did === 'did:example:new-issuer')).toBe(true);
   });
 });
 
@@ -146,7 +146,7 @@ describe('WalletService — Key Splitting & Recovery', () => {
     const shares = await wallet.splitMasterKey();
     expect(Array.isArray(shares)).toBe(true);
     expect(shares.length).toBe(3);
-    shares.forEach(s => expect(typeof s).toBe('string'));
+    shares.forEach((s) => expect(typeof s).toBe('string'));
   });
 
   it('recoverFromFragments with all 3 shares succeeds (PoC is 3-of-3)', async () => {
@@ -169,7 +169,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
 
   it('mdoc mDL credential is seeded with format mso_mdoc', async () => {
     const creds = await wallet.getCredentials();
-    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    const mdoc = creds.find((c) => c.id === 'mdoc-mdl-001');
     expect(mdoc).toBeDefined();
     expect(mdoc!.format).toBe('mso_mdoc');
     expect(mdoc!.type).toContain('org.iso.18013.5.1.mDL');
@@ -178,7 +178,12 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
   it('mdoc credential payload roundtrips through addMdocCredential + loadCredential', async () => {
     const { encode } = await import('@mitch/mdoc');
     const items = [
-      { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'test_claim', elementValue: 42 },
+      {
+        digestID: 0,
+        random: crypto.getRandomValues(new Uint8Array(16)),
+        elementIdentifier: 'test_claim',
+        elementValue: 42,
+      },
     ];
     const cbor = encode({ nameSpaces: new Map([['test.ns', items]]) });
 
@@ -191,7 +196,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
     );
 
     const creds = await wallet.getCredentials();
-    const meta = creds.find(c => c.id === 'mdoc-test-roundtrip');
+    const meta = creds.find((c) => c.id === 'mdoc-test-roundtrip');
     expect(meta).toBeDefined();
     expect(meta!.format).toBe('mso_mdoc');
 
@@ -204,7 +209,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
 
   it('mdoc claims list matches seeded elements', async () => {
     const creds = await wallet.getCredentials();
-    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    const mdoc = creds.find((c) => c.id === 'mdoc-mdl-001');
     expect(mdoc!.claims).toContain('family_name');
     expect(mdoc!.claims).toContain('age_over_18');
     expect(mdoc!.claims).toContain('issuing_country');

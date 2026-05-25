@@ -20,14 +20,14 @@ function makePolicy(overrides: Partial<PolicyManifest> = {}): PolicyManifest {
         provenClaims: ['age >= 18'],
         priority: 10,
         requiresUserConsent: true,
-      }
+      },
     ],
     trustedIssuers: [
       {
         did: 'did:example:gov-issuer',
         name: 'Government Issuer',
         credentialTypes: ['AgeCredential'],
-      }
+      },
     ],
     globalSettings: {
       blockUnknownVerifiers: false,
@@ -106,9 +106,17 @@ describe('PolicyEditor — Multiple Issuers', () => {
   it('renders all trusted issuers when multiple are present', () => {
     const policy = makePolicy({
       trustedIssuers: [
-        { did: 'did:example:gov-issuer', name: 'Government Issuer', credentialTypes: ['AgeCredential'] },
-        { did: 'did:example:hospital', name: 'St. Mary Hospital', credentialTypes: ['EmploymentCredential'] },
-      ]
+        {
+          did: 'did:example:gov-issuer',
+          name: 'Government Issuer',
+          credentialTypes: ['AgeCredential'],
+        },
+        {
+          did: 'did:example:hospital',
+          name: 'St. Mary Hospital',
+          credentialTypes: ['EmploymentCredential'],
+        },
+      ],
     });
     render(<PolicyEditor policy={policy} onSave={vi.fn()} />);
     expect(screen.getByText('Government Issuer')).toBeInTheDocument();
@@ -127,8 +135,8 @@ describe('PolicyEditor — Veto List', () => {
           provenClaims: [],
           priority: 999,
           requiresUserConsent: false,
-        }
-      ]
+        },
+      ],
     });
     render(<PolicyEditor policy={policy} onSave={vi.fn()} />);
     expect(screen.getByText('evil-tracker.com')).toBeInTheDocument();
@@ -144,8 +152,8 @@ describe('PolicyEditor — Veto List', () => {
           provenClaims: [],
           priority: 999,
           requiresUserConsent: false,
-        }
-      ]
+        },
+      ],
     });
     render(<PolicyEditor policy={policy} onSave={vi.fn()} />);
     const removeBtn = screen.getByText('✕').closest('button')!;

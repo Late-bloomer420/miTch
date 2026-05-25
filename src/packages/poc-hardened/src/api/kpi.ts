@@ -1,13 +1,13 @@
-import { readFileSync, existsSync } from "fs";
-import { getCredentialStatusCacheMetrics } from "../proof/credentialStatus";
-import { getResolverTelemetry } from "../proof/httpKeySource";
-import { getWebauthnTelemetry } from "./webauthnVerifier";
+import { readFileSync, existsSync } from 'fs';
+import { getCredentialStatusCacheMetrics } from '../proof/credentialStatus';
+import { getResolverTelemetry } from '../proof/httpKeySource';
+import { getWebauthnTelemetry } from './webauthnVerifier';
 
-const EVENTS_PATH = "./data/events.jsonl";
+const EVENTS_PATH = './data/events.jsonl';
 
 interface ParsedEvent {
   eventType?: string;
-  decision?: "ALLOW" | "DENY";
+  decision?: 'ALLOW' | 'DENY';
   decisionCode?: string;
   latencyMs?: number;
   details?: Record<string, string | number | boolean>;
@@ -15,10 +15,10 @@ interface ParsedEvent {
 
 function readEvents(): ParsedEvent[] {
   if (!existsSync(EVENTS_PATH)) return [];
-  const raw = readFileSync(EVENTS_PATH, "utf8").trim();
+  const raw = readFileSync(EVENTS_PATH, 'utf8').trim();
   if (!raw) return [];
   return raw
-    .split("\n")
+    .split('\n')
     .map((line) => {
       try {
         return JSON.parse(line) as ParsedEvent;
@@ -38,54 +38,81 @@ function percentile(values: number[], p: number): number {
 
 export function getKpiSnapshot(): Record<string, number> {
   const events = readEvents();
-  const decisions = events.filter((e) => e.eventType === "decision_made");
-  const allows = decisions.filter((e) => e.decision === "ALLOW").length;
-  const denies = decisions.filter((e) => e.decision === "DENY").length;
+  const decisions = events.filter((e) => e.eventType === 'decision_made');
+  const allows = decisions.filter((e) => e.decision === 'ALLOW').length;
+  const denies = decisions.filter((e) => e.decision === 'DENY').length;
   const total = decisions.length;
 
-  const adjudications = events.filter((e) => e.eventType === "adjudication_recorded");
-  const falseDenies = adjudications.filter((e) => e.details?.outcome === "false_deny").length;
-  const falseAllows = adjudications.filter((e) => e.details?.outcome === "false_allow").length;
-  const legitAdjudications = adjudications.filter((e) => e.details?.outcome === "legit" || e.details?.outcome === "false_deny").length;
+  const adjudications = events.filter((e) => e.eventType === 'adjudication_recorded');
+  const falseDenies = adjudications.filter((e) => e.details?.outcome === 'false_deny').length;
+  const falseAllows = adjudications.filter((e) => e.details?.outcome === 'false_allow').length;
+  const legitAdjudications = adjudications.filter(
+    (e) => e.details?.outcome === 'legit' || e.details?.outcome === 'false_deny'
+  ).length;
 
-  const overrides = events.filter((e) => e.eventType === "decision_override").length;
+  const overrides = events.filter((e) => e.eventType === 'decision_override').length;
 
-  const replayDenies = decisions.filter((e) => e.decisionCode === "DENY_BINDING_NONCE_REPLAY").length;
+  const replayDenies = decisions.filter(
+    (e) => e.decisionCode === 'DENY_BINDING_NONCE_REPLAY'
+  ).length;
   const replayAttempts = replayDenies;
 
-  const denyCredentialRevoked = decisions.filter((e) => e.decisionCode === "DENY_CREDENTIAL_REVOKED").length;
-  const denyStatusSourceUnavailable = decisions.filter((e) => e.decisionCode === "DENY_STATUS_SOURCE_UNAVAILABLE").length;
-  const denyJurisdictionIncompatible = decisions.filter((e) => e.decisionCode === "DENY_JURISDICTION_INCOMPATIBLE").length;
-  const denyReauthProofInvalid = decisions.filter((e) => e.decisionCode === "DENY_REAUTH_PROOF_INVALID").length;
-  const denyResolverQuorumFailed = decisions.filter((e) => e.decisionCode === "DENY_RESOLVER_QUORUM_FAILED").length;
+  const denyCredentialRevoked = decisions.filter(
+    (e) => e.decisionCode === 'DENY_CREDENTIAL_REVOKED'
+  ).length;
+  const denyStatusSourceUnavailable = decisions.filter(
+    (e) => e.decisionCode === 'DENY_STATUS_SOURCE_UNAVAILABLE'
+  ).length;
+  const denyJurisdictionIncompatible = decisions.filter(
+    (e) => e.decisionCode === 'DENY_JURISDICTION_INCOMPATIBLE'
+  ).length;
+  const denyReauthProofInvalid = decisions.filter(
+    (e) => e.decisionCode === 'DENY_REAUTH_PROOF_INVALID'
+  ).length;
+  const denyResolverQuorumFailed = decisions.filter(
+    (e) => e.decisionCode === 'DENY_RESOLVER_QUORUM_FAILED'
+  ).length;
 
   const latencies = decisions
     .map((e) => e.latencyMs)
-    .filter((v): v is number => typeof v === "number" && v >= 0);
+    .filter((v): v is number => typeof v === 'number' && v >= 0);
 
   const cache = getCredentialStatusCacheMetrics();
   const resolver = getResolverTelemetry();
   const webauthn = getWebauthnTelemetry();
 
-  const estimatedCostPerVerification = Number(process.env.ESTIMATED_COST_PER_VERIFICATION_EUR ?? 0.002);
-  const allowedAlgsCount = (process.env.ALLOWED_ALGS ?? "EdDSA")
-    .split(",")
+  const estimatedCostPerVerification = Number(
+    process.env.ESTIMATED_COST_PER_VERIFICATION_EUR ?? 0.002
+  );
+  const allowedAlgsCount = (process.env.ALLOWED_ALGS ?? 'EdDSA')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean).length;
 
-  const reauthStrongEnabled = process.env.REQUIRE_STRONG_REAUTH === "1" ? 1 : 0;
-  const webauthnMode = (process.env.WEBAUTHN_VERIFY_MODE ?? "allowlist").toLowerCase();
-  const webauthnModeCode = webauthnMode === "native" ? 2 : webauthnMode === "signed" ? 1 : 0;
+  const reauthStrongEnabled = process.env.REQUIRE_STRONG_REAUTH === '1' ? 1 : 0;
+  const webauthnMode = (process.env.WEBAUTHN_VERIFY_MODE ?? 'allowlist').toLowerCase();
+  const webauthnModeCode = webauthnMode === 'native' ? 2 : webauthnMode === 'signed' ? 1 : 0;
   const webauthnNativeModeEnabled = webauthnModeCode === 2 ? 1 : 0;
   const webauthnAllowlistModeEnabled = webauthnModeCode === 0 ? 1 : 0;
-  const hasSignedSecret = (process.env.WEBAUTHN_ASSERTION_HMAC_SECRET ?? "").length > 0;
-  const hasNativeSecret = (process.env.WEBAUTHN_NATIVE_ADAPTER_SECRET ?? "").length > 0;
+  const hasSignedSecret = (process.env.WEBAUTHN_ASSERTION_HMAC_SECRET ?? '').length > 0;
+  const hasNativeSecret = (process.env.WEBAUTHN_NATIVE_ADAPTER_SECRET ?? '').length > 0;
   const webauthnSecretConfigValid =
-    webauthnMode === "signed" ? (hasSignedSecret ? 1 : 0) : webauthnMode === "native" ? (hasNativeSecret ? 1 : 0) : 1;
+    webauthnMode === 'signed'
+      ? hasSignedSecret
+        ? 1
+        : 0
+      : webauthnMode === 'native'
+        ? hasNativeSecret
+          ? 1
+          : 0
+        : 1;
   const estimatedFixedMonthlyCost = Number(process.env.ESTIMATED_FIXED_MONTHLY_COST_EUR ?? 0);
-  const estimatedMonthlyVerificationVolume = Number(process.env.ESTIMATED_MONTHLY_VERIFICATION_VOLUME ?? total);
+  const estimatedMonthlyVerificationVolume = Number(
+    process.env.ESTIMATED_MONTHLY_VERIFICATION_VOLUME ?? total
+  );
   const estimatedMonthlyRunCost =
-    estimatedFixedMonthlyCost + estimatedCostPerVerification * Math.max(0, estimatedMonthlyVerificationVolume);
+    estimatedFixedMonthlyCost +
+    estimatedCostPerVerification * Math.max(0, estimatedMonthlyVerificationVolume);
 
   // compact security posture score (0-100), deny-biased weighting
   let securityProfileScore = 100;

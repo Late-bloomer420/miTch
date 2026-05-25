@@ -1,6 +1,6 @@
 /**
  * ROPA — Records of Processing Activities (GDPR Art. 30)
- * 
+ *
  * Aggregate-only processing records.
  * Tracks WHAT categories of processing happened, not WHO.
  * Required for any data controller deploying miTch.
@@ -9,23 +9,23 @@
 // ─── Types ───────────────────────────────────────────────────────
 
 export interface ProcessingActivity {
-  activity: string;               // "credential_issuance" | "age_verification" | ...
+  activity: string; // "credential_issuance" | "age_verification" | ...
   controller: {
-    entity: string;               // "CoolShop GmbH"
-    purpose: string;              // "Age verification for alcohol sales"
-    legalBasis: string;           // "JuSchG §2" or "GDPR Art. 6(1)(a)"
+    entity: string; // "CoolShop GmbH"
+    purpose: string; // "Age verification for alcohol sales"
+    legalBasis: string; // "JuSchG §2" or "GDPR Art. 6(1)(a)"
   };
-  dataCategories: string[];       // ["age_predicate"] — never raw PII categories
-  recipientCategories: string[];  // ["verifier_merchant"]
-  retentionPolicy: string;        // "crypto_shredded_after_transaction"
-  safeguards: string[];           // ["selective_disclosure", "crypto_shredding", "response_padding"]
+  dataCategories: string[]; // ["age_predicate"] — never raw PII categories
+  recipientCategories: string[]; // ["verifier_merchant"]
+  retentionPolicy: string; // "crypto_shredded_after_transaction"
+  safeguards: string[]; // ["selective_disclosure", "crypto_shredding", "response_padding"]
 }
 
 export interface ROPAEntry {
-  period: string;                 // "2026-02" (monthly)
+  period: string; // "2026-02" (monthly)
   activity: string;
   controller: string;
-  count: number;                  // aggregate count
+  count: number; // aggregate count
   dataCategories: string[];
   legalBasis: string;
 }
@@ -52,7 +52,7 @@ export class ROPAStore {
     if (!activity) return;
 
     const now = new Date();
-    const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const key = `${period}:${activityName}:${controllerEntity ?? activity.controller.entity}`;
 
     const existing = this.entries.get(key);
@@ -89,11 +89,11 @@ export class ROPAStore {
    */
   export(): object {
     return {
-      title: "Records of Processing Activities (GDPR Art. 30)",
+      title: 'Records of Processing Activities (GDPR Art. 30)',
       generatedAt: new Date().toISOString(),
       activities: this.getActivities(),
       aggregateRecords: this.getEntries(),
-      note: "All records are aggregate counts. No personal data is stored in this log.",
+      note: 'All records are aggregate counts. No personal data is stored in this log.',
     };
   }
 }

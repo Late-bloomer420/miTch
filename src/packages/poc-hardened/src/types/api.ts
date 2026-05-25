@@ -1,11 +1,11 @@
 export interface VerificationClaim {
-  type: "predicate";
+  type: 'predicate';
   name: string;
   value: string | number | boolean;
 }
 
 export interface VerificationRequestV0 {
-  version: "v0";
+  version: 'v0';
   requestId: string;
   rp: {
     id: string;
@@ -23,9 +23,9 @@ export interface VerificationRequestV0 {
   policyRef: string;
   meta?: {
     channel?: string;
-    traceLevel?: "minimal" | "debug";
+    traceLevel?: 'minimal' | 'debug';
     reAuthRecent?: boolean;
-    reAuthMethod?: "webauthn" | "other";
+    reAuthMethod?: 'webauthn' | 'other';
     reAuthAssertion?: string;
     reAuthChallenge?: string;
     reAuthIssuedAt?: string;
@@ -35,9 +35,9 @@ export interface VerificationRequestV0 {
 }
 
 export interface VerificationResponseV0 {
-  version: "v0";
+  version: 'v0';
   requestId: string;
-  decision: "ALLOW" | "DENY";
+  decision: 'ALLOW' | 'DENY';
   decisionCode: string;
   claimsSatisfied: Array<{ name: string; value: string | number | boolean }>;
   receiptRef: string;
@@ -51,7 +51,7 @@ export interface ProofBundleV0 {
   keyId?: string;
   credentialId?: string;
   credentialStatus?: {
-    type: "StatusList2021Entry";
+    type: 'StatusList2021Entry';
     statusListCredential: string;
     statusListIndex: string;
   };

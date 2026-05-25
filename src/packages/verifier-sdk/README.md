@@ -22,33 +22,33 @@ import { VerifierSDK } from '@mitch/verifier-sdk';
 import { getMyPrivateKey } from './secrets';
 
 const sdk = new VerifierSDK({
-    verifierDid: 'did:example:my-service',
-    privateKey: await getMyPrivateKey(),
-    // Optional: Implement replay protection
-    replayCheck: async (nonce, decisionId) => {
-        const exists = await db.has(nonce);
-        if (!exists) await db.save(nonce);
-        return exists;
-    }
+  verifierDid: 'did:example:my-service',
+  privateKey: await getMyPrivateKey(),
+  // Optional: Implement replay protection
+  replayCheck: async (nonce, decisionId) => {
+    const exists = await db.has(nonce);
+    if (!exists) await db.save(nonce);
+    return exists;
+  },
 });
 
 // Using Express/Fastify? Pass the body directly!
 app.post('/verify', async (req, res) => {
-    try {
-        const result = await sdk.verifyPresentation(req.body);
-        
-        console.log('Verified VC:', result.vp);
-        console.log('Proof Metadata:', result.proof);
-        
-        res.json({ success: true, data: result.vp });
-    } catch (err) {
-        // SDK throws named errors for easy handling
-        if (err.name === 'ReplayDetectedError') {
-            res.status(409).send('Replay Detected');
-        } else {
-            res.status(400).send(err.message);
-        }
+  try {
+    const result = await sdk.verifyPresentation(req.body);
+
+    console.log('Verified VC:', result.vp);
+    console.log('Proof Metadata:', result.proof);
+
+    res.json({ success: true, data: result.vp });
+  } catch (err) {
+    // SDK throws named errors for easy handling
+    if (err.name === 'ReplayDetectedError') {
+      res.status(409).send('Replay Detected');
+    } else {
+      res.status(400).send(err.message);
     }
+  }
 });
 ```
 

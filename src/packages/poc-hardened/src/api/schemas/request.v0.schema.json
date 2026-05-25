@@ -1,7 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["version", "requestId", "rp", "purpose", "claims", "proofBundle", "binding", "policyRef"],
+  "required": [
+    "version",
+    "requestId",
+    "rp",
+    "purpose",
+    "claims",
+    "proofBundle",
+    "binding",
+    "policyRef"
+  ],
   "properties": {
     "version": { "const": "v0" },
     "requestId": { "type": "string", "minLength": 1 },

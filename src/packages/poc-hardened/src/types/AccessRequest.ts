@@ -1,6 +1,6 @@
 /**
  * AccessRequest - External system requests access to user data
- * 
+ *
  * CONSTRAINT: Specifies WHAT and WHY, never HOW.
  * The vault never receives this. Policy engine uses it to decide.
  */

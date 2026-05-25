@@ -12,29 +12,29 @@ The eID Issuer Simulator enables end-to-end testing of miTch's credential issuan
 
 ## What the Simulator Does Faithfully (✅ Real)
 
-| Aspect | Fidelity | Notes |
-|--------|----------|-------|
-| **ES256 Signatures** | Production-identical | `jose` library, ECDSA P-256. Same algorithm as production eID issuers. |
-| **SD-JWT VC Format** | Spec-compliant | Follows draft-ietf-oauth-sd-jwt-vc. Disclosures use SHA-256 hashing. |
-| **Credential Structure** | Production-aligned | `vct`, `_sd`, `_sd_alg`, `iss`, `sub`, `iat`, `exp`, `jti` fields per spec. |
-| **DID Document** | Valid did:web format | Published `JsonWebKey2020` verification method with real EC key. |
-| **Age Predicate (isOver18)** | Correct computation | `age_over_18` boolean computed from birthdate, non-selectively-disclosable. |
-| **Selective Disclosure** | Working | Requested attributes are individual disclosures; verifier sees only what's disclosed. |
-| **JWT Verification** | Standard | Any JOSE-compliant library can verify credentials against published DID/key. |
-| **Protocol State Machine** | Modeled | Session tracks: idle → tc_token → pin → card_read → issue → complete. |
+| Aspect                       | Fidelity             | Notes                                                                                 |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------- |
+| **ES256 Signatures**         | Production-identical | `jose` library, ECDSA P-256. Same algorithm as production eID issuers.                |
+| **SD-JWT VC Format**         | Spec-compliant       | Follows draft-ietf-oauth-sd-jwt-vc. Disclosures use SHA-256 hashing.                  |
+| **Credential Structure**     | Production-aligned   | `vct`, `_sd`, `_sd_alg`, `iss`, `sub`, `iat`, `exp`, `jti` fields per spec.           |
+| **DID Document**             | Valid did:web format | Published `JsonWebKey2020` verification method with real EC key.                      |
+| **Age Predicate (isOver18)** | Correct computation  | `age_over_18` boolean computed from birthdate, non-selectively-disclosable.           |
+| **Selective Disclosure**     | Working              | Requested attributes are individual disclosures; verifier sees only what's disclosed. |
+| **JWT Verification**         | Standard             | Any JOSE-compliant library can verify credentials against published DID/key.          |
+| **Protocol State Machine**   | Modeled              | Session tracks: idle → tc_token → pin → card_read → issue → complete.                 |
 
 ## What the Simulator Skips (❌ Simulated)
 
-| Aspect | Production Reality | Simulator Behavior |
-|--------|-------------------|-------------------|
-| **PIN Verification** | User enters 6-digit PIN on device; verified against eID chip | State transition only, no actual PIN check |
-| **Smartcard/NFC Interaction** | AusweisApp2 communicates with eID chip via NFC/contact reader | Citizen data loaded from in-memory profiles |
-| **Certificate Chain** | eID chip has X.509 certificate chain rooted in BSI CA | Self-signed EC keypair per session |
-| **AusweisApp2 SDK** | Local SDK via WebSocket on port 24727 | No external process communication |
-| **eIDAS SAML** | Cross-border SAML AuthnRequest/Response flow | Not implemented |
-| **Revocation** | OCSP/CRL for document validity | No status checks |
-| **Rate Limiting / Abuse Prevention** | Government infrastructure has DDoS protection | None |
-| **Data Processing Agreements** | Legal agreements required for PII handling | N/A for simulator |
+| Aspect                               | Production Reality                                            | Simulator Behavior                          |
+| ------------------------------------ | ------------------------------------------------------------- | ------------------------------------------- |
+| **PIN Verification**                 | User enters 6-digit PIN on device; verified against eID chip  | State transition only, no actual PIN check  |
+| **Smartcard/NFC Interaction**        | AusweisApp2 communicates with eID chip via NFC/contact reader | Citizen data loaded from in-memory profiles |
+| **Certificate Chain**                | eID chip has X.509 certificate chain rooted in BSI CA         | Self-signed EC keypair per session          |
+| **AusweisApp2 SDK**                  | Local SDK via WebSocket on port 24727                         | No external process communication           |
+| **eIDAS SAML**                       | Cross-border SAML AuthnRequest/Response flow                  | Not implemented                             |
+| **Revocation**                       | OCSP/CRL for document validity                                | No status checks                            |
+| **Rate Limiting / Abuse Prevention** | Government infrastructure has DDoS protection                 | None                                        |
+| **Data Processing Agreements**       | Legal agreements required for PII handling                    | N/A for simulator                           |
 
 ## Upgrade Path to Real eID Integration
 

@@ -4,12 +4,20 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type {
+  PolicyManifest,
+  VerifierRequest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 
 const POLICY: PolicyManifest = {
   version: '1.0',
   trustedIssuers: [
-    { did: 'did:example:ehealth-authority', name: 'eHealth', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
+    {
+      did: 'did:example:ehealth-authority',
+      name: 'eHealth',
+      credentialTypes: ['PatientSummary', 'VerifiableCredential'],
+    },
   ],
   rules: [
     {
@@ -62,11 +70,13 @@ const CREDENTIAL: StoredCredentialMetadata = {
 
 const ER_REQUEST: VerifierRequest = {
   verifierId: 'hospital-vienna-er-1',
-  requirements: [{
-    credentialType: 'PatientSummary',
-    requestedClaims: ['bloodGroup', 'allergies'],
-    requestedProvenClaims: [],
-  }],
+  requirements: [
+    {
+      credentialType: 'PatientSummary',
+      requestedClaims: ['bloodGroup', 'allergies'],
+      requestedProvenClaims: [],
+    },
+  ],
 };
 
 describe('T-B1: Break-Glass Emergency Access', () => {
@@ -106,11 +116,13 @@ describe('T-B1: Break-Glass Emergency Access', () => {
 
     const request: VerifierRequest = {
       verifierId: 'clinic-downtown',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup', 'allergies'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [CREDENTIAL], POLICY);
@@ -127,11 +139,13 @@ describe('T-B1: Break-Glass Emergency Access', () => {
 
     const request: VerifierRequest = {
       verifierId: 'pharmacy-central',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['medication'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['medication'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
 
     const result = await engine.evaluate(request, ctx, [CREDENTIAL], POLICY);

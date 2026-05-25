@@ -1,4 +1,4 @@
-import { getKpiSnapshot } from "../api/kpi";
+import { getKpiSnapshot } from '../api/kpi';
 
 interface Thresholds {
   warnStatusUnavailableRate: number;
@@ -18,11 +18,19 @@ function getThresholds(): Thresholds {
     critStatusUnavailableRate: Number(process.env.KPI_CRIT_STATUS_UNAVAILABLE_RATE ?? 0.2),
     warnResolverInconsistentTotal: Number(process.env.KPI_WARN_RESOLVER_INCONSISTENT_TOTAL ?? 5),
     critResolverInconsistentTotal: Number(process.env.KPI_CRIT_RESOLVER_INCONSISTENT_TOTAL ?? 20),
-    warnResolverQuorumFailuresTotal: Number(process.env.KPI_WARN_RESOLVER_QUORUM_FAILURES_TOTAL ?? 5),
-    critResolverQuorumFailuresTotal: Number(process.env.KPI_CRIT_RESOLVER_QUORUM_FAILURES_TOTAL ?? 20),
-    warnDenyResolverQuorumFailedTotal: Number(process.env.KPI_WARN_DENY_RESOLVER_QUORUM_FAILED_TOTAL ?? 2),
-    critDenyResolverQuorumFailedTotal: Number(process.env.KPI_CRIT_DENY_RESOLVER_QUORUM_FAILED_TOTAL ?? 10),
-    failOnWarning: process.env.KPI_FAIL_ON_WARNING === "1",
+    warnResolverQuorumFailuresTotal: Number(
+      process.env.KPI_WARN_RESOLVER_QUORUM_FAILURES_TOTAL ?? 5
+    ),
+    critResolverQuorumFailuresTotal: Number(
+      process.env.KPI_CRIT_RESOLVER_QUORUM_FAILURES_TOTAL ?? 20
+    ),
+    warnDenyResolverQuorumFailedTotal: Number(
+      process.env.KPI_WARN_DENY_RESOLVER_QUORUM_FAILED_TOTAL ?? 2
+    ),
+    critDenyResolverQuorumFailedTotal: Number(
+      process.env.KPI_CRIT_DENY_RESOLVER_QUORUM_FAILED_TOTAL ?? 10
+    ),
+    failOnWarning: process.env.KPI_FAIL_ON_WARNING === '1',
   };
 }
 
@@ -56,9 +64,13 @@ function run(): void {
   const issues: string[] = [];
 
   if (statusRate > t.critStatusUnavailableRate) {
-    issues.push(`CRITICAL: deny_status_source_unavailable_rate=${statusRate} > ${t.critStatusUnavailableRate}`);
+    issues.push(
+      `CRITICAL: deny_status_source_unavailable_rate=${statusRate} > ${t.critStatusUnavailableRate}`
+    );
   } else if (statusRate > t.warnStatusUnavailableRate) {
-    issues.push(`WARNING: deny_status_source_unavailable_rate=${statusRate} > ${t.warnStatusUnavailableRate}`);
+    issues.push(
+      `WARNING: deny_status_source_unavailable_rate=${statusRate} > ${t.warnStatusUnavailableRate}`
+    );
   }
 
   if (cacheStores > 0 && cacheHits > cacheStores * 10) {
@@ -76,15 +88,15 @@ function run(): void {
   }
 
   if (reauthStrongEnabled === 1 && webauthnModeCode > 0 && webauthnSecretConfigValid === 0) {
-    issues.push("CRITICAL: strong re-auth enabled but WebAuthn secret config is invalid");
+    issues.push('CRITICAL: strong re-auth enabled but WebAuthn secret config is invalid');
   }
 
   if (webauthnNativeModeEnabled === 1 && reauthStrongEnabled !== 1) {
-    issues.push("WARNING: WebAuthn native mode enabled while strong re-auth is not enabled");
+    issues.push('WARNING: WebAuthn native mode enabled while strong re-auth is not enabled');
   }
 
   if (reauthStrongEnabled === 1 && webauthnAllowlistModeEnabled === 1) {
-    issues.push("WARNING: strong re-auth enabled but WebAuthn verify mode is still allowlist");
+    issues.push('WARNING: strong re-auth enabled but WebAuthn verify mode is still allowlist');
   }
 
   if (resolverInconsistent > t.critResolverInconsistentTotal) {
@@ -150,7 +162,7 @@ function run(): void {
 
   console.log(JSON.stringify(output, null, 2));
 
-  if (issues.some((i) => i.startsWith("CRITICAL"))) {
+  if (issues.some((i) => i.startsWith('CRITICAL'))) {
     process.exitCode = 2;
     return;
   }

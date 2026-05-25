@@ -10,7 +10,7 @@ function extractVerifierLabel(did: string | null): string {
   return last
     .replace(/^verifier-/, '')
     .split('-')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 }
 
@@ -38,29 +38,29 @@ export class DataFlowService {
       group.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
       // Find VP_GENERATED event for claim data
-      const vpEvent = group.find(e => e.action === 'VP_GENERATED');
+      const vpEvent = group.find((e) => e.action === 'VP_GENERATED');
 
       const claimsShared = (vpEvent?.metadata?.claims_shared as string[]) ?? [];
       const claimsRequested = (vpEvent?.metadata?.claims_requested as string[] | undefined) ?? null;
       let claimsWithheld: string[] | null = null;
       if (claimsRequested !== null) {
         const sharedSet = new Set(claimsShared);
-        claimsWithheld = claimsRequested.filter(c => !sharedSet.has(c));
+        claimsWithheld = claimsRequested.filter((c) => !sharedSet.has(c));
       }
       const provenClaims = (vpEvent?.metadata?.proven_claims as string[]) ?? [];
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
       const verifierId = (vpEvent?.metadata?.verifier_did as string) ?? null;
       const identityAccesses = group
-        .filter(e => e.action === 'IDENTITY_ACCESS_DETECTED')
-        .map(e => e.metadata)
+        .filter((e) => e.action === 'IDENTITY_ACCESS_DETECTED')
+        .map((e) => e.metadata)
         .filter((metadata): metadata is Record<string, unknown> => !!metadata)
-        .map(metadata => metadata as unknown as IdentityFirewallMetadata)
+        .map((metadata) => metadata as unknown as IdentityFirewallMetadata)
         .map(({ decision_id: _decisionId, ...access }) => access);
 
       // Lifecycle
-      const keyCreated = group.filter(e => e.action === 'KEY_CREATED');
-      const keyDestroyed = group.filter(e => e.action === 'KEY_DESTROYED');
+      const keyCreated = group.filter((e) => e.action === 'KEY_CREATED');
+      const keyDestroyed = group.filter((e) => e.action === 'KEY_DESTROYED');
       const keysCreated = keyCreated.length;
       const keysDestroyed = keyDestroyed.length;
       const fullyShredded = keysCreated > 0 && keysCreated === keysDestroyed;
@@ -73,8 +73,11 @@ export class DataFlowService {
       }
 
       // Build events
-      const events: DataFlowEvent[] = group.map(e => {
-        const { label, category } = eventLabel(e.action as AuditEventType, e.metadata as Record<string, unknown> | undefined);
+      const events: DataFlowEvent[] = group.map((e) => {
+        const { label, category } = eventLabel(
+          e.action as AuditEventType,
+          e.metadata as Record<string, unknown> | undefined
+        );
         return {
           auditEntryId: e.id,
           timestamp: e.timestamp,

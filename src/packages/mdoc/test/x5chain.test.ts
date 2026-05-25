@@ -26,23 +26,24 @@ async function buildSelfSignedCert(keyPair: CryptoKeyPair): Promise<Uint8Array> 
   const version = asn1Explicit(0, asn1Integer(new Uint8Array([0x02]))); // v3
   const serialNumber = asn1Integer(new Uint8Array([0x01]));
   const sigAlg = ecdsaSha256AlgId();
-  const issuer = asn1Sequence([asn1Set([asn1Sequence([
-    asn1Oid([0x55, 0x04, 0x03]), // CN OID
-    asn1Utf8('Test Issuer'),
-  ])])]);
-  const validity = asn1Sequence([
-    asn1UtcTime('260101000000Z'),
-    asn1UtcTime('270101000000Z'),
+  const issuer = asn1Sequence([
+    asn1Set([
+      asn1Sequence([
+        asn1Oid([0x55, 0x04, 0x03]), // CN OID
+        asn1Utf8('Test Issuer'),
+      ]),
+    ]),
   ]);
+  const validity = asn1Sequence([asn1UtcTime('260101000000Z'), asn1UtcTime('270101000000Z')]);
   const subject = issuer; // self-signed
   const tbsBody = [version, serialNumber, sigAlg, issuer, validity, subject, spki];
-  const tbs = asn1Sequence(tbsBody.map(b => ({ raw: b })));
+  const tbs = asn1Sequence(tbsBody.map((b) => ({ raw: b })));
 
   // Sign TBS with private key
   const sigBuffer = await crypto.subtle.sign(
     { name: 'ECDSA', hash: 'SHA-256' },
     keyPair.privateKey,
-    tbs,
+    tbs
   );
   const sigBytes = new Uint8Array(sigBuffer);
 
@@ -50,11 +51,7 @@ async function buildSelfSignedCert(keyPair: CryptoKeyPair): Promise<Uint8Array> 
   const sigBitString = asn1BitString(sigBytes);
 
   // Certificate = SEQUENCE { tbs, sigAlg, sig }
-  return asn1Sequence([
-    { raw: tbs },
-    { raw: sigAlg },
-    { raw: sigBitString },
-  ]);
+  return asn1Sequence([{ raw: tbs }, { raw: sigAlg }, { raw: sigBitString }]);
 }
 
 // ─── Minimal ASN.1 DER builders ─────────────────────────────────────────────
@@ -75,7 +72,7 @@ function asn1Wrap(tag: number, content: Uint8Array): Uint8Array {
 }
 
 function asn1Sequence(items: (Uint8Array | { raw: Uint8Array })[]): Uint8Array {
-  const parts = items.map(i => i instanceof Uint8Array ? i : i.raw);
+  const parts = items.map((i) => (i instanceof Uint8Array ? i : i.raw));
   const totalLen = parts.reduce((sum, p) => sum + p.length, 0);
   const body = new Uint8Array(totalLen);
   let offset = 0;
@@ -139,11 +136,10 @@ function ecdsaSha256AlgId(): Uint8Array {
 // ─── Setup ──────────────────────────────────────────────────────────────────
 
 beforeAll(async () => {
-  testKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
+  testKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
   testCertDer = await buildSelfSignedCert(testKeyPair);
 });
 
@@ -234,14 +230,9 @@ describe('importPublicKeyFromCert', () => {
     const sig = await crypto.subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
       testKeyPair.privateKey,
-      data,
+      data
     );
-    const valid = await crypto.subtle.verify(
-      { name: 'ECDSA', hash: 'SHA-256' },
-      pubKey,
-      sig,
-      data,
-    );
+    const valid = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pubKey, sig, data);
     expect(valid).toBe(true);
   });
 
@@ -249,21 +240,16 @@ describe('importPublicKeyFromCert', () => {
     const otherKey = await crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       false,
-      ['sign', 'verify'],
+      ['sign', 'verify']
     );
     const pubKey = await importPublicKeyFromCert(testCertDer);
     const data = new Uint8Array([1, 2, 3, 4]);
     const sig = await crypto.subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
       otherKey.privateKey,
-      data,
+      data
     );
-    const valid = await crypto.subtle.verify(
-      { name: 'ECDSA', hash: 'SHA-256' },
-      pubKey,
-      sig,
-      data,
-    );
+    const valid = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pubKey, sig, data);
     expect(valid).toBe(false);
   });
 });

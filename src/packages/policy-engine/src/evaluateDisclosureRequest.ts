@@ -50,15 +50,36 @@ function matchesVerifierPattern(verifierDid: string, verifierPattern: string): b
 
 export function evaluateDisclosureRequest(request: DisclosureRequest, policy: Policy): Decision {
   if (request.purpose !== policy.scope.purpose) {
-    return buildDecision(request, policy, 'DENY', 'NONE', [REASON_CODES.PURPOSE_MISMATCH, REASON_CODES.FAIL_CLOSED], []);
+    return buildDecision(
+      request,
+      policy,
+      'DENY',
+      'NONE',
+      [REASON_CODES.PURPOSE_MISMATCH, REASON_CODES.FAIL_CLOSED],
+      []
+    );
   }
 
   if (!matchesVerifierPattern(request.verifierDid, policy.scope.verifierPattern)) {
-    return buildDecision(request, policy, 'DENY', 'NONE', [REASON_CODES.VERIFIER_PATTERN_MISMATCH, REASON_CODES.FAIL_CLOSED], []);
+    return buildDecision(
+      request,
+      policy,
+      'DENY',
+      'NONE',
+      [REASON_CODES.VERIFIER_PATTERN_MISMATCH, REASON_CODES.FAIL_CLOSED],
+      []
+    );
   }
 
   if (policy.linkabilityControls.nonceRequired && !request.nonce) {
-    return buildDecision(request, policy, 'DENY', 'NONE', [REASON_CODES.NONCE_REQUIRED, REASON_CODES.FAIL_CLOSED], []);
+    return buildDecision(
+      request,
+      policy,
+      'DENY',
+      'NONE',
+      [REASON_CODES.NONCE_REQUIRED, REASON_CODES.FAIL_CLOSED],
+      []
+    );
   }
 
   if (policy.linkabilityControls.audienceBindingRequired && !request.audience) {
@@ -72,8 +93,13 @@ export function evaluateDisclosureRequest(request: DisclosureRequest, policy: Po
     );
   }
 
-  const reasonCodes: PolicyReasonCode[] = [REASON_CODES.PURPOSE_VALID, REASON_CODES.VERIFIER_PATTERN_MATCHED];
-  const deniedClaims = request.requestedClaims.filter((claim) => policy.deniedClaims.some((denied) => denied.claim === claim));
+  const reasonCodes: PolicyReasonCode[] = [
+    REASON_CODES.PURPOSE_VALID,
+    REASON_CODES.VERIFIER_PATTERN_MATCHED,
+  ];
+  const deniedClaims = request.requestedClaims.filter((claim) =>
+    policy.deniedClaims.some((denied) => denied.claim === claim)
+  );
 
   if (deniedClaims.length > 0) {
     reasonCodes.push(REASON_CODES.RAW_ATTRIBUTE_NOT_PROPORTIONAL);
@@ -121,7 +147,10 @@ export function evaluateDisclosureRequest(request: DisclosureRequest, policy: Po
     : undefined;
 
   if (policy.defaults.requiresUserConsent || policy.defaults.requiresPresence) {
-    const promptReasons: PolicyReasonCode[] = [...reasonCodes, REASON_CODES.MINIMAL_DISCLOSURE_REQUIRED];
+    const promptReasons: PolicyReasonCode[] = [
+      ...reasonCodes,
+      REASON_CODES.MINIMAL_DISCLOSURE_REQUIRED,
+    ];
     if (policy.defaults.requiresUserConsent) {
       promptReasons.push(REASON_CODES.USER_CONSENT_REQUIRED);
     }
@@ -129,10 +158,26 @@ export function evaluateDisclosureRequest(request: DisclosureRequest, policy: Po
       promptReasons.push(REASON_CODES.PRESENCE_REQUIRED);
     }
 
-    return buildDecision(request, policy, 'PROMPT', matchingPredicate ? 'PREDICATE_PROOF' : 'NONE', promptReasons, deniedClaims, allowedDisclosure);
+    return buildDecision(
+      request,
+      policy,
+      'PROMPT',
+      matchingPredicate ? 'PREDICATE_PROOF' : 'NONE',
+      promptReasons,
+      deniedClaims,
+      allowedDisclosure
+    );
   }
 
-  return buildDecision(request, policy, 'ALLOW', matchingPredicate ? 'PREDICATE_PROOF' : 'NONE', reasonCodes, deniedClaims, allowedDisclosure);
+  return buildDecision(
+    request,
+    policy,
+    'ALLOW',
+    matchingPredicate ? 'PREDICATE_PROOF' : 'NONE',
+    reasonCodes,
+    deniedClaims,
+    allowedDisclosure
+  );
 }
 
 export { matchesVerifierPattern };

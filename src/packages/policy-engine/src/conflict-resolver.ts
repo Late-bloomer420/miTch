@@ -54,10 +54,10 @@ export function resolveConflict(verdicts: VerdictWithReason[]): VerdictWithReaso
   }
 
   // Deny-wins: if ANY verdict is DENY, final is DENY
-  const denyVerdicts = verdicts.filter(v => v.verdict === 'DENY');
+  const denyVerdicts = verdicts.filter((v) => v.verdict === 'DENY');
   if (denyVerdicts.length > 0) {
     // Merge all deny reason codes
-    const allReasons = denyVerdicts.flatMap(v => v.reasonCodes);
+    const allReasons = denyVerdicts.flatMap((v) => v.reasonCodes);
     // Add conflict marker
     allReasons.push(DenyReasonCode.CONFLICT_DENY_WINS);
     return {
@@ -68,9 +68,9 @@ export function resolveConflict(verdicts: VerdictWithReason[]): VerdictWithReaso
   }
 
   // If any PROMPT (no DENY) → PROMPT
-  const promptVerdicts = verdicts.filter(v => v.verdict === 'PROMPT');
+  const promptVerdicts = verdicts.filter((v) => v.verdict === 'PROMPT');
   if (promptVerdicts.length > 0) {
-    const allReasons = verdicts.flatMap(v => v.reasonCodes);
+    const allReasons = verdicts.flatMap((v) => v.reasonCodes);
     return {
       verdict: 'PROMPT',
       reasonCodes: [...new Set(allReasons)],
@@ -79,7 +79,7 @@ export function resolveConflict(verdicts: VerdictWithReason[]): VerdictWithReaso
   }
 
   // All ALLOW
-  const allReasons = verdicts.flatMap(v => v.reasonCodes);
+  const allReasons = verdicts.flatMap((v) => v.reasonCodes);
   return {
     verdict: 'ALLOW',
     reasonCodes: [...new Set(allReasons)],

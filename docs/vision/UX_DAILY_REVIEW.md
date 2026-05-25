@@ -30,6 +30,7 @@ A timestamped log of everything that happened today.
 Like a bank statement, but for your data.
 
 Each transaction entry shows:
+
 - Who asked (verifier name + verified/unverified indicator)
 - What was shared (fields disclosed)
 - What was withheld (fields blocked)
@@ -37,6 +38,7 @@ Each transaction entry shows:
 - What was forgotten (crypto-shred confirmed)
 
 The user can:
+
 - Scroll through, learn, build intuition over time
 - Tap any entry for full detail (privacy score, tracker breakdown, what Google/Apple could observe)
 - Ignore green entries entirely — they're just the record
@@ -47,6 +49,7 @@ The user can:
 Not every transaction triggers a notification. Most don't.
 
 Notification triggers:
+
 - Unverified or unknown verifier requested data
 - More data requested than the stated purpose justifies (data minimisation violation)
 - Same verifier requested data multiple times in a short window
@@ -55,6 +58,7 @@ Notification triggers:
 - OS-level risk detected: new tracking SDK appeared in an app you used
 
 Notification format:
+
 - Short, plain language: "Rewe requested your home address today. That wasn't needed for age verification."
 - Danger level clearly labeled
 - One tap to see full detail
@@ -69,30 +73,34 @@ miTch goes further: here's who you should talk to.
 
 ### Danger Level → Recommended Action
 
-| Level | What it means | What miTch recommends |
-|---|---|---|
-| 🟢 Clean | Routine, verified, minimal disclosure | No action needed. Entry stays in your log. |
-| 🟡 Watch | Unusual but not clearly wrong — more data than expected, unverified verifier, repeated requests | Review the entry. Consider whether you want to interact with this verifier again. |
-| 🔴 Danger | Clear violation — data requested without legal basis, breach detected, credential manipulation | Notification sent. Action recommended. |
-| 🔴🔴 Critical | Credential misuse, identity theft indicators, known bad actor | Immediate notification. Escalation to authorities recommended. |
+| Level         | What it means                                                                                   | What miTch recommends                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 🟢 Clean      | Routine, verified, minimal disclosure                                                           | No action needed. Entry stays in your log.                                        |
+| 🟡 Watch      | Unusual but not clearly wrong — more data than expected, unverified verifier, repeated requests | Review the entry. Consider whether you want to interact with this verifier again. |
+| 🔴 Danger     | Clear violation — data requested without legal basis, breach detected, credential manipulation  | Notification sent. Action recommended.                                            |
+| 🔴🔴 Critical | Credential misuse, identity theft indicators, known bad actor                                   | Immediate notification. Escalation to authorities recommended.                    |
 
 ### Escalation Options (shown in the app, user-initiated)
 
 **File a GDPR complaint**
+
 - Links to the relevant national Data Protection Authority (DPA) based on user's jurisdiction
 - Pre-fills complaint details from the transaction log (what was shared, when, with whom)
 - The consent receipt becomes evidence
 
 **Consult a data protection lawyer**
+
 - Curated directory of GDPR-specialist lawyers (EU-wide, filtered by country)
 - Not a referral business — just a directory. miTch has no commercial interest in who the user picks.
 
 **Contact a data security specialist**
+
 - For technical incidents (credential manipulation, suspected identity fraud)
 - Links to relevant national CERT/CSIRT organisations
 - BSI (Germany), NCSC (UK), ENISA contacts for EU-level issues
 
 **Export your evidence**
+
 - Signed, exportable consent receipt package
 - Cryptographic proof of what was shared, when, what was withheld
 - Format usable as supporting evidence in a GDPR complaint or legal proceeding

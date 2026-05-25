@@ -68,13 +68,13 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| MITM intercepts DID Document fetch | did:web uses HTTPS; localhost uses HTTP only for dev | DNS poisoning could redirect HTTPS; mitigated by certificate pinning (future G-27 multi-resolver quorum) |
-| Attacker publishes malicious DID Document | Document validation: requires `@context`, `id`, valid `verificationMethod` with JWK | Compromised web server hosting `did.json` could serve attacker keys; mitigated by key rotation + cache eviction |
-| Key substitution (sign with different key) | JWT `jwtVerify()` against DID-resolved key — mismatch = `SIGNATURE_INVALID` | None for ES256; algorithm confusion attacks mitigated by explicit alg in JWT header |
-| Replay of stale DID Document | TTL cache (default 1h); `evict()` method for forced re-resolution | Stale cache within TTL window could miss key rotation; acceptable for pilot |
-| Mock fallback in production | `DIDSignatureVerifier` hardcodes `allowMockFallback: false` | Legacy `resolveDID()` function still allows mock — marked `@deprecated` |
+| Attack                                     | Mitigation                                                                          | Residual Risk                                                                                                   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| MITM intercepts DID Document fetch         | did:web uses HTTPS; localhost uses HTTP only for dev                                | DNS poisoning could redirect HTTPS; mitigated by certificate pinning (future G-27 multi-resolver quorum)        |
+| Attacker publishes malicious DID Document  | Document validation: requires `@context`, `id`, valid `verificationMethod` with JWK | Compromised web server hosting `did.json` could serve attacker keys; mitigated by key rotation + cache eviction |
+| Key substitution (sign with different key) | JWT `jwtVerify()` against DID-resolved key — mismatch = `SIGNATURE_INVALID`         | None for ES256; algorithm confusion attacks mitigated by explicit alg in JWT header                             |
+| Replay of stale DID Document               | TTL cache (default 1h); `evict()` method for forced re-resolution                   | Stale cache within TTL window could miss key rotation; acceptable for pilot                                     |
+| Mock fallback in production                | `DIDSignatureVerifier` hardcodes `allowMockFallback: false`                         | Legacy `resolveDID()` function still allows mock — marked `@deprecated`                                         |
 
 ### 5) Operational semantics
 
@@ -147,13 +147,13 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| Use credential after issuer revokes it | Bitstring check at `statusListIndex`; revoked bit = DENY | Cache TTL window (max 5min default) — credential usable until cache expires |
-| Block status list fetch to force ALLOW | High-risk: DENY on any fetch failure. Low-risk: grace period then DENY | Low-risk tier has 1h grace window with stale data |
-| Privacy attack: correlate per-credential revocation checks | Batch fetch of entire list; never per-credential queries | Status list URL itself may be a correlation signal (mitigated by shared lists) |
-| Malformed status list to bypass check | Validates `type === 'StatusList2021'` and `encodedList` presence; parse failure = DENY | Sophisticated malformed list that passes validation but has wrong encoding — mitigated by MSB-first bit parsing per spec |
-| Index manipulation (out-of-bounds) | Bounds check: `byteIndex >= bitstring.length` → DENY; negative/NaN → DENY | None identified |
+| Attack                                                     | Mitigation                                                                             | Residual Risk                                                                                                            |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Use credential after issuer revokes it                     | Bitstring check at `statusListIndex`; revoked bit = DENY                               | Cache TTL window (max 5min default) — credential usable until cache expires                                              |
+| Block status list fetch to force ALLOW                     | High-risk: DENY on any fetch failure. Low-risk: grace period then DENY                 | Low-risk tier has 1h grace window with stale data                                                                        |
+| Privacy attack: correlate per-credential revocation checks | Batch fetch of entire list; never per-credential queries                               | Status list URL itself may be a correlation signal (mitigated by shared lists)                                           |
+| Malformed status list to bypass check                      | Validates `type === 'StatusList2021'` and `encodedList` presence; parse failure = DENY | Sophisticated malformed list that passes validation but has wrong encoding — mitigated by MSB-first bit parsing per spec |
+| Index manipulation (out-of-bounds)                         | Bounds check: `byteIndex >= bitstring.length` → DENY; negative/NaN → DENY              | None identified                                                                                                          |
 
 ### 5) Operational semantics
 
@@ -223,13 +223,13 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| Verifier probes policy rules by observing different error messages | All deny codes map to 4 generic verifier buckets; indistinguishable | Timing side-channels (different code paths may have different latency) — not yet mitigated |
-| Policy ambiguity exploited to get ALLOW | Deny-wins conflict resolution: ANY DENY in matched rules → final DENY | None — deterministic, pure function |
-| Unknown policy version bypasses checks | `isPolicyVersionKnown()` rejects unknown versions → DENY | New version must be explicitly added to `KNOWN_POLICY_VERSIONS` set |
-| Missing policy → default ALLOW | `validatePolicyOrDeny()` returns DENY for null/undefined/missing-version policy | None — explicit null check |
-| User confused by generic error | User audience gets German-language actionable messages (e.g., "Dein Nachweis ist abgelaufen. Bitte erneuere ihn.") | Localization limited to German for pilot |
+| Attack                                                             | Mitigation                                                                                                         | Residual Risk                                                                              |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Verifier probes policy rules by observing different error messages | All deny codes map to 4 generic verifier buckets; indistinguishable                                                | Timing side-channels (different code paths may have different latency) — not yet mitigated |
+| Policy ambiguity exploited to get ALLOW                            | Deny-wins conflict resolution: ANY DENY in matched rules → final DENY                                              | None — deterministic, pure function                                                        |
+| Unknown policy version bypasses checks                             | `isPolicyVersionKnown()` rejects unknown versions → DENY                                                           | New version must be explicitly added to `KNOWN_POLICY_VERSIONS` set                        |
+| Missing policy → default ALLOW                                     | `validatePolicyOrDeny()` returns DENY for null/undefined/missing-version policy                                    | None — explicit null check                                                                 |
+| User confused by generic error                                     | User audience gets German-language actionable messages (e.g., "Dein Nachweis ist abgelaufen. Bitte erneuere ihn.") | Localization limited to German for pilot                                                   |
 
 ### 5) Operational semantics
 
@@ -315,14 +315,14 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| Replay presentation (reuse nonce) | Nonce consumed atomically + deleted; second use → DENY | In-memory store; server restart clears store (all outstanding nonces invalidated — safe direction) |
-| Context swap (present to different verifier) | Audience binding: nonce is keyed by `audience\0nonce`; wrong audience → unknown | None — composite key enforces binding |
-| Clock manipulation to extend nonce life | Clock skew tolerance ±30s; beyond that → DENY | ±30s window is the maximum exploitation window |
-| Brute-force nonce prediction | 256-bit random nonce (2^256 keyspace); infeasible | None |
-| Hash tampering to substitute request content | SHA-256 canonical hash verified before nonce consume | Hash collision (2^128 for SHA-256); infeasible for pilot |
-| Nonce store memory exhaustion | LRU eviction at 100k entries; `pruneExpired()` on every operation | Under extreme load, legitimate nonces could be evicted — fails closed (DENY) |
+| Attack                                       | Mitigation                                                                      | Residual Risk                                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Replay presentation (reuse nonce)            | Nonce consumed atomically + deleted; second use → DENY                          | In-memory store; server restart clears store (all outstanding nonces invalidated — safe direction) |
+| Context swap (present to different verifier) | Audience binding: nonce is keyed by `audience\0nonce`; wrong audience → unknown | None — composite key enforces binding                                                              |
+| Clock manipulation to extend nonce life      | Clock skew tolerance ±30s; beyond that → DENY                                   | ±30s window is the maximum exploitation window                                                     |
+| Brute-force nonce prediction                 | 256-bit random nonce (2^256 keyspace); infeasible                               | None                                                                                               |
+| Hash tampering to substitute request content | SHA-256 canonical hash verified before nonce consume                            | Hash collision (2^128 for SHA-256); infeasible for pilot                                           |
+| Nonce store memory exhaustion                | LRU eviction at 100k entries; `pruneExpired()` on every operation               | Under extreme load, legitimate nonces could be evicted — fails closed (DENY)                       |
 
 ### 5) Operational semantics
 
@@ -406,13 +406,13 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| Forge credential with wrong issuer key | `jwtVerify()` against DID-resolved key; wrong key → verification fails | None for ES256 |
+| Attack                                  | Mitigation                                                                                                 | Residual Risk                                                                    |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Forge credential with wrong issuer key  | `jwtVerify()` against DID-resolved key; wrong key → verification fails                                     | None for ES256                                                                   |
 | Use simulator credentials in production | DID is clearly non-production: `did:web:eid-simulator.mitch.local`. Production verifiers won't resolve it. | Social engineering to trust simulator DID — mitigated by verifier trust registry |
-| Tamper with SD-JWT disclosures | Disclosure hashes verified against `_sd` array; mismatch → error | None — SHA-256 integrity |
-| Age predicate forgery | `age_over_18` computed server-side from birthdate; not selectively disclosable | Simulator uses in-memory profiles — no real eID chip binding |
-| Enumerate citizen profiles | Only `default` and `minor` profiles; unknown profile → error | Limited profile set is by design for testing |
+| Tamper with SD-JWT disclosures          | Disclosure hashes verified against `_sd` array; mismatch → error                                           | None — SHA-256 integrity                                                         |
+| Age predicate forgery                   | `age_over_18` computed server-side from birthdate; not selectively disclosable                             | Simulator uses in-memory profiles — no real eID chip binding                     |
+| Enumerate citizen profiles              | Only `default` and `minor` profiles; unknown profile → error                                               | Limited profile set is by design for testing                                     |
 
 ### 5) Operational semantics
 
@@ -485,13 +485,13 @@
 
 ### 4) Threat mapping (attack → mitigation)
 
-| Attack | Mitigation | Residual Risk |
-|--------|-----------|---------------|
-| Disk/storage dump reveals PII | AES-256-GCM encryption; raw storage contains only ciphertext | IndexedDB metadata (index tags) is plaintext — contains issuer/type but NOT PII |
-| Wrong key returns partial data | Decryption failure throws error; never returns partial/truncated plaintext | None — AES-GCM authentication tag prevents partial decryption |
-| Credential survives deletion | `delete()` removes from IndexedDB; verified by `has()` + `load()` + metadata check | IndexedDB compaction is browser-controlled; deleted data may persist on disk briefly |
-| Memory dump during decryption | Decrypted payload exists in JS heap temporarily | Mitigated by: JS GC, no persistent plaintext storage. Full mitigation requires TEE (G-20) |
-| GDPR erasure request | Crypto-shredding: destroy master key → all ciphertext unrecoverable. `delete()` for individual credentials. `reset()` for full wipe. | Legal opinion on crypto-shredding as Art. 17 compliance pending (G-14) |
+| Attack                         | Mitigation                                                                                                                           | Residual Risk                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Disk/storage dump reveals PII  | AES-256-GCM encryption; raw storage contains only ciphertext                                                                         | IndexedDB metadata (index tags) is plaintext — contains issuer/type but NOT PII           |
+| Wrong key returns partial data | Decryption failure throws error; never returns partial/truncated plaintext                                                           | None — AES-GCM authentication tag prevents partial decryption                             |
+| Credential survives deletion   | `delete()` removes from IndexedDB; verified by `has()` + `load()` + metadata check                                                   | IndexedDB compaction is browser-controlled; deleted data may persist on disk briefly      |
+| Memory dump during decryption  | Decrypted payload exists in JS heap temporarily                                                                                      | Mitigated by: JS GC, no persistent plaintext storage. Full mitigation requires TEE (G-20) |
+| GDPR erasure request           | Crypto-shredding: destroy master key → all ciphertext unrecoverable. `delete()` for individual credentials. `reset()` for full wipe. | Legal opinion on crypto-shredding as Art. 17 compliance pending (G-14)                    |
 
 ### 5) Operational semantics
 
@@ -515,24 +515,24 @@
 
 The following invariants hold across all 6 gaps and MUST be regression-tested:
 
-| # | Invariant | Enforced By | Test Coverage |
-|---|-----------|-------------|---------------|
-| 1 | Unknown verifier / DID resolution fails → DENY | G-01 `DIDSignatureVerifier` | `did.test.ts`: 6 DENY-on-failure tests |
-| 2 | Revocation status unknown/unreachable → DENY (high-risk) | G-02 `StatusListRevocationChecker` | `checker.test.ts`: 3 DENY-on-unreachable tests |
-| 3 | Policy ambiguity / purpose mismatch → DENY or PROMPT, never ALLOW | G-03 `resolveConflict()` | `denial.test.ts` + structural: empty verdicts → DENY, deny-wins |
-| 4 | Nonce replay → DENY | G-04 `BindingNonceStore.consume()` | `presentation-binding.test.ts`: replay tests |
-| 5 | Wrong key / tampered credential → DENY | G-05 `verifyCredential()` / G-01 `DIDSignatureVerifier` | `connector.test.ts` + `did.test.ts`: wrong-key tests |
-| 6 | Wrong encryption key → error (not partial data) | G-06 `SecureStorage.load()` | `persistence.test.ts`: wrong key test |
+| #   | Invariant                                                         | Enforced By                                             | Test Coverage                                                   |
+| --- | ----------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------- |
+| 1   | Unknown verifier / DID resolution fails → DENY                    | G-01 `DIDSignatureVerifier`                             | `did.test.ts`: 6 DENY-on-failure tests                          |
+| 2   | Revocation status unknown/unreachable → DENY (high-risk)          | G-02 `StatusListRevocationChecker`                      | `checker.test.ts`: 3 DENY-on-unreachable tests                  |
+| 3   | Policy ambiguity / purpose mismatch → DENY or PROMPT, never ALLOW | G-03 `resolveConflict()`                                | `denial.test.ts` + structural: empty verdicts → DENY, deny-wins |
+| 4   | Nonce replay → DENY                                               | G-04 `BindingNonceStore.consume()`                      | `presentation-binding.test.ts`: replay tests                    |
+| 5   | Wrong key / tampered credential → DENY                            | G-05 `verifyCredential()` / G-01 `DIDSignatureVerifier` | `connector.test.ts` + `did.test.ts`: wrong-key tests            |
+| 6   | Wrong encryption key → error (not partial data)                   | G-06 `SecureStorage.load()`                             | `persistence.test.ts`: wrong key test                           |
 
 ---
 
 ## File Index
 
-| Gap | Source Files | Test Files | Spec Docs |
-|-----|-------------|------------|-----------|
-| G-01 | `src/packages/shared-crypto/src/did.ts`, `did-verification.ts` | `test/did.test.ts` | W3C DID Core |
-| G-02 | `src/packages/revocation-statuslist/src/index.ts`, `types.ts` | `src/__tests__/checker.test.ts` | W3C StatusList2021 |
-| G-03 | `src/packages/policy-engine/src/deny-reason-codes.ts`, `conflict-resolver.ts` | `test/denial.test.ts` | Spec 108, Spec 21 |
-| G-04 | `src/packages/shared-crypto/src/presentation-binding.ts`, `nonce-store.ts` | `test/presentation-binding.test.ts` | Spec 108 |
-| G-05 | `src/packages/eid-issuer-connector/src/index.ts`, `types.ts` | `src/__tests__/connector.test.ts` | `docs/specs/110_eID_Issuer_Simulator_Fidelity.md` |
-| G-06 | `src/packages/secure-storage/src/index.ts` | `test/persistence.test.ts` | GDPR Art. 17 |
+| Gap  | Source Files                                                                  | Test Files                          | Spec Docs                                         |
+| ---- | ----------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------- |
+| G-01 | `src/packages/shared-crypto/src/did.ts`, `did-verification.ts`                | `test/did.test.ts`                  | W3C DID Core                                      |
+| G-02 | `src/packages/revocation-statuslist/src/index.ts`, `types.ts`                 | `src/__tests__/checker.test.ts`     | W3C StatusList2021                                |
+| G-03 | `src/packages/policy-engine/src/deny-reason-codes.ts`, `conflict-resolver.ts` | `test/denial.test.ts`               | Spec 108, Spec 21                                 |
+| G-04 | `src/packages/shared-crypto/src/presentation-binding.ts`, `nonce-store.ts`    | `test/presentation-binding.test.ts` | Spec 108                                          |
+| G-05 | `src/packages/eid-issuer-connector/src/index.ts`, `types.ts`                  | `src/__tests__/connector.test.ts`   | `docs/specs/110_eID_Issuer_Simulator_Fidelity.md` |
+| G-06 | `src/packages/secure-storage/src/index.ts`                                    | `test/persistence.test.ts`          | GDPR Art. 17                                      |

@@ -46,9 +46,9 @@ import { BrowserVerifier } from '@mitch/verifier-browser';
 // 1. Initialize verifier
 const verifier = new BrowserVerifier({
   verifierName: "Joe's Liquor Store",
-  purpose: "Age Verification (18+)",
-  requestedClaims: ["age"],
-  requestedProvenClaims: ["age >= 18"]
+  purpose: 'Age Verification (18+)',
+  requestedClaims: ['age'],
+  requestedProvenClaims: ['age >= 18'],
 });
 
 // 2. Create ephemeral session
@@ -60,10 +60,10 @@ displayQRCode(session.challengeUrl);
 // 4. Wait for wallet response (polling)
 const result = await verifier.waitForResponse(session.sessionId);
 
-if (result.success && result.provenClaims?.["age >= 18"]) {
-  console.log("✅ Age verified! Proceed with sale.");
+if (result.success && result.provenClaims?.['age >= 18']) {
+  console.log('✅ Age verified! Proceed with sale.');
 } else {
-  console.log("❌ Age verification failed.");
+  console.log('❌ Age verification failed.');
 }
 ```
 
@@ -74,46 +74,46 @@ if (result.success && result.provenClaims?.["age >= 18"]) {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Age Verification</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-</head>
-<body>
-  <h1>Please verify your age</h1>
-  <div id="qrcode"></div>
-  <p id="status">Scan QR code with miTch Wallet...</p>
+  <head>
+    <title>Age Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  </head>
+  <body>
+    <h1>Please verify your age</h1>
+    <div id="qrcode"></div>
+    <p id="status">Scan QR code with miTch Wallet...</p>
 
-  <script type="module">
-    import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@mitch/verifier-browser/dist/index.js';
+    <script type="module">
+      import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@mitch/verifier-browser/dist/index.js';
 
-    const verifier = new BrowserVerifier({
-      verifierName: "Joe's Liquor Store",
-      purpose: "Age Verification (18+)",
-      requestedProvenClaims: ["age >= 18"]
-    });
+      const verifier = new BrowserVerifier({
+        verifierName: "Joe's Liquor Store",
+        purpose: 'Age Verification (18+)',
+        requestedProvenClaims: ['age >= 18'],
+      });
 
-    // Generate session
-    const session = await verifier.createSession();
+      // Generate session
+      const session = await verifier.createSession();
 
-    // Display QR code
-    new QRCode(document.getElementById("qrcode"), {
-      text: session.challengeUrl,
-      width: 256,
-      height: 256
-    });
+      // Display QR code
+      new QRCode(document.getElementById('qrcode'), {
+        text: session.challengeUrl,
+        width: 256,
+        height: 256,
+      });
 
-    // Poll for response
-    const result = await verifier.waitForResponse(session.sessionId, 120_000);
+      // Poll for response
+      const result = await verifier.waitForResponse(session.sessionId, 120_000);
 
-    if (result.success) {
-      document.getElementById("status").textContent = "✅ Age verified!";
-      document.getElementById("status").style.color = "green";
-    } else {
-      document.getElementById("status").textContent = "❌ Verification failed";
-      document.getElementById("status").style.color = "red";
-    }
-  </script>
-</body>
+      if (result.success) {
+        document.getElementById('status').textContent = '✅ Age verified!';
+        document.getElementById('status').style.color = 'green';
+      } else {
+        document.getElementById('status').textContent = '❌ Verification failed';
+        document.getElementById('status').style.color = 'red';
+      }
+    </script>
+  </body>
 </html>
 ```
 
@@ -131,14 +131,14 @@ new BrowserVerifier(config: BrowserVerifierConfig, sessionStorage?: SessionStora
 
 **Config Options:**
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `verifierName` | `string` | ✅ | Display name (e.g., "Joe's Liquor Store") |
-| `purpose` | `string` | ✅ | Verification purpose (shown to user) |
-| `requestedClaims` | `string[]` | ✅ | Claims to request (e.g., `["age"]`) |
-| `requestedProvenClaims` | `string[]` | ❌ | ZKP predicates (e.g., `["age >= 18"]`) |
-| `sessionTimeoutMs` | `number` | ❌ | Session timeout (default: 5 minutes) |
-| `callbackUrl` | `string` | ❌ | Webhook URL for async results |
+| Option                  | Type       | Required | Description                               |
+| ----------------------- | ---------- | -------- | ----------------------------------------- |
+| `verifierName`          | `string`   | ✅       | Display name (e.g., "Joe's Liquor Store") |
+| `purpose`               | `string`   | ✅       | Verification purpose (shown to user)      |
+| `requestedClaims`       | `string[]` | ✅       | Claims to request (e.g., `["age"]`)       |
+| `requestedProvenClaims` | `string[]` | ❌       | ZKP predicates (e.g., `["age >= 18"]`)    |
+| `sessionTimeoutMs`      | `number`   | ❌       | Session timeout (default: 5 minutes)      |
+| `callbackUrl`           | `string`   | ❌       | Webhook URL for async results             |
 
 #### Methods
 
@@ -147,6 +147,7 @@ new BrowserVerifier(config: BrowserVerifierConfig, sessionStorage?: SessionStora
 Generates ephemeral key pair and creates verification session.
 
 **Returns:**
+
 ```typescript
 {
   sessionId: string,
@@ -162,6 +163,7 @@ Generates ephemeral key pair and creates verification session.
 Verifies wallet response (signature + decryption).
 
 **Returns:**
+
 ```typescript
 {
   success: boolean,
@@ -187,7 +189,7 @@ Polls for wallet response (synchronous flow).
 // Keys are generated fresh for each session
 const keyPair = await crypto.subtle.generateKey(
   { name: 'ECDSA', namedCurve: 'P-256' },
-  true,  // extractable (for export)
+  true, // extractable (for export)
   ['sign', 'verify']
 );
 
@@ -201,6 +203,7 @@ const keyPair = await crypto.subtle.generateKey(
 ### 2. Crypto-Shredding on Refresh
 
 When the page refreshes:
+
 1. JavaScript context is destroyed
 2. All `CryptoKey` objects are garbage-collected
 3. Private keys become irrecoverable (WebCrypto guarantees)
@@ -237,11 +240,13 @@ Browser Verifier:
 ### Verifier Liability
 
 **Traditional System:**
+
 - Verifier = Data Controller (GDPR Art. 4)
 - Must handle GDPR requests (Art. 15-22)
 - Liable for data breaches (Art. 33)
 
 **Browser Verifier:**
+
 - Verifier = Blind Convener (no data)
 - No GDPR requests possible (no data exists)
 - No breach risk (nothing to steal)
@@ -250,13 +255,14 @@ Browser Verifier:
 
 ## ⚡ Performance
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| `createSession()` | ~50ms | Generates P-256 key pair |
-| `verifyResponse()` | ~20ms | ECDSA signature verification |
-| `waitForResponse()` | 1-120s | Polling interval: 1s |
+| Operation           | Time   | Notes                        |
+| ------------------- | ------ | ---------------------------- |
+| `createSession()`   | ~50ms  | Generates P-256 key pair     |
+| `verifyResponse()`  | ~20ms  | ECDSA signature verification |
+| `waitForResponse()` | 1-120s | Polling interval: 1s         |
 
 **Memory Usage:**
+
 - Per Session: ~2KB (key + metadata)
 - Max Sessions: Limited by browser (typically 1000+)
 
@@ -265,18 +271,21 @@ Browser Verifier:
 ## 🔮 Roadmap
 
 ### Current (v0.1.0)
+
 - ✅ Ephemeral key generation
 - ✅ QR code challenge URLs
 - ✅ Polling-based response handling
 - ⏳ Mock verification (no real JWE decryption)
 
 ### Next (v0.2.0)
+
 - [ ] Full JWE decryption (ECDH-ES + A256GCM)
 - [ ] DID resolution for signature verification
 - [ ] WebSocket support (push-based responses)
 - [ ] localStorage persistence (opt-in)
 
 ### Future (v1.0.0)
+
 - [ ] Multi-credential bundles (T-29)
 - [ ] Biometric binding (WebAuthn integration)
 - [ ] Audit log export (WORM format)
@@ -290,6 +299,7 @@ npm test
 ```
 
 **Test Coverage:**
+
 - ✅ Key generation (ephemeral)
 - ✅ Session creation
 - ✅ Challenge URL format
@@ -315,6 +325,7 @@ MIT License (same as miTch core)
 ## 🏆 Credits
 
 Built with:
+
 - **WebCrypto API** (W3C Standard)
 - **QRCode.js** (QR code generation)
 - **TypeScript** (type safety)
@@ -324,6 +335,7 @@ Developed as part of the **miTch Sovereign Identity Infrastructure** project.
 ---
 
 **Note:** This SDK is designed for **proof-of-concept** deployments. For production use, ensure:
+
 1. HTTPS-only hosting (WebCrypto requirement)
 2. Content Security Policy (CSP) headers
 3. Regular security audits

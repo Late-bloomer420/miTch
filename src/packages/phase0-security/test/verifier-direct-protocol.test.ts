@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  VerifierDirectClient,
-  WalletDirectProtocol,
-} from '../src/index.js';
+import { VerifierDirectClient, WalletDirectProtocol } from '../src/index.js';
 import type { PresentationRequest, VerificationResponse } from '../src/index.js';
 
 // ---------------------------------------------------------------------------
@@ -24,7 +21,7 @@ describe('VerifierDirectClient', () => {
   it('generates a deep link with mitch:// scheme', async () => {
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
-      'https://liquor-store.com/api/verify',
+      'https://liquor-store.com/api/verify'
     );
     expect(deepLink).toMatch(/^mitch:\/\/present\?request=/);
   });
@@ -32,7 +29,7 @@ describe('VerifierDirectClient', () => {
   it('deep link contains a JWT with 3 parts', async () => {
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
-      'https://example.com/verify',
+      'https://example.com/verify'
     );
     const url = new URL(deepLink);
     const jwt = url.searchParams.get('request')!;
@@ -44,7 +41,7 @@ describe('VerifierDirectClient', () => {
   it('JWT payload contains verifierDID and credentialTypes', async () => {
     const deepLink = await verifier.generateRequest(
       ['AgeCredential', 'NameCredential'],
-      'https://example.com/verify',
+      'https://example.com/verify'
     );
     const url = new URL(deepLink);
     const jwt = decodeURIComponent(url.searchParams.get('request')!);
@@ -75,9 +72,9 @@ describe('VerifierDirectClient', () => {
 
   it('throws if not initialized when generating request', async () => {
     const uninit = new VerifierDirectClient('did:mitch:test');
-    await expect(
-      uninit.generateRequest(['AgeCredential'], 'https://x.com/v'),
-    ).rejects.toThrow('Verifier not initialized');
+    await expect(uninit.generateRequest(['AgeCredential'], 'https://x.com/v')).rejects.toThrow(
+      'Verifier not initialized'
+    );
   });
 
   it('verifyResponse returns true (Phase-0 stub)', async () => {
@@ -109,7 +106,7 @@ describe('WalletDirectProtocol', () => {
   it('parses a verifier-generated deep link', async () => {
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
-      'https://example.com/verify',
+      'https://example.com/verify'
     );
 
     const request = await wallet.parseRequest(deepLink);
@@ -122,7 +119,7 @@ describe('WalletDirectProtocol', () => {
 
   it('throws for invalid deep link missing request param', async () => {
     await expect(wallet.parseRequest('mitch://present')).rejects.toThrow(
-      'Invalid deep-link: missing request parameter',
+      'Invalid deep-link: missing request parameter'
     );
   });
 
@@ -130,7 +127,7 @@ describe('WalletDirectProtocol', () => {
     // Create a deep link, then parse a modified version with old timestamp
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
-      'https://example.com/verify',
+      'https://example.com/verify'
     );
 
     const url = new URL(deepLink);
@@ -203,7 +200,7 @@ describe('WalletDirectProtocol', () => {
       };
 
       await expect(
-        wallet.sendProofToVerifier('https://example.com/verify', response),
+        wallet.sendProofToVerifier('https://example.com/verify', response)
       ).rejects.toThrow('Verifier rejected proof: 403');
     } finally {
       globalThis.fetch = originalFetch;
@@ -222,7 +219,7 @@ describe('Verifier-Direct round-trip', () => {
     // Step 1: Verifier creates request
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
-      'https://liquor-store.com/api/verify',
+      'https://liquor-store.com/api/verify'
     );
     expect(deepLink).toContain('mitch://present');
 

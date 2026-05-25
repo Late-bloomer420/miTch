@@ -71,10 +71,7 @@ export function verifyMsoValidity(
  *
  * Fail-closed: mismatch → invalid.
  */
-export function verifyDocType(
-  msoDocType: string,
-  documentDocType: string
-): ValidityResult {
+export function verifyDocType(msoDocType: string, documentDocType: string): ValidityResult {
   if (!msoDocType || !documentDocType) {
     return { valid: false, reason: 'Missing docType' };
   }

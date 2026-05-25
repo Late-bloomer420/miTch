@@ -93,7 +93,7 @@ describe('SplitKeyProtection', () => {
     const masterKey = await crypto.subtle.generateKey(
       { name: 'AES-GCM', length: 256 },
       true, // extractable for split
-      ['encrypt', 'decrypt'],
+      ['encrypt', 'decrypt']
     );
 
     const shares = await skp.splitKey(masterKey);
@@ -104,11 +104,10 @@ describe('SplitKeyProtection', () => {
   });
 
   it('each share has a Uint8Array data field', async () => {
-    const masterKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt'],
-    );
+    const masterKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+      'encrypt',
+      'decrypt',
+    ]);
 
     const shares = await skp.splitKey(masterKey);
     for (const share of shares) {
@@ -118,11 +117,10 @@ describe('SplitKeyProtection', () => {
   });
 
   it('reconstructs a key from 2 shares', async () => {
-    const masterKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt'],
-    );
+    const masterKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+      'encrypt',
+      'decrypt',
+    ]);
 
     const shares = await skp.splitKey(masterKey);
     const reconstructed = await skp.reconstructKey(shares.slice(0, 2));
@@ -133,11 +131,10 @@ describe('SplitKeyProtection', () => {
   });
 
   it('throws when given fewer than 2 shares', async () => {
-    const masterKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt'],
-    );
+    const masterKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+      'encrypt',
+      'decrypt',
+    ]);
 
     const shares = await skp.splitKey(masterKey);
     await expect(skp.reconstructKey([shares[0]])).rejects.toThrow('Need at least 2 key shares');
@@ -161,13 +158,9 @@ describe('MemoryHardeningProtection', () => {
   it('derives an operation key from a master key + context', async () => {
     // Need an HKDF-compatible base key
     const rawKey = crypto.getRandomValues(new Uint8Array(32));
-    const masterKey = await crypto.subtle.importKey(
-      'raw',
-      rawKey,
-      { name: 'HKDF' },
-      false,
-      ['deriveKey'],
-    );
+    const masterKey = await crypto.subtle.importKey('raw', rawKey, { name: 'HKDF' }, false, [
+      'deriveKey',
+    ]);
 
     const opKey = await mhp.deriveOperationKey(masterKey, 'encrypt-credential');
     expect(opKey.type).toBe('secret');
@@ -176,13 +169,9 @@ describe('MemoryHardeningProtection', () => {
 
   it('derives different keys for different contexts', async () => {
     const rawKey = crypto.getRandomValues(new Uint8Array(32));
-    const masterKey = await crypto.subtle.importKey(
-      'raw',
-      rawKey,
-      { name: 'HKDF' },
-      false,
-      ['deriveKey'],
-    );
+    const masterKey = await crypto.subtle.importKey('raw', rawKey, { name: 'HKDF' }, false, [
+      'deriveKey',
+    ]);
 
     const key1 = await mhp.deriveOperationKey(masterKey, 'context-A');
     const key2 = await mhp.deriveOperationKey(masterKey, 'context-B');
@@ -217,13 +206,12 @@ describe('MemoryHardeningProtection', () => {
     const softKey = await crypto.subtle.generateKey(
       { name: 'AES-GCM', length: 256 },
       true, // must be extractable for encryptKeyInMemory
-      ['encrypt', 'decrypt'],
+      ['encrypt', 'decrypt']
     );
-    const hwKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt'],
-    );
+    const hwKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+      'encrypt',
+      'decrypt',
+    ]);
 
     const encrypted = await mhp.encryptKeyInMemory(softKey, hwKey);
     expect(encrypted.ciphertext).toBeDefined();
@@ -331,14 +319,14 @@ describe('SupplyChainHardeningProtection', () => {
 
   it('rejects untrusted dependency names', async () => {
     await expect(schp.verifyDependency('evil-package', 'code')).rejects.toThrow(
-      'Untrusted dependency: evil-package',
+      'Untrusted dependency: evil-package'
     );
   });
 
   it('detects hash mismatch for known dependency', async () => {
     // The stored hash is a placeholder, so any real code will mismatch
     await expect(schp.verifyDependency('@noble/curves', 'some-code')).rejects.toThrow(
-      'SUPPLY CHAIN ATTACK DETECTED',
+      'SUPPLY CHAIN ATTACK DETECTED'
     );
   });
 
@@ -351,7 +339,9 @@ describe('SupplyChainHardeningProtection', () => {
     const badPkg = {
       dependencies: { '@noble/curves': '1.0.0', 'evil-lib': '6.6.6' },
     };
-    expect(() => schp.validateDependencyList(badPkg)).toThrow('Forbidden dependencies detected: evil-lib');
+    expect(() => schp.validateDependencyList(badPkg)).toThrow(
+      'Forbidden dependencies detected: evil-lib'
+    );
   });
 
   it('allows empty dependencies', () => {

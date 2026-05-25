@@ -41,23 +41,23 @@
 
 ## Ports (lokale Entwicklung)
 
-| App | Port |
-|-----|------|
-| wallet-pwa | 5173 (oder 5174) |
-| verifier-demo | 3004 |
-| issuer-mock | 3005 |
+| App           | Port             |
+| ------------- | ---------------- |
+| wallet-pwa    | 5173 (oder 5174) |
+| verifier-demo | 3004             |
+| issuer-mock   | 3005             |
 
 ## Schlüsseldateien für Navigation
 
-| Datei | Zweck |
-|-------|-------|
-| `STATE.md` | Aktueller Betriebszustand |
+| Datei                                                                 | Zweck                                          |
+| --------------------------------------------------------------------- | ---------------------------------------------- |
+| `STATE.md`                                                            | Aktueller Betriebszustand                      |
 | `docs/03-architecture/ARCHITECTURE_ANALYSIS_PROCESS_V2_2026-05-24.md` | Neuer Standardprozess fuer Architekturpruefung |
-| `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md` | Einstiegspunkt fuer den Coding Agent |
-| `docs/BACKLOG.md` | Autoritatives Task-Tracking |
-| `docs/SESSION_HISTORY.md` | Vollständige Session-Historie |
-| `CLAUDE.md` / `AGENTS.md` | KI-Arbeitsanweisungen |
-| `CLAUDE_TASKS.md` | Session-spezifische Task-Listen (historisch) |
-| `SPRINT_PLAN.md` | Audit-Findings März 2026 |
-| `TASKS.md` | Produktivitäts-Tracker (dieser Workflow) |
-| `dashboard.html` | Produktivitäts-Dashboard |
+| `docs/03-architecture/CODING_AGENT_HANDOFF_2026-05-25.md`             | Einstiegspunkt fuer den Coding Agent           |
+| `docs/BACKLOG.md`                                                     | Autoritatives Task-Tracking                    |
+| `docs/SESSION_HISTORY.md`                                             | Vollständige Session-Historie                  |
+| `CLAUDE.md` / `AGENTS.md`                                             | KI-Arbeitsanweisungen                          |
+| `CLAUDE_TASKS.md`                                                     | Session-spezifische Task-Listen (historisch)   |
+| `SPRINT_PLAN.md`                                                      | Audit-Findings März 2026                       |
+| `TASKS.md`                                                            | Produktivitäts-Tracker (dieser Workflow)       |
+| `dashboard.html`                                                      | Produktivitäts-Dashboard                       |

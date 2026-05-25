@@ -13,15 +13,15 @@ Defines the formal schema for audit data exported to external auditors. The sche
 
 Each record represents a single policy-engine decision.
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `timestampBucket` | `string` (ISO-8601) | ✅ | Rounded to 5-minute granularity |
-| `requestId` | `string` (UUID v4) | ✅ | Ephemeral request correlation ID |
-| `verifierHash` | `string` (hex, 64 chars) | ✅ | Salted SHA-256 of verifier DID |
-| `verdict` | `"ALLOW" \| "DENY" \| "PROMPT"` | ✅ | Policy engine decision |
-| `reasonCode` | `DenyReasonCode` | ❌ | Present only when `verdict=DENY` |
-| `protocolVersion` | `string` | ✅ | e.g., `"OID4VP-draft-23"` |
-| `capabilityProfile` | `string` | ✅ | e.g., `"sd-jwt-vc+kb"` |
+| Field               | Type                            | Required | Description                      |
+| ------------------- | ------------------------------- | -------- | -------------------------------- |
+| `timestampBucket`   | `string` (ISO-8601)             | ✅       | Rounded to 5-minute granularity  |
+| `requestId`         | `string` (UUID v4)              | ✅       | Ephemeral request correlation ID |
+| `verifierHash`      | `string` (hex, 64 chars)        | ✅       | Salted SHA-256 of verifier DID   |
+| `verdict`           | `"ALLOW" \| "DENY" \| "PROMPT"` | ✅       | Policy engine decision           |
+| `reasonCode`        | `DenyReasonCode`                | ❌       | Present only when `verdict=DENY` |
+| `protocolVersion`   | `string`                        | ✅       | e.g., `"OID4VP-draft-23"`        |
+| `capabilityProfile` | `string`                        | ✅       | e.g., `"sd-jwt-vc+kb"`           |
 
 **`additionalProperties: false`** — no extra fields permitted.
 
@@ -29,13 +29,13 @@ Each record represents a single policy-engine decision.
 
 Wraps records for handoff with integrity guarantees.
 
-| Field | Type | Description |
-|---|---|---|
-| `schemaVersion` | `"1.0"` | Schema version (pinned) |
-| `exportedAt` | `string` (ISO-8601) | Export timestamp |
-| `records` | `AuditExportRecord[]` | Decision records |
-| `bundleHash` | `string` (hex, 64 chars) | SHA-256 of canonicalized records |
-| `recordCount` | `integer` | Record count for integrity cross-check |
+| Field           | Type                     | Description                            |
+| --------------- | ------------------------ | -------------------------------------- |
+| `schemaVersion` | `"1.0"`                  | Schema version (pinned)                |
+| `exportedAt`    | `string` (ISO-8601)      | Export timestamp                       |
+| `records`       | `AuditExportRecord[]`    | Decision records                       |
+| `bundleHash`    | `string` (hex, 64 chars) | SHA-256 of canonicalized records       |
+| `recordCount`   | `integer`                | Record count for integrity cross-check |
 
 ## PII Exclusion (Normative)
 
@@ -51,6 +51,7 @@ This is a superset of `FORBIDDEN_LOG_FIELDS` from `audit-metadata.ts`. The `vali
 ## Anti-Correlation Properties
 
 Per METADATA_BUDGET_V1:
+
 - **Verifier identity:** Salted hash only; salt rotated monthly per deployment
 - **Timestamps:** 5-minute bucket granularity prevents timing correlation
 - **No stable cross-RP correlators** possible from exported data
@@ -58,6 +59,7 @@ Per METADATA_BUDGET_V1:
 ## JSON Schema
 
 Machine-readable JSON Schemas are exported from:
+
 ```
 src/packages/policy-engine/src/audit-export-schema.ts
 ```
@@ -66,17 +68,20 @@ src/packages/policy-engine/src/audit-export-schema.ts
 - `AUDIT_EXPORT_BUNDLE_JSON_SCHEMA` — validates complete bundles
 
 Schema IDs:
+
 - `https://mitch.id/schemas/audit-export-record/v1`
 - `https://mitch.id/schemas/audit-export-bundle/v1`
 
 ## Auditor Integration
 
 External auditors receive:
+
 1. An `AuditExportBundle` JSON file
 2. This document as schema reference
 3. The JSON Schema files for automated validation
 
 Auditors can verify:
+
 - Bundle integrity via `bundleHash`
 - Record count via `recordCount`
 - Schema compliance via JSON Schema validation
@@ -84,9 +89,9 @@ Auditors can verify:
 
 ## Source Files
 
-| File | Purpose |
-|---|---|
-| `src/packages/policy-engine/src/audit-export-schema.ts` | Types, JSON Schemas, PII validator |
-| `src/packages/policy-engine/src/__tests__/audit-export-schema.test.ts` | Validation tests |
-| `src/packages/policy-engine/src/audit-metadata.ts` | Underlying `AuditRecord` + `createAuditRecord()` |
-| `src/packages/policy-engine/src/deny-reason-codes.ts` | Canonical `DenyReasonCode` enum |
+| File                                                                   | Purpose                                          |
+| ---------------------------------------------------------------------- | ------------------------------------------------ |
+| `src/packages/policy-engine/src/audit-export-schema.ts`                | Types, JSON Schemas, PII validator               |
+| `src/packages/policy-engine/src/__tests__/audit-export-schema.test.ts` | Validation tests                                 |
+| `src/packages/policy-engine/src/audit-metadata.ts`                     | Underlying `AuditRecord` + `createAuditRecord()` |
+| `src/packages/policy-engine/src/deny-reason-codes.ts`                  | Canonical `DenyReasonCode` enum                  |

@@ -13,7 +13,7 @@ export function checkRateLimit(requesterId: string, cfg: RateLimitConfig): boole
 
   // global budget check (swarm mitigation baseline)
   globalHits = globalHits.filter((t) => now - t <= windowMs);
-  if (typeof cfg.maxRequestsGlobal === "number" && globalHits.length >= cfg.maxRequestsGlobal) {
+  if (typeof cfg.maxRequestsGlobal === 'number' && globalHits.length >= cfg.maxRequestsGlobal) {
     return false;
   }
 

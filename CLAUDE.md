@@ -9,12 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Repo:** https://github.com/Late-bloomer420/miTch.git | **Branch:** `master`
 
 ### Nächste Prioritäten (P1)
+
 - U-10/U-11: BBS+ / SD-JWT Ephemeral Keys (Proof-Randomisierung)
 - E-30–E-33: EU Regulatory Compliance (CIR 2024/2977–2982)
 - U-20/U-21: Identitäts-Firewall + UI-Benachrichtigungen
 - S-10: STRIDE Threat Model (wartet auf externen Security Review)
 
 ### Memory-Dateien
+
 - `TASKS.md` — Produktivitäts-Tracker (offene Tasks)
 - `memory/glossary.md` — Alle Acronyme & internen Begriffe
 - `memory/projects/mitch-core.md` — Projektdetails & Phasen

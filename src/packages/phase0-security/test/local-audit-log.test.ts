@@ -81,7 +81,7 @@ describe('LocalAuditLog', () => {
       // Attempting append without init should either throw or auto-init.
       // The code throws: 'Audit-log not initialized'
       await expect(
-        uninitLog.append({ type: 'KEY_GENERATED', timestamp: Date.now(), details: {} }),
+        uninitLog.append({ type: 'KEY_GENERATED', timestamp: Date.now(), details: {} })
       ).rejects.toThrow('Audit-log not initialized');
     });
   });

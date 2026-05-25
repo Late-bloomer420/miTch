@@ -1,5 +1,9 @@
 import { KeyProtectionLevel } from './types/KeyProtectionLevel';
-import type { KeyGuardian, KeyCreationResult, EncryptionKeyCreationResult } from './interfaces/KeyGuardian';
+import type {
+  KeyGuardian,
+  KeyCreationResult,
+  EncryptionKeyCreationResult,
+} from './interfaces/KeyGuardian';
 
 export class SoftwareKeyGuardian implements KeyGuardian {
   // Signing keys (ECDSA-P256) — G-07: separate from encryption keys
@@ -69,7 +73,10 @@ export class SoftwareKeyGuardian implements KeyGuardian {
    * Derive a shared AES-256-GCM key using ECDH between our private key and the sender's public key.
    * Use the result to decrypt incoming encrypted payloads.
    */
-  async deriveSharedSecret(opts: { encKeyId: string; senderPublicKeyJwk: JsonWebKey }): Promise<CryptoKey> {
+  async deriveSharedSecret(opts: {
+    encKeyId: string;
+    senderPublicKeyJwk: JsonWebKey;
+  }): Promise<CryptoKey> {
     const keyPair = this.encryptionKeys.get(opts.encKeyId);
     if (!keyPair) {
       throw new Error(`Encryption key not found: ${opts.encKeyId}`);

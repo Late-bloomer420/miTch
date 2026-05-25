@@ -6,6 +6,13 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 miTch is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — ZK-style credential verification with crypto-shredding, fail-closed policy engine, GDPR Art. 25 + eIDAS 2.0 / EUDI compatible. TypeScript monorepo with pnpm workspaces.
 
+## Repo-Local Skills
+
+Repo-specific skills live in `.agent/skills/`. When a user request matches one of these skills, read that skill's `SKILL.md` before planning or editing:
+
+- `mitch-privacy-firewall` — Use for privacy audits, policy-engine reviews, fail-closed validation, DecisionCapsule checks, GDPR-by-construction, credential/verifier/wallet/storage boundary reviews.
+- `mitch-specification` — Use for specs, API/interface design, backlog-to-spec work, architecture consistency checks, GDPR/EUDI mapping, and implementation plans.
+
 ## Commands
 
 ```bash

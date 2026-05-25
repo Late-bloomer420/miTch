@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Core Security/Privacy KPI
+
 1. **Replay/Context-Swap Block Rate**
    - Definition: blocked replay/context-swap attempts / total detected attempts
    - Target: **100% blocked**
@@ -20,6 +21,7 @@ Stand: 2026-02-11
    - Target (pilot): p50 <= 500ms, p95 <= 1500ms
 
 ## Product/Business KPI (Non-Optional)
+
 5. **Verification Success Rate**
    - Definition: successful verifications / total valid attempts
    - Target: >= 99% in controlled pilot
@@ -43,6 +45,7 @@ Stand: 2026-02-11
 ---
 
 ## Measurement Notes
+
 - Track KPI per RP and aggregated.
 - Separate technical failures from policy-deny outcomes.
 - Report weekly trend, not only point-in-time values.

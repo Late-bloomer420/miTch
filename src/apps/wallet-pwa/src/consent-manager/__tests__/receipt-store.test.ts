@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { appendConsentReceiptHistory, buildConsentReceiptExport, loadConsentReceiptHistory } from '../receipt-store';
+import {
+  appendConsentReceiptHistory,
+  buildConsentReceiptExport,
+  loadConsentReceiptHistory,
+} from '../receipt-store';
 
 const RECEIPT_BASE = {
   schemaVersion: 1 as const,
@@ -45,13 +49,16 @@ describe('receipt-store', () => {
   });
 
   it('normalizes legacy wrapper payloads from storage', () => {
-    sessionStorage.setItem('mitch_consent_receipt_history', JSON.stringify([
-      {
-        receipt: { ...RECEIPT_BASE, id: 'consent-legacy' },
-        outcome: 'SUCCESS',
-        decisionId: 'decision-legacy',
-      },
-    ]));
+    sessionStorage.setItem(
+      'mitch_consent_receipt_history',
+      JSON.stringify([
+        {
+          receipt: { ...RECEIPT_BASE, id: 'consent-legacy' },
+          outcome: 'SUCCESS',
+          decisionId: 'decision-legacy',
+        },
+      ])
+    );
 
     const loaded = loadConsentReceiptHistory();
     expect(loaded).toHaveLength(1);
@@ -77,9 +84,10 @@ describe('receipt-store', () => {
 
     const first = await buildConsentReceiptExport(history, options);
     const second = await buildConsentReceiptExport(history, options);
-    const mutated = await buildConsentReceiptExport([
-      { ...history[0], claimsShared: ['age', 'name'] },
-    ], options);
+    const mutated = await buildConsentReceiptExport(
+      [{ ...history[0], claimsShared: ['age', 'name'] }],
+      options
+    );
 
     expect(first.scope).toBe('filtered');
     expect(first.filters).toEqual(options.filters);

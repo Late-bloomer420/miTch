@@ -8,7 +8,9 @@ import type { ConsentReceipt } from '../../consent-manager/types';
 const buildConsentReceiptExportMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../consent-manager/receipt-store', async () => {
-  const actual = await vi.importActual<typeof import('../../consent-manager/receipt-store')>('../../consent-manager/receipt-store');
+  const actual = await vi.importActual<typeof import('../../consent-manager/receipt-store')>(
+    '../../consent-manager/receipt-store'
+  );
   return {
     ...actual,
     buildConsentReceiptExport: buildConsentReceiptExportMock,
@@ -34,7 +36,9 @@ function makeReceipt(index: number, overrides: Partial<ConsentReceipt> = {}): Co
   return {
     schemaVersion: 1,
     id: overrides.id ?? `consent-${index}`,
-    verifier: overrides.verifier ?? (index % 2 === 0 ? 'did:mitch:verifier-hospital' : 'did:mitch:verifier-liquor-store'),
+    verifier:
+      overrides.verifier ??
+      (index % 2 === 0 ? 'did:mitch:verifier-hospital' : 'did:mitch:verifier-liquor-store'),
     purpose: overrides.purpose ?? 'Age verification',
     claimsShared: overrides.claimsShared ?? ['age'],
     timestamp: overrides.timestamp ?? `2026-05-21T10:0${index}:00.000Z`,
@@ -112,7 +116,10 @@ beforeEach(() => {
     exportHash: 'hash-2',
     receipts: [],
   });
-  Object.defineProperty(URL, 'createObjectURL', { value: vi.fn(() => 'blob:mock'), configurable: true });
+  Object.defineProperty(URL, 'createObjectURL', {
+    value: vi.fn(() => 'blob:mock'),
+    configurable: true,
+  });
   Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
   vi.spyOn(document.body, 'appendChild');
   vi.spyOn(document.body, 'removeChild');
@@ -134,7 +141,9 @@ describe('ConsentManagerPanel', () => {
     );
 
     expect(screen.getByText('Receipt history')).toBeInTheDocument();
-    expect(screen.getByText(/OID4VP W-05 receipts are the only persisted consent history right now\./i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/OID4VP W-05 receipts are the only persisted consent history right now\./i)
+    ).toBeInTheDocument();
     expect(screen.getAllByText('consent-1').length).toBeGreaterThan(0);
     expect(screen.queryByText('consent-6')).not.toBeInTheDocument();
 
@@ -145,7 +154,9 @@ describe('ConsentManagerPanel', () => {
     expect(screen.getAllByText('Decision ID').length).toBeGreaterThan(0);
     expect(screen.getByText('decision-6')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText('Filter by verifier or purpose'), { target: { value: 'hospital' } });
+    fireEvent.change(screen.getByPlaceholderText('Filter by verifier or purpose'), {
+      target: { value: 'hospital' },
+    });
     expect(screen.getByText('consent-2')).toBeInTheDocument();
   });
 
@@ -162,7 +173,9 @@ describe('ConsentManagerPanel', () => {
       />
     );
 
-    fireEvent.change(screen.getByPlaceholderText('Filter by verifier or purpose'), { target: { value: 'hospital' } });
+    fireEvent.change(screen.getByPlaceholderText('Filter by verifier or purpose'), {
+      target: { value: 'hospital' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Export filtered JSON/i }));
 
     await waitFor(() => {

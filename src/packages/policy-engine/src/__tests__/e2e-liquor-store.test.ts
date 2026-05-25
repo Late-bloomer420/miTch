@@ -12,10 +12,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import {
-  MockGovernmentIssuer,
-  createAgeProofPresentation,
-} from '@mitch/mock-issuer';
+import { MockGovernmentIssuer, createAgeProofPresentation } from '@mitch/mock-issuer';
 import { ProtectionLayer, getMinimumLayerForData, includesLayer } from '@mitch/layer-resolver';
 import type {
   PolicyManifest,

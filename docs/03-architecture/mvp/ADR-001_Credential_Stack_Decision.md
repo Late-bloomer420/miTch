@@ -8,6 +8,7 @@
 ## Context
 
 miTch benötigt einen Credential-Stack der:
+
 - W3C VC kompatibel ist (eIDAS 2.0)
 - Selective Disclosure nativ unterstützt
 - ZK-Predicates ermöglicht (isOver18 ohne birthdate)
@@ -18,11 +19,13 @@ miTch benötigt einen Credential-Stack der:
 **Primary Stack:** SD-JWT VC (Selective Disclosure JWT Verifiable Credentials)
 
 **Libraries:**
+
 - Issuer: `@sd-jwt/core` + `jose`
 - Holder: `@sd-jwt/decode` + `@sd-jwt/present`
 - Verifier: `@sd-jwt/verify` + `jose`
 
 **Predicates für MVP:**
+
 1. `isOver18` (boolean) - für Liquor Store Demo
 2. `residencyCountry` (equality) - für regionale Services
 3. `hasDriversLicense` (boolean) - für Car Rental
@@ -57,6 +60,7 @@ miTch benötigt einen Credential-Stack der:
 ```
 
 **Example Flow:**
+
 1. Issuer creates JWT with hashed claims
 2. User stores full JWT + disclosures
 3. User selectively reveals only required disclosures to verifier

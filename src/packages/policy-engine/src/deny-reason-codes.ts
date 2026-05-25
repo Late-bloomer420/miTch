@@ -217,7 +217,8 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
   [DenyReasonCode.DOWNGRADE_ATTACK]: {
     user: 'Sicherheitsprüfung fehlgeschlagen. Bitte versuche es erneut.',
     verifier: VERIFIER_BUCKET_GENERIC,
-    audit: 'Capability downgrade rejected — requested profile disables mutually supported security features.',
+    audit:
+      'Capability downgrade rejected — requested profile disables mutually supported security features.',
   },
 
   // --- Crypto ---
@@ -265,12 +266,14 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
   [DenyReasonCode.PRESENCE_REQUIRED]: {
     user: 'Biometrische Bestätigung erforderlich. Bitte bestätige erneut.',
     verifier: VERIFIER_BUCKET_USER_ACTION,
-    audit: 'Presence proof required — user did not interact with authenticator within challenge window (WebAuthn timeout) or accessibility/high-risk prompt.',
+    audit:
+      'Presence proof required — user did not interact with authenticator within challenge window (WebAuthn timeout) or accessibility/high-risk prompt.',
   },
   [DenyReasonCode.REAUTH_REQUIRED]: {
     user: 'Erneute Authentifizierung erforderlich. Bitte melde dich neu an.',
     verifier: VERIFIER_BUCKET_USER_ACTION,
-    audit: 'Re-authentication required — session expired or WebAuthn challenge not found (consumed/lost). Full re-auth needed.',
+    audit:
+      'Re-authentication required — session expired or WebAuthn challenge not found (consumed/lost). Full re-auth needed.',
   },
 
   // --- Infrastructure ---
@@ -294,7 +297,8 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
   [DenyReasonCode.HDAB_PERMIT_REQUIRED]: {
     user: 'Der Anfragende benötigt eine HDAB-Genehmigung für Forschungsdatenzugriff.',
     verifier: VERIFIER_BUCKET_GENERIC,
-    audit: 'Verifier lacks required HDAB (Health Data Access Body) permit for secondary use access.',
+    audit:
+      'Verifier lacks required HDAB (Health Data Access Body) permit for secondary use access.',
   },
   [DenyReasonCode.SECONDARY_USE_DENIED]: {
     user: 'Du hast Forschungszugriff auf deine Daten deaktiviert.',
@@ -323,7 +327,8 @@ export const DENY_REASON_CATALOG: Record<DenyReasonCode, AudienceMessages> = {
   [DenyReasonCode.CREDENTIAL_DISPENSED]: {
     user: 'Dieses Rezept wurde bereits eingelöst.',
     verifier: VERIFIER_BUCKET_GENERIC,
-    audit: 'Credential has been marked as dispensed (single-use nullifier). Re-presentation blocked.',
+    audit:
+      'Credential has been marked as dispensed (single-use nullifier). Re-presentation blocked.',
   },
 
   // --- Catch-all ---

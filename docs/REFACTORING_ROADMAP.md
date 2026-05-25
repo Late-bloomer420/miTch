@@ -13,7 +13,9 @@ These are **not violations**, but **intentional technical debt** with a clear re
 ## 1. PoC Context: Conscious Consolidation
 
 ### Philosophy
+
 The PoC phase prioritized:
+
 - **Rapid iteration** on cryptographic primitives
 - **End-to-end validation** of the Privacy Firewall concept
 - **Stakeholder demos** with working, tangible flows
@@ -21,11 +23,12 @@ The PoC phase prioritized:
 This led to **vertical slices** where components were tightly coupled for fast feedback. This was the right call for validation, but must be addressed before scaling.
 
 ### Framing (for Reviews)
-| Current State | Interpretation |
-|---------------|----------------|
-| "God Object" in WalletService | *Conscious PoC consolidation; orchestration logic mixed with domain logic for demo velocity* |
-| Crypto + Storage mixed | *Deliberate boundary collapse to accelerate PoC; Phase 6 separates via adapters* |
-| Linear rule matching | *Sufficient for <100 rules; indexing deferred to production scale* |
+
+| Current State                 | Interpretation                                                                               |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| "God Object" in WalletService | _Conscious PoC consolidation; orchestration logic mixed with domain logic for demo velocity_ |
+| Crypto + Storage mixed        | _Deliberate boundary collapse to accelerate PoC; Phase 6 separates via adapters_             |
+| Linear rule matching          | _Sufficient for <100 rules; indexing deferred to production scale_                           |
 
 **Key Message:** These are not "violations" to apologize for â€” they are documented decisions with explicit remediation paths.
 
@@ -34,7 +37,9 @@ This led to **vertical slices** where components were tightly coupled for fast f
 ## 2. WalletService Decomposition: Seam Interfaces
 
 ### Current State
+
 `WalletService` (~700 LOC) is a **monolithic orchestrator** that:
+
 - Manages credentials
 - Evaluates policies
 - Generates presentations
@@ -60,6 +65,7 @@ This led to **vertical slices** where components were tightly coupled for fast f
 ### Seam Interfaces (Incremental Extraction)
 
 #### 2.1 `ICredentialRepository`
+
 ```typescript
 interface ICredentialRepository {
   getAllMetadata(): Promise<StoredCredentialMetadata[]>;
@@ -71,6 +77,7 @@ interface ICredentialRepository {
 ```
 
 #### 2.2 `IPolicyEvaluator`
+
 ```typescript
 interface IPolicyEvaluator {
   evaluate(
@@ -79,12 +86,13 @@ interface IPolicyEvaluator {
     credentials: StoredCredentialMetadata[],
     policy: PolicyManifest
   ): Promise<PolicyEvaluationResult>;
-  
+
   getRiskScore(verifierId: string): number;
 }
 ```
 
 #### 2.3 `IPresentationManager`
+
 ```typescript
 interface IPresentationManager {
   generatePresentation(
@@ -96,6 +104,7 @@ interface IPresentationManager {
 ```
 
 #### 2.4 `IAuditTrail`
+
 ```typescript
 interface IAuditTrail {
   append(event: AuditEventType, subject: string, metadata?: Record<string, unknown>): Promise<void>;
@@ -106,6 +115,7 @@ interface IAuditTrail {
 ```
 
 ### Migration Path (No Big-Bang)
+
 1. **Phase 6a:** Extract `ICredentialRepository` interface; `SecureStorage` implements it.
 2. **Phase 6b:** Extract `IPolicyEvaluator`; `PolicyEngine` implements it (already close).
 3. **Phase 6c:** Extract `IPresentationManager` from `generatePresentation()`.
@@ -116,7 +126,9 @@ interface IAuditTrail {
 ## 3. SecureStorage: Adapter + Crypto Boundary
 
 ### Current State
+
 `SecureStorage` mixes:
+
 - **Persistence** (IndexedDB operations)
 - **Encryption** (AES-GCM via shared-crypto)
 - **Serialization** (JSON stringify/parse)
@@ -151,6 +163,7 @@ interface IAuditTrail {
 ### Interface Definitions
 
 #### 3.1 `IStorageAdapter`
+
 ```typescript
 interface IStorageAdapter {
   // Store raw bytes (ciphertext blobs only)
@@ -162,15 +175,16 @@ interface IStorageAdapter {
 ```
 
 #### 3.2 `IEnvelopeCrypto`
+
 ```typescript
 interface IEnvelopeCrypto {
   // Envelope encryption (data at rest)
   seal(plaintext: string, aad?: BufferSource): Promise<Uint8Array>;
   unseal(ciphertext: Uint8Array, aad?: BufferSource): Promise<string>;
-  
+
   // Key wrapping (data in transit)
   wrapKey(key: CryptoKey, recipientPubKey: CryptoKey): Promise<string>;
-  
+
   // Key lifecycle
   shred(): void;
   isActive(): boolean;
@@ -178,18 +192,20 @@ interface IEnvelopeCrypto {
 ```
 
 ### Portability Benefit
-| Environment | IStorageAdapter | IEnvelopeCrypto |
-|-------------|-----------------|-----------------|
-| Browser PWA | IndexedDBAdapter | WebCrypto |
-| React Native | AsyncStorageAdapter | react-native-keychain |
-| Node.js (Tests) | InMemoryAdapter | node:crypto |
-| TEE (Future) | SecureEnclaveAdapter | Hardware HSM |
+
+| Environment     | IStorageAdapter      | IEnvelopeCrypto       |
+| --------------- | -------------------- | --------------------- |
+| Browser PWA     | IndexedDBAdapter     | WebCrypto             |
+| React Native    | AsyncStorageAdapter  | react-native-keychain |
+| Node.js (Tests) | InMemoryAdapter      | node:crypto           |
+| TEE (Future)    | SecureEnclaveAdapter | Hardware HSM          |
 
 ---
 
 ## 4. PolicyEngine: Strategy Extension Point
 
 ### Current State
+
 Credential selection is hardcoded to "first matching credential".
 
 ### Target Architecture
@@ -218,9 +234,11 @@ class ReputationFirstStrategy implements ICredentialSelectionStrategy { ... }
 ```
 
 ### When To Introduce
+
 > **Strategy Pattern as Extension Point, not Overengineering.**
-> 
+>
 > Currently, `DefaultSelectionStrategy` is sufficient. The interface is defined as a **future extension point** for:
+>
 > - Multi-issuer environments (prefer trusted issuers)
 > - Privacy optimization (rotate credentials to limit linkability)
 > - Enterprise policies (reputation scoring)
@@ -233,33 +251,37 @@ class ReputationFirstStrategy implements ICredentialSelectionStrategy { ... }
 
 ### Definition of Done (DoD)
 
-| # | Criterion | Measurement | Status |
-|---|-----------|-------------|--------|
-| 1 | **WalletService LOC** | < 200 LOC (orchestration only) | â¬œ Pending |
-| 2 | **Unit Tests without IndexedDB** | All `@mitch/secure-storage` tests run with InMemoryAdapter | â¬œ Pending |
-| 3 | **Second Storage Adapter Exists** | `InMemoryStorageAdapter` implemented and tested | â¬œ Pending |
-| 4 | **Policy Selection Swappable** | `ICredentialSelectionStrategy` interface defined; injectable | â¬œ Pending |
-| 5 | **Public API Stability** | No breaking changes to `WalletService` public methods | âœ… Verified |
+| #   | Criterion                         | Measurement                                                  | Status       |
+| --- | --------------------------------- | ------------------------------------------------------------ | ------------ |
+| 1   | **WalletService LOC**             | < 200 LOC (orchestration only)                               | â¬œ Pending  |
+| 2   | **Unit Tests without IndexedDB**  | All `@mitch/secure-storage` tests run with InMemoryAdapter   | â¬œ Pending  |
+| 3   | **Second Storage Adapter Exists** | `InMemoryStorageAdapter` implemented and tested              | â¬œ Pending  |
+| 4   | **Policy Selection Swappable**    | `ICredentialSelectionStrategy` interface defined; injectable | â¬œ Pending  |
+| 5   | **Public API Stability**          | No breaking changes to `WalletService` public methods        | âœ… Verified |
 
 ### Sprint Scope (Estimated: 3-5 days)
 
 #### Day 1-2: Storage Decomposition
+
 - [ ] Extract `IStorageAdapter` interface
 - [ ] Implement `IndexedDBAdapter` (refactor existing)
 - [ ] Implement `InMemoryAdapter` (for testing)
 - [ ] Extract `IEnvelopeCrypto` interface
 
 #### Day 3: Repository Pattern
+
 - [ ] Define `ICredentialRepository`
 - [ ] Refactor `SecureStorage` to implement it
 - [ ] Update WalletService to use interface
 
 #### Day 4: Policy Strategy
+
 - [ ] Define `ICredentialSelectionStrategy`
 - [ ] Implement `DefaultSelectionStrategy`
 - [ ] Inject strategy into PolicyEngine
 
 #### Day 5: Verification & Cleanup
+
 - [ ] Run full test suite with InMemoryAdapter
 - [ ] Verify WalletService < 200 LOC
 - [ ] Update ARCHITECTURE.md
@@ -268,26 +290,26 @@ class ReputationFirstStrategy implements ICredentialSelectionStrategy { ... }
 
 ## 6. Risk Assessment
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                        | Mitigation                                                                 |
+| --------------------------- | -------------------------------------------------------------------------- |
 | Breaking pilot integrations | Interface extraction preserves existing signatures; internal refactor only |
-| Crypto boundary bugs | Extensive test coverage; no changes to algorithms, only structure |
-| Over-abstraction | Start with 2 adapters (IndexedDB + InMemory); add more only as needed |
+| Crypto boundary bugs        | Extensive test coverage; no changes to algorithms, only structure          |
+| Over-abstraction            | Start with 2 adapters (IndexedDB + InMemory); add more only as needed      |
 
 ---
 
 ## Appendix: Code Quality Grades (PoC Context)
 
-| Component | Current Grade | Reason | Phase 6 Target |
-|-----------|---------------|--------|----------------|
-| WalletService | B- | Conscious consolidation; orchestration + domain mixed | A (Facade only) |
-| SecureStorage | B | Crypto + Persistence mixed for PoC velocity | A (Separated) |
-| PolicyEngine | B+ | Close to SOLID; strategy extraction pending | A |
-| AuditLog | A- | Already well-separated | A |
+| Component     | Current Grade | Reason                                                | Phase 6 Target  |
+| ------------- | ------------- | ----------------------------------------------------- | --------------- |
+| WalletService | B-            | Conscious consolidation; orchestration + domain mixed | A (Facade only) |
+| SecureStorage | B             | Crypto + Persistence mixed for PoC velocity           | A (Separated)   |
+| PolicyEngine  | B+            | Close to SOLID; strategy extraction pending           | A               |
+| AuditLog      | A-            | Already well-separated                                | A               |
 
-> **Note:** Grades reflect *current suitability for production*, not code quality per se. PoC consolidation was a deliberate trade-off that enabled rapid validation.
+> **Note:** Grades reflect _current suitability for production_, not code quality per se. PoC consolidation was a deliberate trade-off that enabled rapid validation.
 
 ---
 
-*Document maintained by: miTch Architecture Team*
-*Next Review: Phase 6 Kickoff*
+_Document maintained by: miTch Architecture Team_
+_Next Review: Phase 6 Kickoff_

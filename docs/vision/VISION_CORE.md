@@ -49,6 +49,7 @@ Yes. The math is the same. What's proprietary is not the mathematics.
 - Ad targeting = collaborative filtering, k-means clustering
 
 **What IS proprietary:**
+
 1. The weights — trained on their historical dataset (not mathematically secret, just data-dependent)
 2. The threshold decisions — where they draw the cutoff line (business logic, not math)
 3. The raw data pipeline — they accumulated your data over years; you don't have a copy
@@ -94,6 +95,7 @@ Layer 3: ZK Proof Layer (long-term — directionally correct, not practical yet)
 ```
 
 Principled separation of concerns:
+
 - What leaves the device → Layer 1 (forgetting layer)
 - What you compute for yourself → Layer 2 (local only, ephemeral)
 - What you prove to others → Layer 3 (reveal nothing but the conclusion)
@@ -112,11 +114,13 @@ Principled separation of concerns:
 ## The Phone / Backdoor Problem
 
 **Real protection:**
+
 - App sandboxing: protects against other apps
 - Apple Secure Enclave: isolates cryptographic keys, even from the OS
 - On-device ML (Core ML, Neural Engine): runs locally, data doesn't leave
 
 **Not fully protected:**
+
 - Apple/Google as OS vendor: deep access if compelled (government orders, NSLs)
 - TEE vulnerabilities: Intel SGX has real side-channel exploits (Spectre class)
 - Hardware backdoors: historically not paranoid — NSA/Dual EC DRBG happened

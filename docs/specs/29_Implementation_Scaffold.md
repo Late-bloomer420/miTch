@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Ziel
+
 Von Dokumentation zu implementierbarem MVP-Code mit klaren Modulen, Verantwortlichkeiten und Testeintritt.
 
 ---
@@ -58,30 +59,36 @@ tests/
 ## Module contracts (v0)
 
 ### policy/evaluator.ts
+
 - Input: parsed request + policy manifest + binding status + proof status
 - Output: `{ decision, decisionCode, claimsSatisfied }`
 - Rule: fail closed on any uncertainty
 
 ### binding/canonicalize.ts
+
 - Implements `20_Canonicalization_and_Binding_Spec_v0.md`
 - Deterministic output required across runtimes
 
 ### binding/nonceStore.ts
+
 - Atomic consume semantics
 - TTL enforcement
 - Replay detection reason code mapping
 
 ### api/verifierRoutes.ts
+
 - Enforce gate precedence
 - Convert internal errors to `DENY_INTERNAL_SAFE_FAILURE`
 
 ### receipt/wormWriter.ts
+
 - Append-only decision receipt
 - No raw PII in persisted records
 
 ---
 
 ## Implementation rules
+
 - No implicit defaults for security-critical fields
 - No untyped payload access in verification path
 - Every deny path must map to catalog code (21)
@@ -90,6 +97,7 @@ tests/
 ---
 
 ## Initial dependencies (minimal)
+
 - JSON schema validator
 - crypto utilities (SHA-256, signature verify)
 - test runner + assertion library

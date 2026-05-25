@@ -14,12 +14,14 @@
 ## 🔴 Active — In Arbeit
 
 ### U-20 — Identitäts-Firewall (Implementation v1 complete, Abschlussreview pending)
+
 - Sprint-Doc: [`docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md`](docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md)
 - Was passiert ist: Identity-Firewall-Events (`IDENTIFIER_ACCESS`, `COOKIE_ACCESS`, etc.) in Audit-Log + `WalletService` + `DataFlowPanel` integriert — commit `386d07e` (2026-05-20)
 - Nächster Schritt: **Abschlussreview durch Reviewer/Security** (Fail-closed-Verhalten, Datenschutz-Logik, UI-Texte)
 - Backlog-Status bleibt 🟡 bis Review abgeschlossen
 
 ### U-21 — UI: Echtzeit-Benachrichtigung bei Identifier-Zugriff
+
 - Hängt direkt an U-20 — Firewall-Events werden bereits in DataFlowPanel angezeigt
 - Abschlussreview gemeinsam mit U-20 erledigen
 

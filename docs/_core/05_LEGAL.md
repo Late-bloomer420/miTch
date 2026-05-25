@@ -10,6 +10,7 @@ Crypto-Shredding von `K_trans` (AES-256) nach Session-Abschluss erfüllt das
 "Recht auf Löschung" nach **DSGVO Art. 17**.
 
 Basis:
+
 - GDPR Recital 26: Anonymisierte Daten sind keine personenbezogenen Daten mehr
 - EDPB Guidelines 04/2020: Split-Key-Encryption + Schlüsselvernichtung anonymisiert effektiv
 - Österreichische DSB: Hat Löschkonzepte anerkannt, bei denen Re-Identifikation technisch unmöglich ist
@@ -32,10 +33,10 @@ Ohne `K_trans`: keine Wiederherstellung möglich. Brute-Force AES-256: computati
 
 ## Verbleibende Risiken (aus Legal Opinion)
 
-| Risiko | Mitigation |
-|---|---|
+| Risiko                                        | Mitigation                                                                               |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | **Quantum-Angriff** (BSI: praktisch ab ~2030) | Post-Quantum Migration (ML-DSA) auf Roadmap; Datenretention < kryptographischer Horizont |
-| **Key Leakage vor Shredding** | Memory Protection (perspektivisch TEE), Code-Audits |
+| **Key Leakage vor Shredding**                 | Memory Protection (perspektivisch TEE), Code-Audits                                      |
 
 ---
 

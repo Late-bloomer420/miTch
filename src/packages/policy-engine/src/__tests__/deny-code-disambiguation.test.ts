@@ -30,7 +30,11 @@ describe('Deny code disambiguation: NO_MATCHING_RULE vs POLICY_MISMATCH', () => 
   it('NO_MATCHING_RULE is produced when no rule matches the verifier (conflict-resolver path)', () => {
     // Simulate engine returning NO_MATCHING_RULE when findMatchingRule returns null
     const verdicts = [
-      { verdict: 'DENY' as const, reasonCodes: [DenyReasonCode.NO_MATCHING_RULE], ruleId: undefined },
+      {
+        verdict: 'DENY' as const,
+        reasonCodes: [DenyReasonCode.NO_MATCHING_RULE],
+        ruleId: undefined,
+      },
     ];
     const result = resolveConflict(verdicts);
     expect(result.verdict).toBe('DENY');

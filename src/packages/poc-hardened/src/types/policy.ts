@@ -4,7 +4,7 @@ export interface PredicateRule {
 }
 
 export interface PolicyManifestV0 {
-  version: "v0";
+  version: 'v0';
   id: string;
   purposes: string[];
   predicates: PredicateRule[];

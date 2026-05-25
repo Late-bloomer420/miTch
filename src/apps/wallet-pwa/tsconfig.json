@@ -1,55 +1,41 @@
 {
-    "extends": "../../../tsconfig.base.json",
-    "compilerOptions": {
-        "target": "ESNext",
-        "useDefineForClassFields": true,
-        "lib": [
-            "DOM",
-            "DOM.Iterable",
-            "ESNext"
-        ],
-        "allowJs": false,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "module": "ESNext",
-        "moduleResolution": "Node",
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "react-jsx",
-        "types": [
-            "vite/client",
-            "node"
-        ],
-        "baseUrl": ".",
-        "paths": {
-            "@mitch/shared-types": ["../../packages/shared-types/src"],
-            "@mitch/shared-crypto": ["../../packages/shared-crypto/src"],
-            "@mitch/policy-engine": ["../../packages/policy-engine/src"],
-            "@mitch/audit-log": ["../../packages/audit-log/src"],
-            "@mitch/secure-storage": ["../../packages/secure-storage/src"],
-            "@mitch/predicates": ["../../packages/predicates/src"],
-            "@mitch/layer-resolver": ["../../packages/layer-resolver/src"],
-            "@mitch/oid4vp": ["../../packages/oid4vp/src"],
-            "@mitch/data-flow": ["../../packages/data-flow/src"],
-            "@mitch/mdoc": ["../../packages/mdoc/src"]
-        }
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "src/**/*.test.ts",
-        "src/**/*.test.tsx"
-    ],
-    "references": [
-        {
-            "path": "./tsconfig.node.json"
-        }
-    ]
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@mitch/shared-types": ["../../packages/shared-types/src"],
+      "@mitch/shared-crypto": ["../../packages/shared-crypto/src"],
+      "@mitch/policy-engine": ["../../packages/policy-engine/src"],
+      "@mitch/audit-log": ["../../packages/audit-log/src"],
+      "@mitch/secure-storage": ["../../packages/secure-storage/src"],
+      "@mitch/predicates": ["../../packages/predicates/src"],
+      "@mitch/layer-resolver": ["../../packages/layer-resolver/src"],
+      "@mitch/oid4vp": ["../../packages/oid4vp/src"],
+      "@mitch/data-flow": ["../../packages/data-flow/src"],
+      "@mitch/mdoc": ["../../packages/mdoc/src"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/*.test.tsx"],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

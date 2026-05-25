@@ -1,9 +1,9 @@
 /**
  * @mitch/policy-engine - Policy Validator (Fail-Closed)
- * 
+ *
  * Implements the "POLICY CHECK GPT" specification for structural validity.
  * Detects structural invalidity, ambiguity, and GDPR violations in PolicyManifests.
- * 
+ *
  * BOUNDARY CONDITIONS:
  * 1. Syntax & Formal Completeness
  * 2. Determinism Check
@@ -16,117 +16,121 @@
 import { PolicyManifest, PolicyRule, TrustedIssuer } from '@mitch/shared-types';
 
 export interface ValidationResult {
-    valid: boolean;
-    errors: string[];
+  valid: boolean;
+  errors: string[];
 }
 
 /**
  * Validates a PolicyManifest against strict structural and GDPR constraints.
  */
 export function validatePolicy(policy: PolicyManifest): ValidationResult {
-    const errors: string[] = [];
+  const errors: string[] = [];
 
-    // 1. Syntax & Formal Completeness
-    if (!policy.version) {
-        errors.push('SYNTAX: Missing policy version.');
-    } else if (!/^\d+(\.\d+)*$/.test(policy.version)) {
-        errors.push(`SYNTAX: Invalid version format: ${policy.version}`);
+  // 1. Syntax & Formal Completeness
+  if (!policy.version) {
+    errors.push('SYNTAX: Missing policy version.');
+  } else if (!/^\d+(\.\d+)*$/.test(policy.version)) {
+    errors.push(`SYNTAX: Invalid version format: ${policy.version}`);
+  }
+
+  // S-02: manifest_version (monotonic counter)
+  if (policy.manifest_version === undefined) {
+    errors.push('S-02: Missing manifest_version (monotonic counter required).');
+  } else if (!Number.isInteger(policy.manifest_version) || policy.manifest_version < 1) {
+    errors.push(
+      `S-02: manifest_version must be a positive integer, got: ${policy.manifest_version}`
+    );
+  }
+
+  // S-02: manifest_hash (tamper detection)
+  if (!policy.manifest_hash) {
+    errors.push('S-02: Missing manifest_hash (SHA-256 of manifest content required).');
+  } else if (!/^[0-9a-f]{64}$/.test(policy.manifest_hash)) {
+    errors.push(`S-02: manifest_hash must be a 64-char lowercase hex string.`);
+  }
+
+  if (!Array.isArray(policy.rules)) {
+    errors.push('SYNTAX: Rules must be an array.');
+  }
+
+  if (!Array.isArray(policy.trustedIssuers)) {
+    errors.push('SYNTAX: TrustedIssuers must be an array.');
+  }
+
+  // 2. Issuer & Authority Explicitness
+  if (policy.trustedIssuers && policy.trustedIssuers.length === 0) {
+    errors.push('AUTHORITY: No trusted issuers defined. Policy is vacuous.');
+  } else {
+    policy.trustedIssuers.forEach((issuer, index) => {
+      validateIssuer(issuer, index, errors);
+    });
+  }
+
+  // 3. Rule Validation (Determinism, Purpose, Temporal)
+  if (policy.rules) {
+    policy.rules.forEach((rule, index) => {
+      validateRule(rule, index, errors);
+    });
+  }
+
+  // 4. Delegation Safety (If present)
+  if (policy.delegationRules) {
+    if (!Array.isArray(policy.delegationRules.allowed_agent_dids)) {
+      errors.push('DELEGATION: allowed_agent_dids must be an array.');
+    } else if (policy.delegationRules.allowed_agent_dids.length === 0) {
+      // It's allowed to have delegationRules object but empty list means "no delegation allowed", which is safe.
+      // But if the object exists, usually structure is expected.
     }
 
-    // S-02: manifest_version (monotonic counter)
-    if (policy.manifest_version === undefined) {
-        errors.push('S-02: Missing manifest_version (monotonic counter required).');
-    } else if (!Number.isInteger(policy.manifest_version) || policy.manifest_version < 1) {
-        errors.push(`S-02: manifest_version must be a positive integer, got: ${policy.manifest_version}`);
+    if (
+      policy.delegationRules.audit_level !== 'NONE' &&
+      policy.delegationRules.audit_level !== 'SUMMARY' &&
+      policy.delegationRules.audit_level !== 'ALL'
+    ) {
+      errors.push('DELEGATION: Invalid audit_level.');
     }
+  }
 
-    // S-02: manifest_hash (tamper detection)
-    if (!policy.manifest_hash) {
-        errors.push('S-02: Missing manifest_hash (SHA-256 of manifest content required).');
-    } else if (!/^[0-9a-f]{64}$/.test(policy.manifest_hash)) {
-        errors.push(`S-02: manifest_hash must be a 64-char lowercase hex string.`);
+  // Global Settings (GDPR Articles)
+  if (policy.globalSettings) {
+    // Enforce fail-closed defaults if not explicitly set?
+    // Spec says: "Downgrade uncertainty to acceptability -> INVALID".
+    // Typescript handles types, but logic:
+    if (policy.globalSettings.blockUnknownVerifiers === false) {
+      // Allowing unknown verifiers is risky but maybe "valid" structurally?
+      // "GDPR Boundary #7: Shifts compliance ... to interpretation".
+      // Letting unknown verifiers in implies trusting them without proof.
+      // We flag this as a warning or error? Spec says "Unknown or dynamic issuers -> INVALID". Verifiers are distinct.
     }
+  }
 
-    if (!Array.isArray(policy.rules)) {
-        errors.push('SYNTAX: Rules must be an array.');
-    }
-
-    if (!Array.isArray(policy.trustedIssuers)) {
-        errors.push('SYNTAX: TrustedIssuers must be an array.');
-    }
-
-    // 2. Issuer & Authority Explicitness
-    if (policy.trustedIssuers && policy.trustedIssuers.length === 0) {
-        errors.push('AUTHORITY: No trusted issuers defined. Policy is vacuous.');
-    } else {
-        policy.trustedIssuers.forEach((issuer, index) => {
-            validateIssuer(issuer, index, errors);
-        });
-    }
-
-    // 3. Rule Validation (Determinism, Purpose, Temporal)
-    if (policy.rules) {
-        policy.rules.forEach((rule, index) => {
-            validateRule(rule, index, errors);
-        });
-    }
-
-    // 4. Delegation Safety (If present)
-    if (policy.delegationRules) {
-        if (!Array.isArray(policy.delegationRules.allowed_agent_dids)) {
-            errors.push('DELEGATION: allowed_agent_dids must be an array.');
-        } else if (policy.delegationRules.allowed_agent_dids.length === 0) {
-            // It's allowed to have delegationRules object but empty list means "no delegation allowed", which is safe.
-            // But if the object exists, usually structure is expected.
-        }
-
-        if (policy.delegationRules.audit_level !== 'NONE' &&
-            policy.delegationRules.audit_level !== 'SUMMARY' &&
-            policy.delegationRules.audit_level !== 'ALL') {
-            errors.push('DELEGATION: Invalid audit_level.');
-        }
-    }
-
-    // Global Settings (GDPR Articles)
-    if (policy.globalSettings) {
-        // Enforce fail-closed defaults if not explicitly set?
-        // Spec says: "Downgrade uncertainty to acceptability -> INVALID".
-        // Typescript handles types, but logic:
-        if (policy.globalSettings.blockUnknownVerifiers === false) {
-            // Allowing unknown verifiers is risky but maybe "valid" structurally?
-            // "GDPR Boundary #7: Shifts compliance ... to interpretation".
-            // Letting unknown verifiers in implies trusting them without proof.
-            // We flag this as a warning or error? Spec says "Unknown or dynamic issuers -> INVALID". Verifiers are distinct.
-        }
-    }
-
-    return {
-        valid: errors.length === 0,
-        errors
-    };
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
 }
 
 function validateIssuer(issuer: TrustedIssuer, index: number, errors: string[]) {
-    // Check 4: Issuers explicitly named or referenced
-    if (!issuer.did || !issuer.did.startsWith('did:')) {
-        errors.push(`ISSUER[${index}]: Invalid DID format.`);
-    }
-    if (!issuer.name || issuer.name.trim().length === 0) {
-        errors.push(`ISSUER[${index}]: Missing human-readable name (transparency).`);
-    }
-    if (!Array.isArray(issuer.credentialTypes) || issuer.credentialTypes.length === 0) {
-        errors.push(`ISSUER[${index}]: Must specify trusted credential types explicitely.`);
-    }
+  // Check 4: Issuers explicitly named or referenced
+  if (!issuer.did || !issuer.did.startsWith('did:')) {
+    errors.push(`ISSUER[${index}]: Invalid DID format.`);
+  }
+  if (!issuer.name || issuer.name.trim().length === 0) {
+    errors.push(`ISSUER[${index}]: Missing human-readable name (transparency).`);
+  }
+  if (!Array.isArray(issuer.credentialTypes) || issuer.credentialTypes.length === 0) {
+    errors.push(`ISSUER[${index}]: Must specify trusted credential types explicitely.`);
+  }
 
-    // Check 5: Temporal Soundness
-    // "Validity windows explicit"
-    // validUntil is optional in interface, but stricter validation might demand it for "Temporal Soundness".
-    // However, DIDs themselves have lifecycles. We won't block on missing validUntil unless we want to be hyper-strict.
-    if (issuer.validUntil) {
-        if (isNaN(new Date(issuer.validUntil).getTime())) {
-            errors.push(`ISSUER[${index}]: Invalid validUntil date format.`);
-        }
+  // Check 5: Temporal Soundness
+  // "Validity windows explicit"
+  // validUntil is optional in interface, but stricter validation might demand it for "Temporal Soundness".
+  // However, DIDs themselves have lifecycles. We won't block on missing validUntil unless we want to be hyper-strict.
+  if (issuer.validUntil) {
+    if (isNaN(new Date(issuer.validUntil).getTime())) {
+      errors.push(`ISSUER[${index}]: Invalid validUntil date format.`);
     }
+  }
 }
 
 // ─── S-02: Rollback Protection ────────────────────────────────────────────────
@@ -139,63 +143,63 @@ function validateIssuer(issuer: TrustedIssuer, index: number, errors: string[]) 
  * Returns { ok: false, reason } if the new manifest is rejected (rollback attempt).
  */
 export function checkManifestRollback(
-    incoming: PolicyManifest,
-    trustedVersion: number
+  incoming: PolicyManifest,
+  trustedVersion: number
 ): { ok: boolean; reason?: string } {
-    if (incoming.manifest_version === undefined) {
-        return { ok: false, reason: 'S-02: Incoming manifest has no manifest_version — rejected.' };
-    }
-    if (incoming.manifest_version < trustedVersion) {
-        return {
-            ok: false,
-            reason: `S-02: Rollback attack detected — incoming v${incoming.manifest_version} < trusted v${trustedVersion}.`
-        };
-    }
-    return { ok: true };
+  if (incoming.manifest_version === undefined) {
+    return { ok: false, reason: 'S-02: Incoming manifest has no manifest_version — rejected.' };
+  }
+  if (incoming.manifest_version < trustedVersion) {
+    return {
+      ok: false,
+      reason: `S-02: Rollback attack detected — incoming v${incoming.manifest_version} < trusted v${trustedVersion}.`,
+    };
+  }
+  return { ok: true };
 }
 
 function validateRule(rule: PolicyRule, index: number, errors: string[]) {
-    const id = rule.id || `rule[${index}]`;
+  const id = rule.id || `rule[${index}]`;
 
-    // Check 2: Determinism Check
-    // "No context-dependent clauses"
-    // verifierPattern must be a string.
-    if (!rule.verifierPattern) {
-        errors.push(`RULE[${id}]: Missing verifierPattern.`);
-    }
+  // Check 2: Determinism Check
+  // "No context-dependent clauses"
+  // verifierPattern must be a string.
+  if (!rule.verifierPattern) {
+    errors.push(`RULE[${id}]: Missing verifierPattern.`);
+  }
 
-    // Check 1: Explicit Operators
-    // allowedClaims / provenClaims must be explicit arrays
-    const allowed = rule.allowedClaims || [];
-    const proven = rule.provenClaims || [];
+  // Check 1: Explicit Operators
+  // allowedClaims / provenClaims must be explicit arrays
+  const allowed = rule.allowedClaims || [];
+  const proven = rule.provenClaims || [];
 
-    if (allowed.length === 0 && proven.length === 0 && !rule.deniedClaims) {
-        errors.push(`RULE[${id}]: Vacuous rule (no allowed, proven, or denied claims).`);
-    }
+  if (allowed.length === 0 && proven.length === 0 && !rule.deniedClaims) {
+    errors.push(`RULE[${id}]: Vacuous rule (no allowed, proven, or denied claims).`);
+  }
 
-    // Check 3: Purpose Limitation
-    // "Single compliance responsibility"
-    // If a rule allows PII (allowedClaims), it implies consent for *that* verifier.
+  // Check 3: Purpose Limitation
+  // "Single compliance responsibility"
+  // If a rule allows PII (allowedClaims), it implies consent for *that* verifier.
 
-    // Check 5: Temporal Soundness
-    // "Revocation semantics explicit" - handled by maxCredentialAgeDays?
-    if (rule.maxCredentialAgeDays !== undefined && rule.maxCredentialAgeDays < 0) {
-        errors.push(`RULE[${id}]: maxCredentialAgeDays must be positive.`);
-    }
+  // Check 5: Temporal Soundness
+  // "Revocation semantics explicit" - handled by maxCredentialAgeDays?
+  if (rule.maxCredentialAgeDays !== undefined && rule.maxCredentialAgeDays < 0) {
+    errors.push(`RULE[${id}]: maxCredentialAgeDays must be positive.`);
+  }
 
-    // Check 6: Delegation
-    // If requiresUserConsent is false, this is an automated rule.
-    // Ensure it doesn't leak raw PII unless strictly scoped?
-    // "Any input implying access to personal data MUST be rejected" - wait, the *policy* defines access.
-    // If requiresUserConsent is FALSE and allowedClaims is NOT EMPTY, this is "Automated PII Disclosure".
-    // This is high risk. The validator should flag it?
-    // "Requires processing of personal data beyond stated purpose" - hard to know purpose here.
-    // But structurally:
-    if (rule.requiresUserConsent === false && allowed.length > 0) {
-        // This allows silent PII sharing.
-        // Is this structurally invalid? It depends on the governance model.
-        // For "Fail-Closed / GDPR-by-Construction", silent PII sharing is dangerous.
-        // We might require PROVEN claims (ZKP) for automated responses.
-        // Let's assume for now valid, but note it.
-    }
+  // Check 6: Delegation
+  // If requiresUserConsent is false, this is an automated rule.
+  // Ensure it doesn't leak raw PII unless strictly scoped?
+  // "Any input implying access to personal data MUST be rejected" - wait, the *policy* defines access.
+  // If requiresUserConsent is FALSE and allowedClaims is NOT EMPTY, this is "Automated PII Disclosure".
+  // This is high risk. The validator should flag it?
+  // "Requires processing of personal data beyond stated purpose" - hard to know purpose here.
+  // But structurally:
+  if (rule.requiresUserConsent === false && allowed.length > 0) {
+    // This allows silent PII sharing.
+    // Is this structurally invalid? It depends on the governance model.
+    // For "Fail-Closed / GDPR-by-Construction", silent PII sharing is dangerous.
+    // We might require PROVEN claims (ZKP) for automated responses.
+    // Let's assume for now valid, but note it.
+  }
 }

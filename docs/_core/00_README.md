@@ -16,15 +16,15 @@ Rechtlich: DSGVO-konform durch Konstruktion, nicht durch Versprechen.
 
 ## Kernverzeichnis
 
-| Dokument | Inhalt | Status |
-|---|---|---|
-| [01_NORTH_STAR.md](01_NORTH_STAR.md) | Mission & Werte | Bindend |
-| [02_POLICY.md](02_POLICY.md) | Nicht-Verhandelbarkeiten | Bindend |
-| [03_ARCHITECTURE.md](03_ARCHITECTURE.md) | Technische Grundlage | Bindend |
-| [04_MARKET.md](04_MARKET.md) | Wettbewerb & Lücken (Stand 05.2026) | Aktuell |
-| [05_LEGAL.md](05_LEGAL.md) | DSGVO-Basis & Crypto-Shredding | Bindend |
-| [06_OPEN_DECISIONS.md](06_OPEN_DECISIONS.md) | Offene Entscheidungen | Aktiv |
-| [07_ROADMAP.md](07_ROADMAP.md) | Was als nächstes kommt | Aktiv |
+| Dokument                                     | Inhalt                              | Status  |
+| -------------------------------------------- | ----------------------------------- | ------- |
+| [01_NORTH_STAR.md](01_NORTH_STAR.md)         | Mission & Werte                     | Bindend |
+| [02_POLICY.md](02_POLICY.md)                 | Nicht-Verhandelbarkeiten            | Bindend |
+| [03_ARCHITECTURE.md](03_ARCHITECTURE.md)     | Technische Grundlage                | Bindend |
+| [04_MARKET.md](04_MARKET.md)                 | Wettbewerb & Lücken (Stand 05.2026) | Aktuell |
+| [05_LEGAL.md](05_LEGAL.md)                   | DSGVO-Basis & Crypto-Shredding      | Bindend |
+| [06_OPEN_DECISIONS.md](06_OPEN_DECISIONS.md) | Offene Entscheidungen               | Aktiv   |
+| [07_ROADMAP.md](07_ROADMAP.md)               | Was als nächstes kommt              | Aktiv   |
 
 ---
 

@@ -37,9 +37,12 @@ interface GuidedDemoModeProps {
 
 function verdictColor(verdict: DemoStep['expectedVerdict']): string {
   switch (verdict) {
-    case 'ALLOW': return '#1b5e20';
-    case 'PROMPT+BIOMETRIC': return '#4a148c';
-    case 'PROMPT': return '#e65100';
+    case 'ALLOW':
+      return '#1b5e20';
+    case 'PROMPT+BIOMETRIC':
+      return '#4a148c';
+    case 'PROMPT':
+      return '#e65100';
   }
 }
 
@@ -75,12 +78,7 @@ function launchConfetti(container: HTMLElement) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function GuidedDemoMode({
-  isActive,
-  onExit,
-  onStepExecute,
-  steps,
-}: GuidedDemoModeProps) {
+export function GuidedDemoMode({ isActive, onExit, onStepExecute, steps }: GuidedDemoModeProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
   const [slideDir, setSlideDir] = useState<'enter' | 'exit-left' | 'exit-right' | null>(null);
@@ -94,7 +92,7 @@ export function GuidedDemoMode({
     const currentStep = steps[stepIndex];
     if (!currentStep) return;
 
-    document.querySelectorAll('.guided-highlight').forEach(el => {
+    document.querySelectorAll('.guided-highlight').forEach((el) => {
       el.classList.remove('guided-highlight');
     });
 
@@ -107,7 +105,7 @@ export function GuidedDemoMode({
       if (targetBtn) {
         targetBtn.classList.remove('guided-highlight');
       }
-      document.querySelectorAll('.guided-highlight').forEach(el => {
+      document.querySelectorAll('.guided-highlight').forEach((el) => {
         el.classList.remove('guided-highlight');
       });
     };
@@ -115,7 +113,7 @@ export function GuidedDemoMode({
 
   // ── Exit ──────────────────────────────────────────────────────────────────
   const handleExit = (_completed: boolean = false) => {
-    document.querySelectorAll('.guided-highlight').forEach(el => {
+    document.querySelectorAll('.guided-highlight').forEach((el) => {
       el.classList.remove('guided-highlight');
     });
     sessionStorage.setItem('guidedDemoCompleted', 'true');
@@ -148,7 +146,7 @@ export function GuidedDemoMode({
     onStepExecute(currentStep.id);
 
     // Wait for execution
-    await new Promise<void>(resolve => setTimeout(resolve, 1500));
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
 
     // Confetti + result summary
     if (confettiRef.current) {
@@ -174,13 +172,14 @@ export function GuidedDemoMode({
   const stepContentStyle: React.CSSProperties = {
     transition: 'opacity 0.22s ease, transform 0.22s ease',
     opacity: slideDir === 'enter' || slideDir === null ? 1 : 0,
-    transform: slideDir === 'exit-left'
-      ? 'translateX(-14px)'
-      : slideDir === 'exit-right'
-        ? 'translateX(14px)'
-        : slideDir === 'enter'
-          ? 'translateX(0)'
-          : 'translateX(0)',
+    transform:
+      slideDir === 'exit-left'
+        ? 'translateX(-14px)'
+        : slideDir === 'exit-right'
+          ? 'translateX(14px)'
+          : slideDir === 'enter'
+            ? 'translateX(0)'
+            : 'translateX(0)',
   };
 
   return (
@@ -205,61 +204,71 @@ export function GuidedDemoMode({
       `}</style>
 
       {/* Confetti container */}
-      <div ref={confettiRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9999 }} />
+      <div
+        ref={confettiRef}
+        style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9999 }}
+      />
 
       {/* Backdrop */}
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.4)',
-        zIndex: 90,
-        pointerEvents: 'none',
-      }} />
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.4)',
+          zIndex: 90,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Bottom Sheet */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        pointerEvents: 'auto',
-        background: '#0e0e0e',
-        borderTop: '1px solid #1e1e1e',
-        borderRadius: '22px 22px 0 0',
-        padding: '18px 20px',
-        paddingBottom: `calc(20px + env(safe-area-inset-bottom, 0px))`,
-        maxHeight: '46vh',
-        overflowY: 'auto',
-        boxShadow: '0 -8px 48px rgba(0,0,0,0.7)',
-      }}>
-
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          pointerEvents: 'auto',
+          background: '#0e0e0e',
+          borderTop: '1px solid #1e1e1e',
+          borderRadius: '22px 22px 0 0',
+          padding: '18px 20px',
+          paddingBottom: `calc(20px + env(safe-area-inset-bottom, 0px))`,
+          maxHeight: '46vh',
+          overflowY: 'auto',
+          boxShadow: '0 -8px 48px rgba(0,0,0,0.7)',
+        }}
+      >
         {/* Progress Bar (UX-07) */}
         <div style={{ marginBottom: 14 }}>
           {/* Dots */}
           <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginBottom: 6 }}>
             {steps.map((_, i) => (
-              <div key={i} style={{
-                width: i === stepIndex ? 20 : 7,
-                height: 7,
-                borderRadius: 4,
-                background: i === stepIndex ? '#00bfff' : (i < stepIndex ? '#2e7d32' : '#1e1e1e'),
-                transition: 'all 0.3s ease',
-                cursor: i < stepIndex ? 'pointer' : 'default',
-              }}
+              <div
+                key={i}
+                style={{
+                  width: i === stepIndex ? 20 : 7,
+                  height: 7,
+                  borderRadius: 4,
+                  background: i === stepIndex ? '#00bfff' : i < stepIndex ? '#2e7d32' : '#1e1e1e',
+                  transition: 'all 0.3s ease',
+                  cursor: i < stepIndex ? 'pointer' : 'default',
+                }}
                 onClick={() => i < stepIndex && goToStep(i)}
               />
             ))}
           </div>
           {/* Linear progress */}
           <div style={{ height: 2, background: '#1a1a1a', borderRadius: 1, overflow: 'hidden' }}>
-            <div style={{
-              height: '100%',
-              width: `${((stepIndex + 1) / steps.length) * 100}%`,
-              background: 'linear-gradient(90deg, #0070f3, #00bfff)',
-              borderRadius: 1,
-              transition: 'width 0.35s ease',
-            }} />
+            <div
+              style={{
+                height: '100%',
+                width: `${((stepIndex + 1) / steps.length) * 100}%`,
+                background: 'linear-gradient(90deg, #0070f3, #00bfff)',
+                borderRadius: 1,
+                transition: 'width 0.35s ease',
+              }}
+            />
           </div>
         </div>
 
@@ -270,11 +279,17 @@ export function GuidedDemoMode({
             <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>
               {currentStep.scenario}
             </span>
-            <span style={{
-              fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 700,
-              background: verdictColor(currentStep.expectedVerdict),
-              color: '#fff', letterSpacing: 0.5,
-            }}>
+            <span
+              style={{
+                fontSize: 9,
+                padding: '2px 7px',
+                borderRadius: 4,
+                fontWeight: 700,
+                background: verdictColor(currentStep.expectedVerdict),
+                color: '#fff',
+                letterSpacing: 0.5,
+              }}
+            >
               {currentStep.expectedVerdict}
             </span>
             <span style={{ marginLeft: 'auto', fontSize: 11, color: '#444', whiteSpace: 'nowrap' }}>
@@ -291,14 +306,22 @@ export function GuidedDemoMode({
           </div>
 
           {/* Visual diff: Verifier sees vs blocked */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr',
-            gap: 8, marginBottom: 14,
-          }}>
-            <div style={{
-              background: '#071407', padding: '9px 11px',
-              borderRadius: 10, borderLeft: '3px solid #2e7d32',
-            }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                background: '#071407',
+                padding: '9px 11px',
+                borderRadius: 10,
+                borderLeft: '3px solid #2e7d32',
+              }}
+            >
               <div style={{ fontSize: 9, color: '#444', marginBottom: 4, letterSpacing: 1 }}>
                 VERIFIER GETS
               </div>
@@ -306,14 +329,26 @@ export function GuidedDemoMode({
                 {currentStep.whatVerifierSees}
               </div>
             </div>
-            <div style={{
-              background: '#140707', padding: '9px 11px',
-              borderRadius: 10, borderLeft: '3px solid #b71c1c',
-            }}>
+            <div
+              style={{
+                background: '#140707',
+                padding: '9px 11px',
+                borderRadius: 10,
+                borderLeft: '3px solid #b71c1c',
+              }}
+            >
               <div style={{ fontSize: 9, color: '#444', marginBottom: 4, letterSpacing: 1 }}>
                 BLOCKED ✗
               </div>
-              <div style={{ fontSize: 11, color: '#e57373', lineHeight: 1.6, textDecoration: 'line-through', opacity: 0.8 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: '#e57373',
+                  lineHeight: 1.6,
+                  textDecoration: 'line-through',
+                  opacity: 0.8,
+                }}
+              >
                 {currentStep.whatIsBlocked}
               </div>
             </div>
@@ -321,22 +356,27 @@ export function GuidedDemoMode({
 
           {/* UX-07: Result summary after execution */}
           {showResult && (
-            <div style={{
-              background: 'rgba(0, 230, 118, 0.08)',
-              border: '1px solid rgba(0, 230, 118, 0.2)',
-              borderRadius: 10, padding: '10px 14px',
-              marginBottom: 12,
-              fontSize: 12, color: '#a5d6a7',
-              display: 'flex', alignItems: 'center', gap: 8,
-              animation: 'mitchFadeIn 0.3s ease-out',
-            }}>
+            <div
+              style={{
+                background: 'rgba(0, 230, 118, 0.08)',
+                border: '1px solid rgba(0, 230, 118, 0.2)',
+                borderRadius: 10,
+                padding: '10px 14px',
+                marginBottom: 12,
+                fontSize: 12,
+                color: '#a5d6a7',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                animation: 'mitchFadeIn 0.3s ease-out',
+              }}
+            >
               <span style={{ fontSize: 16 }}>✅</span>
               <span>
-                <strong>Step {stepIndex + 1} complete!</strong> The proof was generated. {
-                  stepIndex < steps.length - 1
-                    ? 'Ready for next scenario.'
-                    : 'All scenarios complete! 🎉'
-                }
+                <strong>Step {stepIndex + 1} complete!</strong> The proof was generated.{' '}
+                {stepIndex < steps.length - 1
+                  ? 'Ready for next scenario.'
+                  : 'All scenarios complete! 🎉'}
               </span>
             </div>
           )}
@@ -350,11 +390,15 @@ export function GuidedDemoMode({
               disabled={isExecuting}
               style={{
                 padding: '10px 14px',
-                background: '#111', border: '1px solid #222',
-                borderRadius: 8, color: '#888',
+                background: '#111',
+                border: '1px solid #222',
+                borderRadius: 8,
+                color: '#888',
                 cursor: isExecuting ? 'not-allowed' : 'pointer',
-                fontSize: 13, minHeight: 44,
-              }}>
+                fontSize: 13,
+                minHeight: 44,
+              }}
+            >
               ← Back
             </button>
           )}
@@ -363,16 +407,22 @@ export function GuidedDemoMode({
             <button
               onClick={handleNext}
               style={{
-                flex: 1, padding: '12px 16px',
-                background: stepIndex === steps.length - 1
-                  ? 'linear-gradient(135deg, #2e7d32, #1b5e20)'
-                  : 'linear-gradient(135deg, #0070f3, #005fd3)',
+                flex: 1,
+                padding: '12px 16px',
+                background:
+                  stepIndex === steps.length - 1
+                    ? 'linear-gradient(135deg, #2e7d32, #1b5e20)'
+                    : 'linear-gradient(135deg, #0070f3, #005fd3)',
                 border: 'none',
-                borderRadius: 8, color: '#fff',
+                borderRadius: 8,
+                color: '#fff',
                 cursor: 'pointer',
-                fontWeight: 700, fontSize: 14,
-                transition: 'all 0.2s', minHeight: 44,
-              }}>
+                fontWeight: 700,
+                fontSize: 14,
+                transition: 'all 0.2s',
+                minHeight: 44,
+              }}
+            >
               {stepIndex === steps.length - 1 ? '🎉 Finish Demo' : '→ Next Scenario'}
             </button>
           ) : (
@@ -380,17 +430,27 @@ export function GuidedDemoMode({
               onClick={handleExecute}
               disabled={isExecuting}
               style={{
-                flex: 1, padding: '12px 16px',
+                flex: 1,
+                padding: '12px 16px',
                 background: isExecuting ? '#111' : 'linear-gradient(135deg, #0070f3, #005fd3)',
                 border: isExecuting ? '1px solid #222' : 'none',
-                borderRadius: 8, color: isExecuting ? '#555' : '#fff',
+                borderRadius: 8,
+                color: isExecuting ? '#555' : '#fff',
                 cursor: isExecuting ? 'not-allowed' : 'pointer',
-                fontWeight: 700, fontSize: 14,
-                transition: 'all 0.2s', minHeight: 44,
-              }}>
-              {isExecuting
-                ? <><span className="evaluating-spinner" style={{ borderTopColor: '#555' }} />Running...</>
-                : '▶ Run Scenario'}
+                fontWeight: 700,
+                fontSize: 14,
+                transition: 'all 0.2s',
+                minHeight: 44,
+              }}
+            >
+              {isExecuting ? (
+                <>
+                  <span className="evaluating-spinner" style={{ borderTopColor: '#555' }} />
+                  Running...
+                </>
+              ) : (
+                '▶ Run Scenario'
+              )}
             </button>
           )}
 
@@ -398,15 +458,19 @@ export function GuidedDemoMode({
             onClick={() => handleExit(false)}
             style={{
               padding: '10px 12px',
-              background: 'transparent', border: '1px solid #1a1a1a',
-              borderRadius: 8, color: '#333',
-              cursor: 'pointer', fontSize: 11,
-              whiteSpace: 'nowrap', minHeight: 44,
-            }}>
+              background: 'transparent',
+              border: '1px solid #1a1a1a',
+              borderRadius: 8,
+              color: '#333',
+              cursor: 'pointer',
+              fontSize: 11,
+              whiteSpace: 'nowrap',
+              minHeight: 44,
+            }}
+          >
             Skip
           </button>
         </div>
-
       </div>
     </>
   );

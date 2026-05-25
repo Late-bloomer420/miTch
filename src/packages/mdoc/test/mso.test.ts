@@ -1,9 +1,5 @@
 import { describe, test, expect, beforeAll } from 'vitest';
-import {
-  digestItem,
-  verifyMsoDigests,
-  extractAndVerifyMso,
-} from '../src/mso';
+import { digestItem, verifyMsoDigests, extractAndVerifyMso } from '../src/mso';
 import { encode, encodeEmbeddedCbor, createSign1 } from '../src/index';
 import type {
   IssuerSignedItem,
@@ -66,16 +62,14 @@ let keyPair: CryptoKeyPair;
 let otherKeyPair: CryptoKeyPair;
 
 beforeAll(async () => {
-  keyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign', 'verify']
-  );
-  otherKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign', 'verify']
-  );
+  keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, [
+    'sign',
+    'verify',
+  ]);
+  otherKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, [
+    'sign',
+    'verify',
+  ]);
 });
 
 // ─── digestItem ────────────────────────────────────────────────────────────
@@ -137,9 +131,9 @@ describe('digestItem', () => {
 
   test('rejects unsupported algorithm', async () => {
     const item = makeItem(0, MDL_ELEMENTS.FAMILY_NAME, 'Test');
-    await expect(
-      digestItem(item, 'SHA-1' as DigestAlgorithm)
-    ).rejects.toThrow('Unsupported digest algorithm');
+    await expect(digestItem(item, 'SHA-1' as DigestAlgorithm)).rejects.toThrow(
+      'Unsupported digest algorithm'
+    );
   });
 });
 
@@ -153,9 +147,7 @@ describe('verifyMsoDigests', () => {
       makeItem(2, MDL_ELEMENTS.BIRTH_DATE, '1990-05-15'),
     ];
     const mso = await buildMso(items);
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, items],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, items]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(true);
@@ -171,9 +163,7 @@ describe('verifyMsoDigests', () => {
     const mso = await buildMso(items);
 
     // Only disclose item 1 — selective disclosure
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [items[1]]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [items[1]]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(true);
@@ -191,9 +181,7 @@ describe('verifyMsoDigests', () => {
   test('valid: empty items array in namespace', async () => {
     const items = [makeItem(0, MDL_ELEMENTS.FAMILY_NAME, 'Müller')];
     const mso = await buildMso(items);
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, []],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, []]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(true);
@@ -205,9 +193,7 @@ describe('verifyMsoDigests', () => {
 
     // Tamper with the item
     const tampered: IssuerSignedItem = { ...item, elementValue: 'Hacker' };
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [tampered]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [tampered]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(false);
@@ -224,9 +210,7 @@ describe('verifyMsoDigests', () => {
       ...item,
       random: crypto.getRandomValues(new Uint8Array(16)),
     };
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [tampered]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [tampered]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(false);
@@ -239,9 +223,7 @@ describe('verifyMsoDigests', () => {
 
     // Disclose an item with digestID 99 which doesn't exist in MSO
     const unknown = makeItem(99, MDL_ELEMENTS.GIVEN_NAME, 'Fake');
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [unknown]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [unknown]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(false);
@@ -253,9 +235,7 @@ describe('verifyMsoDigests', () => {
     const item = makeItem(0, MDL_ELEMENTS.FAMILY_NAME, 'Müller');
     const mso = await buildMso([item]);
 
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      ['org.fake.namespace', [item]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([['org.fake.namespace', [item]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(false);
@@ -272,9 +252,7 @@ describe('verifyMsoDigests', () => {
 
     // Tamper with both
     const tampered = items.map((it) => ({ ...it, elementValue: 'TAMPERED' }));
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, tampered],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, tampered]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(false);
@@ -287,9 +265,7 @@ describe('verifyMsoDigests', () => {
       makeItem(1, MDL_ELEMENTS.AGE_OVER_18, true),
     ];
     const mso = await buildMso(items, MDL_NAMESPACE, 'SHA-384');
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, items],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, items]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(true);
@@ -298,9 +274,7 @@ describe('verifyMsoDigests', () => {
   test('valid: SHA-512 algorithm', async () => {
     const item = makeItem(0, MDL_ELEMENTS.FAMILY_NAME, 'Test');
     const mso = await buildMso([item], MDL_NAMESPACE, 'SHA-512');
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [item]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [item]]]);
 
     const result = await verifyMsoDigests(mso, disclosed);
     expect(result.valid).toBe(true);
@@ -380,15 +354,9 @@ describe('extractAndVerifyMso', () => {
       makeItem(1, MDL_ELEMENTS.AGE_OVER_18, true),
     ];
     const issuerAuth = await buildSignedMso(items, keyPair.privateKey);
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, items],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, items]]);
 
-    const result = await extractAndVerifyMso(
-      issuerAuth,
-      disclosed,
-      keyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(issuerAuth, disclosed, keyPair.publicKey);
     expect(result.valid).toBe(true);
     expect(result.mso).toBeDefined();
     expect(result.mso!.version).toBe('1.0');
@@ -398,16 +366,10 @@ describe('extractAndVerifyMso', () => {
   test('invalid: wrong signing key', async () => {
     const items = [makeItem(0, MDL_ELEMENTS.FAMILY_NAME, 'Müller')];
     const issuerAuth = await buildSignedMso(items, keyPair.privateKey);
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, items],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, items]]);
 
     // Verify with different key → signature invalid
-    const result = await extractAndVerifyMso(
-      issuerAuth,
-      disclosed,
-      otherKeyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(issuerAuth, disclosed, otherKeyPair.publicKey);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('signature invalid');
   });
@@ -417,15 +379,9 @@ describe('extractAndVerifyMso', () => {
     const issuerAuth = await buildSignedMso([item], keyPair.privateKey);
 
     const tampered: IssuerSignedItem = { ...item, elementValue: 'Hacker' };
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [tampered]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [tampered]]]);
 
-    const result = await extractAndVerifyMso(
-      issuerAuth,
-      disclosed,
-      keyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(issuerAuth, disclosed, keyPair.publicKey);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('Digest verification failed');
     expect(result.mso).toBeDefined(); // MSO decoded but digests failed
@@ -435,11 +391,7 @@ describe('extractAndVerifyMso', () => {
     const garbage = new Uint8Array([0xff, 0xfe, 0xfd, 0xfc]);
     const disclosed = new Map<NameSpace, IssuerSignedItem[]>();
 
-    const result = await extractAndVerifyMso(
-      garbage,
-      disclosed,
-      keyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(garbage, disclosed, keyPair.publicKey);
     expect(result.valid).toBe(false);
     expect(result.reason).toBeDefined();
   });
@@ -453,15 +405,9 @@ describe('extractAndVerifyMso', () => {
     const issuerAuth = await buildSignedMso(items, keyPair.privateKey);
 
     // Only disclose age_over_18
-    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([
-      [MDL_NAMESPACE, [items[1]]],
-    ]);
+    const disclosed = new Map<NameSpace, IssuerSignedItem[]>([[MDL_NAMESPACE, [items[1]]]]);
 
-    const result = await extractAndVerifyMso(
-      issuerAuth,
-      disclosed,
-      keyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(issuerAuth, disclosed, keyPair.publicKey);
     expect(result.valid).toBe(true);
   });
 
@@ -470,11 +416,7 @@ describe('extractAndVerifyMso', () => {
     const issuerAuth = await buildSignedMso(items, keyPair.privateKey);
     const disclosed = new Map<NameSpace, IssuerSignedItem[]>();
 
-    const result = await extractAndVerifyMso(
-      issuerAuth,
-      disclosed,
-      keyPair.publicKey
-    );
+    const result = await extractAndVerifyMso(issuerAuth, disclosed, keyPair.publicKey);
     expect(result.valid).toBe(true);
   });
 });

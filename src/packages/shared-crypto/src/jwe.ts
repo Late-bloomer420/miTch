@@ -63,5 +63,7 @@ export async function decryptCredentialJWE(
  * JWE compact = 5 base64url segments separated by dots.
  */
 export function isJWEToken(value: string): boolean {
-  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
+  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(
+    value
+  );
 }

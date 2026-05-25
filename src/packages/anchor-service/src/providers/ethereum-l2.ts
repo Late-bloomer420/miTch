@@ -51,10 +51,7 @@ export class EthereumL2AnchorProvider implements AnchorProvider {
    *
    * @stub Replace the body with a real ethers/viem contract call.
    */
-  async publishRoot(
-    root: Hex32,
-    meta: { batchId: string; count: number }
-  ): Promise<AnchorRef> {
+  async publishRoot(root: Hex32, meta: { batchId: string; count: number }): Promise<AnchorRef> {
     // STUB: simulate L2 transaction receipt
     const txHash = this._simulateTransaction(root, meta.batchId);
     const blockTimestamp = Date.now();

@@ -9,7 +9,7 @@
 **Primary:** SD-JWT VC (Selective Disclosure JWT Verifiable Credentials)  
 **Libraries:** `@sd-jwt/core`, `@sd-jwt/decode`, `@sd-jwt/present`, `@sd-jwt/verify`, `jose`  
 **Signatur:** ES256 (ECDSA P-256)  
-**Standard:** W3C VC 2.0, eIDAS 2.0 ready, OID4VCI / OID4VP  
+**Standard:** W3C VC 2.0, eIDAS 2.0 ready, OID4VCI / OID4VP
 
 ⚠️ ECDSA P-256 ist **nicht** post-quantum sicher. ML-DSA Migration auf der Roadmap.
 
@@ -17,11 +17,11 @@
 
 ## Implementierte Prädikate (MVP)
 
-| Prädikat | Typ | Demo-Use-Case |
-|---|---|---|
-| `isOver18` | boolean | Altersnachweis |
-| `residencyCountry` | equality | Regionale Services |
-| `hasDriversLicense` | boolean | Car Rental |
+| Prädikat            | Typ      | Demo-Use-Case      |
+| ------------------- | -------- | ------------------ |
+| `isOver18`          | boolean  | Altersnachweis     |
+| `residencyCountry`  | equality | Regionale Services |
+| `hasDriversLicense` | boolean  | Car Rental         |
 
 ---
 
@@ -57,11 +57,11 @@ Rechtsbasis: DSGVO Art. 17, EDPB Guidelines 04/2020. Siehe [05_LEGAL.md](05_LEGA
 
 ## Layer-Modell
 
-| Layer | Zielgruppe | Beispiel |
-|---|---|---|
-| 0 — WELT | Universal | Altersnachweis, Reisepass |
-| 1 — GRUNDVERSORGUNG | Kinder, Basis-Services | Jugendschutz, Schulzugang |
-| 2 — VULNERABLE | Health, Finance, Elderly | Rezept, Kontolimit |
+| Layer               | Zielgruppe               | Beispiel                  |
+| ------------------- | ------------------------ | ------------------------- |
+| 0 — WELT            | Universal                | Altersnachweis, Reisepass |
+| 1 — GRUNDVERSORGUNG | Kinder, Basis-Services   | Jugendschutz, Schulzugang |
+| 2 — VULNERABLE      | Health, Finance, Elderly | Rezept, Kontolimit        |
 
 ---
 
@@ -77,11 +77,11 @@ Rechtsbasis: DSGVO Art. 17, EDPB Guidelines 04/2020. Siehe [05_LEGAL.md](05_LEGA
 
 ## Offene technische Risiken
 
-| Risiko | Priorität | Status |
-|---|---|---|
-| ML-DSA Migration (Post-Quantum) | Mittel | Roadmap |
-| TEE/Hardware-Attestation | Mittel | Nicht implementiert |
-| Privacy Revocation für regulierte Märkte | Hoch | Design offen |
-| EUDIW-Abhängigkeit (Stabilisierung) | Mittel | Beobachten |
+| Risiko                                   | Priorität | Status              |
+| ---------------------------------------- | --------- | ------------------- |
+| ML-DSA Migration (Post-Quantum)          | Mittel    | Roadmap             |
+| TEE/Hardware-Attestation                 | Mittel    | Nicht implementiert |
+| Privacy Revocation für regulierte Märkte | Hoch      | Design offen        |
+| EUDIW-Abhängigkeit (Stabilisierung)      | Mittel    | Beobachten          |
 
-*Quellen: docs/03-architecture/mvp/ADR-001 bis ADR-012, MVP_SUMMARY.md*
+_Quellen: docs/03-architecture/mvp/ADR-001 bis ADR-012, MVP_SUMMARY.md_

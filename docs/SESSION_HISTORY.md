@@ -5,6 +5,7 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 ---
 
 ### Session 10+ (2026-03-11 – 2026-03-13)
+
 - **SPRINT_PLAN.md Block A Security Fixes:** F-01–F-03, F-06, F-08, F-10–F-11, F-13, F-17 (closed)
 - **F-01** Recovery: GF(2^8) Shamir 2-of-3 SSS (real secret sharing, ersetzt XOR 3-of-3)
 - **F-09** Verifier Binding Phase 1 (origin hostname vs. verifierId/did:web)
@@ -16,15 +17,18 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 - **Deferred to REFACTORING_ROADMAP.md:** F-04 (EphemeralKey), F-07 (claim-level crypto), F-14 (key rotation), F-16 (WalletService split)
 
 #### Bekannte Altlasten
+
 - ~~shared-crypto `pairwise-did.test.ts`: 60s timeout bei 1000 DID generation~~ → **behoben:** Iterationen 1000→100, Timeout 60s→30s (Testaussage erhalten: P-256 256-bit Zufallsraum, Kollisionswahrscheinlichkeit ~2^-200 bei 100 DIDs)
 
 ### Session 7 (2026-03-06)
+
 - GitHub Pages deployment workflow (`.github/workflows/pages.yml`)
 - OpenGraph / Twitter Card meta tags for link previews
 - README rewrite (badges, quick start, live demo link)
 - Stale file cleanup (task files → `docs/archive/`)
 
 ### Session 8 — EUDI/eIDAS 2.0 Compliance Sprint (2026-03-06)
+
 - **E-10** SD-JWT VC Compliance (draft-ietf-oauth-sd-jwt-vc-11) — 17 tests
 - **E-05** DPoP (RFC 9449) — 13 tests
 - **E-03** SIOPv2 (Self-Issued OpenID Provider v2) — 15 tests

@@ -3,18 +3,41 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type {
+  PolicyManifest,
+  VerifierRequest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 
 const HDAB_POLICY: PolicyManifest = {
   version: '1.2',
   globalSettings: { blockUnknownVerifiers: true },
   trustedIssuers: [
-    { did: 'did:eu:research-institute-*', name: 'EU Research', credentialTypes: ['PatientSummary'], issuerRole: 'hdab' as const },
+    {
+      did: 'did:eu:research-institute-*',
+      name: 'EU Research',
+      credentialTypes: ['PatientSummary'],
+      issuerRole: 'hdab' as const,
+    },
     { did: 'did:example:ehealth-authority', name: 'eHealth', credentialTypes: ['PatientSummary'] },
   ],
   rules: [
-    { id: 'rule-research', verifierPattern: 'did:eu:research-*', allowedClaims: ['bloodGroup'], requiresHdabPermit: true, requiresUserConsent: true, usagePurpose: 'researchSecondary' as const, priority: 50 },
-    { id: 'rule-hospital', verifierPattern: 'hospital-*', allowedClaims: ['bloodGroup'], requiresUserConsent: true, priority: 60 },
+    {
+      id: 'rule-research',
+      verifierPattern: 'did:eu:research-*',
+      allowedClaims: ['bloodGroup'],
+      requiresHdabPermit: true,
+      requiresUserConsent: true,
+      usagePurpose: 'researchSecondary' as const,
+      priority: 50,
+    },
+    {
+      id: 'rule-hospital',
+      verifierPattern: 'hospital-*',
+      allowedClaims: ['bloodGroup'],
+      requiresUserConsent: true,
+      priority: 60,
+    },
   ],
 };
 
@@ -36,11 +59,13 @@ describe('EHDS HDAB Permit Check', () => {
     const request: VerifierRequest = {
       verifierId: 'did:eu:research-institute-alpha',
       origin: 'https://research.example.eu',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
     const result = await engine.evaluate(request, ctx, [CREDENTIAL], HDAB_POLICY);
     expect(result.verdict).toBe('PROMPT');
@@ -51,17 +76,23 @@ describe('EHDS HDAB Permit Check', () => {
     const policyNoHdab: PolicyManifest = {
       ...HDAB_POLICY,
       trustedIssuers: [
-        { did: 'did:example:ehealth-authority', name: 'eHealth', credentialTypes: ['PatientSummary'] },
+        {
+          did: 'did:example:ehealth-authority',
+          name: 'eHealth',
+          credentialTypes: ['PatientSummary'],
+        },
       ],
     };
     const request: VerifierRequest = {
       verifierId: 'did:eu:research-institute-alpha',
       origin: 'https://research.example.eu',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
     const result = await engine.evaluate(request, ctx, [CREDENTIAL], policyNoHdab);
     expect(result.verdict).toBe('DENY');
@@ -72,11 +103,13 @@ describe('EHDS HDAB Permit Check', () => {
     const request: VerifierRequest = {
       verifierId: 'hospital-vienna-01',
       origin: 'https://hospital.example.at',
-      requirements: [{
-        credentialType: 'PatientSummary',
-        requestedClaims: ['bloodGroup'],
-        requestedProvenClaims: [],
-      }],
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup'],
+          requestedProvenClaims: [],
+        },
+      ],
     };
     const result = await engine.evaluate(request, ctx, [CREDENTIAL], HDAB_POLICY);
     expect(result.verdict).toBe('PROMPT');

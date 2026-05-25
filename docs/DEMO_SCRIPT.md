@@ -1,4 +1,5 @@
 # miTch Live Demo Script
+
 **Zielgruppe:** Uni-Präsentation, technisch-informiertes Publikum
 **Dauer:** 8–12 Min Demo + Fragen
 **Setup-Zeit:** 5 Min vorher
@@ -34,6 +35,7 @@ pnpm test
 **Narrative:** "Alice, 25 Jahre alt, kauft online Wein. Der Shop fragt nach Altersverifikation. Sie teilt NUR den Beweis 'Alter ≥ 18' — kein Geburtsdatum, kein Name."
 
 ### Schritte
+
 1. Browser öffnen: `http://localhost:5174`
 2. Wallet lädt — "Age Credential" ist bereits vorhanden (Gov Issuer)
 3. Auf **"🍺 Liquor Store (18+)"** klicken
@@ -55,6 +57,7 @@ pnpm test
 **Narrative:** "Dr. Weber will auf das Krankenhaus-System zugreifen. Er braucht: Altersverifikation + Berufsausweis (Arztlizenz)."
 
 ### Schritte
+
 1. Auf **"🏥 Hospital (Doctor Login)"** klicken
 2. Policy Engine: zwei Requirements → `PROMPT`
 3. **Was der Zuschauer sieht:**
@@ -73,6 +76,7 @@ pnpm test
 **Narrative:** "Alice ist bewusstlos in der Notaufnahme. Der Notarzt braucht ihre Blutgruppe und Allergien. SOFORT. Aber die Daten sind hochsensibel."
 
 ### Schritte
+
 1. Auf **"🚨 EHDS Emergency (Break Glass)"** klicken
 2. Policy Engine: `PROMPT + BIOMETRIC REQUIRED`
 3. **Was der Zuschauer sieht:**
@@ -92,6 +96,7 @@ pnpm test
 **Narrative:** "Alice holt ihr Amoxicillin ab. Die Apotheke braucht das Rezept — genau einmal verwendbar, max. 30 Tage alt."
 
 ### Schritte
+
 1. Auf **"💊 Pharmacy (ePrescription)"** klicken
 2. Policy Engine: Freshness-Check — Rezept 1 Tag alt → ALLOW
 3. **Was der Zuschauer sieht:**
@@ -118,7 +123,7 @@ pnpm test
    // Zeigt dass alle DIDs unique sind — keine Clusterung
    console.time('1000 DIDs');
    const dids = new Set();
-   for(let i=0; i<1000; i++) dids.add(`did:peer:0z${Math.random().toString(36).slice(2)}`);
+   for (let i = 0; i < 1000; i++) dids.add(`did:peer:0z${Math.random().toString(36).slice(2)}`);
    console.log('Unique:', dids.size); // 1000
    console.timeEnd('1000 DIDs');
    ```
@@ -127,14 +132,14 @@ pnpm test
 
 ## Troubleshooting
 
-| Problem | Lösung |
-|---|---|
-| `EADDRINUSE` Port belegt | `pkill -f "vite\|tsx"` dann `pnpm dev` |
-| Wallet zeigt "Locked" | Seite neu laden (Session Keys sind ephemeral) |
-| WebAuthn nicht verfügbar | Sicherheitswarnung akzeptieren oder `localhost` verwenden |
-| Tests rot | `pnpm install` → `pnpm test` |
-| Biometrie-Dialog erscheint nicht | Chrome braucht HTTPS oder `localhost` |
-| `did:peer resolution failed` | Ist erwartet für unbekannte DIDs — zeigt Fail-Closed |
+| Problem                          | Lösung                                                    |
+| -------------------------------- | --------------------------------------------------------- |
+| `EADDRINUSE` Port belegt         | `pkill -f "vite\|tsx"` dann `pnpm dev`                    |
+| Wallet zeigt "Locked"            | Seite neu laden (Session Keys sind ephemeral)             |
+| WebAuthn nicht verfügbar         | Sicherheitswarnung akzeptieren oder `localhost` verwenden |
+| Tests rot                        | `pnpm install` → `pnpm test`                              |
+| Biometrie-Dialog erscheint nicht | Chrome braucht HTTPS oder `localhost`                     |
+| `did:peer resolution failed`     | Ist erwartet für unbekannte DIDs — zeigt Fail-Closed      |
 
 ---
 

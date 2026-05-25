@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 Added estimated cost KPIs to `/kpi` and dashboard:
+
 - `estimated_cost_per_verification_eur`
 - `estimated_monthly_verification_volume`
 - `estimated_fixed_monthly_cost_eur`

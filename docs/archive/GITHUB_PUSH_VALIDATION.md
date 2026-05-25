@@ -24,6 +24,7 @@ git push -u origin master
 ```
 
 **Expected Output:**
+
 ```
 Enumerating objects: 450, done.
 Counting objects: 100% (450/450), done.
@@ -42,17 +43,21 @@ Branch 'master' set up to track remote branch 'master' from 'origin'.
 ## Post-Push Validation
 
 ### 1. GitHub Actions CI
+
 - **URL:** https://github.com/Late-bloomer420/miTch/actions
 - **Jobs:** 3 (build-and-test, layer-validation, security-audit)
 - **Expected:** ✅ All checks passed
 
 ### 2. Repository Visibility
+
 - Check: Files visible on GitHub
 - Check: README.md renders correctly
 - Check: CI badge shows passing
 
 ### 3. Branch Protection
+
 Navigate to: Settings → Branches → Add rule
+
 - Branch name pattern: `master`
 - Enable:
   - [x] Require pull request reviews before merging

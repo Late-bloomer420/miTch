@@ -53,8 +53,32 @@ describe('buildConsentManagerViewModel', () => {
   };
 
   const entries = [
-    makeEntry({ action: 'VP_GENERATED', metadata: { decision_id: 'decision-001', claims_shared: ['age'], claims_requested: ['age', 'name', 'address'], proven_claims: ['age >= 18'], credential_types: ['AgeCredential'], used_zkp: true } }),
-    makeEntry({ action: 'IDENTITY_ACCESS_DETECTED', metadata: { decision_id: 'decision-001', access_type: 'browser_api', surface: 'navigator.userAgent', actor_label: 'Google Chrome', field_class: 'fingerprint', persistence: 'device', linkability: 'cross_session', severity: 'warning', blocked: false, source: 'privacy_audit_service' } }),
+    makeEntry({
+      action: 'VP_GENERATED',
+      metadata: {
+        decision_id: 'decision-001',
+        claims_shared: ['age'],
+        claims_requested: ['age', 'name', 'address'],
+        proven_claims: ['age >= 18'],
+        credential_types: ['AgeCredential'],
+        used_zkp: true,
+      },
+    }),
+    makeEntry({
+      action: 'IDENTITY_ACCESS_DETECTED',
+      metadata: {
+        decision_id: 'decision-001',
+        access_type: 'browser_api',
+        surface: 'navigator.userAgent',
+        actor_label: 'Google Chrome',
+        field_class: 'fingerprint',
+        persistence: 'device',
+        linkability: 'cross_session',
+        severity: 'warning',
+        blocked: false,
+        source: 'privacy_audit_service',
+      },
+    }),
   ];
 
   const privacyConsent: PrivacyConsent = {
@@ -87,8 +111,8 @@ describe('buildConsentManagerViewModel', () => {
     expect(model.allowedClaims).toEqual(['age']);
     expect(model.withheldClaims).toEqual(['name', 'address']);
     expect(model.identityAccessCount).toBe(1);
-    expect(model.evidence.some(item => item.label === 'Decision ID')).toBe(true);
-    expect(model.evidence.some(item => item.label === 'Privacy scan')).toBe(true);
+    expect(model.evidence.some((item) => item.label === 'Decision ID')).toBe(true);
+    expect(model.evidence.some((item) => item.label === 'Privacy scan')).toBe(true);
   });
 
   it('falls back to idle state when no result exists', () => {

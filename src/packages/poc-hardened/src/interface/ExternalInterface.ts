@@ -1,6 +1,6 @@
 /**
  * ExternalInterface (Layer 4)
- * 
+ *
  * CONSTRAINTS:
  * - ONLY receives and sends proofs
  * - Stateless - no data storage
@@ -8,11 +8,11 @@
  * - Never touches raw data
  */
 
-import { AccessRequest } from "../types/AccessRequest";
-import { Proof } from "../types/Proof";
-import { PolicyEngine } from "../policy/PolicyEngine";
-import { ProofEngine } from "../proof/ProofEngine";
-import { PersonalDataVault } from "../vault/PersonalDataVault";
+import { AccessRequest } from '../types/AccessRequest';
+import { Proof } from '../types/Proof';
+import { PolicyEngine } from '../policy/PolicyEngine';
+import { ProofEngine } from '../proof/ProofEngine';
+import { PersonalDataVault } from '../vault/PersonalDataVault';
 
 export class ExternalInterface {
   constructor(
@@ -22,13 +22,13 @@ export class ExternalInterface {
 
   /**
    * Handle external access request (public API)
-   * 
+   *
    * Flow:
    * 1. External system sends AccessRequest
    * 2. Policy engine decides: allowed?
    * 3. Proof engine generates abstract proof (no data)
    * 4. Return proof to external system
-   * 
+   *
    * @param request - What is being asked for?
    * @returns Proof (abstract, no raw data exposed)
    */
@@ -62,6 +62,6 @@ export function createSystem(): {
 
   return {
     interface: externalInterface,
-    vault: vault
+    vault: vault,
   };
 }

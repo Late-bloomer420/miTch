@@ -47,7 +47,9 @@ describe('AuditExportRecord JSON Schema', () => {
 
   it('verdict enum is exhaustive', () => {
     expect(AUDIT_EXPORT_RECORD_JSON_SCHEMA.properties.verdict.enum).toEqual([
-      'ALLOW', 'DENY', 'PROMPT',
+      'ALLOW',
+      'DENY',
+      'PROMPT',
     ]);
   });
 
@@ -64,7 +66,13 @@ describe('AuditExportBundle JSON Schema', () => {
   it('has required fields', () => {
     const required = AUDIT_EXPORT_BUNDLE_JSON_SCHEMA.required;
     expect(required).toEqual(
-      expect.arrayContaining(['schemaVersion', 'exportedAt', 'records', 'bundleHash', 'recordCount']),
+      expect.arrayContaining([
+        'schemaVersion',
+        'exportedAt',
+        'records',
+        'bundleHash',
+        'recordCount',
+      ])
     );
   });
 });

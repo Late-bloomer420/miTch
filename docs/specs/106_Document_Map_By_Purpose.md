@@ -6,6 +6,7 @@ Purpose: make the repo scannable by intent, not just by number.
 ---
 
 ## 1) DECIDE (strategy, tradeoffs, go/no-go)
+
 - `01_Project_OnePager.md`
 - `02_Principles_and_NonNegotiables.md`
 - `07_Backlog_and_Roadmap.md`
@@ -18,6 +19,7 @@ Purpose: make the repo scannable by intent, not just by number.
 - `STATE.md`
 
 ## 2) BUILD (implementation and hardening)
+
 - `23_Implementation_Sequence_v0.md`
 - `25_Sprint_1_Task_Board.md`
 - `29_Implementation_Scaffold.md`
@@ -30,6 +32,7 @@ Purpose: make the repo scannable by intent, not just by number.
 - `src/` and `.github/workflows/ci-security.yml`
 
 ## 3) PROVE (evidence, auditability, measurable trust)
+
 - `38_KPI_Framework_Core_and_Business.md`
 - `39_Pilot_KPI_Dashboard_Template.md`
 - `40_KPI_Definitions_and_Data_Sources.md`
@@ -41,6 +44,7 @@ Purpose: make the repo scannable by intent, not just by number.
 - `102_WebAuthn_Mismatch_and_Replay_Edge_Tests.md`
 
 ## 4) SELL (onboarding, positioning, adoption)
+
 - `33_Business_Case_01_Age_Verification.md`
 - `43_Pilot_Next_Steps_Plan.md`
 - `51_RP_Onboarding_Pack.md`
@@ -52,6 +56,7 @@ Purpose: make the repo scannable by intent, not just by number.
 ---
 
 ## Fast entry points
+
 - If you need immediate priorities: `105_Visual_Control_Panel.md`
 - If you need tactical status: `STATE.md`
 - If you need one-feature decision: `103_GTM_Security_Decision_Framework.md`
@@ -60,5 +65,6 @@ Purpose: make the repo scannable by intent, not just by number.
 ---
 
 ## Maintenance rule
+
 Whenever a new numbered doc is created, assign it to one of: Decide / Build / Prove / Sell.
 If unclear, it is not mature enough yet.

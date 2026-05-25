@@ -10,11 +10,11 @@
 
 Platforms increasingly require identity verification (DSA Art. 16a). Current solutions:
 
-| Current Practice | Privacy Impact |
-|---|---|
+| Current Practice             | Privacy Impact                                            |
+| ---------------------------- | --------------------------------------------------------- |
 | "Login with Google/Facebook" | Shares name, email, photo, friends, location — everything |
-| "Upload ID to Meta" | Sends government ID copy to a private company |
-| Phone number verification | Links real identity, enables cross-platform tracking |
+| "Upload ID to Meta"          | Sends government ID copy to a private company             |
+| Phone number verification    | Links real identity, enables cross-platform tracking      |
 
 **Result:** Users must choose between platform access and privacy. There is no middle ground.
 
@@ -26,23 +26,23 @@ miTch enables platform login that proves **what the platform legally needs** whi
 
 ### What the Platform Gets
 
-| Attribute | Type | Risk |
-|---|---|---|
-| `age_gte_18` | Predicate (boolean) | 🟢 Low — no birthday, just threshold |
-| `pseudonymous_id` | Pairwise DID | 🟢 Low — unique per platform, unlinkable across services |
-| `is_real_person` | Predicate (boolean) | 🟢 Low — humanity proof via credential chain |
-| `eu_resident` | Predicate (boolean) | 🟢 Low — jurisdiction only, no address |
+| Attribute         | Type                | Risk                                                     |
+| ----------------- | ------------------- | -------------------------------------------------------- |
+| `age_gte_18`      | Predicate (boolean) | 🟢 Low — no birthday, just threshold                     |
+| `pseudonymous_id` | Pairwise DID        | 🟢 Low — unique per platform, unlinkable across services |
+| `is_real_person`  | Predicate (boolean) | 🟢 Low — humanity proof via credential chain             |
+| `eu_resident`     | Predicate (boolean) | 🟢 Low — jurisdiction only, no address                   |
 
 ### What the Platform Does NOT Get
 
-| Blocked Attribute | Risk Level | Deny Reason |
-|---|---|---|
-| `display_name` | 🟡 Raw PII | `DENY_PII_UNNECESSARY` |
-| `email` | 🟡 Raw PII | `DENY_PII_UNNECESSARY` |
-| `profile_photo` | 🔴 Biometric | `DENY_BIOMETRIC_BLOCKED` |
-| `friends_list` | 🔴 Social Graph | `DENY_SOCIAL_GRAPH_BLOCKED` |
-| `location_history` | 🔴 Tracking | `DENY_LOCATION_BLOCKED` |
-| `device_id` | 🔴 Fingerprint | `DENY_DEVICE_FINGERPRINT_BLOCKED` |
+| Blocked Attribute  | Risk Level      | Deny Reason                       |
+| ------------------ | --------------- | --------------------------------- |
+| `display_name`     | 🟡 Raw PII      | `DENY_PII_UNNECESSARY`            |
+| `email`            | 🟡 Raw PII      | `DENY_PII_UNNECESSARY`            |
+| `profile_photo`    | 🔴 Biometric    | `DENY_BIOMETRIC_BLOCKED`          |
+| `friends_list`     | 🔴 Social Graph | `DENY_SOCIAL_GRAPH_BLOCKED`       |
+| `location_history` | 🔴 Tracking     | `DENY_LOCATION_BLOCKED`           |
+| `device_id`        | 🔴 Fingerprint  | `DENY_DEVICE_FINGERPRINT_BLOCKED` |
 
 These are **structural blocks** — the Policy Engine denies them regardless of user consent. The data never leaves the wallet, not even encrypted.
 
@@ -104,17 +104,17 @@ When a platform requests attributes beyond what's necessary for login:
 
 ## Comparison: miTch vs. Current Login Methods
 
-| Attribute | Login with Google | Login with Apple | miTch |
-|---|---|---|---|
-| Real name | ✅ Shared | ✅ Shared | ❌ Blocked |
-| Email | ✅ Shared | ⚠️ Relay option | ❌ Blocked |
-| Profile photo | ✅ Shared | ❌ Not shared | ❌ Blocked |
-| Friends/contacts | ⚠️ API access | ❌ Not shared | ❌ Structurally blocked |
-| Location | ⚠️ Via Google account | ❌ Not shared | ❌ Structurally blocked |
-| Device fingerprint | ✅ Shared | ⚠️ Limited | ❌ Blocked |
-| Age verified | ❌ Not verified | ❌ Not verified | ✅ Cryptographic proof |
-| Cross-platform tracking | ✅ Same Google ID | ⚠️ Possible | ❌ Pairwise IDs, unlinkable |
-| Humanity proof | ❌ | ❌ | ✅ Credential chain |
+| Attribute               | Login with Google     | Login with Apple | miTch                       |
+| ----------------------- | --------------------- | ---------------- | --------------------------- |
+| Real name               | ✅ Shared             | ✅ Shared        | ❌ Blocked                  |
+| Email                   | ✅ Shared             | ⚠️ Relay option  | ❌ Blocked                  |
+| Profile photo           | ✅ Shared             | ❌ Not shared    | ❌ Blocked                  |
+| Friends/contacts        | ⚠️ API access         | ❌ Not shared    | ❌ Structurally blocked     |
+| Location                | ⚠️ Via Google account | ❌ Not shared    | ❌ Structurally blocked     |
+| Device fingerprint      | ✅ Shared             | ⚠️ Limited       | ❌ Blocked                  |
+| Age verified            | ❌ Not verified       | ❌ Not verified  | ✅ Cryptographic proof      |
+| Cross-platform tracking | ✅ Same Google ID     | ⚠️ Possible      | ❌ Pairwise IDs, unlinkable |
+| Humanity proof          | ❌                    | ❌               | ✅ Credential chain         |
 
 **Key differentiator:** Apple's "Hide My Email" is a step forward but still shares a relay address. miTch shares **no contact information at all** — the platform gets a pseudonymous ID and verified predicates, nothing more.
 
@@ -123,11 +123,13 @@ When a platform requests attributes beyond what's necessary for login:
 ## DSA Compliance Argument
 
 The EU Digital Services Act (2024) requires platforms to:
+
 - Verify user identity for certain services (Art. 16a)
 - Implement trusted flaggers and complaint mechanisms (Art. 22)
 - Provide transparency about content moderation (Art. 15)
 
 **miTch enables DSA compliance without mass surveillance:**
+
 - Platforms can verify "real person, 18+, EU resident" ✓
 - Users retain privacy while meeting legal requirements ✓
 - Overreaching platforms face collective accountability ✓
@@ -150,24 +152,24 @@ A fictional dating app with low trust score (35/100) requests maximum data:
 
 ## Implementation Dependencies
 
-| Component | Package | Status |
-|---|---|---|
-| Pairwise DID derivation | `@mitch/shared-crypto` | ✅ Implemented |
-| `isOver18` predicate | `@mitch/predicates` | ✅ Implemented |
-| Policy Engine deny codes | `@mitch/policy-engine` | ✅ Implemented (needs social-login-specific rules) |
-| OID4VP presentation flow | `@mitch/oid4vp` | ✅ Implemented |
-| Collective Signal | `@mitch/policy-engine` | ⚠️ Concept only (see student-discount-ibk.md) |
-| Social-login policy rules | `@mitch/policy-engine` | ❌ Not yet implemented |
-| DSA complaint generator | — | ❌ Not yet implemented |
+| Component                 | Package                | Status                                             |
+| ------------------------- | ---------------------- | -------------------------------------------------- |
+| Pairwise DID derivation   | `@mitch/shared-crypto` | ✅ Implemented                                     |
+| `isOver18` predicate      | `@mitch/predicates`    | ✅ Implemented                                     |
+| Policy Engine deny codes  | `@mitch/policy-engine` | ✅ Implemented (needs social-login-specific rules) |
+| OID4VP presentation flow  | `@mitch/oid4vp`        | ✅ Implemented                                     |
+| Collective Signal         | `@mitch/policy-engine` | ⚠️ Concept only (see student-discount-ibk.md)      |
+| Social-login policy rules | `@mitch/policy-engine` | ❌ Not yet implemented                             |
+| DSA complaint generator   | —                      | ❌ Not yet implemented                             |
 
 ### New Deny Codes Needed
 
 ```typescript
 // Social Login specific deny codes
-DENY_BIOMETRIC_BLOCKED        // profile_photo, fingerprint, voice
-DENY_SOCIAL_GRAPH_BLOCKED     // friends_list, contacts, followers
-DENY_LOCATION_BLOCKED         // location_history, GPS, cell tower
-DENY_DEVICE_FINGERPRINT_BLOCKED // device_id, hardware_id, IMEI
+DENY_BIOMETRIC_BLOCKED; // profile_photo, fingerprint, voice
+DENY_SOCIAL_GRAPH_BLOCKED; // friends_list, contacts, followers
+DENY_LOCATION_BLOCKED; // location_history, GPS, cell tower
+DENY_DEVICE_FINGERPRINT_BLOCKED; // device_id, hardware_id, IMEI
 ```
 
 ---
@@ -183,4 +185,4 @@ DENY_DEVICE_FINGERPRINT_BLOCKED // device_id, hardware_id, IMEI
 
 ---
 
-*"Login with Google tells the app who you are. miTch tells the app what you qualify for."*
+_"Login with Google tells the app who you are. miTch tells the app what you qualify for."_

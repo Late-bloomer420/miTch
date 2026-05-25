@@ -3,6 +3,7 @@
 ## ✅ Completed Items
 
 ### Stage 1-8 Mapping
+
 - [x] Stage 1: Request Intake → **WalletService.evaluateRequest()**
 - [x] Stage 2: Verifier Identification → **fetchVerifierPublicKey() + resolveDID()**
 - [x] Stage 3: Policy Evaluation → **PolicyEngine.evaluate()**
@@ -13,6 +14,7 @@
 - [x] Stage 8: Audit Entry → **AuditLog.append()**
 
 ### Invariants Encoded
+
 - [x] Invariant 1: Request Integrity → **DecisionCapsule validation (lines 420-433)**
 - [x] Invariant 2: Unknown Verifier → **PolicyEngine pattern matching**
 - [x] Invariant 3: Claim Denial → **PolicyEngine deniedClaims check**
@@ -22,6 +24,7 @@
 - [x] Invariant 7: Temporal Validity → **Nonce TTL (5 min default)**
 
 ### Never Events
+
 - [x] No raw PII in ZKP → **evaluatePredicates() returns boolean results only**
 - [x] No credential IDs → **T-36b: credentialId intentionally omitted (line 538)**
 - [x] No cross-tracking → **Ephemeral keys + crypto-shredding (lines 645-656)**
@@ -29,7 +32,9 @@
 ## ⚠️ Gaps Identified
 
 ### 1. Missing: Explicit Consent Receipt Signing
+
 **Workflow Requirement:**
+
 ```typescript
 ConsentReceipt {
   action: 'GRANTED' | 'DENIED',
@@ -46,7 +51,9 @@ ConsentReceipt {
 ---
 
 ### 2. Missing: Purpose Validation
+
 **Workflow Requirement:**
+
 ```
 purpose MUST be non-empty (cannot be generic)
 ```
@@ -58,7 +65,9 @@ purpose MUST be non-empty (cannot be generic)
 ---
 
 ### 3. Missing: Credential Freshness Constraint
+
 **Workflow Requirement:**
+
 ```
 Evaluate credential freshness constraints
 → DENY with CREDENTIAL_EXPIRED
@@ -71,7 +80,9 @@ Evaluate credential freshness constraints
 ---
 
 ### 4. Missing: Network Status Context
+
 **Workflow Requirement:**
+
 ```typescript
 PolicyContext {
   networkStatus: 'online' | 'offline'
@@ -85,7 +96,9 @@ PolicyContext {
 ---
 
 ### 5. Partial: Error Code Standardization
+
 **Workflow Defines:**
+
 - `INVALID_REQUEST`
 - `VERIFIER_UNRESOLVABLE`
 - `VERIFIER_NOT_ALLOWED`
@@ -105,7 +118,9 @@ PolicyContext {
 ---
 
 ### 6. Missing: Test Harness
+
 **Workflow Requirement:**
+
 ```
 Test harness for each fail-closed rule
 ```
@@ -113,6 +128,7 @@ Test harness for each fail-closed rule
 **Current State:** Unit tests exist for PredicateEvaluator, but NOT for full workflow invariants
 
 **Fix Required:** Create `workflow-invariants.test.ts` with scenarios:
+
 - Missing verifier_id → DENY
 - Expired credential → DENY
 - Replay nonce → DENY
@@ -123,6 +139,7 @@ Test harness for each fail-closed rule
 ## 📋 Recommended Actions
 
 ### Priority 1 (Security Critical)
+
 1. **Implement Consent Receipt Signing**
    - Location: `WalletService.handleAction()` for `OVERRIDE_WITH_CONSENT`
    - Use: `signData()` to bind user action cryptographically
@@ -136,6 +153,7 @@ Test harness for each fail-closed rule
    - Use: `maxCredentialAge` from PolicyRule
 
 ### Priority 2 (Compliance)
+
 4. **Purpose Validation**
    - Add: `validatePurpose()` utility in PolicyEngine
    - Reject: Generic/empty purpose strings
@@ -145,6 +163,7 @@ Test harness for each fail-closed rule
    - Pass: From request metadata
 
 ### Priority 3 (Testing)
+
 6. **Workflow Invariant Tests**
    - Create: End-to-end test suite for all 7 invariants
    - Use: Real PolicyEngine + mocked storage
@@ -153,14 +172,14 @@ Test harness for each fail-closed rule
 
 ## 🎯 Completeness Score
 
-| Category | Score | Notes |
-|----------|-------|-------|
-| Stage Mapping | 8/8 ✅ | All stages implemented |
-| Invariants | 5/7 ⚠️ | Missing purpose + freshness |
-| Never Events | 3/3 ✅ | All enforced |
-| Artifacts | 5/6 ⚠️ | Missing ConsentReceipt signature |
-| Error Codes | 0/1 ❌ | Not standardized |
-| Tests | 2/8 ❌ | Only unit tests, no E2E |
+| Category      | Score  | Notes                            |
+| ------------- | ------ | -------------------------------- |
+| Stage Mapping | 8/8 ✅ | All stages implemented           |
+| Invariants    | 5/7 ⚠️ | Missing purpose + freshness      |
+| Never Events  | 3/3 ✅ | All enforced                     |
+| Artifacts     | 5/6 ⚠️ | Missing ConsentReceipt signature |
+| Error Codes   | 0/1 ❌ | Not standardized                 |
+| Tests         | 2/8 ❌ | Only unit tests, no E2E          |
 
 **Overall: 23/33 (70%)**
 
@@ -169,16 +188,18 @@ Test harness for each fail-closed rule
 ## 🔧 Implementation Roadmap
 
 ### Week 1: Critical Fixes
+
 - [ ] T-85: Standardize error codes (`ReasonCode` enum)
 - [ ] T-86: Credential freshness validation
 - [ ] T-87: Consent receipt signing
 
 ### Week 2: Compliance
+
 - [ ] T-88: Purpose validation
 - [ ] T-89: Network context integration
 
 ### Week 3: Testing
+
 - [ ] T-90: Workflow invariant test suite
 - [ ] T-91: Integration test harness
 - [ ] T-92: Compliance report generator
-

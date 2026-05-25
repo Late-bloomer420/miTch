@@ -45,7 +45,7 @@ The data existed before. The difference was visibility.
 ### Cambridge Analytica — 2018
 
 The abstract concept of "data collection" meant nothing to most people for years.
-Then it became concrete: *your* Facebook data, used to target *you* in a political campaign.
+Then it became concrete: _your_ Facebook data, used to target _you_ in a political campaign.
 Then everyone cared. Regulators moved. Laws changed.
 
 Nothing about the underlying data practice was new. The visibility changed everything.
@@ -65,12 +65,14 @@ Informed choice, made visible, changes behaviour.
 **Visibility works. Dark patterns work in the opposite direction.**
 
 The gap is not that users don't care. The gap is that the information has always been:
+
 - Buried in documents nobody reads
 - Shown at the wrong moment (after consent is already given)
 - Written in language designed to obscure, not inform
 - Framed as all-or-nothing (accept everything or don't use the service)
 
 miTch's daily review is the opposite of all four:
+
 - Surfaced automatically, no reading required
 - Shown after the transaction (no pressure, no decision, just information)
 - Written in plain language ("Your age was shared. Your name was not.")

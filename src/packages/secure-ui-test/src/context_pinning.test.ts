@@ -3,23 +3,23 @@ import { createHash } from 'crypto';
 
 /**
  * CONTEXT PINNING VALIDATION
- * 
+ *
  * Objectives:
  * 1. Verify that critical UI elements ("Shred Now" button) render identically on every run.
  * 2. Detect if any CSS injection or overlay has shifted the pixels.
  */
 async function validateDeterministicRendering() {
-    console.log('🛡️  Starting Context Pinning Validation (SwiftShader)...');
+  console.log('🛡️  Starting Context Pinning Validation (SwiftShader)...');
 
-    // 1. Launch Secure Sandbox
-    const browser = await launchSecureBrowser();
-    const page = await browser.newPage();
+  // 1. Launch Secure Sandbox
+  const browser = await launchSecureBrowser();
+  const page = await browser.newPage();
 
-    try {
-        // 2. Load "The Critical Path" (Mocked Secure UI)
-        // In a real integration, this would point to the built Wallet PWA URL.
-        // Here we simulate the component structure to verify rendering consistency.
-        const htmlContent = `
+  try {
+    // 2. Load "The Critical Path" (Mocked Secure UI)
+    // In a real integration, this would point to the built Wallet PWA URL.
+    // Here we simulate the component structure to verify rendering consistency.
+    const htmlContent = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -44,34 +44,33 @@ async function validateDeterministicRendering() {
             </html>
         `;
 
-        await page.setContent(htmlContent);
+    await page.setContent(htmlContent);
 
-        // 3. Pin the Context (Take Screenshot of the button)
-        const btnElement = await page.$('#shred-btn');
-        if (!btnElement) throw new Error('Button not found');
+    // 3. Pin the Context (Take Screenshot of the button)
+    const btnElement = await page.$('#shred-btn');
+    if (!btnElement) throw new Error('Button not found');
 
-        const screenshotBuffer = await btnElement.screenshot({ type: 'png' });
+    const screenshotBuffer = await btnElement.screenshot({ type: 'png' });
 
-        // 4. Calculate Visual Hash
-        const currentHash = createHash('sha256').update(screenshotBuffer).digest('hex');
-        console.log(`[Visual Hash] ${currentHash.substring(0, 16)}...`);
+    // 4. Calculate Visual Hash
+    const currentHash = createHash('sha256').update(screenshotBuffer).digest('hex');
+    console.log(`[Visual Hash] ${currentHash.substring(0, 16)}...`);
 
-        // 5. Validation Logic (The "Pin")
-        // This hash represents the "Expected State" of the UI component.
-        // It must match exactly across all environments (Dev, CI, User Device if using headless check).
-        const _EXPECTED_HASH = 'mock-hash-to-be-updated-after-first-run';
+    // 5. Validation Logic (The "Pin")
+    // This hash represents the "Expected State" of the UI component.
+    // It must match exactly across all environments (Dev, CI, User Device if using headless check).
+    const _EXPECTED_HASH = 'mock-hash-to-be-updated-after-first-run';
 
-        // Note: For this first run, we just log it. In a real test, we would assert.
-        // if (currentHash !== EXPECTED_HASH) ...
+    // Note: For this first run, we just log it. In a real test, we would assert.
+    // if (currentHash !== EXPECTED_HASH) ...
 
-        console.log('✅ Context Pinning Successful: Component rendered deterministically.');
-
-    } catch (e) {
-        console.error('❌ Validation Failed:', e);
-        process.exit(1);
-    } finally {
-        await browser.close();
-    }
+    console.log('✅ Context Pinning Successful: Component rendered deterministically.');
+  } catch (e) {
+    console.error('❌ Validation Failed:', e);
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
 }
 
 validateDeterministicRendering();

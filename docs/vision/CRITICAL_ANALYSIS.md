@@ -14,6 +14,7 @@ The interoperability question (competing wallet vs infrastructure layer) resolve
 miTch works within the existing ecosystem, not against it.
 
 The near-term focus is **visibility** — making data usage legible to the user:
+
 - What is being read at this transaction?
 - Who receives it?
 - What is it used for?
@@ -43,6 +44,7 @@ more legible, and more useful for the user who doesn't have a computer science d
 ### GAP 1 — Data Ingestion Is the Hardest Part (we glossed over it)
 
 GDPR Art. 20 portability sounds clean. In practice:
+
 - Banks produce PDFs or manual CSV exports
 - Health systems routinely don't implement Art. 20 — non-compliance is common, enforcement is slow
 - Social platforms give zip files requiring custom per-platform parsing
@@ -54,6 +56,7 @@ The local insight layer has no data to work with unless this is solved.
 **Partial answer that doesn't require institutional cooperation:**
 Start with data already on the device — Apple Health, banking app transaction patterns,
 calendar/location data, app usage. Not as rich as full institutional data, but:
+
 - Zero dependency on institutions cooperating
 - Available from day one
 - The EU Data Act (2024) creates a legal right to IoT/device-generated data — growing over time
@@ -70,12 +73,14 @@ Don't try to build all connectors at once. One real one is worth ten theoretical
 "ZK circuits for arbitrary claims" = years away on mobile at usable performance.
 
 But the actual use cases don't need general ZK:
+
 - age >= 18
 - income >= X
 - A1c below threshold
 - credit score in range Y–Z
 
 These are **range proofs and simple predicates**. Bulletproofs do this today:
+
 - Efficient range proofs
 - No trusted setup ceremony
 - Already deployed in Monero, Zcash, production systems
@@ -93,6 +98,7 @@ More verifiers = more sharing requests = structural pull toward MORE data sharin
 That's misaligned with the core privacy purpose.
 
 **Better revenue candidates:**
+
 - Users pay for premium utility features (insight automation, portability connectors)
   → revenue aligned with user value, not verifier growth
 - Enterprise licensing: institutions run miTch as compliance middleware (B2B SaaS)
@@ -134,6 +140,7 @@ A malicious "insight module" requesting transaction history could exfiltrate it.
 The entire security model collapses if modules have raw credential access.
 
 **Required design (before ecosystem is credible):**
+
 - Modules declare required data types at install time (like app permissions)
 - User approves each data type at install
 - Modules receive computed summaries or typed fields through a wallet API
@@ -172,6 +179,7 @@ The cold start mechanism isn't described.
 before any verifiers accept it?**
 
 Candidates:
+
 - Age verification (existing pain: you can't buy online without giving DOB to random retailers)
 - Travel document management (boarding passes + ID in one wallet)
 - Health data portability (Art. 20 access to your own records — if EHDS delivers this)
@@ -198,6 +206,7 @@ This flips the enforcement dynamic entirely.
 This should be a core wallet feature, not a plugin — it's foundational to the rights layer.
 
 **What a consent receipt contains:**
+
 - Timestamp
 - Verifier DID (who received the data)
 - Claims shared (exactly which fields)
@@ -213,15 +222,15 @@ The wallet accumulates these. The user has an immutable audit trail of their own
 
 We mentioned GDPR Art. 20 and eIDAS 2.0. The picture is bigger:
 
-| Regulation | What it enables for miTch |
-|---|---|
-| GDPR Art. 20 | Data portability from any processor — legal right to your data |
-| eIDAS 2.0 / EUDIW | EU-wide digital identity wallet standard — miTch alignment mandatory by 2026 |
-| Data Act (2024) | Right to data from connected devices (car, smart home, appliances) — zero institutional negotiation needed |
-| AI Act | Transparency rights for automated decisions that profile you — the insight layer IS the transparency tool |
-| EHDS (2025-2027) | Electronic access to health data across EU — mandatory for health systems |
-| DORA | Financial institutions' digital resilience — forgetting layer reduces breach surface, maps to compliance |
-| Data Governance Act | Data intermediaries as a regulated category — miTch could apply for DGA data intermediary status |
+| Regulation          | What it enables for miTch                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| GDPR Art. 20        | Data portability from any processor — legal right to your data                                             |
+| eIDAS 2.0 / EUDIW   | EU-wide digital identity wallet standard — miTch alignment mandatory by 2026                               |
+| Data Act (2024)     | Right to data from connected devices (car, smart home, appliances) — zero institutional negotiation needed |
+| AI Act              | Transparency rights for automated decisions that profile you — the insight layer IS the transparency tool  |
+| EHDS (2025-2027)    | Electronic access to health data across EU — mandatory for health systems                                  |
+| DORA                | Financial institutions' digital resilience — forgetting layer reduces breach surface, maps to compliance   |
+| Data Governance Act | Data intermediaries as a regulated category — miTch could apply for DGA data intermediary status           |
 
 **Key insight:** These regulations are not just compliance burdens for others.
 They are the legal crowbars that force institutions to give you your data.
@@ -235,12 +244,14 @@ No institution cooperation needed — it's legally required.
 ### MISSING 5 — The Shadow Profile Problem (honest boundary)
 
 Institutions hold data about you that you NEVER gave them. Inferred/derived data:
+
 - Credit card company inferred your political views from spending patterns
 - Insurer inferred health conditions from pharmacy purchase patterns
 - Social platform inferred your sexuality from who you follow
 - Employer background check company compiled data from dozens of sources you never interacted with
 
 This inferred data:
+
 - Is NOT covered by Art. 20 portability (proprietary inference, not data you provided)
 - Is often the most powerful data institutions have on you
 - Cannot be accessed, corrected, or challenged under current EU law
@@ -291,24 +302,24 @@ Use what exists today. Don't wait for EUDIW to solve problems it hasn't solved y
 
 ## Summary: Resolution Status
 
-| Question | Status | Answer |
-|---|---|---|
-| Interoperability positioning | ✅ RESOLVED | Build ON TOP of iOS/Android. Not competing with Apple/Google. |
-| ZK scope | ✅ RESOLVED | Predicate proofs / range proofs (Bulletproofs). General ZK = long-term. |
-| Revenue model tension | ✅ RESOLVED | Enterprise B2B licensing + user premium utility. Not verifier-pays. |
-| Acquisition strategy | ✅ RESOLVED | Verifier side first. Healthcare or financial services as wedge sector. |
-| UX overload at transaction time | ✅ RESOLVED | Minimal at transaction. Full detail in daily review. See UX_DAILY_REVIEW.md |
-| Consent receipt as core feature | ✅ RESOLVED | Core wallet, not plugin. Portable, signed, exportable as evidence. |
-| Escalation path | ✅ RESOLVED | Daily review → notification → DPA/lawyer/specialist directory. See UX_DAILY_REVIEW.md |
-| Data ingestion strategy | ✅ RESOLVED | PSD2 open banking = first connector (EU banks have legal API obligation, OAuth2 auth, Nordigen/GoCardless free-tier aggregator). EHDS health data follows 2025–2027. Social media = implemented as Social Login Privacy use case (docs/modules/social-login-privacy.md). Pseudonymous login via pairwise DIDs, structural blocks on biometrics/social graph. |
-| Ad-Tech Blind Provider | ✅ RESOLVED | Implemented (nullifier-based sybil protection, budget quantization, verifier SDK) |
-| Module security design | 🟡 PARTIAL | Working answer: capability declaration at install, typed API, no raw credential access. Full design needed before build. |
-| Identity bridge / EUDIW dependency | ✅ RESOLVED | Do NOT depend on EUDIW. Use PSD2 OAuth2 today, national eIDs via OIDC for health. Design so EUDIW can replace the auth layer later without breaking the rest. |
-| Identity bridge (Austria specifically) | ✅ RESOLVED | ID Austria is already in mass-market deployment in Tyrol. Acts as the concrete identity bridge for Austrian users today — no EUDIW needed. miTch is a "smart layer" above ID Austria: uses the existing state signature to authorise data requests without building new identity infrastructure. |
-| Collective Signal Mechanism | ✅ NEW CONCEPT | When vendors request data beyond the stated purpose, users can flag them "overreaching" in one tap. Flags are aggregated locally; above a threshold (e.g. 500 students in Innsbruck), the vendor appears in a transparency feed. Creates systemic pressure without individual attribution. See `docs/modules/student-discount-ibk.md`. |
-| User acquisition cold start | ✅ RESOLVED | Two answers: (1) Daily review gives value on day one with zero verifier network — logs OS telemetry, app data access immediately. (2) Age verification at small local businesses is the network-effect wedge — business needs only a URL/QR on a tablet, no app install. |
-| Shadow profile problem | ✅ RESOLVED (as boundary) | Inferred data is the honest limit of what's possible today. Partial lever: AI Act (2025+) requires explanations for high-risk automated decisions. miTch helps users request + store those explanations, building a picture from the output side. Full profile access requires new regulation that doesn't exist yet. |
-| DPA directory maintenance | 🟡 PARTIAL | Links to official EU DPA register (edpb.europa.eu/about-edpb/board/members) — maintained by EDPB itself. National CERT/CSIRT links to ENISA directory. Low maintenance burden if pointing to authoritative sources. |
+| Question                               | Status                    | Answer                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Interoperability positioning           | ✅ RESOLVED               | Build ON TOP of iOS/Android. Not competing with Apple/Google.                                                                                                                                                                                                                                                                                                |
+| ZK scope                               | ✅ RESOLVED               | Predicate proofs / range proofs (Bulletproofs). General ZK = long-term.                                                                                                                                                                                                                                                                                      |
+| Revenue model tension                  | ✅ RESOLVED               | Enterprise B2B licensing + user premium utility. Not verifier-pays.                                                                                                                                                                                                                                                                                          |
+| Acquisition strategy                   | ✅ RESOLVED               | Verifier side first. Healthcare or financial services as wedge sector.                                                                                                                                                                                                                                                                                       |
+| UX overload at transaction time        | ✅ RESOLVED               | Minimal at transaction. Full detail in daily review. See UX_DAILY_REVIEW.md                                                                                                                                                                                                                                                                                  |
+| Consent receipt as core feature        | ✅ RESOLVED               | Core wallet, not plugin. Portable, signed, exportable as evidence.                                                                                                                                                                                                                                                                                           |
+| Escalation path                        | ✅ RESOLVED               | Daily review → notification → DPA/lawyer/specialist directory. See UX_DAILY_REVIEW.md                                                                                                                                                                                                                                                                        |
+| Data ingestion strategy                | ✅ RESOLVED               | PSD2 open banking = first connector (EU banks have legal API obligation, OAuth2 auth, Nordigen/GoCardless free-tier aggregator). EHDS health data follows 2025–2027. Social media = implemented as Social Login Privacy use case (docs/modules/social-login-privacy.md). Pseudonymous login via pairwise DIDs, structural blocks on biometrics/social graph. |
+| Ad-Tech Blind Provider                 | ✅ RESOLVED               | Implemented (nullifier-based sybil protection, budget quantization, verifier SDK)                                                                                                                                                                                                                                                                            |
+| Module security design                 | 🟡 PARTIAL                | Working answer: capability declaration at install, typed API, no raw credential access. Full design needed before build.                                                                                                                                                                                                                                     |
+| Identity bridge / EUDIW dependency     | ✅ RESOLVED               | Do NOT depend on EUDIW. Use PSD2 OAuth2 today, national eIDs via OIDC for health. Design so EUDIW can replace the auth layer later without breaking the rest.                                                                                                                                                                                                |
+| Identity bridge (Austria specifically) | ✅ RESOLVED               | ID Austria is already in mass-market deployment in Tyrol. Acts as the concrete identity bridge for Austrian users today — no EUDIW needed. miTch is a "smart layer" above ID Austria: uses the existing state signature to authorise data requests without building new identity infrastructure.                                                             |
+| Collective Signal Mechanism            | ✅ NEW CONCEPT            | When vendors request data beyond the stated purpose, users can flag them "overreaching" in one tap. Flags are aggregated locally; above a threshold (e.g. 500 students in Innsbruck), the vendor appears in a transparency feed. Creates systemic pressure without individual attribution. See `docs/modules/student-discount-ibk.md`.                       |
+| User acquisition cold start            | ✅ RESOLVED               | Two answers: (1) Daily review gives value on day one with zero verifier network — logs OS telemetry, app data access immediately. (2) Age verification at small local businesses is the network-effect wedge — business needs only a URL/QR on a tablet, no app install.                                                                                     |
+| Shadow profile problem                 | ✅ RESOLVED (as boundary) | Inferred data is the honest limit of what's possible today. Partial lever: AI Act (2025+) requires explanations for high-risk automated decisions. miTch helps users request + store those explanations, building a picture from the output side. Full profile access requires new regulation that doesn't exist yet.                                        |
+| DPA directory maintenance              | 🟡 PARTIAL                | Links to official EU DPA register (edpb.europa.eu/about-edpb/board/members) — maintained by EDPB itself. National CERT/CSIRT links to ENISA directory. Low maintenance burden if pointing to authoritative sources.                                                                                                                                          |
 
 ---
 

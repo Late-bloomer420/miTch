@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 Added explicit visibility and warning for an important migration-risk posture:
+
 - KPI field: `webauthn_allowlist_mode_enabled`
 - `kpi:check` warning when:
   - strong re-auth is enabled, but

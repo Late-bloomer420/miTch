@@ -8,31 +8,31 @@ import type { IEphemeralKey } from './interfaces/IEphemeralKey';
  * destruction — the caller controls when bytes are overwritten.
  */
 export class EphemeralKey implements IEphemeralKey {
-    private keyData: Uint8Array | null;
+  private keyData: Uint8Array | null;
 
-    constructor(keyData: Uint8Array) {
-        this.keyData = keyData;
-    }
+  constructor(keyData: Uint8Array) {
+    this.keyData = keyData;
+  }
 
-    getKey(): Uint8Array {
-        if (!this.keyData) {
-            throw new Error('Key has been shredded');
-        }
-        return this.keyData;
+  getKey(): Uint8Array {
+    if (!this.keyData) {
+      throw new Error('Key has been shredded');
     }
+    return this.keyData;
+  }
 
-    /**
-     * Securely destroys the key material by overwriting with zeros.
-     * This is the core "forgetting" mechanism.
-     */
-    shred(): void {
-        if (this.keyData) {
-            this.keyData.fill(0);
-            this.keyData = null;
-        }
+  /**
+   * Securely destroys the key material by overwriting with zeros.
+   * This is the core "forgetting" mechanism.
+   */
+  shred(): void {
+    if (this.keyData) {
+      this.keyData.fill(0);
+      this.keyData = null;
     }
+  }
 
-    isShredded(): boolean {
-        return this.keyData === null;
-    }
+  isShredded(): boolean {
+    return this.keyData === null;
+  }
 }

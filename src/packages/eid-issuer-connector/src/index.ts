@@ -131,10 +131,7 @@ export class EIDIssuerConnector {
     }
     const keyId = `${this.issuerDID}#key-1`;
     return {
-      '@context': [
-        'https://www.w3.org/ns/did/v1',
-        'https://w3id.org/security/suites/jws-2020/v1',
-      ],
+      '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'],
       id: this.issuerDID,
       verificationMethod: [
         {
@@ -177,7 +174,9 @@ export class EIDIssuerConnector {
     citizenProfile: string = 'default'
   ): Promise<EIDIssuanceResponse> {
     if (!request.userDID || !request.requestedAttributes?.length || !request.purpose) {
-      throw new Error('Invalid issuance request: userDID, requestedAttributes, and purpose are required');
+      throw new Error(
+        'Invalid issuance request: userDID, requestedAttributes, and purpose are required'
+      );
     }
 
     if (this.mode === 'simulator') {
@@ -253,7 +252,7 @@ export class EIDIssuerConnector {
 
   /**
    * Issue an SD-JWT VC credential with selective disclosure.
-   * 
+   *
    * Structure: <issuer-signed-JWT>~<disclosure1>~<disclosure2>~...
    * Each disclosure is base64url([salt, claimName, claimValue])
    */
@@ -337,7 +336,7 @@ export class EIDIssuerConnector {
 
     const parts = sdJwtString.split('~');
     const jwtPart = parts[0];
-    const disclosureParts = parts.slice(1).filter(d => d.length > 0);
+    const disclosureParts = parts.slice(1).filter((d) => d.length > 0);
 
     // Verify JWT signature
     const { payload } = await jwtVerify(jwtPart, this.publicKey, {
@@ -345,7 +344,7 @@ export class EIDIssuerConnector {
     });
 
     // Parse disclosures
-    const disclosures = disclosureParts.map(d => {
+    const disclosures = disclosureParts.map((d) => {
       const json = Buffer.from(d, 'base64url').toString('utf-8');
       const [salt, name, value] = JSON.parse(json);
       return { salt, name, value };
@@ -384,14 +383,14 @@ export class EIDIssuerConnector {
   }> {
     const parts = sdJwtString.split('~');
     const jwtPart = parts[0];
-    const disclosureParts = parts.slice(1).filter(d => d.length > 0);
+    const disclosureParts = parts.slice(1).filter((d) => d.length > 0);
 
     const key = await importJWK(publicKeyJwk, 'ES256');
     const { payload } = await jwtVerify(jwtPart, key, {
       issuer: expectedIssuer,
     });
 
-    const disclosures = disclosureParts.map(d => {
+    const disclosures = disclosureParts.map((d) => {
       const json = Buffer.from(d, 'base64url').toString('utf-8');
       const [salt, name, value] = JSON.parse(json);
       return { salt, name, value };
@@ -436,16 +435,14 @@ export class EIDIssuerConnector {
 
   private async simulateDelay(): Promise<void> {
     if (this.simulatedDelayMs > 0) {
-      await new Promise(r => setTimeout(r, this.simulatedDelayMs));
+      await new Promise((r) => setTimeout(r, this.simulatedDelayMs));
     }
   }
 
   /**
    * Legacy mock issuance (backward compatible, plain JWT).
    */
-  private async legacyMockIssuance(
-    request: EIDIssuanceRequest
-  ): Promise<EIDIssuanceResponse> {
+  private async legacyMockIssuance(request: EIDIssuanceRequest): Promise<EIDIssuanceResponse> {
     if (!this.privateKey) {
       throw new Error('Mock issuer not initialized');
     }

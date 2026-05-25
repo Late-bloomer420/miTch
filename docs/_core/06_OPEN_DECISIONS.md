@@ -8,11 +8,11 @@
 
 **Frage:** Produkt A only / Produkt B only / A+B parallel?
 
-| Option | Was | Vorteil | Risiko |
-|---|---|---|---|
-| **A only** | Verifier-Side Compliance-as-a-Service | Klarer B2B-Revenue, regulierte Märkte | Kein Nutzer-Produkt |
-| **B only** | User-Side Selbstkenntnis-Schicht | Direkter Nutzernutzen | Schwieriges Business Model |
-| **A+B** | Beide parallel | Vollständiger Ansatz | Überdehnung, zu wenig Fokus |
+| Option     | Was                                   | Vorteil                               | Risiko                      |
+| ---------- | ------------------------------------- | ------------------------------------- | --------------------------- |
+| **A only** | Verifier-Side Compliance-as-a-Service | Klarer B2B-Revenue, regulierte Märkte | Kein Nutzer-Produkt         |
+| **B only** | User-Side Selbstkenntnis-Schicht      | Direkter Nutzernutzen                 | Schwieriges Business Model  |
+| **A+B**    | Beide parallel                        | Vollständiger Ansatz                  | Überdehnung, zu wenig Fokus |
 
 **Status: Nicht entschieden.**  
 Empfehlung: Produkt A zuerst (Revenue, regulierte Märkte) — Produkt B als strategische Option sobald A stabil.
@@ -36,6 +36,7 @@ Empfehlung: Option B. Die EU-App löst `age_over_X`. miTch löst "was darf der V
 **Frage:** Welches Segment adressieren wir als erstes?
 
 Kandidaten (nach Zahlungsbereitschaft):
+
 1. Sportwetten-Plattformen (GlüStV-Compliance, DSGVO)
 2. Adult Content (DSA Art. 28, DE/FR Enforcement)
 3. Health / Telemedicine (DSGVO Art. 9)
@@ -61,6 +62,7 @@ Kandidaten (nach Zahlungsbereitschaft):
 **Frage:** Wie wird Revocation für regulierte Märkte implementiert?
 
 Regulierte Märkte (Sportwetten, Health) brauchen:
+
 - Selbstsperren überprüfbar machen OHNE zentrale Profildatenbank
 - Das ist technisch komplex und nicht im MVP implementiert
 
@@ -79,5 +81,5 @@ Regulierte Märkte (Sportwetten, Health) brauchen:
 ## Nächste Sitzung sollte klären:
 
 - [ ] Entscheidung 1 (Produktfokus) formal treffen
-- [ ] Entscheidung 2 (Positionierung) formal treffen  
+- [ ] Entscheidung 2 (Positionierung) formal treffen
 - [ ] Ersten Pilot-Kandidaten identifizieren (Entscheidung 3)

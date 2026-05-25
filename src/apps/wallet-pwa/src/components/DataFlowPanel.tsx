@@ -86,9 +86,13 @@ const TransactionCard: React.FC<{
             {claim}
           </span>
         ))}
-        {txn.claimsWithheld !== null && txn.claimsWithheld.length > 0 &&
+        {txn.claimsWithheld !== null &&
+          txn.claimsWithheld.length > 0 &&
           txn.claimsWithheld.map((claim) => (
-            <span key={`withheld-${claim}`} className="dataflow-card__tag dataflow-card__tag--withheld">
+            <span
+              key={`withheld-${claim}`}
+              className="dataflow-card__tag dataflow-card__tag--withheld"
+            >
               {claim}
             </span>
           ))}
@@ -105,7 +109,9 @@ const TransactionCard: React.FC<{
       {summary.points.length > 0 && (
         <div className="dataflow-card__summary">
           {summary.points.map((point, i) => (
-            <span key={i} className="dataflow-card__summary-point">{point}</span>
+            <span key={i} className="dataflow-card__summary-point">
+              {point}
+            </span>
           ))}
         </div>
       )}

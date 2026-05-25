@@ -12,6 +12,7 @@
 Interne Angreifer (kompromittiertes NPM-Modul, modifizierter Bundle-Code) könnten versuchen, über Komponenten-Grenzen hinweg Daten abzugreifen oder Policy-Entscheidungen zu manipulieren — ohne dass der Nutzer davon erfährt.
 
 **Angriffsvektor:** Internal Privilege Escalation
+
 - Policy Engine gibt mehr frei als Policy erlaubt → Consent Store wird umgangen
 - Audit Logger wird deaktiviert → kein Audit-Trail für Zugriffe
 - Credential Store gibt Rohdaten raus → Policy-Entscheidung wird nie evaluiert
@@ -52,17 +53,20 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 ### 1. Policy Engine (`@mitch/policy-engine`)
 
 **Input:**
+
 - `VerifierRequest` — validiert durch Input Validation Schema (S-03) vor Übergabe
 - `EvaluationContext` — Timestamp, UserDID, Interaction-Metadata
 - `StoredCredentialMetadata[]` — NUR Metadaten (Typ, Issuer, Claims-Liste), KEINE Rohdaten
 - `PolicyManifest` — validiert durch `validatePolicy()` (inkl. S-02 version check)
 
 **Output:**
+
 - `PolicyEvaluationResult` — Verdict (ALLOW/DENY/PROMPT) + ReasonCodes + DecisionCapsule
 - **KEINE** Rohdaten aus Credentials
 - **KEINE** direkten Schreibzugriffe auf Consent Store oder Audit Logger
 
 **Isolation-Regeln:**
+
 - Engine hat KEINEN Zugriff auf den Consent Store
 - Engine hat KEINEN Zugriff auf den Raw-Credential-Store
 - Engine schreibt KEINE Audit-Logs direkt — das ist Aufgabe der Shell
@@ -76,15 +80,18 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 ### 2. Consent Store (`@mitch/secure-storage`)
 
 **Input:**
+
 - Explizite Nutzer-Aktionen (UI-Buttons) — keine programmatischen Freigaben
 - `grant(verifierId, claimSet, expiresAt)` — immer zeitlich begrenzt
 - `revoke(consentId)` — sofortige Wirkung, kein "Soft Delete"
 
 **Output:**
+
 - `ConsentRecord` — welche Claims für welchen Verifier bis wann freigegeben sind
 - Wird von Shell abgefragt, NICHT von Policy Engine direkt
 
 **Isolation-Regeln:**
+
 - Consent Store hat KEINEN Zugriff auf Policy Engine
 - Consent Store speichert KEINE Credential-Rohdaten
 - Jede Änderung erzeugt einen Audit-Event (Schreib-Event an Audit Logger)
@@ -97,14 +104,17 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 ### 3. Audit Logger (`@mitch/audit-log`)
 
 **Input:**
+
 - Write-only API: `log(event: AuditEvent)` — keine Löschfunktion
 - Aufgerufen NUR durch Shell, NICHT direkt von Engine oder Consent Store
 
 **Output:**
+
 - Lokaler Audit Trail (IndexedDB) — nie zentral übertragen
 - Export nur auf explizite Nutzeranfrage (Art. 15 DSGVO)
 
 **Isolation-Regeln:**
+
 - Audit Logger ist **append-only** — keine Lösch- oder Änderungs-API
 - Logger hat KEINEN Zugriff auf Policy Engine oder Consent Store
 - Logger kennt keine Credential-Inhalte — nur Metadaten (VerifierId, Verdict, Timestamp)
@@ -117,14 +127,17 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 ### 4. Secure Credential Store (`@mitch/secure-storage`, Credential-Partition)
 
 **Input:**
+
 - `store(encryptedVC, metadata)` — vom Issuer-Flow (OID4VCI)
 - `retrieve(credentialId)` — NUR von Shell nach expliziter Policy-Entscheidung (ALLOW)
 
 **Output:**
+
 - **An Policy Engine:** NUR `StoredCredentialMetadata[]` (keine Rohdaten!)
 - **An Presentation Layer:** Rohdaten NUR nach ALLOW-Verdict + Consent (entschlüsselt)
 
 **Isolation-Regeln:**
+
 - Policy Engine bekommt NIEMALS Rohdaten
 - Entschlüsselung passiert NACH Policy-Entscheidung, nicht vorher
 - Crypto-Shredding: Key deletion = Data deletion (kein GDPR "Vergessen"-Problem)
@@ -138,14 +151,14 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 
 Diese Invarianten MÜSSEN zu jedem Zeitpunkt gelten:
 
-| # | Invariante |
-|---|---|
-| I-1 | Rohdaten fließen NIEMALS zur Policy Engine |
+| #   | Invariante                                                               |
+| --- | ------------------------------------------------------------------------ |
+| I-1 | Rohdaten fließen NIEMALS zur Policy Engine                               |
 | I-2 | Policy Engine schreibt NIEMALS direkt in Consent Store oder Audit Logger |
-| I-3 | Audit Logger ist append-only — keine Delete-API |
-| I-4 | Consent Store hat KEINE Policy-Logik — er speichert nur Entscheidungen |
-| I-5 | Jede ALLOW-Entscheidung produziert einen signierten DecisionCapsule |
-| I-6 | Jede Datenfreigabe erscheint im Audit Trail (lokal) |
+| I-3 | Audit Logger ist append-only — keine Delete-API                          |
+| I-4 | Consent Store hat KEINE Policy-Logik — er speichert nur Entscheidungen   |
+| I-5 | Jede ALLOW-Entscheidung produziert einen signierten DecisionCapsule      |
+| I-6 | Jede Datenfreigabe erscheint im Audit Trail (lokal)                      |
 | I-7 | Kein Modul kann seine eigene Ausgabe als Input für sich selbst verwenden |
 
 ---
@@ -153,19 +166,23 @@ Diese Invarianten MÜSSEN zu jedem Zeitpunkt gelten:
 ## Sicherheitskonsequenzen
 
 ### Privilege Escalation Prevention
+
 - Engine kann DENY nicht zu ALLOW umschreiben (Capsule ist signiert)
 - Capsule enthält Nonce + Expiry (5 Minuten) — kein Replay möglich
 - Pairwise DID in Capsule — kein Nutzer-Fingerprint aus Capsule ableitbar (U-05)
 
 ### Verifier Fingerprint Check (S-01)
+
 - Engine prüft Fingerprint VOR Policy-Evaluation
 - Mismatch → PROMPT (niemals auto-ALLOW) — User muss aktiv bestätigen
 
 ### Manifest Rollback Protection (S-02)
+
 - Shell prüft `manifest_version` vor Übergabe an Engine
 - Älteres Manifest → Rejection (kein Silent Downgrade)
 
 ### Input Validation (S-03)
+
 - Alle Claim-Namen werden normalisiert + whitelist-validiert VOR Übergabe an Engine
 - Injection via Claim-Namen ist nicht möglich
 
@@ -173,13 +190,13 @@ Diese Invarianten MÜSSEN zu jedem Zeitpunkt gelten:
 
 ## Grenzdefinitionen im Code
 
-| Grenze | Durchgesetzt durch |
-|---|---|
-| Engine liest nur Metadaten | `StoredCredentialMetadata[]` Interface (kein `rawVC` Feld) |
-| Engine schreibt kein Audit | Shell-Orchestration — Engine gibt Result zurück, Shell loggt |
-| Consent Store hat keine Policy | Separate Packages: `secure-storage` vs `policy-engine` |
-| Capsule ist tamper-evident | `CapsuleSigner` + `wallet_attestation` |
-| Input normalisiert vor Eval | `sanitizeRequestedClaims()` in Shell VOR `engine.evaluate()` |
+| Grenze                         | Durchgesetzt durch                                           |
+| ------------------------------ | ------------------------------------------------------------ |
+| Engine liest nur Metadaten     | `StoredCredentialMetadata[]` Interface (kein `rawVC` Feld)   |
+| Engine schreibt kein Audit     | Shell-Orchestration — Engine gibt Result zurück, Shell loggt |
+| Consent Store hat keine Policy | Separate Packages: `secure-storage` vs `policy-engine`       |
+| Capsule ist tamper-evident     | `CapsuleSigner` + `wallet_attestation`                       |
+| Input normalisiert vor Eval    | `sanitizeRequestedClaims()` in Shell VOR `engine.evaluate()` |
 
 ---
 

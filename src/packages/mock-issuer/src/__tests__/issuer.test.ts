@@ -48,11 +48,7 @@ describe('MockGovernmentIssuer', () => {
 
   it('should handle edge case: birthday today', () => {
     const today = new Date();
-    const exactly18Today = new Date(
-      today.getFullYear() - 18,
-      today.getMonth(),
-      today.getDate()
-    );
+    const exactly18Today = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
 
     expect(computeAgeProof(exactly18Today, 18)).toBe(true);
   });

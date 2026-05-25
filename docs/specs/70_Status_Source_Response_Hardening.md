@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Implemented
+
 - HTTP credential-status fetch now sends `Accept: application/json`.
 - Response `Content-Type` must include `application/json` (otherwise fail-closed).
 - Response payload shape is now validated:
@@ -12,4 +13,5 @@ Stand: 2026-02-11
 - Malformed/oversized payloads are treated fail-closed (`credential_status_unavailable` path).
 
 ## Security benefit
+
 Prevents silent acceptance when status providers return unexpected/invalid JSON structures.

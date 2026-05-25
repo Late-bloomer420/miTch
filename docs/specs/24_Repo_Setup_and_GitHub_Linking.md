@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Local status
+
 - Local repo initialized: ✅
 - Branch: `main`
 - Remote configured: `origin -> https://github.com/LateBloomer420/miTch.git`
@@ -11,6 +12,7 @@ Stand: 2026-02-11
 ## To complete linking (one-time)
 
 ### Option A (GitHub Web)
+
 1. Create repository on GitHub:
    - Owner: `LateBloomer420`
    - Name: `miTch`
@@ -22,18 +24,22 @@ Stand: 2026-02-11
    ```
 
 ### Option B (different repo name)
+
 If repo name differs, update remote:
+
 ```bash
 git remote set-url origin https://github.com/LateBloomer420/<REPO>.git
 git push -u origin main
 ```
 
 ## Verification
+
 ```bash
 git remote -v
 git branch -vv
 ```
 
 ## Notes
+
 - GitHub CLI (`gh`) is not installed on this machine, so automatic repo creation via CLI is unavailable.
 - Browser relay is available but currently no attached tab; attach OpenClaw extension tab to allow UI automation.

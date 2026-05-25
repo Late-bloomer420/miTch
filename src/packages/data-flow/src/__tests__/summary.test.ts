@@ -54,7 +54,7 @@ describe('summarizeTransaction', () => {
   it('does not mention ZKP if usedZKP is false', () => {
     const txn = makeTxn({ usedZKP: false, provenClaims: ['age >= 18'] });
     const summary = summarizeTransaction(txn);
-    expect(summary.points.find(p => p.includes('bewiesen'))).toBeUndefined();
+    expect(summary.points.find((p) => p.includes('bewiesen'))).toBeUndefined();
   });
 
   // Claims withheld
@@ -73,19 +73,24 @@ describe('summarizeTransaction', () => {
   it('does not mention withheld when null (fail-closed)', () => {
     const txn = makeTxn({ claimsWithheld: null });
     const summary = summarizeTransaction(txn);
-    expect(summary.points.find(p => p.includes('zurückgehalten'))).toBeUndefined();
+    expect(summary.points.find((p) => p.includes('zurückgehalten'))).toBeUndefined();
   });
 
   it('does not mention withheld when empty array', () => {
     const txn = makeTxn({ claimsWithheld: [] });
     const summary = summarizeTransaction(txn);
-    expect(summary.points.find(p => p.includes('zurückgehalten'))).toBeUndefined();
+    expect(summary.points.find((p) => p.includes('zurückgehalten'))).toBeUndefined();
   });
 
   // Shredding
   it('shows shredding with latency', () => {
     const txn = makeTxn({
-      lifecycle: { keysCreated: 2, keysDestroyed: 2, fullyShredded: true, shreddingLatencyMs: 3200 },
+      lifecycle: {
+        keysCreated: 2,
+        keysDestroyed: 2,
+        fullyShredded: true,
+        shreddingLatencyMs: 3200,
+      },
     });
     const summary = summarizeTransaction(txn);
     expect(summary.points).toContain('Daten vergessen nach 3.2s');
@@ -93,7 +98,12 @@ describe('summarizeTransaction', () => {
 
   it('shows shredding without latency', () => {
     const txn = makeTxn({
-      lifecycle: { keysCreated: 2, keysDestroyed: 2, fullyShredded: true, shreddingLatencyMs: null },
+      lifecycle: {
+        keysCreated: 2,
+        keysDestroyed: 2,
+        fullyShredded: true,
+        shreddingLatencyMs: null,
+      },
     });
     const summary = summarizeTransaction(txn);
     expect(summary.points).toContain('Daten vergessen');
@@ -101,7 +111,12 @@ describe('summarizeTransaction', () => {
 
   it('shows open keys when not fully shredded', () => {
     const txn = makeTxn({
-      lifecycle: { keysCreated: 2, keysDestroyed: 1, fullyShredded: false, shreddingLatencyMs: null },
+      lifecycle: {
+        keysCreated: 2,
+        keysDestroyed: 1,
+        fullyShredded: false,
+        shreddingLatencyMs: null,
+      },
     });
     const summary = summarizeTransaction(txn);
     expect(summary.points).toContain('1 Schlüssel noch aktiv');
@@ -125,7 +140,7 @@ describe('summarizeTransaction', () => {
       usedZKP: true,
     });
     const summary = summarizeTransaction(txn);
-    expect(summary.points.find(p => p.includes('Keine Rohdaten'))).toBeUndefined();
+    expect(summary.points.find((p) => p.includes('Keine Rohdaten'))).toBeUndefined();
   });
 
   it('shows count for identity firewall accesses', () => {
@@ -141,7 +156,12 @@ describe('summarizeTransaction', () => {
       provenClaims: ['age >= 18'],
       claimsShared: [],
       claimsWithheld: ['name', 'address'],
-      lifecycle: { keysCreated: 2, keysDestroyed: 2, fullyShredded: true, shreddingLatencyMs: 2500 },
+      lifecycle: {
+        keysCreated: 2,
+        keysDestroyed: 2,
+        fullyShredded: true,
+        shreddingLatencyMs: 2500,
+      },
     });
     const summary = summarizeTransaction(txn);
     expect(summary.points).toHaveLength(4);

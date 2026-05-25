@@ -6,6 +6,6 @@ const parsedPort = rawPort ? Number.parseInt(rawPort, 10) : defaultPort;
 const port = Number.isFinite(parsedPort) ? parsedPort : defaultPort;
 
 app.listen(port, () => {
-    console.log(`mitch Pilot Verifier listening at http://localhost:${port}`);
-    console.log('Waiting for Wallet presentations on /present');
+  console.log(`mitch Pilot Verifier listening at http://localhost:${port}`);
+  console.log('Waiting for Wallet presentations on /present');
 });

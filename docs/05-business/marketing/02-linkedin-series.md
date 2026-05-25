@@ -1,10 +1,12 @@
 # miTch LinkedIn Campaign Series
 
 ## Campaign frame
+
 Theme: Privacy by proof, not by promise.
 Audience: product leaders, compliance teams, security teams, public-sector buyers.
 
 ## Post 1
+
 **Hook:** Most identity systems ask for too much.
 
 **Body:**  
@@ -16,6 +18,7 @@ That is what a privacy firewall looks like in practice.
 **CTA:** See the demo.
 
 ## Post 2
+
 **Hook:** Privacy is not a settings page.
 
 **Body:**  
@@ -27,6 +30,7 @@ Privacy should be enforced in the flow, not explained after the fact.
 **CTA:** Request a pilot.
 
 ## Post 3
+
 **Hook:** Compliance should reduce exposure, not create it.
 
 **Body:**  
@@ -38,6 +42,7 @@ Minimization is not a feature. It is the architecture.
 **CTA:** Explore the wallet flow.
 
 ## Post 4
+
 **Hook:** The best identity system is the one that forgets.
 
 **Body:**  
@@ -49,6 +54,7 @@ If it does not need to persist, it should not persist.
 **CTA:** See the live demo.
 
 ## Post 5
+
 **Hook:** The next identity layer should be invisible when it works.
 
 **Body:**  

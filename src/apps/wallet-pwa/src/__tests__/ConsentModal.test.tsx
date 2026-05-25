@@ -8,8 +8,18 @@ import { describe, it, expect, vi } from 'vitest';
 // Mock SecureZone — it uses elementFromPoint which jsdom doesn't implement;
 // we test ConsentModal behaviour, not the clickjacking detector.
 vi.mock('../components/SecureZone', () => ({
-  SecureZone: ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
-    <div className={className} style={style}>{children}</div>
+  SecureZone: ({
+    children,
+    className,
+    style,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+  }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
   ),
 }));
 
@@ -35,7 +45,7 @@ function makeCapsule(overrides: Partial<DecisionCapsule> = {}): DecisionCapsule 
         proven_claims: ['age >= 18'],
         selected_credential_id: 'vc-age-789',
         issuer_trust_refs: ['did:example:gov-issuer'],
-      }
+      },
     ],
     ...overrides,
   };
@@ -90,16 +100,11 @@ describe('ConsentModal — Rendering', () => {
           proven_claims: [],
           selected_credential_id: 'vc-age-789',
           issuer_trust_refs: [],
-        }
-      ]
+        },
+      ],
     });
     render(
-      <ConsentModal
-        capsule={capsule}
-        reasonCodes={[]}
-        onApprove={vi.fn()}
-        onReject={vi.fn()}
-      />
+      <ConsentModal capsule={capsule} reasonCodes={[]} onApprove={vi.fn()} onReject={vi.fn()} />
     );
     expect(screen.getByText(/ZKP only/i)).toBeInTheDocument();
   });

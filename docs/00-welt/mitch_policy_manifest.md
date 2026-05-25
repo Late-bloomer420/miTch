@@ -4,7 +4,7 @@
 **Stand:** 2026-03-06  
 **Scope:** DACH / EU-first  
 **Role:** Convener eines regelbasierten Identitätsökosystems  
-**Leitsatz:** *"Alle sind miTch."*
+**Leitsatz:** _"Alle sind miTch."_
 
 ---
 
@@ -14,7 +14,7 @@ miTch ist kein Identitätsanbieter, kein Datenverwalter und kein Verifikationsdi
 
 **miTch ist Convener.**
 
-Vertrauen entsteht in miTch nicht dadurch, dass eine zentrale Instanz etwas *weiß*, sondern dadurch, dass überprüfbar festgelegt ist, **was niemand wissen darf – und dass das System trotzdem funktioniert**.
+Vertrauen entsteht in miTch nicht dadurch, dass eine zentrale Instanz etwas _weiß_, sondern dadurch, dass überprüfbar festgelegt ist, **was niemand wissen darf – und dass das System trotzdem funktioniert**.
 
 Dieses Manifest beschreibt die verbindlichen Policies, nach denen miTch konzipiert, betrieben und weiterentwickelt wird.
 
@@ -23,7 +23,7 @@ Dieses Manifest beschreibt die verbindlichen Policies, nach denen miTch konzipie
 ## 1. Grundprinzipien (Non‑Negotiable)
 
 1. **Rule over Authority** — Regeln gelten, nicht Meinungen. Keine Ausnahmen.
-2. **Data Minimization by Construction** — Nicht weniger Daten *sammeln*, sondern technisch *unfähig* sein, mehr zu sehen.
+2. **Data Minimization by Construction** — Nicht weniger Daten _sammeln_, sondern technisch _unfähig_ sein, mehr zu sehen.
 3. **User Sovereignty** — Der Nutzer entscheidet. Immer. Ohne Standardfreigabe.
 4. **Non‑Linkability** — Kein Verifier, kein Tracker, kein Cookie kann herausfinden, WER verifiziert. Alle sind miTch.
 5. **EU‑First Trust** — DSGVO, eIDAS 2.0, EHDS sind nicht Compliance-Pflicht, sondern Designgrundlage.
@@ -66,6 +66,7 @@ Dieses Manifest beschreibt die verbindlichen Policies, nach denen miTch konzipie
 > Selbst wenn alle Verifier der Welt kooperieren — sie können keinen einzelnen Nutzer wiedererkennen.
 
 ### Technische Garantien:
+
 - **Pairwise-Ephemeral DIDs** — Jeder Verifier sieht eine andere Identität
 - **Session Keys via HKDF** — Kein Schlüssel wird zweimal verwendet
 - **Proof-Randomisierung** — Kryptografische Beweise sind nicht als Fingerprint nutzbar
@@ -73,6 +74,7 @@ Dieses Manifest beschreibt die verbindlichen Policies, nach denen miTch konzipie
 - **Identitäts-Firewall** — Tracker-Zugriffe werden abgefangen, geloggt und dem Nutzer gezeigt
 
 ### Was das bedeutet:
+
 Ein Nutzer verifiziert sein Alter bei einer Apotheke. Einen Tag später bei einem Krankenhaus. Selbst wenn Apotheke und Krankenhaus ihre Daten austauschen — sie können nicht feststellen, dass es derselbe Mensch war. Weil **alle miTch sind**.
 
 ---
@@ -80,6 +82,7 @@ Ein Nutzer verifiziert sein Alter bei einer Apotheke. Einen Tag später bei eine
 ## 6. EHDS-Konformität
 
 miTch implementiert die Anforderungen der European Health Data Space Regulation (2025):
+
 - **Primary Use**: Nutzer kontrollieren ihre Gesundheitsdaten grenzüberschreitend
 - **Secondary Use Denial**: Forschungszugriff nur mit expliziter Policy + HDAB-Permit
 - **Break-Glass**: Notfallzugriff mit biometrischer Bestätigung + vollständigem Audit-Trail
@@ -90,4 +93,4 @@ miTch implementiert die Anforderungen der European Health Data Space Regulation 
 > **miTch funktioniert nicht, weil es alles weiß – sondern weil es strukturell nichts wissen kann.**  
 > **Und niemand weiß, wer miTch benutzt – weil alle miTch sind.**
 
-*Ende des Policy Manifests v2.0*
+_Ende des Policy Manifests v2.0_

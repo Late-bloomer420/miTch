@@ -1,4 +1,5 @@
 # miTch — Outreach Starting List
+
 ## Innsbruck / Tirol — Discovery Conversations
 
 > Goal: listen, not pitch. Understand their actual pain before showing anything.
@@ -9,6 +10,7 @@
 ## Tier 1 — Start Here (highest signal, most accessible)
 
 ### 1. MCI itself
+
 **Who:** Your own professors — specifically anyone in Digital Health, Health Management,
 IT & Business Informatics, or Law & Governance departments.
 **Why:** They are directly connected to every institution on this list. One warm intro from
@@ -20,6 +22,7 @@ sector would you think most benefits from reducing their GDPR data liability?"
 they can open doors and may have funding instruments.
 
 ### 2. Tirol Kliniken / LKH Innsbruck
+
 **Who:** The Datenschutzbeauftragter (Data Protection Officer). Every hospital in the EU
 must have one by law (GDPR Art. 37). This person's entire job is the problem miTch solves.
 **Organisation:** Tilak GmbH (Tiroler Landeskrankenanstalten) — the operating company.
@@ -32,6 +35,7 @@ What does GDPR compliance cost you in time per month?"
 website — required by law). Reference your MCI student status and the research angle.
 
 ### 3. UMIT TIROL (Hall bei Innsbruck)
+
 **Who:** Researchers in Health Informatics or eHealth.
 **What:** Private University for Health Sciences, Medical Informatics and Technology.
 Directly adjacent to your topic — digital health data, patient privacy, EHDS.
@@ -45,6 +49,7 @@ They may also be interested in research collaboration.
 ## Tier 2 — High Value, Slightly More Effort to Access
 
 ### 4. Hypo Tirol Bank
+
 **Who:** Compliance officer or Digital/IT department.
 **Why:** Regional bank headquartered in Innsbruck. PSD2 open banking is their regulatory
 reality. They hold enormous amounts of personal data. GDPR liability is real to them.
@@ -53,10 +58,12 @@ A "forgetting layer" that reduces what they store = reduced breach liability = r
 WKO Tirol which has existing relationships with regional banks.
 
 ### 5. Raiffeisenbank / Sparkasse Tirol
+
 Same angle as Hypo Tirol. Raiffeisen is a cooperative structure — often more open to
 regional innovation conversations than large national banks.
 
 ### 6. Local Pharmacies
+
 **Who:** Owner/manager of any independent pharmacy in Innsbruck.
 **Why:** The age verification use case is immediate and concrete. They handle
 prescription data (special category under GDPR), age-restricted products, and have
@@ -66,6 +73,7 @@ What's the risk if you get it wrong?"
 **How:** Walk in. Literally. This is the kind of conversation that happens in person.
 
 ### 7. Data Protection Lawyers in Innsbruck
+
 **Who:** IT/GDPR-focused lawyers. Search Rechtsanwaltskammer Tirol (Tyrolean Bar Association)
 for "Datenschutz" or "IT-Recht" specialists.
 **Why:** They advise the hospitals, banks, and businesses you want to reach.
@@ -76,6 +84,7 @@ they refer you. One lawyer who believes in what you're building reaches 50 insti
 to solve?"
 
 ### 8. Tigewosi / NHT Tirol (Social Housing / Hausverwaltungen)
+
 **Who:** IT or compliance contact at Tigewosi (Tiroler Gemeinnützige Wohnungsbau- und
 Siedlungsgesellschaft) or NHT (Neue Heimat Tirol).
 **Why:** Housing companies collect enormous amounts of sensitive data: Lohnzettel (payslips),
@@ -91,6 +100,7 @@ What would it mean for your liability if you didn't need to retain them at all?"
 **How:** Email the Datenschutzbeauftragter listed in their GDPR privacy notice.
 
 ### 9. Tourism / Ski Pass Verifier (Einheimischentarife)
+
 **Who:** Manager at a ski resort ticket office (e.g. Nordkette, Stubai, Axamer Lizum)
 or tourist information office (Innsbruck Tourismus).
 **Why:** "Einheimischentarife" (resident rates) require proof of local registration.
@@ -108,16 +118,19 @@ session expires in minutes. No data retained at the resort.
 ## Tier 3 — Ecosystem & Support (less urgent but useful)
 
 ### 8. Standortagentur Tirol
+
 Tyrolean economic development agency. Runs programs for startups and innovation projects.
 They can connect you to industry, point you toward funding, and open institutional doors
 you couldn't open alone. They want to promote Tyrolean tech projects.
 
 ### 9. WKO Tirol (Wirtschaftskammer Tirol)
+
 The regional chamber of commerce. Has a Fachgruppe for IT/Digitalwirtschaft.
 Useful for understanding the small-business landscape (pharmacies, local businesses)
 and for events where you can meet relevant people informally.
 
 ### 10. University of Innsbruck — Institut für Informatik
+
 Researchers working on security, privacy, distributed systems.
 Useful for research validation, potential academic collaboration, and credibility.
 A research paper co-authored with a Uni Innsbruck professor carries weight in institutional conversations.
@@ -135,6 +148,7 @@ A research paper co-authored with a Uni Innsbruck professor carries weight in in
 > Wären Sie bereit für 30 Minuten?"
 
 English version:
+
 > "I'm building a privacy middleware that lets institutions share only the minimum
 > data needed at a verification step — and then cryptographically destroy the session.
 > That reduces GDPR liability concretely: less data held means less risk in a breach.
@@ -179,6 +193,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ### For any professor — opening questions
 
 **German:**
+
 > „Ich entwickle gerade ein Datenschutz-Middleware-Projekt, das auf selektiver Offenlegung
 > und kryptografischer Datenlöschung basiert — also Institutionen helfen soll, nur die
 > Mindestdaten zu teilen und den Rest direkt zu vergessen. Welche Institutionen hier in Tirol
@@ -189,6 +204,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 > der Nutzer, die keine Transparenz haben. Wo sehen Sie den dringenderen Bedarf?"
 
 **English:**
+
 > "I'm building a privacy middleware project based on selective disclosure and
 > cryptographic data deletion — helping institutions share only the minimum and forget
 > the rest. In your view, which institutions in Tirol would benefit most from holding less data?"
@@ -203,6 +219,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ### For Health Management / Digital Health professors
 
 **German:**
+
 > „EHDS verpflichtet Gesundheitseinrichtungen ab 2025–2026, Patienten elektronischen
 > Zugang zu ihren Daten zu geben. Wie gut sind die Tiroler Kliniken Ihrer Einschätzung
 > nach darauf vorbereitet? Und wer bei Tirol Kliniken wäre der richtige Ansprechpartner,
@@ -212,6 +229,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 > Chance für Tiroler Unternehmen, früher als andere in diesem Bereich aktiv zu werden?"
 
 **English:**
+
 > "EHDS requires health institutions to give patients electronic access to their data
 > from 2025–2026. In your view, how prepared are Tirolean clinics for that? And who
 > at Tirol Kliniken would be the right person to understand that first-hand?"
@@ -224,6 +242,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ### For Law / GDPR / Compliance professors
 
 **German:**
+
 > „Aus Ihrer Sicht als Rechtswissenschaftler: Wo liegt bei der DSGVO-Durchsetzung
 > aktuell der größte praktische Schmerzpunkt für Institutionen — also das, wofür sie
 > tatsächlich haften und was sie nachts wach hält?"
@@ -237,6 +256,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 > Art. 20 deckt das nicht ab. Sehen Sie rechtliche Entwicklungen, die das ändern könnten?"
 
 **English:**
+
 > "From a legal perspective, where is the biggest practical pain point in GDPR
 > enforcement for institutions right now — what are they actually being held liable
 > for, and what keeps them up at night?"
@@ -254,6 +274,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ### For IT / Technology / Informatics professors
 
 **German:**
+
 > „Ich habe mich mit dem EUDIW-Architekturrahmen beschäftigt und bin auf ein
 > Unlinkability-Problem gestoßen: das Wallet Instance Attestation schafft eine
 > Gerätekorrelation, die cross-verifier Tracking ermöglicht — eigentlich das Gegenteil
@@ -265,6 +286,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 > oder ist das noch 3–5 Jahre entfernt?"
 
 **English:**
+
 > "I've been looking at the EUDIW Architecture Reference Framework and found an
 > unlinkability issue — the Wallet Instance Attestation creates a device correlation
 > that enables cross-verifier tracking, which is the opposite of its stated goal.
@@ -279,12 +301,14 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ### The closing question — always ask this last
 
 **German:**
+
 > „Mit wem sollte ich unbedingt noch sprechen? Wen kennen Sie, der dieses Problem
 > aus erster Hand erlebt — also zum Beispiel einen Datenschutzbeauftragten bei
 > Tirol Kliniken, einen Compliance-Verantwortlichen bei einer Bank, oder einen
 > auf DSGVO spezialisierten Anwalt hier in Innsbruck?"
 
 **English:**
+
 > "Who else should I absolutely be talking to? Do you know someone who experiences
 > this problem first-hand — for example a Data Protection Officer at Tirol Kliniken,
 > a compliance lead at a bank, or a GDPR-specialist lawyer here in Innsbruck?"
@@ -294,7 +318,7 @@ Show you've already thought deeply. Ask where their thinking goes next.
 ## New Use Cases Since Original Draft
 
 - **Social Login Privacy** (docs/modules/social-login-privacy.md) — FlirtRadar demo, DSA compliance
-- **Ad-Tech Blind Provider** — nullifier-based, IAB-compatible  
+- **Ad-Tech Blind Provider** — nullifier-based, IAB-compatible
 - **Phone Number Verification** (mi.call) — Tier 3 concept
 
 These can be used as additional conversation starters with partners.

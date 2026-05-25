@@ -11,6 +11,7 @@
 Successfully consolidated **7 scattered locations** into **1 unified repository** with layer-based structure.
 
 ### Before Migration
+
 ```
 7 locations:
 ├── mi-t-ch-Du_musst_mich_Fragen/     (251 MB, main repo)
@@ -25,6 +26,7 @@ Total: ~260 MB across 4 git repositories
 ```
 
 ### After Migration
+
 ```
 miTch/                                     (80 MB in git)
 ├── docs/                                  (by protection layer)
@@ -49,20 +51,25 @@ Single git repository with 6 commits
 ## 🎯 DECISIONS MADE
 
 ### 1. Policy Manifest Version
+
 **Decision:** Use **mitch-repo version**
 **Reason:** Line 53 changed from "Monetarisierung von Kinderdaten" to "Kommerzialisierung von Grundrechten (Teilhabe ohne Datenzwang)" - broader, more aligned with layer philosophy.
 
 ### 2. Project Name
+
 **Decision:** **miTch** (mixed case)
 **Applied:** All files, folders, and references standardized.
 
 ### 3. GitHub Strategy
+
 **Decision:** New repository (github.com/Late-bloomer420/miTch)
 **Reason:** Clean start, clear branding, no legacy baggage.
 
 ### 4. Repository Structure
+
 **Decision:** **Layer-based** (user-modified from original proposal)
 **Hierarchy:**
+
 - 00-welt: Universal principles (Layer 0)
 - 01-grundversorgung: Children + essentials (Layer 1)
 - 02-erwachsene-vulnerable: Health, elderly, finance (Layer 2)
@@ -71,6 +78,7 @@ Single git repository with 6 commits
 - 05-business: Monetization
 
 ### 5. WalletService Implementation
+
 **Decision:** Use **mitch-repo version** (1009 lines)
 **Reason:** More complete (+138 lines), has DID resolution, deep link parsing, algorithm detection.
 **Action:** Archived mi.login version (871 lines) as prototype.
@@ -80,6 +88,7 @@ Single git repository with 6 commits
 ## 🔄 MIGRATION STEPS EXECUTED
 
 ### Phase 1: Backup & Preservation (Commits 1)
+
 ```bash
 # Created git bundles for all repositories
 ✅ root-repo.bundle (485 bytes, 1 commit)
@@ -91,6 +100,7 @@ Commit: 2ad696e - "chore: preserve git history bundles for all original repos"
 ```
 
 ### Phase 2: Structure Initialization (Commit 2)
+
 ```bash
 # Created layer-based directory structure
 ✅ docs/{00-welt, 01-grundversorgung, 02-erwachsene-vulnerable, 03-architecture, 04-legal, 05-business}
@@ -101,6 +111,7 @@ Commit: 35cdc2a - "feat: initialize layer-based directory structure"
 ```
 
 ### Phase 3: Code Integration (Commit 3)
+
 ```bash
 # Copied mitch-repo monorepo structure
 ✅ 3 apps: wallet-pwa, issuer-mock, verifier-demo
@@ -114,6 +125,7 @@ Commit: 2b708e3 - "feat(code): import mitch-repo monorepo structure"
 ```
 
 ### Phase 4: Documentation Migration (Commit 4)
+
 ```bash
 # Migrated 109 docs from mitch-temp by layer
 ✅ 00-welt: 00-09*.md + policy manifest + MASTER_BRIEF.md
@@ -129,6 +141,7 @@ Commit: a889f19 - "docs: integrate documentation into layer-based structure"
 ```
 
 ### Phase 5: Archive Prototypes (Commit 5)
+
 ```bash
 # Preserved mi.login prototype
 ✅ WalletService.ts (871 lines, early version)
@@ -141,6 +154,7 @@ Commit: 8c24ca6 - "archive: preserve mi.login prototype for comparison"
 ```
 
 ### Phase 6: Documentation Polish (Commit 6)
+
 ```bash
 # Created comprehensive README.md
 ✅ Quick start guide
@@ -155,6 +169,7 @@ Commit: 48c0518 - "docs(readme): create comprehensive project README"
 ```
 
 ### Phase 7: Layer-Resolver Package (Commit 7)
+
 ```bash
 # New package: @mitch/layer-resolver
 ✅ ProtectionLayer enum (WELT=0, GRUNDVERSORGUNG=1, VULNERABLE=2)
@@ -174,16 +189,17 @@ Commit: 350a23f - "feat(layer-resolver): add protection layer enum and utilities
 
 ### Documentation Migration (mitch-temp → miTch/docs/)
 
-| Source Files | Destination | Count |
-|--------------|-------------|-------|
-| 00-09*.md | docs/00-welt/ | 10 files |
-| 10-23*.md | docs/03-architecture/mvp/ | 14 files |
-| 24-93*.md | docs/01-grundversorgung/ | 70 files |
-| 94-102*.md | docs/01-grundversorgung/authentication/ | 9 files |
-| .env.strict.example | .env.example | 1 file |
-| LICENSE | LICENSE | 1 file |
+| Source Files        | Destination                             | Count    |
+| ------------------- | --------------------------------------- | -------- |
+| 00-09\*.md          | docs/00-welt/                           | 10 files |
+| 10-23\*.md          | docs/03-architecture/mvp/               | 14 files |
+| 24-93\*.md          | docs/01-grundversorgung/                | 70 files |
+| 94-102\*.md         | docs/01-grundversorgung/authentication/ | 9 files  |
+| .env.strict.example | .env.example                            | 1 file   |
+| LICENSE             | LICENSE                                 | 1 file   |
 
 **Additional docs added:**
+
 - mitch-repo/mitch_policy_manifest.md → docs/00-welt/
 - mi-t-ch-Du_musst_mich_Fragen/MASTER_BRIEF.md → docs/00-welt/
 - mi(t)ch-Du_musst_mich_Fragen/MEMO_GDPR_SHREDDING.md → docs/04-legal/
@@ -195,22 +211,22 @@ Commit: 350a23f - "feat(layer-resolver): add protection layer enum and utilities
 
 ### Code Migration (mitch-repo → miTch/src/)
 
-| Source | Destination | Contents |
-|--------|-------------|----------|
-| apps/ | src/apps/ | 3 applications |
-| packages/ | src/packages/ | 14 packages |
-| N/A | src/packages/layer-resolver/ | **NEW** package |
+| Source    | Destination                  | Contents        |
+| --------- | ---------------------------- | --------------- |
+| apps/     | src/apps/                    | 3 applications  |
+| packages/ | src/packages/                | 14 packages     |
+| N/A       | src/packages/layer-resolver/ | **NEW** package |
 
 **Total:** 15 packages (14 existing + 1 new)
 
 ### Archive Preservation
 
-| Source | Archive Location | Purpose |
-|--------|------------------|---------|
-| mitch-repo/ | archive/git-bundles/mitch-repo.bundle | 4 commits preserved |
-| mitch-temp/ | archive/git-bundles/mitch-temp.bundle | ~50+ commits preserved |
-| mi.login/ | archive/git-bundles/mi.login.bundle + archive/prototypes/mi.login/ | 1 commit + full code |
-| root folder | archive/git-bundles/root-repo.bundle | 1 commit preserved |
+| Source      | Archive Location                                                   | Purpose                |
+| ----------- | ------------------------------------------------------------------ | ---------------------- |
+| mitch-repo/ | archive/git-bundles/mitch-repo.bundle                              | 4 commits preserved    |
+| mitch-temp/ | archive/git-bundles/mitch-temp.bundle                              | ~50+ commits preserved |
+| mi.login/   | archive/git-bundles/mi.login.bundle + archive/prototypes/mi.login/ | 1 commit + full code   |
+| root folder | archive/git-bundles/root-repo.bundle                               | 1 commit preserved     |
 
 ---
 
@@ -230,11 +246,11 @@ Commit: 350a23f - "feat(layer-resolver): add protection layer enum and utilities
 4. **Duplicate files** (when identical)
    - MASTER_BRIEF.md (root and mitch-repo were identical)
 
-5. **Phase_* folders** (mi-t-ch-Du_musst_mich_Fragen/)
+5. **Phase\_\* folders** (mi-t-ch-Du_musst_mich_Fragen/)
    - Status: To be reviewed separately
    - Location: Still in original folder (not deleted yet)
 
-6. **mi.temp/*.zip** files
+6. **mi.temp/\*.zip** files
    - Status: Compressed backups, content likely duplicate
    - Preservation: Original folder kept intact
 
@@ -247,6 +263,7 @@ Commit: 350a23f - "feat(layer-resolver): add protection layer enum and utilities
 ## ✅ VALIDATION RESULTS
 
 ### File Counts
+
 ```bash
 # Before (distributed)
 mi-t-ch-Du_musst_mich_Fragen/:  14,934 files (includes node_modules)
@@ -264,6 +281,7 @@ miTch/ (without node_modules):  ~450 files
 ```
 
 ### Git Repository Status
+
 ```bash
 # Original git repos
 ✅ 4 repositories preserved as bundles
@@ -277,6 +295,7 @@ miTch/ (without node_modules):  ~450 files
 ```
 
 ### Package Structure
+
 ```bash
 # pnpm workspace verification
 ✅ pnpm-workspace.yaml updated (src/apps/*, src/packages/*)
@@ -286,6 +305,7 @@ miTch/ (without node_modules):  ~450 files
 ```
 
 ### Tests (Pre-Migration Status)
+
 ```bash
 # From mitch-repo (inherited tests)
 ✅ Policy engine tests
@@ -303,6 +323,7 @@ User should run: pnpm install && pnpm test
 ## 📊 STORAGE IMPACT
 
 ### Before Migration
+
 ```
 Total storage:              ~260 MB
 Git repositories:           4 separate (.git folders ~14 MB total)
@@ -311,6 +332,7 @@ Code locations:             1 active (mitch-repo)
 ```
 
 ### After Migration
+
 ```
 miTch/ (git repo):          ~80 MB (without node_modules)
 Git repositories:           1 unified (.git ~10 MB)
@@ -322,6 +344,7 @@ Total reduction:            69% smaller git footprint
 ```
 
 ### Temporary Storage (Can Delete After Validation)
+
 ```
 Original folders:           ~260 MB (untouched, safe to delete after validation)
 ```
@@ -333,6 +356,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
 ### Immediate (Post-Migration Validation)
 
 1. **Test Build System:**
+
    ```bash
    cd miTch
    pnpm install
@@ -341,6 +365,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
    ```
 
 2. **Verify Package Resolution:**
+
    ```bash
    pnpm list --depth 0
    # Should show all @mitch/* packages
@@ -355,6 +380,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
 ### GitHub Setup
 
 4. **Create GitHub Repository:**
+
    ```bash
    # On GitHub: Create new repo "miTch"
    # Then locally:
@@ -373,6 +399,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
 ### Cleanup (After Validation)
 
 6. **Original Folders (Once Validated):**
+
    ```bash
    # ONLY after confirming miTch/ works perfectly!
    cd C:\Users\Lenovo\.aaCoding
@@ -397,6 +424,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
 If migration needs to be reversed:
 
 ### Option 1: Restore from Git Bundles
+
 ```bash
 cd C:\Users\Lenovo\.aaCoding\rollback
 git clone ../miTch/archive/git-bundles/mitch-repo.bundle mitch-repo
@@ -405,6 +433,7 @@ git clone ../miTch/archive/git-bundles/mi.login.bundle mi.login
 ```
 
 ### Option 2: Original Folders Still Intact
+
 ```bash
 # Original folders were NOT deleted
 # Simply continue using them as before
@@ -414,6 +443,7 @@ pnpm install
 ```
 
 ### Option 3: Delete New Repo
+
 ```bash
 # If miTch/ has issues
 cd C:\Users\Lenovo\.aaCoding
@@ -450,7 +480,7 @@ rm -rf miTch/
 - [ ] pnpm build successful
 - [ ] pnpm test passes
 - [ ] wallet-pwa runs (pnpm dev:wallet)
-- [ ] All @mitch/* packages resolve
+- [ ] All @mitch/\* packages resolve
 - [ ] Documentation links work
 - [ ] No broken imports
 
@@ -476,6 +506,7 @@ rm -rf miTch/
 **Official Name:** **miTch** (always this capitalization)
 
 **Replaced Variations:**
+
 - ❌ mitch → ✅ miTch
 - ❌ MITCH → ✅ miTch
 - ❌ mi.T.ch → ✅ miTch
@@ -494,16 +525,19 @@ rm -rf miTch/
 ## 🔐 SECURITY NOTES
 
 ### Git Bundles
+
 - All bundles stored in `archive/git-bundles/`
 - Can be used to verify migration integrity
 - No data loss possible (all histories preserved)
 
 ### Credentials & Secrets
+
 - No secrets found in any repository
 - .env files were templates only (.env.strict.example)
 - No API keys or passwords in code
 
 ### File Permissions
+
 - All files readable (no permission issues)
 - No executable bits on documentation
 - Standard permissions preserved
@@ -512,22 +546,22 @@ rm -rf miTch/
 
 ## 📞 MIGRATION METADATA
 
-| Attribute | Value |
-|-----------|-------|
-| **Migration Date** | 2026-02-15 |
-| **Start Time** | ~09:00 CET |
-| **Completion Time** | ~10:30 CET |
-| **Duration** | ~90 minutes |
-| **Executor** | Claude Code (Sonnet 4.5) + Late-bloomer420 |
-| **Source Locations** | 7 folders |
-| **Destination** | 1 unified repository |
-| **Files Migrated** | ~450 code + docs |
-| **Lines Added** | ~30,000+ |
-| **Git Commits** | 7 (atomic) |
-| **Packages Created** | 1 new (@mitch/layer-resolver) |
-| **Documentation Pages** | 115 |
-| **Git Histories Preserved** | 4 bundles |
-| **Data Loss** | **0 bytes** ✅ |
+| Attribute                   | Value                                      |
+| --------------------------- | ------------------------------------------ |
+| **Migration Date**          | 2026-02-15                                 |
+| **Start Time**              | ~09:00 CET                                 |
+| **Completion Time**         | ~10:30 CET                                 |
+| **Duration**                | ~90 minutes                                |
+| **Executor**                | Claude Code (Sonnet 4.5) + Late-bloomer420 |
+| **Source Locations**        | 7 folders                                  |
+| **Destination**             | 1 unified repository                       |
+| **Files Migrated**          | ~450 code + docs                           |
+| **Lines Added**             | ~30,000+                                   |
+| **Git Commits**             | 7 (atomic)                                 |
+| **Packages Created**        | 1 new (@mitch/layer-resolver)              |
+| **Documentation Pages**     | 115                                        |
+| **Git Histories Preserved** | 4 bundles                                  |
+| **Data Loss**               | **0 bytes** ✅                             |
 
 ---
 
@@ -608,11 +642,11 @@ rm -rf miTch/
 
 **Migration executed successfully! 🎉**
 
-*All original repositories preserved.*
-*New unified structure ready for development.*
-*No data loss. Full rollback capability maintained.*
+_All original repositories preserved._
+_New unified structure ready for development._
+_No data loss. Full rollback capability maintained._
 
 ---
 
-*End of Migration Log*
-*miTch Repository Consolidation - 2026-02-15*
+_End of Migration Log_
+_miTch Repository Consolidation - 2026-02-15_

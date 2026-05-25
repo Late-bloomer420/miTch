@@ -1,8 +1,8 @@
-import { VerificationRequestV0 } from "../types/api";
-import { DecisionCode } from "../types/decision";
-import { isExpired } from "./expiryValidator";
-import { computeRequestHash } from "./requestHash";
-import { INonceStore } from "./nonceStore";
+import { VerificationRequestV0 } from '../types/api';
+import { DecisionCode } from '../types/decision';
+import { isExpired } from './expiryValidator';
+import { computeRequestHash } from './requestHash';
+import { INonceStore } from './nonceStore';
 
 export interface BindingConfig {
   clockSkewSeconds: number;
@@ -21,16 +21,16 @@ export async function validateBinding(
   config: BindingConfig
 ): Promise<BindingValidationResult> {
   if (request.rp.audience !== runtimeAudience) {
-    return { ok: false, code: "DENY_BINDING_AUDIENCE_MISMATCH" };
+    return { ok: false, code: 'DENY_BINDING_AUDIENCE_MISMATCH' };
   }
 
   if (isExpired(request.binding.expiresAt, new Date(), config.clockSkewSeconds)) {
-    return { ok: false, code: "DENY_BINDING_EXPIRED" };
+    return { ok: false, code: 'DENY_BINDING_EXPIRED' };
   }
 
   const computed = computeRequestHash(request);
   if (computed !== request.binding.requestHash) {
-    return { ok: false, code: "DENY_BINDING_HASH_MISMATCH" };
+    return { ok: false, code: 'DENY_BINDING_HASH_MISMATCH' };
   }
 
   const nonce = await nonceStore.consumeOnce(
@@ -39,8 +39,8 @@ export async function validateBinding(
     config.nonceTtlSeconds
   );
 
-  if (nonce === "replay") {
-    return { ok: false, code: "DENY_BINDING_NONCE_REPLAY" };
+  if (nonce === 'replay') {
+    return { ok: false, code: 'DENY_BINDING_NONCE_REPLAY' };
   }
 
   return { ok: true };

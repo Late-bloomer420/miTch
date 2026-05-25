@@ -6,11 +6,13 @@ Purpose: one-page visual operating layer for miTch. Fast scan, fast decisions, n
 ---
 
 ## NORTH STAR (one sentence)
+
 Ship miTch as **privacy-preserving compliance middleware** that can win and survive a real issuer + RP pilot.
 
 ---
 
 ## NOW (max 3)
+
 1. **Native WebAuthn verifier implementation (real, not scaffold)**
 2. **Revocation semantics v2+ hardening (StatusList path, fail-closed behavior)**
 3. **Pilot closure execution** (RP #1 integration + 2-week measured run + Go/No-Go)
@@ -18,6 +20,7 @@ Ship miTch as **privacy-preserving compliance middleware** that can win and surv
 ---
 
 ## NEXT (short buffer)
+
 1. Security profile score interpretation + operator runbook
 2. Native verifier adapter contract (strict I/O + deny mapping)
 3. Recovery security design (anti-abuse/coercion/phishing)
@@ -27,6 +30,7 @@ Ship miTch as **privacy-preserving compliance middleware** that can win and surv
 ---
 
 ## LATER (important, not first-pilot critical)
+
 - PQ/hybrid migration profile v1
 - Issuer trust/reputation controls
 - Alert routing + escalation maturity
@@ -35,6 +39,7 @@ Ship miTch as **privacy-preserving compliance middleware** that can win and surv
 ---
 
 ## DEFER / RESEARCH (do not let this steal focus)
+
 - Advanced crypto depth without near-term pilot/commercial impact
 - Platform expansion before first issuer+RP proof
 - Any item that cannot be explained in buyer terms (risk down, cost down, fast integration)
@@ -42,7 +47,9 @@ Ship miTch as **privacy-preserving compliance middleware** that can win and surv
 ---
 
 ## DECISION GATES (must pass)
+
 For each new feature/proposal, require:
+
 1. Buyer value (RP/CFO language)
 2. Integration effort (<2 days target)
 3. Assurance tier clarity (software vs hardware-backed)
@@ -54,11 +61,14 @@ Reference template: `103_GTM_Security_Decision_Framework.md`
 ---
 
 ## POSITIONING GUARDRAIL
+
 **Not WorldCoin2.**
+
 - We are not an identity empire or biometric extraction model.
 - We are a verification/control layer with minimization + fail-closed behavior.
 
 Preferred language:
+
 - "Verification without identity data custody"
 - "Privacy-preserving compliance middleware"
 - "Regulated trust layer"
@@ -66,17 +76,19 @@ Preferred language:
 ---
 
 ## WEEKLY RHYTHM (20–30 min)
+
 - Keep NOW at max 3 items
 - Defer anything without measurable pilot value
 - Promote only items that improve one of:
-  1) Pilot win probability
-  2) Integration speed
-  3) Audit/compliance confidence
-  4) False-allow risk reduction
+  1. Pilot win probability
+  2. Integration speed
+  3. Audit/compliance confidence
+  4. False-allow risk reduction
 
 ---
 
 ## VISUAL STATUS LEGEND
+
 - 🟢 NOW
 - 🟡 ACTIVE
 - 🔵 NEXT

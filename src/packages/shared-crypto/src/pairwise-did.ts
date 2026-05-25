@@ -61,9 +61,7 @@ export interface PairwiseDIDResult {
  * - No two interactions share a DID (probabilistic with fresh random keys)
  * - Key material is shredded after destroy() is called
  */
-export async function generatePairwiseDID(
-  options: PairwiseDIDOptions
-): Promise<PairwiseDIDResult> {
+export async function generatePairwiseDID(options: PairwiseDIDOptions): Promise<PairwiseDIDResult> {
   // Suppress linter: verifierOrigin + sessionNonce are used as HKDF context
   // (Phase 1: random keys; Phase 2 will use HKDF from master key)
   void options.verifierOrigin;
@@ -204,7 +202,7 @@ function decompressP256PublicKey(compressed: Uint8Array): Uint8Array {
 
   // y² = x³ + ax + b (mod p)
   const ySquared = (modPow(x, 3n, P256_P) + P256_A * x + P256_B) % P256_P;
-  const yPositive = (ySquared % P256_P + P256_P) % P256_P;
+  const yPositive = ((ySquared % P256_P) + P256_P) % P256_P;
 
   // y = sqrt(ySquared) mod p  — since p ≡ 3 (mod 4): y = ySquared^((p+1)/4) mod p
   let y = modPow(yPositive, (P256_P + 1n) / 4n, P256_P);
@@ -372,11 +370,16 @@ export async function generatePairwiseDIDFromMasterKey(
       ['sign']
     );
   } catch (e) {
-    throw new Error(`PAIRWISE_DID_KEYGEN_FAILED: derived scalar is not a valid P-256 private key — ${e}`);
+    throw new Error(
+      `PAIRWISE_DID_KEYGEN_FAILED: derived scalar is not a valid P-256 private key — ${e}`
+    );
   }
 
   // Step 7: Derive public key and build did:peer:0
-  const rawPubKey = await crypto.subtle.exportKey('raw', await getPublicKeyFromPrivate(signingCryptoKey));
+  const rawPubKey = await crypto.subtle.exportKey(
+    'raw',
+    await getPublicKeyFromPrivate(signingCryptoKey)
+  );
   const compressedPubKey = compressP256PublicKey(new Uint8Array(rawPubKey));
   const did = encodeDidPeer0(compressedPubKey);
 
@@ -447,17 +450,39 @@ async function getPublicKeyFromPrivate(privateKey: CryptoKey): Promise<CryptoKey
 function buildP256PKCS8(d: Uint8Array): Uint8Array {
   // ECPrivateKey SEQUENCE { version INTEGER 1, privateKey OCTET STRING d }
   const ecPrivKey = new Uint8Array([
-    0x30, 0x25,       // SEQUENCE, 37 bytes
-    0x02, 0x01, 0x01, // INTEGER 1 (EC private key version)
-    0x04, 0x20,       // OCTET STRING, 32 bytes
+    0x30,
+    0x25, // SEQUENCE, 37 bytes
+    0x02,
+    0x01,
+    0x01, // INTEGER 1 (EC private key version)
+    0x04,
+    0x20, // OCTET STRING, 32 bytes
     ...d,
   ]);
 
   // AlgorithmIdentifier SEQUENCE { OID ecPublicKey, OID prime256v1 }
   const algId = new Uint8Array([
-    0x30, 0x13,                               // SEQUENCE, 19 bytes
-    0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, // ecPublicKey OID
-    0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, // prime256v1 OID
+    0x30,
+    0x13, // SEQUENCE, 19 bytes
+    0x06,
+    0x07,
+    0x2a,
+    0x86,
+    0x48,
+    0xce,
+    0x3d,
+    0x02,
+    0x01, // ecPublicKey OID
+    0x06,
+    0x08,
+    0x2a,
+    0x86,
+    0x48,
+    0xce,
+    0x3d,
+    0x03,
+    0x01,
+    0x07, // prime256v1 OID
   ]);
 
   // PrivateKeyInfo version
@@ -474,8 +499,10 @@ function buildP256PKCS8(d: Uint8Array): Uint8Array {
   outer[0] = 0x30;
   outer[1] = innerLen;
   let offset = 2;
-  outer.set(version, offset); offset += version.length;
-  outer.set(algId, offset); offset += algId.length;
+  outer.set(version, offset);
+  offset += version.length;
+  outer.set(algId, offset);
+  offset += algId.length;
   outer.set(privateKeyOctet, offset);
 
   return outer;
@@ -511,10 +538,7 @@ export async function resolveDidPeer0(did: string): Promise<DIDDocument> {
 
   const vmId = `${did}#key-1`;
   const doc: DIDDocument = {
-    '@context': [
-      'https://www.w3.org/ns/did/v1',
-      'https://w3id.org/security/suites/jws-2020/v1',
-    ],
+    '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'],
     id: did,
     verificationMethod: [
       {

@@ -1,7 +1,7 @@
 /**
  * W3C Verifiable Credentials Data Model
  * https://www.w3.org/TR/vc-data-model/
- * 
+ *
  * This module defines TypeScript types for Verifiable Credentials (VC)
  * and Verifiable Presentations (VP) aligned with W3C standards.
  */
@@ -33,35 +33,35 @@ export type Context = string | Record<string, unknown> | Array<string | Record<s
  * Uses JWT format for PoC simplicity
  */
 export interface Proof {
-    /**
-     * Type of proof (e.g., 'JwtProof2020', 'Ed25519Signature2020')
-     */
-    type: string;
+  /**
+   * Type of proof (e.g., 'JwtProof2020', 'Ed25519Signature2020')
+   */
+  type: string;
 
-    /**
-     * ISO 8601 timestamp of proof creation
-     */
-    created: DateTime;
+  /**
+   * ISO 8601 timestamp of proof creation
+   */
+  created: DateTime;
 
-    /**
-     * Purpose of the proof (e.g., 'assertionMethod', 'authentication')
-     */
-    proofPurpose: string;
+  /**
+   * Purpose of the proof (e.g., 'assertionMethod', 'authentication')
+   */
+  proofPurpose: string;
 
-    /**
-     * DID URL of the verification method used
-     */
-    verificationMethod: URI;
+  /**
+   * DID URL of the verification method used
+   */
+  verificationMethod: URI;
 
-    /**
-     * JWT compact serialization (for JwtProof2020)
-     */
-    jwt?: string;
+  /**
+   * JWT compact serialization (for JwtProof2020)
+   */
+  jwt?: string;
 
-    /**
-     * JWS signature (for other proof types)
-     */
-    jws?: string;
+  /**
+   * JWS signature (for other proof types)
+   */
+  jws?: string;
 }
 
 /**
@@ -69,74 +69,74 @@ export interface Proof {
  * T: Type of credentialSubject (defaults to flexible Record)
  */
 export interface VerifiableCredential<T = Record<string, unknown>> {
-    /**
-     * JSON-LD context defining the semantic meaning
-     */
-    '@context': Context[];
+  /**
+   * JSON-LD context defining the semantic meaning
+   */
+  '@context': Context[];
 
-    /**
-     * Unique identifier for this credential
-     */
+  /**
+   * Unique identifier for this credential
+   */
+  id: URI;
+
+  /**
+   * Type identifiers for this credential
+   * Must include 'VerifiableCredential'
+   */
+  type: string[];
+
+  /**
+   * DID of the entity that issued the credential
+   */
+  issuer: DID | { id: DID; name?: string };
+
+  /**
+   * ISO 8601 timestamp of issuance
+   */
+  issuanceDate: DateTime;
+
+  /**
+   * Optional expiration date
+   */
+  expirationDate?: DateTime;
+
+  /**
+   * The claims about the subject
+   */
+  credentialSubject: T & { id: DID };
+
+  /**
+   * Cryptographic proof of authenticity
+   */
+  proof?: Proof;
+
+  /**
+   * Additional credential metadata
+   */
+  credentialStatus?: {
     id: URI;
-
-    /**
-     * Type identifiers for this credential
-     * Must include 'VerifiableCredential'
-     */
-    type: string[];
-
-    /**
-     * DID of the entity that issued the credential
-     */
-    issuer: DID | { id: DID; name?: string };
-
-    /**
-     * ISO 8601 timestamp of issuance
-     */
-    issuanceDate: DateTime;
-
-    /**
-     * Optional expiration date
-     */
-    expirationDate?: DateTime;
-
-    /**
-     * The claims about the subject
-     */
-    credentialSubject: T & { id: DID };
-
-    /**
-     * Cryptographic proof of authenticity
-     */
-    proof?: Proof;
-
-    /**
-     * Additional credential metadata
-     */
-    credentialStatus?: {
-        id: URI;
-        type: string;
-    };
+    type: string;
+  };
 }
 
 /**
  * Age Credential Subject (specific type for PoC)
  */
 export interface AgeCredentialSubject {
-    /**
-     * DID of the credential subject
-     */
-    id: DID;
+  /**
+   * DID of the credential subject
+   */
+  id: DID;
 
-    /**
-     * Date of birth in ISO 8601 format (YYYY-MM-DD)
-     */
-    dateOfBirth: string;
+  /**
+   * Date of birth in ISO 8601 format (YYYY-MM-DD)
+   */
+  dateOfBirth: string;
 
-    /**
-     * Optional computed claim for age verification
-     */
-    isOver18?: boolean;
+  /**
+   * Optional computed claim for age verification
+   */
+  isOver18?: boolean;
 }
 
 /**
@@ -149,42 +149,42 @@ export type AgeCredential = VerifiableCredential<AgeCredentialSubject>;
  * Container for presenting one or more VCs
  */
 export interface VerifiablePresentation {
-    /**
-     * JSON-LD context
-     */
-    '@context': Context[];
+  /**
+   * JSON-LD context
+   */
+  '@context': Context[];
 
-    /**
-     * Optional identifier for this presentation
-     */
-    id?: URI;
+  /**
+   * Optional identifier for this presentation
+   */
+  id?: URI;
 
-    /**
-     * Type identifiers
-     * Must include 'VerifiablePresentation'
-     */
-    type: string[];
+  /**
+   * Type identifiers
+   * Must include 'VerifiablePresentation'
+   */
+  type: string[];
 
-    /**
-     * One or more verifiable credentials
-     */
-    verifiableCredential: VerifiableCredential[];
+  /**
+   * One or more verifiable credentials
+   */
+  verifiableCredential: VerifiableCredential[];
 
-    /**
-     * DID of the holder presenting the credentials
-     */
-    holder: DID;
+  /**
+   * DID of the holder presenting the credentials
+   */
+  holder: DID;
 
-    /**
-     * Replay Protection Deadline
-     * Timestamp (ms or ISO) after which this VP should be rejected.
-     */
-    validUntil?: string | number;
+  /**
+   * Replay Protection Deadline
+   * Timestamp (ms or ISO) after which this VP should be rejected.
+   */
+  validUntil?: string | number;
 
-    /**
-     * Cryptographic proof that the holder created this presentation
-     */
-    proof?: Proof;
+  /**
+   * Cryptographic proof that the holder created this presentation
+   */
+  proof?: Proof;
 }
 
 /**
@@ -192,25 +192,25 @@ export interface VerifiablePresentation {
  * Describes what the verifier is requesting
  */
 export interface PresentationDefinition {
-    /**
-     * Unique identifier for this request
-     */
-    id: string;
+  /**
+   * Unique identifier for this request
+   */
+  id: string;
 
-    /**
-     * Input descriptors defining what credentials are needed
-     */
-    input_descriptors: Array<{
-        id: string;
-        name?: string;
-        purpose?: string;
-        constraints: {
-            fields: Array<{
-                path: string[];
-                filter?: Record<string, unknown>;
-            }>;
-        };
-    }>;
+  /**
+   * Input descriptors defining what credentials are needed
+   */
+  input_descriptors: Array<{
+    id: string;
+    name?: string;
+    purpose?: string;
+    constraints: {
+      fields: Array<{
+        path: string[];
+        filter?: Record<string, unknown>;
+      }>;
+    };
+  }>;
 }
 
 /**
@@ -218,14 +218,14 @@ export interface PresentationDefinition {
  * Simplified for PoC (full spec is more complex)
  */
 export interface DIDDocument {
-    '@context': Context[];
-    id: DID;
-    verificationMethod?: Array<{
-        id: URI;
-        type: string;
-        controller: DID;
-        publicKeyJwk?: Record<string, unknown>;
-    }>;
-    authentication?: URI[];
-    assertionMethod?: URI[];
+  '@context': Context[];
+  id: DID;
+  verificationMethod?: Array<{
+    id: URI;
+    type: string;
+    controller: DID;
+    publicKeyJwk?: Record<string, unknown>;
+  }>;
+  authentication?: URI[];
+  assertionMethod?: URI[];
 }

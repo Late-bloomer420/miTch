@@ -19,7 +19,7 @@ function makeEncodedList(revokedIndices: number[], byteCount = 4): string {
 
 function makeCredential(
   revokedIndices: number[],
-  purpose: 'revocation' | 'suspension' = 'revocation',
+  purpose: 'revocation' | 'suspension' = 'revocation'
 ): StatusListCredential {
   return {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -58,9 +58,12 @@ function mockFetchFail(): typeof fetch {
 }
 
 function mockFetchTimeout(): typeof fetch {
-  return vi.fn().mockImplementation(() => new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Aborted')), 50);
-  })) as any;
+  return vi.fn().mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Aborted')), 50);
+      })
+  ) as any;
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────
@@ -170,7 +173,7 @@ describe('StatusListRevocationChecker', () => {
       expect(fetchFn).toHaveBeenCalledTimes(1);
 
       // Wait for cache to expire
-      await new Promise(r => setTimeout(r, 10));
+      await new Promise((r) => setTimeout(r, 10));
 
       await checker.checkRevocation(makeEntry(0));
       expect(fetchFn).toHaveBeenCalledTimes(2); // Re-fetched
@@ -191,7 +194,7 @@ describe('StatusListRevocationChecker', () => {
       expect(fetchFn).toHaveBeenCalledTimes(1);
 
       // Wait for cache to expire
-      await new Promise(r => setTimeout(r, 10));
+      await new Promise((r) => setTimeout(r, 10));
 
       // Now make fetch fail
       (fetchFn as any).mockRejectedValue(new Error('offline'));
@@ -226,7 +229,7 @@ describe('StatusListRevocationChecker', () => {
 
       // Prime cache
       await checker.checkRevocation(makeEntry(0), 'high');
-      await new Promise(r => setTimeout(r, 10));
+      await new Promise((r) => setTimeout(r, 10));
 
       // Make fetch fail
       (fetchFn as any).mockRejectedValue(new Error('offline'));

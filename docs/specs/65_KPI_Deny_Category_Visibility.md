@@ -10,6 +10,7 @@ Added explicit KPI fields so critical deny categories are visible without parsin
 - `deny_status_source_unavailable_rate`
 
 Why this matters:
+
 - Faster operational detection of status-provider outages.
 - Better separation of policy/compliance denials vs infrastructure failures.
 - Cleaner pilot evidence for reliability and security posture.

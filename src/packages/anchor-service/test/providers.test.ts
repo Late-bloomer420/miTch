@@ -30,7 +30,7 @@ describe('G-09: EthereumL2AnchorProvider (stub)', () => {
   });
 
   test('publishRoot embeds network and contract metadata', async () => {
-    const ref = await provider.publishRoot(TEST_ROOT, TEST_META) as any;
+    const ref = (await provider.publishRoot(TEST_ROOT, TEST_META)) as any;
 
     expect(ref.network).toBe('polygon');
     expect(ref.contractAddress).toMatch(/^0x/);
@@ -87,7 +87,7 @@ describe('G-09: TransparencyLogAnchorProvider (stub)', () => {
   });
 
   test('publishRoot embeds logName and logIndex metadata', async () => {
-    const ref = await provider.publishRoot(TEST_ROOT, TEST_META) as any;
+    const ref = (await provider.publishRoot(TEST_ROOT, TEST_META)) as any;
 
     expect(ref.logName).toBe('mitch/tlog-v1');
     expect(ref.logIndex).toBe(0);
@@ -95,8 +95,8 @@ describe('G-09: TransparencyLogAnchorProvider (stub)', () => {
   });
 
   test('sequential calls increment logIndex (monotonic)', async () => {
-    const ref1 = await provider.publishRoot(TEST_ROOT, TEST_META) as any;
-    const ref2 = await provider.publishRoot(TEST_ROOT, { batchId: 'batch-002', count: 1 }) as any;
+    const ref1 = (await provider.publishRoot(TEST_ROOT, TEST_META)) as any;
+    const ref2 = (await provider.publishRoot(TEST_ROOT, { batchId: 'batch-002', count: 1 })) as any;
 
     expect(ref2.logIndex).toBe(ref1.logIndex + 1);
     expect(ref1.ref).not.toBe(ref2.ref); // unique entry UUIDs

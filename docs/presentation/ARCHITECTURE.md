@@ -1,6 +1,6 @@
 # miTch — Architektur-Diagramme
 
-*Technische Übersicht für Uni-Präsentation und Developer Onboarding*
+_Technische Übersicht für Uni-Präsentation und Developer Onboarding_
 
 ---
 
@@ -205,16 +205,16 @@ graph TD
 
 ## Technische Kennzahlen
 
-| Metrik | Wert |
-|---|---|
-| Turbo Tasks | 40/40 grün |
-| Individual Tests | 1411 |
-| npm Vulnerabilities | 0 |
-| ESLint Errors | 0 |
-| ESLint Warnings | 0 |
-| P0 Gaps | 9/9 geschlossen |
-| P1 Gaps | 5/5 geschlossen |
-| OID4VP | E-01a–E-01d implementiert |
-| OID4VCI | E-02 implementiert (32 Tests) |
-| Unlinkability | U-01–U-05 implementiert |
-| Security Hardening | S-01–S-05 implementiert |
+| Metrik              | Wert                          |
+| ------------------- | ----------------------------- |
+| Turbo Tasks         | 40/40 grün                    |
+| Individual Tests    | 1411                          |
+| npm Vulnerabilities | 0                             |
+| ESLint Errors       | 0                             |
+| ESLint Warnings     | 0                             |
+| P0 Gaps             | 9/9 geschlossen               |
+| P1 Gaps             | 5/5 geschlossen               |
+| OID4VP              | E-01a–E-01d implementiert     |
+| OID4VCI             | E-02 implementiert (32 Tests) |
+| Unlinkability       | U-01–U-05 implementiert       |
+| Security Hardening  | S-01–S-05 implementiert       |

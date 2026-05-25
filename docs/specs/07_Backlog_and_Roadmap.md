@@ -6,7 +6,9 @@ Status: **IMPLEMENTATION ACTIVE** (security-first, fail-closed, pilot-focused)
 ---
 
 ## 1) Current reality (not concept-only anymore)
+
 miTch is now a working TypeScript verifier service with:
+
 - fail-closed verification gates
 - deny-code model + KPI observability
 - audit/evidence flows
@@ -20,6 +22,7 @@ This backlog replaces the old concept-only framing.
 ## 2) Done (pilot-critical baseline)
 
 ### Core verifier + operations
+
 - [x] Request schema/semantic guards
 - [x] Binding checks (nonce/hash/audience/expiry)
 - [x] Rate limiting + distributed request budget
@@ -28,6 +31,7 @@ This backlog replaces the old concept-only framing.
 - [x] KPI endpoints/dashboard/check CLI + CI security gate
 
 ### Security hardening shipped
+
 - [x] Strong re-auth gate + proof-fatigue controls
 - [x] WebAuthn signed assertion verification scaffold
 - [x] Native hook mode moved from global bypass to request-bound cryptographic evidence
@@ -37,6 +41,7 @@ This backlog replaces the old concept-only framing.
 - [x] false_allow_total zero-tolerance (critical)
 
 ### Governance/repo readiness
+
 - [x] LICENSE / SECURITY.md / CONTRIBUTING.md / CODEOWNERS / NOTICE
 - [x] CI workflow for compile/tests/KPI checks
 
@@ -45,6 +50,7 @@ This backlog replaces the old concept-only framing.
 ## 3) Active priorities (next highest value)
 
 ### P0 — Must for stronger pilot assurance
+
 - [ ] **WebAuthn native verifier real implementation**
   - replace hook/scaffold with authenticator-level verification (counter/key/challenge binding)
 - [ ] **Revocation semantics v2+**
@@ -53,6 +59,7 @@ This backlog replaces the old concept-only framing.
   - practical anti-abuse model (social recovery/coercion/phishing resistance)
 
 ### P1 — Important near-term
+
 - [ ] **PQ/hybrid signature migration path v1**
   - crypto-agility exists; add dual/hybrid verification profile scaffolding
 - [ ] **Issuer trust/reputation controls**
@@ -61,6 +68,7 @@ This backlog replaces the old concept-only framing.
   - external GDPR legal opinion + binding pilot policy language
 
 ### P2 — Operational maturity
+
 - [ ] Alert routing playbook + escalation ownership
 - [ ] KPI trend snapshots for weekly pilot governance
 - [ ] Hardening regression bundle (attack replay pack)
@@ -77,12 +85,14 @@ This backlog replaces the old concept-only framing.
 ## 4b) Repo-first memory discipline (while embeddings recall is blocked)
 
 ### Files to keep current every batch
+
 - `STATE.md` (single-screen status)
 - `07_Backlog_and_Roadmap.md` (Now/Next/Later priorities)
 - `00_README.md` (index of new artifacts)
 - workspace `memory/YYYY-MM-DD.md` (short daily chronology)
 
 ### End-of-batch update protocol
+
 1. Confirm test baseline: `npm test` + `npm run kpi:check`
 2. Update/append numbered design/security note if behavior changed
 3. Refresh `STATE.md` (last batch + next 3 actions + blockers)
@@ -92,6 +102,7 @@ This backlog replaces the old concept-only framing.
 ---
 
 ## 5) Hard guardrails (do not violate)
+
 - False allow tolerance: **0**
 - Fail-open behavior: **forbidden**
 - Raw PII leakage in logs/evidence: **forbidden**
@@ -100,7 +111,9 @@ This backlog replaces the old concept-only framing.
 ---
 
 ## 6) Definition of pilot-ready (minimum)
+
 Pilot-ready only when all are true:
+
 - [ ] false_allow_total remains 0 under adversarial tests
 - [ ] WebAuthn path is cryptographically verified end-to-end for selected mode
 - [ ] Revocation path degrades safely under source failure (deny-biased)

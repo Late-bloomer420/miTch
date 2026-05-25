@@ -3,11 +3,13 @@
 Stand: 2026-02-11
 
 ## Purpose
+
 Define simple, actionable alert thresholds for pilot operations.
 
 ## KPI signals and thresholds
 
 ### 0) Trust-break event (highest priority)
+
 - Signal: `false_allow_total`
 - Critical: `> 0` (zero-tolerance)
 - Action:
@@ -16,6 +18,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Add regression test before resuming normal operations
 
 ### 0b) WebAuthn strong-mode config invalid
+
 - Signals:
   - `reauth_strong_enabled = 1`
   - `webauthn_verify_mode_code > 0`
@@ -26,6 +29,7 @@ Define simple, actionable alert thresholds for pilot operations.
   2. Re-run `kpi:check` and verify critical clears
 
 ### 0c) Native mode posture mismatch
+
 - Signal: `webauthn_native_mode_enabled = 1` with `reauth_strong_enabled != 1`
 - Warning: any occurrence
 - Action:
@@ -33,6 +37,7 @@ Define simple, actionable alert thresholds for pilot operations.
   2. Confirm this is intentional in runtime profile
 
 ### 0d) Strong mode with allowlist verifier drift
+
 - Signal: `reauth_strong_enabled = 1` and `webauthn_allowlist_mode_enabled = 1`
 - Warning: any occurrence
 - Action:
@@ -40,6 +45,7 @@ Define simple, actionable alert thresholds for pilot operations.
   2. Keep allowlist mode only for explicit compatibility windows
 
 ### 0e) Security profile score degradation
+
 - Signal: `security_profile_score`
 - Warning: `< 80`
 - Critical: `< 60`
@@ -49,6 +55,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Pause risky rollout if critical threshold is breached
 
 ### 1) Status source degradation
+
 - Signal: `deny_status_source_unavailable_rate`
 - Warning: `> 0.05` over last review window
 - Critical: `> 0.20` over last review window
@@ -58,6 +65,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Keep fail-closed mode active until root cause confirmed
 
 ### 2) Revoked-cache dependency spike
+
 - Signals:
   - `revoked_cache_hit_total`
   - `revoked_cache_store_total`
@@ -69,6 +77,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Reduce TTL if needed and restore provider reliability
 
 ### 3) Revocation pressure change
+
 - Signal: `deny_credential_revoked_total`
 - Warning: sudden step-up versus recent baseline
 - Action:
@@ -77,6 +86,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Inform pilot stakeholders if impact is broad
 
 ### 4) WebAuthn evidence drift
+
 - Signal: `deny_reauth_proof_invalid_total`
 - Warning: sustained increase over baseline
 - Action:
@@ -85,6 +95,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Review recent re-auth policy/config changes
 
 ### 5) Resolver inconsistency drift
+
 - Signal: `resolver_inconsistent_responses_total`
 - Warning: `> KPI_WARN_RESOLVER_INCONSISTENT_TOTAL` (default 5)
 - Critical: `> KPI_CRIT_RESOLVER_INCONSISTENT_TOTAL` (default 20)
@@ -94,6 +105,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Temporarily increase quorum strictness if needed
 
 ### 6) Resolver quorum failure drift
+
 - Signal: `resolver_quorum_failures_total`
 - Warning: `> KPI_WARN_RESOLVER_QUORUM_FAILURES_TOTAL` (default 5)
 - Critical: `> KPI_CRIT_RESOLVER_QUORUM_FAILURES_TOTAL` (default 20)
@@ -103,6 +115,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Escalate if sustained failures impact verification continuity
 
 ### 7) Quorum-failure deny pressure
+
 - Signal: `deny_resolver_quorum_failed_total`
 - Warning: `> KPI_WARN_DENY_RESOLVER_QUORUM_FAILED_TOTAL` (default 2)
 - Critical: `> KPI_CRIT_DENY_RESOLVER_QUORUM_FAILED_TOTAL` (default 10)
@@ -112,6 +125,7 @@ Define simple, actionable alert thresholds for pilot operations.
   3. Consider temporary stricter resolver profile and partner notification
 
 ## Operational notes
+
 - Evaluate thresholds per rolling window (e.g., 15-60 min) rather than raw lifetime totals.
 - `kpi:check` behavior can be tuned with `KPI_FAIL_ON_WARNING` (default soft-fail on warnings).
 - These thresholds are pilot defaults and should be tuned with real traffic.

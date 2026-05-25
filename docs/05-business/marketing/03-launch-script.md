@@ -1,9 +1,11 @@
 # miTch 30-Second Launch Script
 
 ## Format
+
 30 seconds, product launch video, voice-over first, visuals second.
 
 ## Script
+
 **0-5s**  
 Everyone keeps asking for identity data they do not actually need.
 
@@ -20,6 +22,7 @@ No raw data. No over-disclosure. No blind trust. Every decision stays auditable.
 miTch. Be prove only what is needed.
 
 ## Visual beats
+
 1. Request enters.
 2. Policy gate evaluates.
 3. Wallet reveals only the allowed claim.
@@ -27,6 +30,7 @@ miTch. Be prove only what is needed.
 5. End on the claim: Be prove only what is needed.
 
 ## On-screen text
+
 - Privacy firewall for identity proofs
 - Selective disclosure
 - Fail-closed policy

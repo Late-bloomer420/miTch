@@ -1,6 +1,6 @@
 /**
  * ConsentDecision - Binary decision from policy engine
- * 
+ *
  * CONSTRAINT: Decision is YES or NO. Never a data value.
  * External systems never see the reason (audit only).
  */

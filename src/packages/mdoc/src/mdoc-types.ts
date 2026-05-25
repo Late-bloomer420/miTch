@@ -35,14 +35,14 @@ export type DataElementValue = unknown;
  * CBOR-encoded as a map with these four keys.
  */
 export interface IssuerSignedItem {
-    /** Namespace this element belongs to */
-    digestID: number;
-    /** Random bytes for privacy (prevents brute-force of hashed values) */
-    random: Uint8Array;
-    /** Data element identifier (e.g., "family_name") */
-    elementIdentifier: DataElementIdentifier;
-    /** Data element value */
-    elementValue: DataElementValue;
+  /** Namespace this element belongs to */
+  digestID: number;
+  /** Random bytes for privacy (prevents brute-force of hashed values) */
+  random: Uint8Array;
+  /** Data element identifier (e.g., "family_name") */
+  elementIdentifier: DataElementIdentifier;
+  /** Data element value */
+  elementValue: DataElementValue;
 }
 
 // ─── Mobile Security Object (MSO) ──────────────────────────────────────────
@@ -67,22 +67,22 @@ export type ValueDigests = Map<NameSpace, DigestMap>;
  * Device key info — the holder's public key bound to this mdoc.
  */
 export interface DeviceKeyInfo {
-    /** COSE_Key structure (CBOR-encoded public key) */
-    deviceKey: Map<number, unknown>;
+  /** COSE_Key structure (CBOR-encoded public key) */
+  deviceKey: Map<number, unknown>;
 }
 
 /**
  * Validity information for the MSO.
  */
 export interface ValidityInfo {
-    /** Date the MSO was signed */
-    signed: Date;
-    /** Start of validity period */
-    validFrom: Date;
-    /** End of validity period */
-    validUntil: Date;
-    /** Expected update date (optional) */
-    expectedUpdate?: Date;
+  /** Date the MSO was signed */
+  signed: Date;
+  /** Start of validity period */
+  validFrom: Date;
+  /** End of validity period */
+  validUntil: Date;
+  /** Expected update date (optional) */
+  expectedUpdate?: Date;
 }
 
 /**
@@ -91,18 +91,18 @@ export interface ValidityInfo {
  * Wrapped in a COSE_Sign1 envelope by the issuer.
  */
 export interface MobileSecurityObject {
-    /** MSO version (e.g., "1.0") */
-    version: string;
-    /** Digest algorithm used for IssuerSignedItem hashes */
-    digestAlgorithm: DigestAlgorithm;
-    /** Per-namespace digests of all IssuerSignedItems */
-    valueDigests: ValueDigests;
-    /** Holder's device key */
-    deviceKeyInfo: DeviceKeyInfo;
-    /** Document type (e.g., "org.iso.18013.5.1.mDL") */
-    docType: string;
-    /** Validity period */
-    validityInfo: ValidityInfo;
+  /** MSO version (e.g., "1.0") */
+  version: string;
+  /** Digest algorithm used for IssuerSignedItem hashes */
+  digestAlgorithm: DigestAlgorithm;
+  /** Per-namespace digests of all IssuerSignedItems */
+  valueDigests: ValueDigests;
+  /** Holder's device key */
+  deviceKeyInfo: DeviceKeyInfo;
+  /** Document type (e.g., "org.iso.18013.5.1.mDL") */
+  docType: string;
+  /** Validity period */
+  validityInfo: ValidityInfo;
 }
 
 // ─── Device Authentication ──────────────────────────────────────────────────
@@ -112,9 +112,9 @@ export interface MobileSecurityObject {
  * Binds the device signature to the specific session context.
  */
 export type SessionTranscript = [
-    deviceEngagementBytes: Uint8Array | null,
-    eReaderKeyBytes: Uint8Array | null,
-    handover: unknown,
+  deviceEngagementBytes: Uint8Array | null,
+  eReaderKeyBytes: Uint8Array | null,
+  handover: unknown,
 ];
 
 /**
@@ -123,10 +123,10 @@ export type SessionTranscript = [
  * Can be either COSE_Mac0 or COSE_Sign1.
  */
 export interface DeviceAuth {
-    /** COSE_Mac0 authentication (NFC proximity) */
-    deviceMac?: Uint8Array;
-    /** COSE_Sign1 authentication (general) */
-    deviceSignature?: Uint8Array;
+  /** COSE_Mac0 authentication (NFC proximity) */
+  deviceMac?: Uint8Array;
+  /** COSE_Sign1 authentication (general) */
+  deviceSignature?: Uint8Array;
 }
 
 // ─── Document Structure ─────────────────────────────────────────────────────
@@ -136,32 +136,32 @@ export interface DeviceAuth {
  * Contains the MSO (in COSE_Sign1 envelope) and the disclosed data elements.
  */
 export interface IssuerSigned {
-    /** COSE_Sign1-wrapped MobileSecurityObject (raw CBOR bytes) */
-    nameSpaces: Map<NameSpace, IssuerSignedItem[]>;
-    /** MSO wrapped in COSE_Sign1 (raw bytes — COSE verification is a future step) */
-    issuerAuth: Uint8Array;
+  /** COSE_Sign1-wrapped MobileSecurityObject (raw CBOR bytes) */
+  nameSpaces: Map<NameSpace, IssuerSignedItem[]>;
+  /** MSO wrapped in COSE_Sign1 (raw bytes — COSE verification is a future step) */
+  issuerAuth: Uint8Array;
 }
 
 /**
  * Device-signed portion of an mdoc (selective disclosure by holder).
  */
 export interface DeviceSigned {
-    /** Namespaces with device-signed elements (usually empty for mdoc presentation) */
-    nameSpaces: Map<NameSpace, DataElementValue>;
-    /** Device authentication (COSE_Mac0 or COSE_Sign1 over session transcript) */
-    deviceAuth: DeviceAuth;
+  /** Namespaces with device-signed elements (usually empty for mdoc presentation) */
+  nameSpaces: Map<NameSpace, DataElementValue>;
+  /** Device authentication (COSE_Mac0 or COSE_Sign1 over session transcript) */
+  deviceAuth: DeviceAuth;
 }
 
 /**
  * Complete mdoc Document — the top-level structure for presentation.
  */
 export interface MdocDocument {
-    /** Document type (e.g., "org.iso.18013.5.1.mDL") */
-    docType: string;
-    /** Issuer-signed data and MSO */
-    issuerSigned: IssuerSigned;
-    /** Device-signed authentication */
-    deviceSigned?: DeviceSigned;
+  /** Document type (e.g., "org.iso.18013.5.1.mDL") */
+  docType: string;
+  /** Issuer-signed data and MSO */
+  issuerSigned: IssuerSigned;
+  /** Device-signed authentication */
+  deviceSigned?: DeviceSigned;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -174,16 +174,16 @@ export const MDL_NAMESPACE = 'org.iso.18013.5.1';
 
 /** Common mDL data element identifiers */
 export const MDL_ELEMENTS = {
-    FAMILY_NAME: 'family_name',
-    GIVEN_NAME: 'given_name',
-    BIRTH_DATE: 'birth_date',
-    ISSUE_DATE: 'issue_date',
-    EXPIRY_DATE: 'expiry_date',
-    ISSUING_COUNTRY: 'issuing_country',
-    ISSUING_AUTHORITY: 'issuing_authority',
-    DOCUMENT_NUMBER: 'document_number',
-    PORTRAIT: 'portrait',
-    AGE_OVER_18: 'age_over_18',
-    AGE_OVER_21: 'age_over_21',
-    DRIVING_PRIVILEGES: 'driving_privileges',
+  FAMILY_NAME: 'family_name',
+  GIVEN_NAME: 'given_name',
+  BIRTH_DATE: 'birth_date',
+  ISSUE_DATE: 'issue_date',
+  EXPIRY_DATE: 'expiry_date',
+  ISSUING_COUNTRY: 'issuing_country',
+  ISSUING_AUTHORITY: 'issuing_authority',
+  DOCUMENT_NUMBER: 'document_number',
+  PORTRAIT: 'portrait',
+  AGE_OVER_18: 'age_over_18',
+  AGE_OVER_21: 'age_over_21',
+  DRIVING_PRIVILEGES: 'driving_privileges',
 } as const;

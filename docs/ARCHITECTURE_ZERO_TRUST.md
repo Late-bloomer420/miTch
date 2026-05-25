@@ -21,15 +21,15 @@ bis das Gegenteil durch kryptografische Mittel nachgewiesen ist.
 
 ## Zero Trust Axiome für miTch
 
-| # | Axiom | Implementierung |
-|---|---|---|
-| ZT-1 | Kein implizites Vertrauen | Jede Komponente validiert ihre Inputs, unabhängig von der Quelle |
-| ZT-2 | Minimale Berechtigungen | Policy Engine sieht nur Metadaten — niemals Rohdaten |
-| ZT-3 | Explizite Autorisierung | ALLOW-Verdicts erfordern signierten DecisionCapsule + Nonce |
-| ZT-4 | Continuous Verification | Rate Limiting + Risk Scoring per Verifier-Session |
-| ZT-5 | Fail Closed | Jede Unsicherheit resultiert in DENY oder PROMPT — niemals silent ALLOW |
-| ZT-6 | Kryptografische Bindung | Pairwise DIDs + Capsule-Signaturen — keine Trust-by-Origin |
-| ZT-7 | Audit alles | Jede Entscheidung wird lokal geloggt — kein "Dark Access" |
+| #    | Axiom                     | Implementierung                                                         |
+| ---- | ------------------------- | ----------------------------------------------------------------------- |
+| ZT-1 | Kein implizites Vertrauen | Jede Komponente validiert ihre Inputs, unabhängig von der Quelle        |
+| ZT-2 | Minimale Berechtigungen   | Policy Engine sieht nur Metadaten — niemals Rohdaten                    |
+| ZT-3 | Explizite Autorisierung   | ALLOW-Verdicts erfordern signierten DecisionCapsule + Nonce             |
+| ZT-4 | Continuous Verification   | Rate Limiting + Risk Scoring per Verifier-Session                       |
+| ZT-5 | Fail Closed               | Jede Unsicherheit resultiert in DENY oder PROMPT — niemals silent ALLOW |
+| ZT-6 | Kryptografische Bindung   | Pairwise DIDs + Capsule-Signaturen — keine Trust-by-Origin              |
+| ZT-7 | Audit alles               | Jede Entscheidung wird lokal geloggt — kein "Dark Access"               |
 
 ---
 
@@ -72,10 +72,12 @@ Externer Verifier
 ## Zero Trust Maßnahmen je Angriffsvektor
 
 ### Chained Attacks (Salt Typhoon Pattern)
+
 Ein Angreifer kompromittiert eine Komponente und versucht, sich darüber zu anderen
 vorzuarbeiten.
 
 **Mitigationen:**
+
 - `ZT-2`: Policy Engine hat KEINEN Schreibzugriff auf Consent Store oder Audit Logger
 - `ZT-3`: Shell verifiziert `wallet_attestation` des DecisionCapsule — manipulierte
   Engine-Outputs werden erkannt
@@ -84,35 +86,43 @@ vorzuarbeiten.
 - `I-7` (Spec 112): Kein Modul akzeptiert seinen eigenen Output als Input
 
 ### Supply Chain Compromise (kompromittiertes NPM-Paket)
+
 Ein Paket wird kompromittiert und versucht, Policy-Entscheidungen zu manipulieren.
 
 **Mitigationen:**
+
 - `ZT-1`: Policy Manifest ist versioniert + gehasht (S-02) — Manipulation wird erkannt
 - `ZT-5`: Fail-Closed: Jede Exception in der Engine resultiert in DENY
 - `S-02`: Rollback-Schutz verhindert Downgrade auf ältere, schwächere Policy-Versionen
 - Subresource Integrity (SRI) für Bundles (geplant, H-06)
 
 ### Browser Extension / XSS
+
 Extension versucht, Policy-Entscheidungen abzufangen oder zu modifizieren.
 
 **Mitigationen:**
+
 - `ZT-6`: DecisionCapsule ist ECDSA-signiert — Modifikation wird erkannt
 - `ZT-3`: Nonce in Capsule — Replay-Schutz (5-Minuten-Expiry)
 - `ZT-4`: Rate Limiting pro Verifier-Session — Burst-Angriffe werden geblockt
 - Pairwise DIDs (U-05) — kein persistenter Identifier für Extension sichtbar
 
 ### Fake Verifier Spoofing
+
 Ein Angreifer gibt vor, ein anderer Verifier zu sein.
 
 **Mitigationen:**
+
 - `S-01`: `verifier_fingerprint` in Policy Manifest — Mismatch → PROMPT (nie auto-ALLOW)
 - `ZT-5`: Unbekannte Verifier → DENY by Default (`blockUnknownVerifiers: true`)
 - DID-basierte Identität — kein IP-Spoofing möglich
 
 ### Manifest Rollback
+
 Angreifer ersetzt neues Policy-Manifest durch älteres, schwächeres.
 
 **Mitigationen:**
+
 - `S-02`: `manifest_version` als monotoner Zähler — Rollback wird erkannt
 - `S-02`: `manifest_hash` — Tamper-Erkennung beim Laden
 - Shell prüft `checkManifestRollback()` VOR jedem `engine.evaluate()`
@@ -121,32 +131,32 @@ Angreifer ersetzt neues Policy-Manifest durch älteres, schwächeres.
 
 ## Fail-Closed-Garantien
 
-| Fehlerfall | Verhalten |
-|---|---|
-| Policy Engine wirft Exception | DENY |
-| Manifest fehlt manifest_version | Validation schlägt fehl → kein evaluate() |
-| Fingerprint im Request fehlt | PROMPT (nie auto-ALLOW) |
-| DID-Resolution schlägt fehl | DENY (G-01) |
-| Revocation-Check schlägt fehl | DENY (G-02) |
-| Ephemeral Key kann nicht generiert werden | Engine loggt Error, Capsule ohne pairwise_did |
-| Capsule-Signatur kann nicht verifiziert werden | Shell akzeptiert Result nicht |
-| Credential ist expired | DENY |
-| Rate Limit überschritten | DENY (RATE_LIMIT_EXCEEDED) |
-| Risk Score zu hoch | PROMPT (HIGH_RISK_VERIFIER) |
+| Fehlerfall                                     | Verhalten                                     |
+| ---------------------------------------------- | --------------------------------------------- |
+| Policy Engine wirft Exception                  | DENY                                          |
+| Manifest fehlt manifest_version                | Validation schlägt fehl → kein evaluate()     |
+| Fingerprint im Request fehlt                   | PROMPT (nie auto-ALLOW)                       |
+| DID-Resolution schlägt fehl                    | DENY (G-01)                                   |
+| Revocation-Check schlägt fehl                  | DENY (G-02)                                   |
+| Ephemeral Key kann nicht generiert werden      | Engine loggt Error, Capsule ohne pairwise_did |
+| Capsule-Signatur kann nicht verifiziert werden | Shell akzeptiert Result nicht                 |
+| Credential ist expired                         | DENY                                          |
+| Rate Limit überschritten                       | DENY (RATE_LIMIT_EXCEEDED)                    |
+| Risk Score zu hoch                             | PROMPT (HIGH_RISK_VERIFIER)                   |
 
 ---
 
 ## Nicht-funktionale Anforderungen
 
-| Eigenschaft | Wert | Quelle |
-|---|---|---|
-| DecisionCapsule-Expiry | 5 Minuten | engine.ts |
-| Rate Limit | 10 Requests/Minute/Verifier | engine.ts |
-| Risk Score Threshold | 5 Excess Claims | engine.ts |
-| Pairwise DID Lifetime | 1 Interaction (shred after use) | pairwise-did.ts |
-| Ephemeral Key Shredding | Sofort nach Signatur | U-04 |
-| Manifest Version Check | Vor jedem evaluate() | S-02 |
-| Input Validation | Vor jedem evaluate() | S-03 |
+| Eigenschaft             | Wert                            | Quelle          |
+| ----------------------- | ------------------------------- | --------------- |
+| DecisionCapsule-Expiry  | 5 Minuten                       | engine.ts       |
+| Rate Limit              | 10 Requests/Minute/Verifier     | engine.ts       |
+| Risk Score Threshold    | 5 Excess Claims                 | engine.ts       |
+| Pairwise DID Lifetime   | 1 Interaction (shred after use) | pairwise-did.ts |
+| Ephemeral Key Shredding | Sofort nach Signatur            | U-04            |
+| Manifest Version Check  | Vor jedem evaluate()            | S-02            |
+| Input Validation        | Vor jedem evaluate()            | S-03            |
 
 ---
 

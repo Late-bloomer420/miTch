@@ -46,8 +46,8 @@ export function extractX5Chain(
   protectedHeaders: CoseHeaderMap,
   unprotectedHeaders: CoseHeaderMap
 ): X5ChainResult {
-  const x5chain = protectedHeaders.get(COSE_HEADER_X5CHAIN)
-    ?? unprotectedHeaders.get(COSE_HEADER_X5CHAIN);
+  const x5chain =
+    protectedHeaders.get(COSE_HEADER_X5CHAIN) ?? unprotectedHeaders.get(COSE_HEADER_X5CHAIN);
 
   if (!x5chain) {
     throw new Error('No x5chain (header 33) found in COSE headers');

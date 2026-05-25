@@ -1,7 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["version", "requestId", "decision", "decisionCode", "claimsSatisfied", "receiptRef", "verifiedAt"],
+  "required": [
+    "version",
+    "requestId",
+    "decision",
+    "decisionCode",
+    "claimsSatisfied",
+    "receiptRef",
+    "verifiedAt"
+  ],
   "properties": {
     "version": { "const": "v0" },
     "requestId": { "type": "string" },

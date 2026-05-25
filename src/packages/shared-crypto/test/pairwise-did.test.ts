@@ -115,9 +115,7 @@ describe('Pairwise DID — Key Shredding', () => {
       sessionNonce: 'shred-test-003',
     });
     result.destroy();
-    await expect(
-      result.sign(new Uint8Array([1, 2, 3]))
-    ).rejects.toThrow('shredded');
+    await expect(result.sign(new Uint8Array([1, 2, 3]))).rejects.toThrow('shredded');
   });
 });
 

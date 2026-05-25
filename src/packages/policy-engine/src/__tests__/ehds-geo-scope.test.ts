@@ -6,7 +6,11 @@
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
 import { extractCountryFromDid, isAllowedByGeoScope } from '../geo-scope';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type {
+  PolicyManifest,
+  VerifierRequest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 
 // ─── Helper function unit tests ───
 
@@ -84,7 +88,11 @@ function makePolicy(geoScope?: string): PolicyManifest {
     version: '1.2',
     globalSettings: { blockUnknownVerifiers: false },
     trustedIssuers: [
-      { did: 'did:example:ehealth-authority', name: 'eHealth Authority', credentialTypes: ['PatientSummary', 'VerifiableCredential'] },
+      {
+        did: 'did:example:ehealth-authority',
+        name: 'eHealth Authority',
+        credentialTypes: ['PatientSummary', 'VerifiableCredential'],
+      },
     ],
     rules: [rule],
   };
@@ -94,11 +102,13 @@ function makeRequest(verifierId: string): VerifierRequest {
   return {
     verifierId,
     origin: 'https://example.com',
-    requirements: [{
-      credentialType: 'PatientSummary',
-      requestedClaims: ['bloodGroup', 'allergies'],
-      requestedProvenClaims: [],
-    }],
+    requirements: [
+      {
+        credentialType: 'PatientSummary',
+        requestedClaims: ['bloodGroup', 'allergies'],
+        requestedProvenClaims: [],
+      },
+    ],
   };
 }
 
@@ -107,36 +117,66 @@ describe('PolicyEngine geoScope enforcement', () => {
   const ctx: EvaluationContext = { timestamp: Date.now(), userDID: 'did:example:wallet-user' };
 
   it('eu-only: DE hospital → PROMPT (allowed)', async () => {
-    const result = await engine.evaluate(makeRequest('did:de:hospital-berlin'), ctx, [HEALTH_CREDENTIAL], makePolicy('eu-only'));
+    const result = await engine.evaluate(
+      makeRequest('did:de:hospital-berlin'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy('eu-only')
+    );
     expect(result.verdict).not.toBe('DENY');
     expect(result.reasonCodes).not.toContain(ReasonCode.GEO_SCOPE_VIOLATION);
   });
 
   it('eu-only: US hospital → DENY + GEO_SCOPE_VIOLATION', async () => {
-    const result = await engine.evaluate(makeRequest('did:us:hospital-new-york'), ctx, [HEALTH_CREDENTIAL], makePolicy('eu-only'));
+    const result = await engine.evaluate(
+      makeRequest('did:us:hospital-new-york'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy('eu-only')
+    );
     expect(result.verdict).toBe('DENY');
     expect(result.reasonCodes).toContain(ReasonCode.GEO_SCOPE_VIOLATION);
   });
 
   it('eu-plus-adequacy: JP research → PROMPT (adequacy)', async () => {
-    const result = await engine.evaluate(makeRequest('did:jp:research-tokyo'), ctx, [HEALTH_CREDENTIAL], makePolicy('eu-plus-adequacy'));
+    const result = await engine.evaluate(
+      makeRequest('did:jp:research-tokyo'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy('eu-plus-adequacy')
+    );
     expect(result.verdict).not.toBe('DENY');
     expect(result.reasonCodes).not.toContain(ReasonCode.GEO_SCOPE_VIOLATION);
   });
 
   it('eu-plus-adequacy: CN hospital → DENY', async () => {
-    const result = await engine.evaluate(makeRequest('did:cn:hospital-beijing'), ctx, [HEALTH_CREDENTIAL], makePolicy('eu-plus-adequacy'));
+    const result = await engine.evaluate(
+      makeRequest('did:cn:hospital-beijing'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy('eu-plus-adequacy')
+    );
     expect(result.verdict).toBe('DENY');
     expect(result.reasonCodes).toContain(ReasonCode.GEO_SCOPE_VIOLATION);
   });
 
   it('no geoScope set → allows any country', async () => {
-    const result = await engine.evaluate(makeRequest('did:cn:hospital-beijing'), ctx, [HEALTH_CREDENTIAL], makePolicy());
+    const result = await engine.evaluate(
+      makeRequest('did:cn:hospital-beijing'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy()
+    );
     expect(result.verdict).not.toBe('DENY');
   });
 
   it('global geoScope → allows any country', async () => {
-    const result = await engine.evaluate(makeRequest('did:cn:hospital-beijing'), ctx, [HEALTH_CREDENTIAL], makePolicy('global'));
+    const result = await engine.evaluate(
+      makeRequest('did:cn:hospital-beijing'),
+      ctx,
+      [HEALTH_CREDENTIAL],
+      makePolicy('global')
+    );
     expect(result.verdict).not.toBe('DENY');
   });
 });

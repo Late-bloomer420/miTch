@@ -46,7 +46,7 @@ function uniqueOrdered(values: string[]): string[] {
 function extractRequestedClaims(request?: VerifierRequest | null): string[] {
   if (!request) return [];
   if (request.requirements?.length) {
-    return uniqueOrdered(request.requirements.flatMap(req => req.requestedClaims ?? []));
+    return uniqueOrdered(request.requirements.flatMap((req) => req.requestedClaims ?? []));
   }
   return uniqueOrdered(request.requestedClaims ?? []);
 }
@@ -54,7 +54,7 @@ function extractRequestedClaims(request?: VerifierRequest | null): string[] {
 function extractRequestedProvenClaims(request?: VerifierRequest | null): string[] {
   if (!request) return [];
   if (request.requirements?.length) {
-    return uniqueOrdered(request.requirements.flatMap(req => req.requestedProvenClaims ?? []));
+    return uniqueOrdered(request.requirements.flatMap((req) => req.requestedProvenClaims ?? []));
   }
   return uniqueOrdered(request.requestedProvenClaims ?? []);
 }
@@ -63,7 +63,7 @@ function collectEvidence(
   result: PolicyEvaluationResult | null,
   transaction: DataFlowTransaction | null,
   privacyConsent: PrivacyConsent | null,
-  consentReceipt: ConsentReceipt | null,
+  consentReceipt: ConsentReceipt | null
 ): ConsentManagerEvidenceItem[] {
   const evidence: ConsentManagerEvidenceItem[] = [];
 
@@ -74,7 +74,7 @@ function collectEvidence(
       { label: 'Decision ID', value: capsule.decision_id },
       { label: 'Policy hash', value: capsule.policy_hash },
       { label: 'Request hash', value: capsule.request_hash },
-      { label: 'Verifier', value: capsule.verifier_did },
+      { label: 'Verifier', value: capsule.verifier_did }
     );
   }
 
@@ -84,7 +84,7 @@ function collectEvidence(
       { label: 'Requested claims', value: String(transaction.claimsRequested?.length ?? 0) },
       { label: 'Allowed claims', value: String(transaction.claimsShared.length) },
       { label: 'Withheld claims', value: String(transaction.claimsWithheld?.length ?? 0) },
-      { label: 'Identity signals', value: String(transaction.identityAccessCount) },
+      { label: 'Identity signals', value: String(transaction.identityAccessCount) }
     );
   }
 
@@ -92,7 +92,7 @@ function collectEvidence(
     evidence.push(
       { label: 'Privacy scan', value: privacyConsent.status },
       { label: 'Accepted trackers', value: String(privacyConsent.acceptedTrackers.length) },
-      { label: 'Audit hash', value: privacyConsent.auditHash },
+      { label: 'Audit hash', value: privacyConsent.auditHash }
     );
   }
 
@@ -103,7 +103,7 @@ function collectEvidence(
       { label: 'Receipt claims', value: String(consentReceipt.claimsShared.length) },
       { label: 'Receipt timestamp', value: consentReceipt.timestamp },
       { label: 'Receipt outcome', value: consentReceipt.outcome },
-      { label: 'Receipt decision ID', value: consentReceipt.decisionId ?? 'none' },
+      { label: 'Receipt decision ID', value: consentReceipt.decisionId ?? 'none' }
     );
   }
 
@@ -128,8 +128,8 @@ export function buildConsentManagerViewModel({
   const transactions = dataFlowService.buildTransactions(auditEntries);
   const decisionId = result?.decisionCapsule?.decision_id ?? null;
   const transaction = decisionId
-    ? transactions.find(tx => tx.transactionId === decisionId) ?? null
-    : transactions[0] ?? null;
+    ? (transactions.find((tx) => tx.transactionId === decisionId) ?? null)
+    : (transactions[0] ?? null);
 
   const requestedClaims = extractRequestedClaims(request);
   const requestedProvenClaims = extractRequestedProvenClaims(request);
@@ -148,9 +148,7 @@ export function buildConsentManagerViewModel({
 
   return {
     state,
-    verifierLabel: transaction?.verifierLabel
-      ?? request?.verifierId
-      ?? 'Unknown verifier',
+    verifierLabel: transaction?.verifierLabel ?? request?.verifierId ?? 'Unknown verifier',
     decisionId,
     requestedClaims,
     requestedProvenClaims,

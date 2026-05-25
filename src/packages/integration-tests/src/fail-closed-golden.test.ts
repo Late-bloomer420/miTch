@@ -21,7 +21,11 @@ import { StatusListRevocationChecker } from '@mitch/revocation-statuslist';
 import type { StatusListEntry, StatusListCredential } from '@mitch/revocation-statuslist';
 import { DIDResolver, DIDResolutionError } from '@mitch/shared-crypto';
 import { PolicyEngine, ReasonCode } from '@mitch/policy-engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type {
+  PolicyManifest,
+  VerifierRequest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 import type { EvaluationContext } from '@mitch/policy-engine';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -69,7 +73,9 @@ function mockFetchFail(): typeof fetch {
 }
 
 function mockFetchHttp500(): typeof fetch {
-  return vi.fn().mockResolvedValue({ ok: false, status: 500, statusText: 'Internal Server Error' }) as any;
+  return vi
+    .fn()
+    .mockResolvedValue({ ok: false, status: 500, statusText: 'Internal Server Error' }) as any;
 }
 
 function mockFetchMalformedJson(): typeof fetch {
@@ -100,21 +106,25 @@ const TRUSTED_ISSUER_DID = 'did:example:trusted-issuer';
 function makePolicy(overrides: Partial<PolicyManifest> = {}): PolicyManifest {
   return {
     version: '1.0.0',
-    rules: [{
-      id: 'known-verifier-rule',
-      verifierPattern: 'did:example:known-verifier',
-      allowedClaims: ['age_over_18'],
-      provenClaims: ['age_over_18'],
-      requiresTrustedIssuer: true,
-      maxCredentialAgeDays: 365,
-      priority: 1,
-      requiresUserConsent: false,
-    }],
-    trustedIssuers: [{
-      did: TRUSTED_ISSUER_DID,
-      credentialTypes: ['AgeCredential'],
-      name: 'Test Issuer',
-    }],
+    rules: [
+      {
+        id: 'known-verifier-rule',
+        verifierPattern: 'did:example:known-verifier',
+        allowedClaims: ['age_over_18'],
+        provenClaims: ['age_over_18'],
+        requiresTrustedIssuer: true,
+        maxCredentialAgeDays: 365,
+        priority: 1,
+        requiresUserConsent: false,
+      },
+    ],
+    trustedIssuers: [
+      {
+        did: TRUSTED_ISSUER_DID,
+        credentialTypes: ['AgeCredential'],
+        name: 'Test Issuer',
+      },
+    ],
     globalSettings: {
       blockUnknownVerifiers: true,
       requireConsentForAll: false,
@@ -128,11 +138,13 @@ function makeRequest(verifierId: string, claims: string[] = ['age_over_18']): Ve
     verifierId,
     requestedClaims: claims,
     requestedProvenClaims: [],
-    requirements: [{
-      credentialType: 'AgeCredential',
-      requestedClaims: claims,
-      requestedProvenClaims: [],
-    }],
+    requirements: [
+      {
+        credentialType: 'AgeCredential',
+        requestedClaims: claims,
+        requestedProvenClaims: [],
+      },
+    ],
     nonce: 'test-nonce-' + Date.now(),
   } as VerifierRequest;
 }
@@ -153,7 +165,6 @@ function makeCredential(): StoredCredentialMetadata {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → DENY', () => {
-
   describe('DID Resolution failures', () => {
     it('network error during DID resolution → throws DIDResolutionError', async () => {
       const resolver = new DIDResolver({
@@ -161,8 +172,9 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         allowMockFallback: false,
       });
 
-      await expect(resolver.resolve('did:web:unreachable.example.com'))
-        .rejects.toThrow(DIDResolutionError);
+      await expect(resolver.resolve('did:web:unreachable.example.com')).rejects.toThrow(
+        DIDResolutionError
+      );
     });
 
     it('HTTP 500 from DID resolver → throws DIDResolutionError', async () => {
@@ -171,8 +183,9 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         allowMockFallback: false,
       });
 
-      await expect(resolver.resolve('did:web:broken.example.com'))
-        .rejects.toThrow(DIDResolutionError);
+      await expect(resolver.resolve('did:web:broken.example.com')).rejects.toThrow(
+        DIDResolutionError
+      );
     });
 
     it('timeout during DID resolution → throws DIDResolutionError', async () => {
@@ -182,15 +195,15 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         allowMockFallback: false,
       });
 
-      await expect(resolver.resolve('did:web:slow.example.com'))
-        .rejects.toThrow(DIDResolutionError);
+      await expect(resolver.resolve('did:web:slow.example.com')).rejects.toThrow(
+        DIDResolutionError
+      );
     }, 10_000);
 
     it('unsupported DID method without mock fallback → throws DIDResolutionError', async () => {
       const resolver = new DIDResolver({ allowMockFallback: false });
 
-      await expect(resolver.resolve('did:unknown:something'))
-        .rejects.toThrow(DIDResolutionError);
+      await expect(resolver.resolve('did:unknown:something')).rejects.toThrow(DIDResolutionError);
     });
 
     it('empty/null DID → throws DIDResolutionError', async () => {
@@ -208,8 +221,9 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         allowMockFallback: false,
       });
 
-      await expect(resolver.resolve('did:web:malformed.example.com'))
-        .rejects.toThrow(DIDResolutionError);
+      await expect(resolver.resolve('did:web:malformed.example.com')).rejects.toThrow(
+        DIDResolutionError
+      );
     });
   });
 
@@ -220,7 +234,7 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         makeRequest('did:example:unknown-verifier'),
         BASE_CONTEXT,
         [makeCredential()],
-        makePolicy(),
+        makePolicy()
       );
 
       expect(result.verdict).toBe('DENY');
@@ -237,7 +251,7 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
         makeRequest('did:example:no-rule-matches'),
         BASE_CONTEXT,
         [makeCredential()],
-        policy,
+        policy
       );
 
       expect(result.verdict).toBe('DENY');
@@ -251,7 +265,6 @@ describe('🔒 GOLDEN INVARIANT 1: Unknown verifier / DID resolution fails → D
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('🔒 GOLDEN INVARIANT 2: Revocation status unknown/unreachable → DENY', () => {
-
   describe('StatusList fetch failures (high-risk)', () => {
     it('network error → DENY, never ALLOW', async () => {
       const checker = new StatusListRevocationChecker({ fetchFn: mockFetchFail() });
@@ -395,7 +408,6 @@ describe('🔒 GOLDEN INVARIANT 2: Revocation status unknown/unreachable → DEN
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY or PROMPT, never ALLOW', () => {
-
   describe('Claim not in allowed list', () => {
     it('requesting disallowed claim → DENY', async () => {
       const engine = new PolicyEngine();
@@ -403,7 +415,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier', ['social_security_number']),
         BASE_CONTEXT,
         [makeCredential()],
-        makePolicy(),
+        makePolicy()
       );
 
       expect(result.verdict).toBe('DENY');
@@ -421,7 +433,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [makeCredential()],
-        policy,
+        policy
       );
 
       expect(result.verdict).toBe('DENY');
@@ -436,7 +448,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [], // empty wallet
-        makePolicy(),
+        makePolicy()
       );
 
       expect(result.verdict).toBe('DENY');
@@ -454,7 +466,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [cred],
-        makePolicy(),
+        makePolicy()
       );
 
       expect(result.verdict).toBe('DENY');
@@ -472,7 +484,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [makeCredential()],
-        policy,
+        policy
       );
 
       expect(result.verdict).toBe('PROMPT');
@@ -492,7 +504,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [makeCredential()],
-        policy,
+        policy
       );
 
       expect(result.verdict).toBe('PROMPT');
@@ -509,7 +521,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [cred],
-        makePolicy(),
+        makePolicy()
       );
 
       expect(result.verdict).toBe('DENY');
@@ -524,7 +536,7 @@ describe('🔒 GOLDEN INVARIANT 3: Policy ambiguity / purpose mismatch → DENY 
         makeRequest('did:example:known-verifier'),
         BASE_CONTEXT,
         [makeCredential()],
-        makePolicy(),
+        makePolicy()
       );
 
       expect(['ALLOW', 'DENY', 'PROMPT']).toContain(result.verdict);

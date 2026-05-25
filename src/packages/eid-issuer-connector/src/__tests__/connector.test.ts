@@ -74,7 +74,7 @@ describe('EIDIssuerConnector — Simulator Mode', () => {
 
     expect(result.payload.sub).toBe('did:example:charlie');
     expect(result.disclosures.length).toBe(2);
-    expect(result.disclosures.map(d => d.name).sort()).toEqual(['familyName', 'givenName']);
+    expect(result.disclosures.map((d) => d.name).sort()).toEqual(['familyName', 'givenName']);
   });
 
   // ─── SD-JWT Disclosures ─────────────────────────────────────────────
@@ -89,13 +89,13 @@ describe('EIDIssuerConnector — Simulator Mode', () => {
     const response = await connector.requestIssuance(request);
     const result = await connector.verifyCredential(response.credential);
 
-    const disclosureNames = result.disclosures.map(d => d.name).sort();
+    const disclosureNames = result.disclosures.map((d) => d.name).sort();
     expect(disclosureNames).toEqual(['dateOfBirth', 'familyName', 'givenName', 'nationality']);
 
-    const givenName = result.disclosures.find(d => d.name === 'givenName');
+    const givenName = result.disclosures.find((d) => d.name === 'givenName');
     expect(givenName?.value).toBe('Max');
 
-    const dob = result.disclosures.find(d => d.name === 'dateOfBirth');
+    const dob = result.disclosures.find((d) => d.name === 'dateOfBirth');
     expect(dob?.value).toBe('1990-01-15');
   });
 

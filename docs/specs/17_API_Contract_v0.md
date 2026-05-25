@@ -6,6 +6,7 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ---
 
 ## 1) Design Rules
+
 - Fail closed on any schema mismatch or missing required field.
 - Requests must be purpose-bound and audience-bound.
 - Proofs must be nonce-bound and expiry-bound.
@@ -42,9 +43,11 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ```
 
 ### Required Fields
+
 - `version`, `requestId`, `rp.id`, `rp.audience`, `purpose`, `claims[]`, `binding.nonce`, `binding.requestHash`, `binding.expiresAt`, `policyRef`
 
 ### Deny Conditions (non-exhaustive)
+
 - Missing or unknown required fields
 - Unknown claim type/name
 - Expired request
@@ -77,6 +80,7 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ```
 
 ### Required Validation
+
 1. Schema validate
 2. Binding validate (nonce/hash/audience/expiry)
 3. Policy evaluate (least disclosure + purpose)
@@ -121,9 +125,11 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ## 5) Decision Code Taxonomy (v0 baseline)
 
 ### Allow
+
 - `ALLOW_MINIMAL_PROOF_VALID`
 
 ### Deny (schema/policy/binding/security)
+
 - `DENY_SCHEMA_MISSING_FIELD`
 - `DENY_SCHEMA_UNKNOWN_FIELD`
 - `DENY_POLICY_UNSUPPORTED_VERSION`
@@ -140,6 +146,7 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ---
 
 ## 6) Logging Constraints (Normative)
+
 - Never log raw PII attributes.
 - Never log stable cross-RP identifiers.
 - Keep timestamps at minimum precision needed for operations.
@@ -148,6 +155,7 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ---
 
 ## 7) Versioning Rules
+
 - `version` is mandatory in all request/response payloads.
 - Backward-incompatible changes require new major contract version.
 - Verifier must deny unknown major versions by default.
@@ -155,6 +163,7 @@ Status: Draft v0 (normative for MVP once ADR-008 is Accepted)
 ---
 
 ## 8) Open Implementation Choices (must be closed by ADR)
+
 - Final proof `format` for MVP and fallback
 - Canonicalization algorithm for `requestHash`
 - Revocation/status protocol details

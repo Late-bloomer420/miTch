@@ -25,17 +25,20 @@ Three-tier consent model (legal/service/optional). No dark patterns. Decline con
 ## Three-Tier Requirement Model
 
 ### Tier 1: Legally Required
+
 - Must cite the actual law/regulation (e.g., JuSchG §2)
 - miTch validates the legal basis
 - Decline button is equal-sized, states real consequence ("Purchase cannot proceed")
 - No guilt-tripping, no friction on decline
 
 ### Tier 2: Service-Required
+
 - Clear visual separation from optional claims
 - Each claim explains what it enables, not why verifier wants it
 - Specific decline consequence ("Cannot book appointment")
 
 ### Tier 3: Nice-to-Have (Optional)
+
 - ALL unchecked by default
 - Primary button is "Continue without sharing"
 - No "share all" shortcut
@@ -44,12 +47,12 @@ Three-tier consent model (legal/service/optional). No dark patterns. Decline con
 
 ## Anti-Dark-Pattern Rules
 
-| Anti-Pattern | miTch Alternative |
-|---|---|
-| Wall of legal text | Plain language, 1 sentence |
-| Pre-checked optional claims | Optional = unchecked by default |
-| "Accept all" as primary button | Equal-weight Approve/Decline |
-| No undo | Consent log with revoke button |
+| Anti-Pattern                     | miTch Alternative                          |
+| -------------------------------- | ------------------------------------------ |
+| Wall of legal text               | Plain language, 1 sentence                 |
+| Pre-checked optional claims      | Optional = unchecked by default            |
+| "Accept all" as primary button   | Equal-weight Approve/Decline               |
+| No undo                          | Consent log with revoke button             |
 | Consent fatigue (ask every time) | Remember preference per verifier (Phase 1) |
 
 ---
@@ -61,9 +64,9 @@ Verifiers declare requirements upfront with justification. Wallet rejects reques
 ```typescript
 interface VerifierClaimRequest {
   claim: string;
-  tier: "legal" | "service" | "optional";
-  legalBasis?: { regulation: string; jurisdiction: string; article?: string; };
-  serviceBasis?: { reason: string; consequenceIfDeclined: string; };
+  tier: 'legal' | 'service' | 'optional';
+  legalBasis?: { regulation: string; jurisdiction: string; article?: string };
+  serviceBasis?: { reason: string; consequenceIfDeclined: string };
   userFacingDescription: string;
   declineConsequence: string;
 }
@@ -76,6 +79,7 @@ interface VerifierClaimRequest {
 ## Dark Pattern Detection (Phase 1+)
 
 Wallet flags suspicious verifier behavior:
+
 - Excessive claims (>5 for a simple service)
 - Inflated requirements (>80% marked "required")
 - Jurisdiction mismatch
@@ -101,29 +105,32 @@ Warning shown to user with option to decline or review.
 ```typescript
 interface ConsentReceipt {
   id: string;
-  version: "v0";
-  action: "presented" | "declined" | "partial";
-  verifier: { id: string; name: string; policyRef: string; };
-  claims: { name: string; tier: string; disclosed: boolean; }[];
+  version: 'v0';
+  action: 'presented' | 'declined' | 'partial';
+  verifier: { id: string; name: string; policyRef: string };
+  claims: { name: string; tier: string; disclosed: boolean }[];
   timestamp: number;
-  evidence: { requestHash: string; responseHash: string; nonce: string; };
-  consent: { remembered: boolean; expiresAt?: number; revokedAt?: number; };
+  evidence: { requestHash: string; responseHash: string; nonce: string };
+  consent: { remembered: boolean; expiresAt?: number; revokedAt?: number };
 }
 ```
 
-**Critical rule:** Receipts never contain actual PII. They log what *type* of thing was shared, not the value.
+**Critical rule:** Receipts never contain actual PII. They log what _type_ of thing was shared, not the value.
 
 ### Storage
+
 - On-device only, encrypted in wallet secure storage
 - Organized by month: `receipts/2026-02/receipt-*.json`
 - Lightweight index for fast queries
 
 ### UI
+
 - **Activity feed:** Color-coded (🟢 approved, 🟡 partial, 🔴 declined)
 - **Detail view:** What was shared, what wasn't, receipt ID, hashes
 - **Monthly summary:** X verifications, Y approved, Z denied, N unique services
 
 ### Retention
+
 - Detailed receipts: 1 year
 - Summary only: 5 years
 - User can manually delete anytime
@@ -140,7 +147,7 @@ interface ConsentDecision {
   approvedClaims: string[];
   declinedClaims: string[];
   remembered: boolean;
-  constraints?: { validUntil?: number; audience?: string; };
+  constraints?: { validUntil?: number; audience?: string };
 }
 ```
 

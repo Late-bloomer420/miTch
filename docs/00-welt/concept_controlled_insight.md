@@ -73,6 +73,7 @@ gleichzeitig die Möglichkeit, von dieser Analyse zu profitieren.
 ## Wert-Visualisierung (Demo-Idee)
 
 ### "Mein Datenwert"
+
 Der Nutzer sieht eine Übersicht dessen, was seine Daten "wert" sind:
 
 ```
@@ -96,6 +97,7 @@ Der Nutzer sieht eine Übersicht dessen, was seine Daten "wert" sind:
 ```
 
 ### Berechtigungs-Dashboard
+
 ```
 ┌──────────────────────────────────────────────┐
 │  🔐 Aktive Delegationen                      │
@@ -129,17 +131,17 @@ Der Nutzer sieht eine Übersicht dessen, was seine Daten "wert" sind:
 
 ## Abgrenzung
 
-| | Tracking (verboten) | Controlled Insight (erlaubt) |
-|---|---|---|
-| Wer entscheidet? | Der Dienst | Der Nutzer |
-| Transparenz? | Heimlich | Vollständig sichtbar |
-| Zeitlich begrenzt? | Nein | Ja, immer |
-| Widerrufbar? | Nein/schwer | Sofort + Crypto-Shredding |
-| Zweckbindung? | Keine | Explizit definiert |
-| Wert für wen? | Den Dienst | Den Nutzer |
+|                    | Tracking (verboten) | Controlled Insight (erlaubt) |
+| ------------------ | ------------------- | ---------------------------- |
+| Wer entscheidet?   | Der Dienst          | Der Nutzer                   |
+| Transparenz?       | Heimlich            | Vollständig sichtbar         |
+| Zeitlich begrenzt? | Nein                | Ja, immer                    |
+| Widerrufbar?       | Nein/schwer         | Sofort + Crypto-Shredding    |
+| Zweckbindung?      | Keine               | Explizit definiert           |
+| Wert für wen?      | Den Dienst          | Den Nutzer                   |
 
 ---
 
-> *"Privatsphäre bedeutet nicht, blind zu sein. Es bedeutet, selbst zu entscheiden, wer sehen darf."*
+> _"Privatsphäre bedeutet nicht, blind zu sein. Es bedeutet, selbst zu entscheiden, wer sehen darf."_
 
-*Konzeptnotiz — keine Code-Implementierung geplant. Für Demo + Präsentation vorgesehen.*
+_Konzeptnotiz — keine Code-Implementierung geplant. Für Demo + Präsentation vorgesehen._

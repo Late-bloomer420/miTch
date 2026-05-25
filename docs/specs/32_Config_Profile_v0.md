@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Purpose
+
 Provide explicit runtime configuration with deny-biased defaults.
 
 ---
@@ -45,6 +46,7 @@ privacy:
 ---
 
 ## Non-negotiable defaults
+
 - `failClosed = true`
 - `piiRedaction = strict`
 - `includeStableIdentifiers = false`
@@ -53,6 +55,7 @@ privacy:
 ---
 
 ## Validation
+
 - Config schema validation at startup
 - Startup abort if critical security fields missing
 - Effective config fingerprint logged (non-sensitive)

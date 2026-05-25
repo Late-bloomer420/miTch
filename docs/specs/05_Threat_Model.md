@@ -1,6 +1,7 @@
 # Threat Model (Practical)
 
 ## Threats (top)
+
 1. **Correlation & metadata deanonymization**
    - Logs, request patterns, timing, unique proof structures can enable tracking.
 
@@ -21,6 +22,7 @@
    - AI code changes delete controls, loosen checks, or invent security features.
 
 ## Required mitigations
+
 - **Proof binding** to request hash/nonce + audience + expiry.
 - **Strict schema validation** of requests + policy manifest; missing => deny.
 - **Gate precedence**: hard safety gates run first (rate limit, schema, binding) before expensive crypto.
@@ -30,5 +32,6 @@
 - **Test harness with confusion matrix** when doing policy classification (TP/FP/TN/FN).
 
 ## Security posture clarity
-- Separate: *software-only assurances* vs *hardware-backed assurances*.
+
+- Separate: _software-only assurances_ vs _hardware-backed assurances_.
 - Quantify residual risk; do not claim “unhackable”.

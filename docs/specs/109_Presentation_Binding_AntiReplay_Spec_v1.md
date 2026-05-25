@@ -21,17 +21,17 @@ Prevents replay attacks, context-swap attacks, and audience mismatch exploits.
 
 The following fields are extracted from a `PresentationRequest` and serialized in this exact order:
 
-| # | Field Path           | Type     | Required |
-|---|----------------------|----------|----------|
-| 1 | `version`            | string   | yes      |
-| 2 | `requestId`          | string   | yes      |
-| 3 | `rp.id`              | string   | yes      |
-| 4 | `rp.audience`        | string   | yes      |
-| 5 | `purpose`            | string   | yes      |
-| 6 | `claims`             | string[] | yes      |
-| 7 | `policyRef`          | string   | no       |
-| 8 | `binding.nonce`      | string   | yes      |
-| 9 | `binding.expiresAt`  | string   | yes      |
+| #   | Field Path          | Type     | Required |
+| --- | ------------------- | -------- | -------- |
+| 1   | `version`           | string   | yes      |
+| 2   | `requestId`         | string   | yes      |
+| 3   | `rp.id`             | string   | yes      |
+| 4   | `rp.audience`       | string   | yes      |
+| 5   | `purpose`           | string   | yes      |
+| 6   | `claims`            | string[] | yes      |
+| 7   | `policyRef`         | string   | no       |
+| 8   | `binding.nonce`     | string   | yes      |
+| 9   | `binding.expiresAt` | string   | yes      |
 
 `binding.requestHash` is **excluded** from hash input by definition.
 
@@ -77,14 +77,14 @@ Test vectors are provided in `@mitch/shared-crypto` test suite.
 
 ### 3.4 Failure Codes
 
-| Condition                    | Deny Code                        |
-|------------------------------|----------------------------------|
-| Nonce not found              | `DENY_BINDING_NONCE_UNKNOWN`     |
-| Nonce already consumed       | `DENY_BINDING_NONCE_REPLAY`      |
-| Nonce expired (beyond skew)  | `DENY_BINDING_EXPIRED`           |
-| Audience mismatch            | `DENY_BINDING_AUDIENCE_MISMATCH` |
-| Hash mismatch                | `DENY_BINDING_HASH_MISMATCH`     |
-| Missing required field       | `DENY_SCHEMA_MISSING_FIELD`      |
+| Condition                   | Deny Code                        |
+| --------------------------- | -------------------------------- |
+| Nonce not found             | `DENY_BINDING_NONCE_UNKNOWN`     |
+| Nonce already consumed      | `DENY_BINDING_NONCE_REPLAY`      |
+| Nonce expired (beyond skew) | `DENY_BINDING_EXPIRED`           |
+| Audience mismatch           | `DENY_BINDING_AUDIENCE_MISMATCH` |
+| Hash mismatch               | `DENY_BINDING_HASH_MISMATCH`     |
+| Missing required field      | `DENY_SCHEMA_MISSING_FIELD`      |
 
 ---
 

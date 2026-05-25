@@ -76,22 +76,16 @@ export async function importCoseKey(
     y: base64urlEncode(y),
   };
 
-  return crypto.subtle.importKey(
-    'jwk',
-    jwk,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['verify']
-  );
+  return crypto.subtle.importKey('jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, [
+    'verify',
+  ]);
 }
 
 /**
  * Export a WebCrypto P-256 public key to a COSE_Key map.
  * Used for test roundtrips — requires extractable key.
  */
-export async function exportCoseKey(
-  publicKey: CryptoKey
-): Promise<Map<number, unknown>> {
+export async function exportCoseKey(publicKey: CryptoKey): Promise<Map<number, unknown>> {
   const jwk = await crypto.subtle.exportKey('jwk', publicKey);
 
   if (!jwk.x || !jwk.y) {

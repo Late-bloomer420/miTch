@@ -11,8 +11,8 @@
  *   → Verifier checks signature + disclosed claims
  */
 
-import { createHash, generateKeyPairSync, sign, verify, KeyObject } from "crypto";
-import { randomBytes } from "crypto";
+import { createHash, generateKeyPairSync, sign, verify, KeyObject } from 'crypto';
+import { randomBytes } from 'crypto';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -26,8 +26,8 @@ export interface Disclosure {
   salt: string;
   claimName: string;
   claimValue: string | number | boolean;
-  encoded: string;   // base64url(JSON([salt, name, value]))
-  hash: string;      // SHA-256 hash of encoded
+  encoded: string; // base64url(JSON([salt, name, value]))
+  hash: string; // SHA-256 hash of encoded
 }
 
 export interface SDJWTCredential {
@@ -65,25 +65,25 @@ export interface SDJWTPayload {
   credential_type: string;
   credential_id: string;
   status_list?: { idx: number; uri: string };
-  _sd: string[];          // hashes of disclosable claims
-  _sd_alg: "sha-256";
+  _sd: string[]; // hashes of disclosable claims
+  _sd_alg: 'sha-256';
 }
 
 // ─── Utilities ───────────────────────────────────────────────────
 
 function base64url(data: string | Buffer): string {
-  const buf = typeof data === "string" ? Buffer.from(data, "utf8") : data;
-  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const buf = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 function base64urlDecode(s: string): string {
-  const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
-  return Buffer.from(padded, "base64").toString("utf8");
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+  return Buffer.from(padded, 'base64').toString('utf8');
 }
 
 function sha256(data: string): string {
-  return base64url(createHash("sha-256").update(data, "utf8").digest());
+  return base64url(createHash('sha-256').update(data, 'utf8').digest());
 }
 
 function randomSalt(): string {
@@ -93,12 +93,12 @@ function randomSalt(): string {
 // ─── Key Generation ──────────────────────────────────────────────
 
 export function generateIssuerKey(keyId?: string): SDJWTIssuerKey {
-  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   return { privateKey, publicKey, keyId: keyId ?? `kid-${base64url(randomBytes(8))}` };
 }
 
 export function generateHolderKey(): { privateKey: KeyObject; publicKey: KeyObject } {
-  return generateKeyPairSync("ed25519");
+  return generateKeyPairSync('ed25519');
 }
 
 // ─── Disclosure Creation ─────────────────────────────────────────
@@ -144,8 +144,8 @@ export function issueCredential(input: IssueCredentialInput): SDJWTCredential {
     exp,
     credential_type: input.credentialType,
     credential_id: credentialId,
-    _sd: disclosures.map(d => d.hash),
-    _sd_alg: "sha-256",
+    _sd: disclosures.map((d) => d.hash),
+    _sd_alg: 'sha-256',
   };
 
   if (input.statusListIndex !== undefined && input.statusListUri) {
@@ -153,16 +153,18 @@ export function issueCredential(input: IssueCredentialInput): SDJWTCredential {
   }
 
   if (input.holderPublicKey) {
-    const jwk = input.holderPublicKey.export({ format: "jwk" });
+    const jwk = input.holderPublicKey.export({ format: 'jwk' });
     payload.cnf = { jwk };
   }
 
   // Sign
-  const header = { alg: "EdDSA", typ: "sd+jwt", kid: input.issuerKey.keyId };
+  const header = { alg: 'EdDSA', typ: 'sd+jwt', kid: input.issuerKey.keyId };
   const headerEncoded = base64url(JSON.stringify(header));
   const payloadEncoded = base64url(JSON.stringify(payload));
   const sigInput = `${headerEncoded}.${payloadEncoded}`;
-  const signature = base64url(sign(null, Buffer.from(sigInput, "utf8"), input.issuerKey.privateKey));
+  const signature = base64url(
+    sign(null, Buffer.from(sigInput, 'utf8'), input.issuerKey.privateKey)
+  );
 
   const jwt = `${sigInput}.${signature}`;
 
@@ -194,8 +196,8 @@ export interface PresentInput {
 }
 
 export function createPresentation(input: PresentInput): SDJWTPresentation {
-  const disclosed = input.credential.disclosures.filter(
-    d => input.disclose.includes(d.claimName)
+  const disclosed = input.credential.disclosures.filter((d) =>
+    input.disclose.includes(d.claimName)
   );
 
   let holderBinding: string | undefined;
@@ -205,7 +207,7 @@ export function createPresentation(input: PresentInput): SDJWTPresentation {
       iat: Math.floor(Date.now() / 1000),
     };
     const encoded = base64url(JSON.stringify(bindingPayload));
-    const sig = base64url(sign(null, Buffer.from(encoded, "utf8"), input.holderPrivateKey));
+    const sig = base64url(sign(null, Buffer.from(encoded, 'utf8'), input.holderPrivateKey));
     holderBinding = `${encoded}.${sig}`;
   }
 
@@ -245,41 +247,42 @@ export function verifyPresentation(input: VerifyPresentationInput): VerifyResult
   const fail = (reason: string): VerifyResult => ({ valid: false, reason, claims: {} });
 
   // 1. Parse JWT
-  const parts = presentation.jwt.split(".");
-  if (parts.length !== 3) return fail("invalid_jwt_structure");
+  const parts = presentation.jwt.split('.');
+  if (parts.length !== 3) return fail('invalid_jwt_structure');
 
   const [headerEnc, payloadEnc, signatureEnc] = parts;
 
   // 2. Verify issuer signature
   const sigInput = `${headerEnc}.${payloadEnc}`;
   const signature = Buffer.from(
-    signatureEnc.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (signatureEnc.length % 4)) % 4),
-    "base64"
+    signatureEnc.replace(/-/g, '+').replace(/_/g, '/') +
+      '='.repeat((4 - (signatureEnc.length % 4)) % 4),
+    'base64'
   );
 
-  const sigValid = verify(null, Buffer.from(sigInput, "utf8"), issuerPublicKey, signature);
-  if (!sigValid) return fail("invalid_issuer_signature");
+  const sigValid = verify(null, Buffer.from(sigInput, 'utf8'), issuerPublicKey, signature);
+  if (!sigValid) return fail('invalid_issuer_signature');
 
   // 3. Parse payload
   let payload: SDJWTPayload;
   try {
     payload = JSON.parse(base64urlDecode(payloadEnc));
   } catch {
-    return fail("invalid_payload");
+    return fail('invalid_payload');
   }
 
   // 4. Check expiry
   const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && payload.exp < now) return fail("credential_expired");
+  if (payload.exp && payload.exp < now) return fail('credential_expired');
 
   // 5. Check issuer
   if (input.expectedIssuer && payload.iss !== input.expectedIssuer) {
-    return fail("issuer_mismatch");
+    return fail('issuer_mismatch');
   }
 
   // 6. Check credential type
   if (input.expectedCredentialType && payload.credential_type !== input.expectedCredentialType) {
-    return fail("credential_type_mismatch");
+    return fail('credential_type_mismatch');
   }
 
   // 7. Verify each disclosed claim's hash is in _sd
@@ -294,7 +297,8 @@ export function verifyPresentation(input: VerifyPresentationInput): VerifyResult
     // Verify disclosure content
     try {
       const arr = JSON.parse(base64urlDecode(disc.encoded));
-      if (!Array.isArray(arr) || arr.length !== 3) return fail(`invalid_disclosure:${disc.claimName}`);
+      if (!Array.isArray(arr) || arr.length !== 3)
+        return fail(`invalid_disclosure:${disc.claimName}`);
       claims[arr[1]] = arr[2];
     } catch {
       return fail(`invalid_disclosure_encoding:${disc.claimName}`);
@@ -310,22 +314,28 @@ export function verifyPresentation(input: VerifyPresentationInput): VerifyResult
 
   // 9. Verify holder binding (if provided)
   if (input.verifierNonce && presentation.holderBinding && input.holderPublicKey) {
-    const bindParts = presentation.holderBinding.split(".");
-    if (bindParts.length !== 2) return fail("invalid_holder_binding");
+    const bindParts = presentation.holderBinding.split('.');
+    if (bindParts.length !== 2) return fail('invalid_holder_binding');
 
     const [bindPayloadEnc, bindSigEnc] = bindParts;
     const bindSig = Buffer.from(
-      bindSigEnc.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (bindSigEnc.length % 4)) % 4),
-      "base64"
+      bindSigEnc.replace(/-/g, '+').replace(/_/g, '/') +
+        '='.repeat((4 - (bindSigEnc.length % 4)) % 4),
+      'base64'
     );
-    const bindValid = verify(null, Buffer.from(bindPayloadEnc, "utf8"), input.holderPublicKey, bindSig);
-    if (!bindValid) return fail("invalid_holder_binding_signature");
+    const bindValid = verify(
+      null,
+      Buffer.from(bindPayloadEnc, 'utf8'),
+      input.holderPublicKey,
+      bindSig
+    );
+    if (!bindValid) return fail('invalid_holder_binding_signature');
 
     try {
       const bindPayload = JSON.parse(base64urlDecode(bindPayloadEnc));
-      if (bindPayload.nonce !== input.verifierNonce) return fail("holder_binding_nonce_mismatch");
+      if (bindPayload.nonce !== input.verifierNonce) return fail('holder_binding_nonce_mismatch');
     } catch {
-      return fail("invalid_holder_binding_payload");
+      return fail('invalid_holder_binding_payload');
     }
   }
 

@@ -25,8 +25,8 @@ export const DEMO_POLICY: PolicyManifest = {
     requireConsentForAll: false, // Per-Regel geregelt, nicht global (Performance)
     defaultFreshnessDays: 365,
     strictVerifierBinding: false, // für localhost-Demo relaxed
-    denySecondaryUse: false,                // Default: erlaubt, User entscheidet per Consent
-    denySecondaryUseCountries: ['US'],      // Beispiel: US-Verifier dürfen keine Sekundärnutzung
+    denySecondaryUse: false, // Default: erlaubt, User entscheidet per Consent
+    denySecondaryUseCountries: ['US'], // Beispiel: US-Verifier dürfen keine Sekundärnutzung
   },
 
   trustedIssuers: [
@@ -55,10 +55,10 @@ export const DEMO_POLICY: PolicyManifest = {
       id: 'rule-age-proof-01',
       context: 'Altersnachweis ≥18 für regulierten Kauf (Liquor, Tabak)',
       verifierPattern: 'did:mitch:verifier-liquor-store',
-      allowedClaims: [],               // Keine Rohdaten
-      provenClaims: ['age >= 18'],     // Nur Nachweis (ZKP)
+      allowedClaims: [], // Keine Rohdaten
+      provenClaims: ['age >= 18'], // Nur Nachweis (ZKP)
       deniedClaims: ['birthDate', 'name', 'address', 'nationalId'],
-      requiresUserConsent: false,      // ← ALLOW (einmalig akzeptiert)
+      requiresUserConsent: false, // ← ALLOW (einmalig akzeptiert)
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 365,
       priority: 10,
@@ -73,7 +73,7 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['role', 'licenseId'],
       provenClaims: ['age >= 18'],
       deniedClaims: ['birthDate', 'salary', 'homeAddress'],
-      requiresUserConsent: true,       // ← PROMPT
+      requiresUserConsent: true, // ← PROMPT
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 180,
       priority: 20,
@@ -85,16 +85,16 @@ export const DEMO_POLICY: PolicyManifest = {
     {
       id: 'rule-ehds-emergency-01',
       context: 'EHDS Notaufnahme: Blutgruppe, Allergien, Notfallkontakte',
-      verifierPattern: 'hospital-*-er-*',   // Wildcard: alle ER-Verifier
+      verifierPattern: 'hospital-*-er-*', // Wildcard: alle ER-Verifier
       allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
       provenClaims: [],
       deniedClaims: ['insuranceId', 'financialData', 'geneticData'],
-      requiresUserConsent: true,       // ← PROMPT
-      requiresPresence: true,          // ← WebAuthn PFLICHT (Layer 2)
-      allowBreakGlass: true,           // ← EHDS Art. 8(5): Notfall-Zugriff ohne Consent
+      requiresUserConsent: true, // ← PROMPT
+      requiresPresence: true, // ← WebAuthn PFLICHT (Layer 2)
+      allowBreakGlass: true, // ← EHDS Art. 8(5): Notfall-Zugriff ohne Consent
       requiresTrustedIssuer: true,
-      maxCredentialAgeDays: 730,       // 2 Jahre für Notfalldaten
-      priority: 100,                   // Höchste Prio
+      maxCredentialAgeDays: 730, // 2 Jahre für Notfalldaten
+      priority: 100, // Höchste Prio
     },
 
     // ── Rule 4: Sekundärnutzung — Forschungsinstitut ──────────────────────
@@ -104,10 +104,10 @@ export const DEMO_POLICY: PolicyManifest = {
       context: 'Secondary Use — Research Institute',
       verifierPattern: '*-research-*',
       usagePurpose: 'researchSecondary',
-      allowedClaims: ['bloodGroup', 'allergies'],          // anonymisiertes Subset
+      allowedClaims: ['bloodGroup', 'allergies'], // anonymisiertes Subset
       provenClaims: [],
       deniedClaims: ['emergencyContacts', 'insuranceId', 'geneticData', 'name', 'address'],
-      requiresUserConsent: true,       // ← PROMPT
+      requiresUserConsent: true, // ← PROMPT
       requiresPresence: false,
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 730,
@@ -122,9 +122,9 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
       provenClaims: [],
       deniedClaims: ['diagnosis', 'geneticData', 'insuranceId'],
-      requiresUserConsent: true,       // ← PROMPT
+      requiresUserConsent: true, // ← PROMPT
       requiresTrustedIssuer: true,
-      maxCredentialAgeDays: 30,        // Rezepte sind kurzlebig
+      maxCredentialAgeDays: 30, // Rezepte sind kurzlebig
       priority: 50,
     },
   ],

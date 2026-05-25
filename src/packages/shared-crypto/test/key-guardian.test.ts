@@ -56,9 +56,9 @@ describe('SoftwareKeyGuardian', () => {
     const guardian = new SoftwareKeyGuardian();
     const data = new TextEncoder().encode('payload');
 
-    await expect(
-      guardian.sign({ keyId: 'missing-key', challenge: data })
-    ).rejects.toThrow(/Signing key not found/);
+    await expect(guardian.sign({ keyId: 'missing-key', challenge: data })).rejects.toThrow(
+      /Signing key not found/
+    );
   });
 
   test('getLevel returns SOFTWARE_EPHEMERAL', async () => {
@@ -92,12 +92,15 @@ describe('G-07: Key separation — signing keys vs encryption keys', () => {
     expect(sig.length).toBeGreaterThan(0);
 
     // Signing key ID must not work as encryption key and vice versa
-    await expect(
-      guardian.sign({ keyId: encResult.encKeyId, challenge: data })
-    ).rejects.toThrow(/Signing key not found/);
+    await expect(guardian.sign({ keyId: encResult.encKeyId, challenge: data })).rejects.toThrow(
+      /Signing key not found/
+    );
 
     await expect(
-      guardian.deriveSharedSecret({ encKeyId: sigResult.keyId, senderPublicKeyJwk: encResult.publicKeyJwk })
+      guardian.deriveSharedSecret({
+        encKeyId: sigResult.keyId,
+        senderPublicKeyJwk: encResult.publicKeyJwk,
+      })
     ).rejects.toThrow(/Encryption key not found/);
   });
 
@@ -125,19 +128,13 @@ describe('G-07: Key separation — signing keys vs encryption keys', () => {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const plaintext = new TextEncoder().encode('G-07: this is encrypted with ECDH shared secret');
 
-    const ciphertext = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      aliceShared,
-      plaintext
-    );
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aliceShared, plaintext);
 
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      bobShared,
-      ciphertext
-    );
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, bobShared, ciphertext);
 
-    expect(new TextDecoder().decode(decrypted)).toBe('G-07: this is encrypted with ECDH shared secret');
+    expect(new TextDecoder().decode(decrypted)).toBe(
+      'G-07: this is encrypted with ECDH shared secret'
+    );
   });
 
   test('deriveSharedSecret with unknown encKeyId throws error', async () => {
@@ -145,7 +142,10 @@ describe('G-07: Key separation — signing keys vs encryption keys', () => {
     const other = await guardian.createEncryptionKey({ userId: 'other' });
 
     await expect(
-      guardian.deriveSharedSecret({ encKeyId: 'missing-enc-key', senderPublicKeyJwk: other.publicKeyJwk })
+      guardian.deriveSharedSecret({
+        encKeyId: 'missing-enc-key',
+        senderPublicKeyJwk: other.publicKeyJwk,
+      })
     ).rejects.toThrow(/Encryption key not found/);
   });
 

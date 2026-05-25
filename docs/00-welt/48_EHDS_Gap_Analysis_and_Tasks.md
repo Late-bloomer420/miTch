@@ -1,4 +1,5 @@
 # EHDS Compliance Gap Analysis & Task List
+
 ## Was wir gelernt haben — und was noch fehlt
 
 **Quelle:** [ehds-jurist.nl — The existing free flow of health data](https://ehds-jurist.nl/the-existing-free-flow-of-health-data/)
@@ -12,10 +13,11 @@
 ### Erkenntnis 1 — Der EHDS schafft nichts Neues, er macht Bestehendes sichtbar
 
 **GDPR Art. 1** verbietet bereits heute die Einschränkung des freien Datenflusses
-innerhalb der EU. Der EHDS *unterstützt* diesen Fluss — er ist nicht die Grundlage dafür.
+innerhalb der EU. Der EHDS _unterstützt_ diesen Fluss — er ist nicht die Grundlage dafür.
 
 **Konsequenz für miTch:**
-- Unsere EU-weiten Verifier-Patterns (`hospital-*-er-*`) sind *heute schon* rechtlich valide
+
+- Unsere EU-weiten Verifier-Patterns (`hospital-*-er-*`) sind _heute schon_ rechtlich valide
 - Das Argument gegenüber Stakeholdern ist stärker als gedacht:
   miTch implementiert geltendes Recht, nicht zukünftige Regulierung
 - Cross-Border-Szenarien (NL → ES Krankenhaus) sind kein Edge Case, sondern Grundrecht
@@ -26,14 +28,14 @@ innerhalb der EU. Der EHDS *unterstützt* diesen Fluss — er ist nicht die Grun
 
 Die entscheidende Unterscheidung die miTch bisher **nicht modelliert**:
 
-| Begriff | Definition | Beispiel | Consent-Logik |
-|---------|-----------|---------|---------------|
-| **Primary Use** | Direkte Patientenversorgung | Notaufnahme, Rezept, Arztbesuch | Biometrie + Consent (implementiert ✅) |
+| Begriff           | Definition                         | Beispiel                                  | Consent-Logik                                   |
+| ----------------- | ---------------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **Primary Use**   | Direkte Patientenversorgung        | Notaufnahme, Rezept, Arztbesuch           | Biometrie + Consent (implementiert ✅)          |
 | **Secondary Use** | Wiederverwendung für andere Zwecke | Wissenschaft, Statistik, Politikbewertung | User-Widerspruch im Kontrollregister (fehlt ❌) |
 
 **Konsequenz für miTch:**
 Das nationale Kontrollregister (per EHDS) muss in miTchs PolicyManifest modellierbar sein.
-Ein User muss sagen können: *"Notfallzugriff ja — Forschungszugriff nein."*
+Ein User muss sagen können: _"Notfallzugriff ja — Forschungszugriff nein."_
 Das sind zwei verschiedene Regeln für dieselben Daten.
 
 ---
@@ -63,6 +65,7 @@ Dieses Konzept existiert in miTchs PolicyRule aktuell **nicht**.
 ### Erkenntnis 5 — Break-Glass ist rechtlich definiert, nicht nur technisch
 
 Notfallzugriff ohne Consent ist rechtlich möglich — aber nur mit:
+
 1. Sofortigem Audit-Alert an den Patienten
 2. Nachträglicher Benachrichtigung
 3. Begründungspflicht des Verifiers
@@ -82,20 +85,21 @@ Das EHDS_SPEC.md erwähnt "Break-Glass Event" — aber es ist **nicht implementi
 ---
 
 ### BLOCK A — Typ-System erweitern
-*Alle Änderungen in `src/packages/shared-types/src/policy.ts`*
+
+_Alle Änderungen in `src/packages/shared-types/src/policy.ts`_
 
 #### 🔴 T-A1 — `usagePurpose` zu `PolicyRule` hinzufügen
 
 ```typescript
 export type UsagePurpose =
-  | 'primaryCare'        // Direkte Behandlung — höchste Priorität
-  | 'researchSecondary'  // Wissenschaft — User kann global widersprechen
-  | 'policyAssessment'   // Behördliche Auswertung (Effektivitätsmessung)
-  | 'statistics';        // Aggregiert, de-identifiziert
+  | 'primaryCare' // Direkte Behandlung — höchste Priorität
+  | 'researchSecondary' // Wissenschaft — User kann global widersprechen
+  | 'policyAssessment' // Behördliche Auswertung (Effektivitätsmessung)
+  | 'statistics'; // Aggregiert, de-identifiziert
 
 export interface PolicyRule {
   // ... bestehendes ...
-  usagePurpose?: UsagePurpose;  // NEU
+  usagePurpose?: UsagePurpose; // NEU
 }
 ```
 
@@ -115,7 +119,7 @@ Neue `globalSettings`-Option:
 ```typescript
 export interface GlobalPolicySettings {
   // ... bestehendes ...
-  denySecondaryUse?: boolean;        // NEU: globaler Widerspruch gegen Forschung
+  denySecondaryUse?: boolean; // NEU: globaler Widerspruch gegen Forschung
   denySecondaryUseCountries?: string[]; // NEU: ["JP", "US"] — Drittländer-Opt-out
 }
 ```
@@ -175,9 +179,9 @@ Ohne Permit → DENY mit ReasonCode `HDAB_PERMIT_REQUIRED`.
 
 ```typescript
 export type GeoScope =
-  | 'eu-only'              // Nur EU-Verifier (default für Layer 2)
-  | 'eu-plus-adequacy'     // EU + Adequacy-Länder (JP, KR, etc.)
-  | 'global';              // Keine geo-Einschränkung
+  | 'eu-only' // Nur EU-Verifier (default für Layer 2)
+  | 'eu-plus-adequacy' // EU + Adequacy-Länder (JP, KR, etc.)
+  | 'global'; // Keine geo-Einschränkung
 
 export interface PolicyRule {
   // ... bestehendes ...
@@ -195,12 +199,13 @@ Engine prüft gegen `geoScope` — Nicht-EU-Verifier bei `eu-only` → DENY.
 ---
 
 ### BLOCK B — Engine & Compliance-Logik
-*Änderungen in `src/packages/policy-engine/src/engine.ts`*
+
+_Änderungen in `src/packages/policy-engine/src/engine.ts`_
 
 #### 🔴 T-B1 — Break-Glass Audit Alert implementieren
 
-Das EHDS_SPEC.md definiert: Wenn `verifier_type === 'EMERGENCY_ER'`,
-Zugriff *ohne* sofortigen Consent erlaubt — aber **mit** sofortigem Audit-Alert.
+Das EHDS*SPEC.md definiert: Wenn `verifier_type === 'EMERGENCY_ER'`,
+Zugriff \_ohne* sofortigen Consent erlaubt — aber **mit** sofortigem Audit-Alert.
 
 Aktueller Stand: `requiresPresence: true` blockiert ohne Consent. Korrekt für
 Standard-Notaufnahme, aber falsch für echten Notfall (bewusstloser Patient).
@@ -217,7 +222,7 @@ if (rule.allowBreakGlass && !userIsAvailable) {
     verifier: request.verifierId,
     claims: authorizedClaims,
     timestamp: Date.now(),
-    notifyUser: true,  // Push-Notification an User
+    notifyUser: true, // Push-Notification an User
   });
 }
 ```
@@ -235,6 +240,7 @@ Laut EHDS_SPEC.md müssen Rezepte nach Einlösung "geburned" werden.
 Aktuell: kein Double-Spend-Schutz.
 
 Lösung ohne Blockchain:
+
 - Verifier-Backend führt Nonce-Liste eingelöster Rezepte
 - Wallet markiert Credential nach Presentation als `status: 'dispensed'`
 - Engine prüft Credential-Status vor Freigabe
@@ -263,7 +269,8 @@ Und im DenialResolver: menschenlesbare Erklärungen für alle 4 neuen Codes.
 ---
 
 ### BLOCK C — Demo-Szenarien
-*Änderungen in `src/apps/wallet-pwa/src/`*
+
+_Änderungen in `src/apps/wallet-pwa/src/`_
 
 #### 🟢 T-C1 — Forschungsanfrage-Szenario in Demo
 
@@ -272,11 +279,13 @@ Neuer Button: **"Forschungsinstitut: Patientendaten"**
 ```typescript
 const researchRequest: VerifierRequest = {
   verifierId: 'did:eu:research-institute-fhi',
-  usagePurpose: 'researchSecondary',  // T-A1
-  requirements: [{
-    credentialType: 'PatientSummary',
-    requestedClaims: ['bloodGroup', 'allergies'],
-  }]
+  usagePurpose: 'researchSecondary', // T-A1
+  requirements: [
+    {
+      credentialType: 'PatientSummary',
+      requestedClaims: ['bloodGroup', 'allergies'],
+    },
+  ],
 };
 // → DENY wenn denySecondaryUse: true im Manifest
 // → PROMPT + HDAB-Check wenn denySecondaryUse: false
@@ -292,6 +301,7 @@ const researchRequest: VerifierRequest = {
 #### 🟢 T-C2 — Kontrollregister-UI im PolicyEditor
 
 User kann im PolicyEditor einstellen:
+
 - [ ] Forschungszugriff generell erlauben/sperren
 - [ ] Nur EU-Forscher erlauben
 - [ ] Drittland-Transfer (JP, US, etc.) erlauben/sperren
@@ -304,6 +314,7 @@ User kann im PolicyEditor einstellen:
 #### 🟢 T-C3 — Sprachlocale für Medizinbegriffe (EHDS_SPEC.md §3.3)
 
 EHDS_SPEC.md Punkt 3.3 ist noch komplett offen:
+
 > "The Wallet UI must render medical terms in the local language of the Verifier"
 
 Einfachste Lösung für Demo: i18n-Map für die häufigsten Begriffe
@@ -328,23 +339,24 @@ Neuer Verifier: `did:es:hospital-barcelona-er-1`
 ---
 
 ### BLOCK D — Dokumentation
-*Änderungen in `docs/`*
+
+_Änderungen in `docs/`_
 
 #### ⬜ T-D1 — EHDS Compliance Map
 
 Dokument das zeigt: Welche EHDS-Anforderung ist durch welchen miTch-Mechanismus
 erfüllt. Für Stakeholder und spätere Zertifizierung.
 
-| EHDS Anforderung | Artikel | miTch-Mechanismus | Status |
-|-----------------|---------|-------------------|--------|
-| Patient Summary Austausch | Art. 5 | PatientSummary VC + SD-JWT | ✅ Implementiert |
-| Primärnutzungs-Consent | Art. 8 | ConsentModal + WebAuthn | ✅ Implementiert |
-| Sekundärnutzungs-Widerspruch | Art. 11 | PolicyManifest globalSettings | ❌ T-A2 |
-| HDAB-Permit-Pflicht | Art. 46 | TrustedIssuer hdab-Rolle | ❌ T-A3 |
-| Cross-Border-Freizügigkeit | GDPR Art. 1 | Verifier-Pattern EU-Wildcard | ✅ Implementiert |
-| Notfallzugriff (Break-Glass) | Art. 8(5) | Engine Break-Glass-Logik | ❌ T-B1 |
-| Geo-Scope Drittländer | GDPR Art. 46 | geoScope in PolicyRule | ❌ T-A4 |
-| ePrescription Single-Use | Art. 14 | Nullifier / Status-Check | ❌ T-B2 |
+| EHDS Anforderung             | Artikel      | miTch-Mechanismus             | Status           |
+| ---------------------------- | ------------ | ----------------------------- | ---------------- |
+| Patient Summary Austausch    | Art. 5       | PatientSummary VC + SD-JWT    | ✅ Implementiert |
+| Primärnutzungs-Consent       | Art. 8       | ConsentModal + WebAuthn       | ✅ Implementiert |
+| Sekundärnutzungs-Widerspruch | Art. 11      | PolicyManifest globalSettings | ❌ T-A2          |
+| HDAB-Permit-Pflicht          | Art. 46      | TrustedIssuer hdab-Rolle      | ❌ T-A3          |
+| Cross-Border-Freizügigkeit   | GDPR Art. 1  | Verifier-Pattern EU-Wildcard  | ✅ Implementiert |
+| Notfallzugriff (Break-Glass) | Art. 8(5)    | Engine Break-Glass-Logik      | ❌ T-B1          |
+| Geo-Scope Drittländer        | GDPR Art. 46 | geoScope in PolicyRule        | ❌ T-A4          |
+| ePrescription Single-Use     | Art. 14      | Nullifier / Status-Check      | ❌ T-B2          |
 
 **Aufwand:** ~2h (Dokument schreiben)
 **Abhängig von:** nichts — jetzt schreibbar
@@ -373,20 +385,20 @@ Parallel (immer):
 
 ## 🚦 Aktueller Status
 
-| Task | Status | Prio |
-|------|--------|------|
-| T-A1 usagePurpose | ✅ `cc344a4` | 🔴 Kritisch |
-| T-A2 Secondary-Use Widerspruch | ✅ `45691a1` | 🔴 Kritisch |
-| T-A3 HDAB-Permit | ✅ `f69b11c` | 🔴 Kritisch |
-| T-A4 geoScope | ✅ `e7b7ecb` | 🟡 Wichtig |
-| T-B1 Break-Glass Alert | ✅ `f3d8de8` | 🔴 Kritisch |
-| T-B2 ePrescription Nullifier | ✅ `f62bf7b` | 🟡 Wichtig |
-| T-B3 ReasonCodes | ✅ `cc344a4` | 🟡 Wichtig |
-| T-C1 Forschungs-Demo | ✅ `9a7aed5` | 🟢 Demo |
-| T-C2 Kontrollregister-UI | ❌ Offen | 🟢 Demo |
-| T-C3 Sprachlocale | ❌ Offen | 🟢 Demo |
-| T-C4 Cross-Border-Szenario | ✅ `9a7aed5` | 🟢 Demo |
-| T-D1 EHDS Compliance Map | ✅ `5fb787a` | ⬜ Nice-to-have |
+| Task                           | Status       | Prio            |
+| ------------------------------ | ------------ | --------------- |
+| T-A1 usagePurpose              | ✅ `cc344a4` | 🔴 Kritisch     |
+| T-A2 Secondary-Use Widerspruch | ✅ `45691a1` | 🔴 Kritisch     |
+| T-A3 HDAB-Permit               | ✅ `f69b11c` | 🔴 Kritisch     |
+| T-A4 geoScope                  | ✅ `e7b7ecb` | 🟡 Wichtig      |
+| T-B1 Break-Glass Alert         | ✅ `f3d8de8` | 🔴 Kritisch     |
+| T-B2 ePrescription Nullifier   | ✅ `f62bf7b` | 🟡 Wichtig      |
+| T-B3 ReasonCodes               | ✅ `cc344a4` | 🟡 Wichtig      |
+| T-C1 Forschungs-Demo           | ✅ `9a7aed5` | 🟢 Demo         |
+| T-C2 Kontrollregister-UI       | ❌ Offen     | 🟢 Demo         |
+| T-C3 Sprachlocale              | ❌ Offen     | 🟢 Demo         |
+| T-C4 Cross-Border-Szenario     | ✅ `9a7aed5` | 🟢 Demo         |
+| T-D1 EHDS Compliance Map       | ✅ `5fb787a` | ⬜ Nice-to-have |
 
 ---
 
@@ -404,4 +416,4 @@ Das ist das Argument für miTch — nicht die Kryptographie. Die ist Mittel zum 
 
 ---
 
-*Letzte Aktualisierung: 2026-03-04 | Nächste Review: nach T-A1 Implementierung*
+_Letzte Aktualisierung: 2026-03-04 | Nächste Review: nach T-A1 Implementierung_

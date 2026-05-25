@@ -32,29 +32,30 @@ Server-Side Logs: EMPTY (structural non-existence)
 
 ## 🔒 Security Guarantees
 
-| Threat | Protection | Implementation |
-|--------|-----------|----------------|
-| **Google/Apple access** | User-derived keys OR Split-key (Shamir 2-of-3) | `ADVANCED_SECURITY_HARDENING.ts` |
-| **Memory dumps** | Non-extractable keys + 5min TTL + operation-specific derivation | `LocalAuditLog.ts` |
-| **Network surveillance** | Verifier-Direct (no intermediary) + Tor-ready | `VerifierDirectProtocol.ts` |
-| **Supply-chain attacks** | SRI + minimal deps (2 packages only) | `ADVANCED_SECURITY_HARDENING.ts` |
-| **Physical seizure** | Panic button + Duress PIN + Dead man's switch | `ADVANCED_SECURITY_HARDENING.ts` |
-| **AI automation** | Behavioral biometrics + Rate limiting | `ADVANCED_SECURITY_HARDENING.ts` |
+| Threat                   | Protection                                                      | Implementation                   |
+| ------------------------ | --------------------------------------------------------------- | -------------------------------- |
+| **Google/Apple access**  | User-derived keys OR Split-key (Shamir 2-of-3)                  | `ADVANCED_SECURITY_HARDENING.ts` |
+| **Memory dumps**         | Non-extractable keys + 5min TTL + operation-specific derivation | `LocalAuditLog.ts`               |
+| **Network surveillance** | Verifier-Direct (no intermediary) + Tor-ready                   | `VerifierDirectProtocol.ts`      |
+| **Supply-chain attacks** | SRI + minimal deps (2 packages only)                            | `ADVANCED_SECURITY_HARDENING.ts` |
+| **Physical seizure**     | Panic button + Duress PIN + Dead man's switch                   | `ADVANCED_SECURITY_HARDENING.ts` |
+| **AI automation**        | Behavioral biometrics + Rate limiting                           | `ADVANCED_SECURITY_HARDENING.ts` |
 
 ---
 
 ## 📜 Compliance Matrix
 
-| Regulation | Requirement | miTch Implementation | Status |
-|------------|-------------|----------------------|--------|
-| **eIDAS 2.0 Art. 6a(5)** | Wallet audit-log accessible to user | `LocalAuditLog.exportForUser()` | ✅ PASS |
-| **DSGVO Art. 17** | Right to erasure | `LocalAuditLog.deleteAll()` | ✅ PASS |
-| **DSGVO Art. 20** | Data portability | `LocalAuditLog.exportForUser()` | ✅ PASS |
-| **DSGVO Art. 25** | Data protection by design | Verifier-Direct (structural non-existence) | ✅ PASS |
-| **DSGVO Art. 30** | Record of processing | Local hash-chain audit-log | ✅ PASS |
-| **NIS2 Art. 21** | Security incident logs | Tamper-evident hash-chain | ✅ PASS |
+| Regulation               | Requirement                         | miTch Implementation                       | Status  |
+| ------------------------ | ----------------------------------- | ------------------------------------------ | ------- |
+| **eIDAS 2.0 Art. 6a(5)** | Wallet audit-log accessible to user | `LocalAuditLog.exportForUser()`            | ✅ PASS |
+| **DSGVO Art. 17**        | Right to erasure                    | `LocalAuditLog.deleteAll()`                | ✅ PASS |
+| **DSGVO Art. 20**        | Data portability                    | `LocalAuditLog.exportForUser()`            | ✅ PASS |
+| **DSGVO Art. 25**        | Data protection by design           | Verifier-Direct (structural non-existence) | ✅ PASS |
+| **DSGVO Art. 30**        | Record of processing                | Local hash-chain audit-log                 | ✅ PASS |
+| **NIS2 Art. 21**         | Security incident logs              | Tamper-evident hash-chain                  | ✅ PASS |
 
 Run compliance check:
+
 ```typescript
 const checker = new EIDASComplianceChecker(auditLog);
 const report = await checker.generateHumanReadableReport();
@@ -80,8 +81,8 @@ await auditLog.append({
   details: {
     keyType: 'ECDSA-P256',
     protectionLevel: 'SOFTWARE_EPHEMERAL',
-    extractable: false
-  }
+    extractable: false,
+  },
 });
 ```
 
@@ -118,8 +119,8 @@ await auditLog.append({
   timestamp: Date.now(),
   details: {
     verifier: request.verifierDID,
-    decision: 'ALLOW'
-  }
+    decision: 'ALLOW',
+  },
 });
 
 // Send proof DIRECTLY to verifier
@@ -145,6 +146,7 @@ console.log(JSON.stringify(exportedLog, null, 2));
 ### Defense Against Google/Apple
 
 **Option A: User-Derived Keys**
+
 ```typescript
 import { UserDerivedKeyProtection } from './ADVANCED_SECURITY_HARDENING';
 
@@ -154,6 +156,7 @@ const key = await protection.deriveKeyFromUser(biometricHash, userPIN);
 ```
 
 **Option B: Split-Key (Shamir 2-of-3)**
+
 ```typescript
 import { SplitKeyProtection } from './ADVANCED_SECURITY_HARDENING';
 
@@ -167,6 +170,7 @@ const shares = await protection.splitKey(masterKey);
 ### Defense Against Physical Seizure
 
 **Panic Button:**
+
 ```typescript
 import { PhysicalSeizureProtection } from './ADVANCED_SECURITY_HARDENING';
 
@@ -176,6 +180,7 @@ await protection.triggerPanicWipe();
 ```
 
 **Duress PIN:**
+
 ```typescript
 // User has 2 PINs:
 // - Real PIN: "1234" → unlocks real credentials
@@ -188,6 +193,7 @@ const walletState = await protection.unlockWallet(pin);
 ### Defense Against AI Agents
 
 **Behavioral Biometrics:**
+
 ```typescript
 import { AIResistanceProtection } from './ADVANCED_SECURITY_HARDENING';
 
@@ -200,14 +206,14 @@ const isHuman = await protection.analyzeBehavior(userEvents);
 
 ## 📈 Comparison: miTch vs. Existing Solutions
 
-| Feature | Microsoft Entra | Lissi Wallet | Trinsic | miTch Phase-0 |
-|---------|-----------------|--------------|---------|---------------|
-| **Verifier-Direct** | ❌ Server relay | ✅ Yes | ⚠️ Partial | ✅ **True P2P** |
-| **Local Audit-Log** | ❌ Server-side | ⚠️ Limited | ❌ Server-side | ✅ **Hash-chain** |
-| **eIDAS 2.0 Ready** | ⚠️ In progress | ✅ Yes | ❌ No | ✅ **Compliant** |
-| **KI-Resilienz** | ❌ Not addressed | ❌ Not addressed | ❌ Not addressed | ✅ **Behavioral** |
-| **Structural Non-Existence** | ❌ Server logs exist | ⚠️ Partial | ❌ Server logs exist | ✅ **TRUE** |
-| **Google/Apple Defense** | ❌ Relies on Keychain | ❌ Relies on Keychain | ❌ Relies on Keychain | ✅ **Split-Key** |
+| Feature                      | Microsoft Entra       | Lissi Wallet          | Trinsic               | miTch Phase-0     |
+| ---------------------------- | --------------------- | --------------------- | --------------------- | ----------------- |
+| **Verifier-Direct**          | ❌ Server relay       | ✅ Yes                | ⚠️ Partial            | ✅ **True P2P**   |
+| **Local Audit-Log**          | ❌ Server-side        | ⚠️ Limited            | ❌ Server-side        | ✅ **Hash-chain** |
+| **eIDAS 2.0 Ready**          | ⚠️ In progress        | ✅ Yes                | ❌ No                 | ✅ **Compliant**  |
+| **KI-Resilienz**             | ❌ Not addressed      | ❌ Not addressed      | ❌ Not addressed      | ✅ **Behavioral** |
+| **Structural Non-Existence** | ❌ Server logs exist  | ⚠️ Partial            | ❌ Server logs exist  | ✅ **TRUE**       |
+| **Google/Apple Defense**     | ❌ Relies on Keychain | ❌ Relies on Keychain | ❌ Relies on Keychain | ✅ **Split-Key**  |
 
 ---
 
@@ -216,12 +222,14 @@ const isHuman = await protection.analyzeBehavior(userEvents);
 ### 1. **TRUE Structural Non-Existence**
 
 **Others:**
+
 ```
 Wallet → miTch Server → Verifier
          ↑ (logs: user X presented to verifier Y)
 ```
 
 **miTch Phase-0:**
+
 ```
 Wallet ──────────────→ Verifier
          (no server, zero logs)
@@ -264,17 +272,20 @@ mitch-phase0-security/
 ## 🎓 Recommended Implementation Order
 
 ### **Phase-0 (NOW - 2 weeks):**
+
 1. ✅ LocalAuditLog
 2. ✅ VerifierDirectProtocol
 3. ✅ EIDASComplianceChecker
 4. ⚠️ Basic key ephemerality (WebCrypto only)
 
 ### **Phase-1 (Q2 2025 - 8 weeks):**
+
 1. WebAuthn integration (hardware-backed keys)
 2. Behavioral biometrics (AI resistance)
 3. Tor routing support (network anonymity)
 
 ### **Phase-2 (Q3 2025 - 12 weeks):**
+
 1. Split-key (Shamir 2-of-3)
 2. Panic button / Duress PIN
 3. Reproducible builds
@@ -285,11 +296,13 @@ mitch-phase0-security/
 ## ⚖️ Legal Disclaimer
 
 **This implementation provides:**
+
 - ✅ Technical mechanisms for privacy
 - ✅ Compliance with eIDAS 2.0 + DSGVO
 - ✅ Hardening against known attack vectors
 
 **This does NOT guarantee:**
+
 - ❌ Absolute security (no system is 100% secure)
 - ❌ Legal advice (consult DSGVO lawyer)
 - ❌ Protection against unknown vulnerabilities
@@ -311,6 +324,7 @@ mitch-phase0-security/
 ## 🌟 Why This Matters
 
 **miTch is the ONLY SSI wallet that:**
+
 - ✅ Structurally CANNOT log user presentations (architectural guarantee)
 - ✅ Gives users FULL custody of audit-logs (eIDAS 2.0 compliant)
 - ✅ Resists AI automation (Proof-of-Humanity gates)
@@ -327,6 +341,7 @@ mitch-phase0-security/
 ---
 
 **Ready to deploy? Run:**
+
 ```bash
 npm install
 npm run validate
@@ -335,6 +350,7 @@ npm run build
 ```
 
 **Questions? Read:**
+
 - `integration-example.ts` (full demo)
 - `ADVANCED_SECURITY_HARDENING.ts` (threat mitigation strategies)
 - `EIDASComplianceChecker.ts` (regulatory compliance)

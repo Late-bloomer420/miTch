@@ -30,11 +30,13 @@
 ## Current status
 
 ### Architecture handoff (2026-05-25)
+
 - Use the architecture analysis process v2 as the review standard for the next coding-agent pass.
 - Review rule: ambiguous architecture status is `UNKNOWN => FAIL`.
 - Start from the coding-agent handoff document and run `git status --short --branch` before continuing.
 
 ### Operational Health
+
 - **Tests:** 43/43 turbo tasks pass; 1618 individual tests (26 packages); 169/169 mdoc tests; 218/218 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests
 - **Lint:** 0 errors, 0 warnings
 - **Audit:** 7 npm vulnerabilities (4 high, 3 moderate — `undici` ≥7.0.0 <7.24.0, `flatted` <3.4.0; alle in devDependency-Ketten)
@@ -43,6 +45,7 @@
 - **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
 
 ### Recent additions (since Session 10+)
+
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
 - **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
 - **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
@@ -52,6 +55,7 @@
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 
 ### Completion Summary
+
 Alle P0 + P1 Gaps geschlossen. Phase 0–1 complete, Phase 2–3 teilweise.
 Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 

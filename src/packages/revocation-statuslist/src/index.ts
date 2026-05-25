@@ -55,7 +55,7 @@ export class StatusListRevocationChecker {
    */
   async checkRevocation(
     statusEntry: StatusListEntry,
-    riskTier: RiskTier = 'high',
+    riskTier: RiskTier = 'high'
   ): Promise<RevocationCheckResult> {
     const listUrl = statusEntry.statusListCredential;
     const now = Date.now();
@@ -92,10 +92,10 @@ export class StatusListRevocationChecker {
    * Privacy-preserving: deduplicates list fetches (one fetch per unique URL).
    */
   async checkRevocationBatch(
-    entries: Array<{ statusEntry: StatusListEntry; riskTier?: RiskTier }>,
+    entries: Array<{ statusEntry: StatusListEntry; riskTier?: RiskTier }>
   ): Promise<RevocationCheckResult[]> {
     // Deduplicate URLs — fetch each list at most once
-    const uniqueUrls = new Set(entries.map(e => e.statusEntry.statusListCredential));
+    const uniqueUrls = new Set(entries.map((e) => e.statusEntry.statusListCredential));
     const fetchPromises = new Map<string, Promise<void>>();
 
     for (const url of uniqueUrls) {
@@ -110,7 +110,7 @@ export class StatusListRevocationChecker {
 
     // Now check each entry (all reads from cache)
     return Promise.all(
-      entries.map(e => this.checkRevocation(e.statusEntry, e.riskTier ?? 'high')),
+      entries.map((e) => this.checkRevocation(e.statusEntry, e.riskTier ?? 'high'))
     );
   }
 
@@ -139,7 +139,7 @@ export class StatusListRevocationChecker {
     statusEntry: StatusListEntry,
     cached: StatusListCache | undefined,
     riskTier: RiskTier,
-    now: number,
+    now: number
   ): RevocationCheckResult {
     // High-risk: no grace period — DENY immediately
     if (riskTier === 'high') {
@@ -218,7 +218,7 @@ export class StatusListRevocationChecker {
     statusEntry: StatusListEntry,
     credential: StatusListCredential,
     fromCache: boolean,
-    graceMode = false,
+    graceMode = false
   ): RevocationCheckResult {
     const index = parseInt(statusEntry.statusListIndex, 10);
     const now = Date.now();

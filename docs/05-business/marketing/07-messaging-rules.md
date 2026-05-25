@@ -51,4 +51,3 @@ The page should push one action only:
 - Open the live demo
 
 Secondary actions are allowed, but they must not compete with the demo CTA.
-

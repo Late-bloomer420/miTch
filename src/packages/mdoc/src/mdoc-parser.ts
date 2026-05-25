@@ -113,10 +113,7 @@ function parseIssuerSigned(raw: unknown, docIndex: number): IssuerSigned {
  * Each item in the array is either already decoded (via Tag 24 auto-decode)
  * or is raw bytes that need CBOR decoding.
  */
-function parseNameSpaces(
-  raw: unknown,
-  docIndex: number
-): Map<NameSpace, IssuerSignedItem[]> {
+function parseNameSpaces(raw: unknown, docIndex: number): Map<NameSpace, IssuerSignedItem[]> {
   const result = new Map<NameSpace, IssuerSignedItem[]>();
 
   if (raw instanceof Map) {
@@ -124,14 +121,20 @@ function parseNameSpaces(
       if (!Array.isArray(items)) {
         throw new Error(`NameSpaces["${ns}"] in Document[${docIndex}] must be an array`);
       }
-      result.set(ns as string, items.map((item, i) => parseIssuerSignedItem(item, ns as string, i)));
+      result.set(
+        ns as string,
+        items.map((item, i) => parseIssuerSignedItem(item, ns as string, i))
+      );
     }
   } else if (raw && typeof raw === 'object') {
     for (const [ns, items] of Object.entries(raw as Record<string, unknown>)) {
       if (!Array.isArray(items)) {
         throw new Error(`NameSpaces["${ns}"] in Document[${docIndex}] must be an array`);
       }
-      result.set(ns, items.map((item, i) => parseIssuerSignedItem(item, ns, i)));
+      result.set(
+        ns,
+        items.map((item, i) => parseIssuerSignedItem(item, ns, i))
+      );
     }
   } else {
     throw new Error(`NameSpaces in Document[${docIndex}] is not a map/object`);
@@ -144,11 +147,7 @@ function parseNameSpaces(
  * Parse a single IssuerSignedItem.
  * May already be decoded (object/Map) or may need CBOR decoding (Uint8Array).
  */
-function parseIssuerSignedItem(
-  raw: unknown,
-  namespace: string,
-  index: number
-): IssuerSignedItem {
+function parseIssuerSignedItem(raw: unknown, namespace: string, index: number): IssuerSignedItem {
   let item: Record<string, unknown> | Map<string, unknown>;
 
   if (raw instanceof Uint8Array) {
@@ -162,7 +161,9 @@ function parseIssuerSignedItem(
   const digestID = mapGetRequired<number>(item, 'digestID', `Item[${namespace}][${index}]`);
   const random = mapGetRequired<Uint8Array>(item, 'random', `Item[${namespace}][${index}]`);
   const elementIdentifier = mapGetRequired<string>(
-    item, 'elementIdentifier', `Item[${namespace}][${index}]`
+    item,
+    'elementIdentifier',
+    `Item[${namespace}][${index}]`
   );
   const elementValue = mapGetOptional<DataElementValue>(item, 'elementValue');
 
@@ -187,9 +188,10 @@ function parseDeviceSigned(raw: unknown, docIndex: number): DeviceSigned {
   const nameSpacesRaw = mapGetOptional<unknown>(obj, 'nameSpaces') ?? new Map();
 
   const deviceAuth = parseDeviceAuth(deviceAuthRaw, docIndex);
-  const nameSpaces = nameSpacesRaw instanceof Map
-    ? nameSpacesRaw as Map<NameSpace, DataElementValue>
-    : new Map(Object.entries(nameSpacesRaw as Record<string, unknown>));
+  const nameSpaces =
+    nameSpacesRaw instanceof Map
+      ? (nameSpacesRaw as Map<NameSpace, DataElementValue>)
+      : new Map(Object.entries(nameSpacesRaw as Record<string, unknown>));
 
   return { nameSpaces, deviceAuth };
 }

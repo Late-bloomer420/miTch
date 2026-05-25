@@ -20,23 +20,23 @@
  * Implementations: InMemoryNullifierStore (test), RedisNullifierStore (production).
  */
 export interface NullifierStore {
-    /** Check if nullifier has been seen for this scope */
-    exists(nullifier: string, scopeId: string): Promise<boolean>;
+  /** Check if nullifier has been seen for this scope */
+  exists(nullifier: string, scopeId: string): Promise<boolean>;
 
-    /** Record a new nullifier (idempotent) */
-    record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void>;
+  /** Record a new nullifier (idempotent) */
+  record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void>;
 
-    /** Get impression count for nullifier in scope */
-    getCount(nullifier: string, scopeId: string): Promise<number>;
+  /** Get impression count for nullifier in scope */
+  getCount(nullifier: string, scopeId: string): Promise<number>;
 
-    /**
-     * Increment count and return new value.
-     * Must be atomic to prevent race conditions.
-     */
-    incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number>;
+  /**
+   * Increment count and return new value.
+   * Must be atomic to prevent race conditions.
+   */
+  incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number>;
 
-    /** Delete nullifier — for GDPR Art. 17 erasure */
-    delete(nullifier: string, scopeId: string): Promise<void>;
+  /** Delete nullifier — for GDPR Art. 17 erasure */
+  delete(nullifier: string, scopeId: string): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -44,8 +44,8 @@ export interface NullifierStore {
 // ---------------------------------------------------------------------------
 
 interface Entry {
-    count: number;
-    expiresAt?: number; // Unix ms
+  count: number;
+  expiresAt?: number; // Unix ms
 }
 
 /**
@@ -54,65 +54,65 @@ interface Entry {
  * Use for unit tests and single-process integration tests.
  */
 export class InMemoryNullifierStore implements NullifierStore {
-    private store = new Map<string, Entry>();
+  private store = new Map<string, Entry>();
 
-    private key(nullifier: string, scopeId: string): string {
-        return `${scopeId}::${nullifier}`;
-    }
+  private key(nullifier: string, scopeId: string): string {
+    return `${scopeId}::${nullifier}`;
+  }
 
-    private isExpired(entry: Entry): boolean {
-        return entry.expiresAt !== undefined && Date.now() > entry.expiresAt;
-    }
+  private isExpired(entry: Entry): boolean {
+    return entry.expiresAt !== undefined && Date.now() > entry.expiresAt;
+  }
 
-    async exists(nullifier: string, scopeId: string): Promise<boolean> {
-        const entry = this.store.get(this.key(nullifier, scopeId));
-        if (!entry || this.isExpired(entry)) return false;
-        return entry.count > 0;
-    }
+  async exists(nullifier: string, scopeId: string): Promise<boolean> {
+    const entry = this.store.get(this.key(nullifier, scopeId));
+    if (!entry || this.isExpired(entry)) return false;
+    return entry.count > 0;
+  }
 
-    async record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void> {
-        const k = this.key(nullifier, scopeId);
-        if (!this.store.has(k)) {
-            this.store.set(k, {
-                count: 1,
-                expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
-            });
-        }
+  async record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void> {
+    const k = this.key(nullifier, scopeId);
+    if (!this.store.has(k)) {
+      this.store.set(k, {
+        count: 1,
+        expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
+      });
     }
+  }
 
-    async getCount(nullifier: string, scopeId: string): Promise<number> {
-        const entry = this.store.get(this.key(nullifier, scopeId));
-        if (!entry || this.isExpired(entry)) return 0;
-        return entry.count;
-    }
+  async getCount(nullifier: string, scopeId: string): Promise<number> {
+    const entry = this.store.get(this.key(nullifier, scopeId));
+    if (!entry || this.isExpired(entry)) return 0;
+    return entry.count;
+  }
 
-    async incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number> {
-        const k = this.key(nullifier, scopeId);
-        const existing = this.store.get(k);
-        if (!existing || this.isExpired(existing)) {
-            this.store.set(k, {
-                count: 1,
-                expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
-            });
-            return 1;
-        }
-        existing.count += 1;
-        return existing.count;
+  async incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number> {
+    const k = this.key(nullifier, scopeId);
+    const existing = this.store.get(k);
+    if (!existing || this.isExpired(existing)) {
+      this.store.set(k, {
+        count: 1,
+        expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
+      });
+      return 1;
     }
+    existing.count += 1;
+    return existing.count;
+  }
 
-    async delete(nullifier: string, scopeId: string): Promise<void> {
-        this.store.delete(this.key(nullifier, scopeId));
-    }
+  async delete(nullifier: string, scopeId: string): Promise<void> {
+    this.store.delete(this.key(nullifier, scopeId));
+  }
 
-    /** Test helper — clear all entries */
-    clear(): void {
-        this.store.clear();
-    }
+  /** Test helper — clear all entries */
+  clear(): void {
+    this.store.clear();
+  }
 
-    /** Test helper — count total entries */
-    size(): number {
-        return this.store.size;
-    }
+  /** Test helper — count total entries */
+  size(): number {
+    return this.store.size;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -131,55 +131,55 @@ export class InMemoryNullifierStore implements NullifierStore {
  * Atomicity: use INCR command (atomic in Redis single-threaded model).
  */
 export class RedisNullifierStore implements NullifierStore {
-    constructor(
-        private readonly options: {
-            /** Redis client with get/set/incr/del/exists methods */
-            client: {
-                get(key: string): Promise<string | null>;
-                set(key: string, value: string, ex?: number): Promise<unknown>;
-                incr(key: string): Promise<number>;
-                expire(key: string, seconds: number): Promise<unknown>;
-                del(key: string): Promise<unknown>;
-                exists(key: string): Promise<number>;
-            };
-            keyPrefix?: string;
-            defaultTtlSeconds?: number;
-        }
-    ) { }
-
-    private key(nullifier: string, scopeId: string): string {
-        const prefix = this.options.keyPrefix ?? 'mitch:nullifier:';
-        return `${prefix}${scopeId}:${nullifier}`;
+  constructor(
+    private readonly options: {
+      /** Redis client with get/set/incr/del/exists methods */
+      client: {
+        get(key: string): Promise<string | null>;
+        set(key: string, value: string, ex?: number): Promise<unknown>;
+        incr(key: string): Promise<number>;
+        expire(key: string, seconds: number): Promise<unknown>;
+        del(key: string): Promise<unknown>;
+        exists(key: string): Promise<number>;
+      };
+      keyPrefix?: string;
+      defaultTtlSeconds?: number;
     }
+  ) {}
 
-    async exists(nullifier: string, scopeId: string): Promise<boolean> {
-        const count = await this.options.client.exists(this.key(nullifier, scopeId));
-        return count > 0;
-    }
+  private key(nullifier: string, scopeId: string): string {
+    const prefix = this.options.keyPrefix ?? 'mitch:nullifier:';
+    return `${prefix}${scopeId}:${nullifier}`;
+  }
 
-    async record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void> {
-        const k = this.key(nullifier, scopeId);
-        const ttl = ttlSeconds ?? this.options.defaultTtlSeconds;
-        await this.options.client.set(k, '1', ttl);
-    }
+  async exists(nullifier: string, scopeId: string): Promise<boolean> {
+    const count = await this.options.client.exists(this.key(nullifier, scopeId));
+    return count > 0;
+  }
 
-    async getCount(nullifier: string, scopeId: string): Promise<number> {
-        const val = await this.options.client.get(this.key(nullifier, scopeId));
-        return val ? parseInt(val, 10) : 0;
-    }
+  async record(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<void> {
+    const k = this.key(nullifier, scopeId);
+    const ttl = ttlSeconds ?? this.options.defaultTtlSeconds;
+    await this.options.client.set(k, '1', ttl);
+  }
 
-    async incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number> {
-        const k = this.key(nullifier, scopeId);
-        const count = await this.options.client.incr(k);
-        if (count === 1) {
-            // First increment — set TTL
-            const ttl = ttlSeconds ?? this.options.defaultTtlSeconds;
-            if (ttl) await this.options.client.expire(k, ttl);
-        }
-        return count;
-    }
+  async getCount(nullifier: string, scopeId: string): Promise<number> {
+    const val = await this.options.client.get(this.key(nullifier, scopeId));
+    return val ? parseInt(val, 10) : 0;
+  }
 
-    async delete(nullifier: string, scopeId: string): Promise<void> {
-        await this.options.client.del(this.key(nullifier, scopeId));
+  async incrementCount(nullifier: string, scopeId: string, ttlSeconds?: number): Promise<number> {
+    const k = this.key(nullifier, scopeId);
+    const count = await this.options.client.incr(k);
+    if (count === 1) {
+      // First increment — set TTL
+      const ttl = ttlSeconds ?? this.options.defaultTtlSeconds;
+      if (ttl) await this.options.client.expire(k, ttl);
     }
+    return count;
+  }
+
+  async delete(nullifier: string, scopeId: string): Promise<void> {
+    await this.options.client.del(this.key(nullifier, scopeId));
+  }
 }

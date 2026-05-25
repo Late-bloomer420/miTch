@@ -3,11 +3,13 @@
 Stand: 2026-02-11
 
 ## Goal
+
 Define clear internal interfaces so multiple contributors can implement in parallel without breaking behavior.
 
 ---
 
 ## IPolicyEvaluator
+
 ```ts
 interface IPolicyEvaluator {
   evaluate(input: {
@@ -20,6 +22,7 @@ interface IPolicyEvaluator {
 ```
 
 ## IBindingService
+
 ```ts
 interface IBindingService {
   canonicalize(request: VerificationRequestV0): Uint8Array;
@@ -29,13 +32,15 @@ interface IBindingService {
 ```
 
 ## INonceStore
+
 ```ts
 interface INonceStore {
-  consumeOnce(audience: string, nonce: string, ttlSec: number): Promise<"ok" | "replay">;
+  consumeOnce(audience: string, nonce: string, ttlSec: number): Promise<'ok' | 'replay'>;
 }
 ```
 
 ## IProofVerifier
+
 ```ts
 interface IProofVerifier {
   verify(bundle: ProofBundleV0): Promise<{ ok: boolean; reason?: string }>;
@@ -43,6 +48,7 @@ interface IProofVerifier {
 ```
 
 ## IReceiptWriter
+
 ```ts
 interface IReceiptWriter {
   append(receipt: DecisionReceiptV0): Promise<{ receiptRef: string }>;
@@ -52,10 +58,12 @@ interface IReceiptWriter {
 ---
 
 ## Error/Decision mapping rule
+
 - Service-layer exceptions must be transformed to deny codes, never leaked raw.
 - Unknown exceptions => `DENY_INTERNAL_SAFE_FAILURE`.
 
 ---
 
 ## Concurrency rule
+
 - Nonce consumption must be atomic across concurrent verifier instances.

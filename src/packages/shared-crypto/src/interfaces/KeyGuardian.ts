@@ -1,4 +1,4 @@
-import { KeyProtectionLevel } from "../types/KeyProtectionLevel";
+import { KeyProtectionLevel } from '../types/KeyProtectionLevel';
 
 /** Result of creating a signing key (ECDSA-P256). */
 export type KeyCreationResult =
@@ -37,5 +37,8 @@ export interface KeyGuardian {
   /** Create an encryption key pair (ECDH-P256) — separate from signing keys (G-07). */
   createEncryptionKey(opts: { userId: string }): Promise<EncryptionKeyCreationResult>;
   /** Derive a shared AES-GCM key from our ECDH private key and a sender's public key. */
-  deriveSharedSecret(opts: { encKeyId: string; senderPublicKeyJwk: JsonWebKey }): Promise<CryptoKey>;
+  deriveSharedSecret(opts: {
+    encKeyId: string;
+    senderPublicKeyJwk: JsonWebKey;
+  }): Promise<CryptoKey>;
 }

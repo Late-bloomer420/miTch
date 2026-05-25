@@ -9,12 +9,14 @@
 Institutions hold two kinds of data about you:
 
 **Data you gave them directly:**
+
 - Your name, address, date of birth — provided at signup
 - Your transactions — recorded as you made them
 - Your health records — created during treatment
 - This data is covered by GDPR Art. 20 (portability) and Art. 15 (access)
 
 **Data they inferred or derived about you — the shadow profile:**
+
 - Your bank inferred your religion from charitable donation patterns
 - Your insurer inferred health conditions from pharmacy purchase history
 - Your credit card company inferred political views from spending behaviour
@@ -23,6 +25,7 @@ Institutions hold two kinds of data about you:
 - Your fitness app inferred fertility cycles, sleep disorders, mental health indicators
 
 This inferred/derived data:
+
 - Is often more accurate than what you'd voluntarily disclose
 - Is the most commercially valuable data institutions hold about you
 - Drives the automated decisions that most affect your life (credit, insurance, employment, healthcare)
@@ -42,6 +45,7 @@ The local insight engine (Layer 2) lets you run the same models on your own data
 It cannot access what institutions have inferred — only what you have access to.
 
 miTch is honest about this limit. The daily review shows:
+
 - What you shared deliberately (controlled by miTch)
 - What the platform layer could observe (OS/browser/network telemetry — shown, not fixable)
 - What decisions were made about you using AI systems (partially visible via AI Act)
@@ -60,6 +64,7 @@ High-risk categories include: credit scoring, insurance risk assessment, employm
 access to healthcare, access to education, border control, administration of justice.
 
 For these systems, providers must:
+
 1. Provide "meaningful information about the logic involved" in automated decisions
 2. Allow individuals to request an explanation of decisions that significantly affect them
 3. Maintain documentation of training data, model design, and risk assessment
@@ -74,6 +79,7 @@ That explanation — if it mentions which data points drove the decision — giv
 into what they know about you. Not the full profile. The output side of it.
 
 **Example:**
+
 > "Your application was declined primarily due to: high revolving credit utilisation (42%),
 > three recent credit enquiries in 90 days, and irregular income pattern."
 
@@ -113,6 +119,7 @@ Full transparency of shadow profiles — the right to see your inferred profile,
 the data you provided — requires new regulation that doesn't exist yet.
 
 What would that regulation look like:
+
 - An extension of GDPR Art. 15 (right of access) to explicitly cover derived/inferred data
 - A "right to your inferred profile" — similar to the right to access raw data, but for conclusions
 - Mandatory model cards: institutions must publish what categories of inference their AI systems perform
@@ -121,6 +128,7 @@ This does not exist in current EU law. The AI Act's explanation right is narrowe
 individual decisions, not standing profiles.
 
 **miTch's role at this frontier:**
+
 - Document the gap clearly to users: "This is what we can show you. This is what no one can show you yet."
 - Accumulate AI Act explanation responses as evidence of what's being inferred
 - Over time, that evidence base supports the advocacy case for stronger regulation

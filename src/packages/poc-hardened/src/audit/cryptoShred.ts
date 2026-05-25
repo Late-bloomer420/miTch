@@ -1,20 +1,20 @@
 /**
  * Crypto-Shredding — Provable data destruction
- * 
+ *
  * Data is encrypted with ephemeral keys.
  * Destroying the key = destroying the data (mathematically).
  * Each shred event produces a proof for the audit chain.
  */
 
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
-import { ShredProof } from "./auditChain";
+import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { ShredProof } from './auditChain';
 
 // ─── Types ───────────────────────────────────────────────────────
 
 export interface EphemeralKey {
   keyId: string;
-  key: Buffer;         // 32 bytes for AES-256
-  iv: Buffer;          // 16 bytes
+  key: Buffer; // 32 bytes for AES-256
+  iv: Buffer; // 16 bytes
   algorithm: string;
   createdAt: string;
   destroyed: boolean;
@@ -22,7 +22,7 @@ export interface EphemeralKey {
 
 export interface EncryptedData {
   keyId: string;
-  ciphertext: string;  // hex-encoded
+  ciphertext: string; // hex-encoded
   algorithm: string;
 }
 
@@ -35,12 +35,12 @@ export class EphemeralKeyManager {
    * Create a new ephemeral key for a transaction.
    */
   createKey(): EphemeralKey {
-    const keyId = `k_trans_${randomBytes(8).toString("hex")}`;
+    const keyId = `k_trans_${randomBytes(8).toString('hex')}`;
     const ephemeral: EphemeralKey = {
       keyId,
       key: randomBytes(32),
       iv: randomBytes(16),
-      algorithm: "aes-256-cbc",
+      algorithm: 'aes-256-cbc',
       createdAt: new Date().toISOString(),
       destroyed: false,
     };
@@ -53,12 +53,12 @@ export class EphemeralKeyManager {
    */
   encrypt(keyId: string, plaintext: string): EncryptedData {
     const ek = this.keys.get(keyId);
-    if (!ek) throw new Error("key_not_found");
-    if (ek.destroyed) throw new Error("key_destroyed");
+    if (!ek) throw new Error('key_not_found');
+    if (ek.destroyed) throw new Error('key_destroyed');
 
     const cipher = createCipheriv(ek.algorithm, ek.key, ek.iv);
-    let encrypted = cipher.update(plaintext, "utf8", "hex");
-    encrypted += cipher.final("hex");
+    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
 
     return {
       keyId,
@@ -72,12 +72,12 @@ export class EphemeralKeyManager {
    */
   decrypt(encrypted: EncryptedData): string {
     const ek = this.keys.get(encrypted.keyId);
-    if (!ek) throw new Error("key_not_found");
-    if (ek.destroyed) throw new Error("key_destroyed_data_irrecoverable");
+    if (!ek) throw new Error('key_not_found');
+    if (ek.destroyed) throw new Error('key_destroyed_data_irrecoverable');
 
     const decipher = createDecipheriv(ek.algorithm, ek.key, ek.iv);
-    let decrypted = decipher.update(encrypted.ciphertext, "hex", "utf8");
-    decrypted += decipher.final("utf8");
+    let decrypted = decipher.update(encrypted.ciphertext, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
     return decrypted;
   }
 
@@ -88,8 +88,8 @@ export class EphemeralKeyManager {
    */
   shred(keyId: string): ShredProof {
     const ek = this.keys.get(keyId);
-    if (!ek) throw new Error("key_not_found");
-    if (ek.destroyed) throw new Error("already_destroyed");
+    if (!ek) throw new Error('key_not_found');
+    if (ek.destroyed) throw new Error('already_destroyed');
 
     // Zero out the key material
     ek.key.fill(0);
@@ -100,7 +100,7 @@ export class EphemeralKeyManager {
       keyId,
       algorithm: ek.algorithm,
       destroyedAt: new Date().toISOString(),
-      method: "key_zeroed",
+      method: 'key_zeroed',
     };
 
     return proof;

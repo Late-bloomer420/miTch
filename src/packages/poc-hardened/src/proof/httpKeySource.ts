@@ -1,7 +1,7 @@
-import { request as httpRequest } from "http";
-import { request as httpsRequest } from "https";
-import { URL } from "url";
-import { KeySource } from "./keySource";
+import { request as httpRequest } from 'http';
+import { request as httpsRequest } from 'https';
+import { URL } from 'url';
+import { KeySource } from './keySource';
 
 const resolverTelemetry = {
   queriesTotal: 0,
@@ -9,35 +9,31 @@ const resolverTelemetry = {
   inconsistentResponses: 0,
 };
 
-const lastResolverOutcomeByKey = new Map<string, "ok" | "missing" | "quorum_failed">();
+const lastResolverOutcomeByKey = new Map<string, 'ok' | 'missing' | 'quorum_failed'>();
 
 function fetchJson(urlStr: string, timeoutMs: number): Promise<Record<string, string> | null> {
   return new Promise((resolve) => {
     try {
       const url = new URL(urlStr);
-      const lib = url.protocol === "https:" ? httpsRequest : httpRequest;
-      const req = lib(
-        url,
-        { method: "GET", timeout: timeoutMs },
-        (res) => {
-          const chunks: Buffer[] = [];
-          res.on("data", (c) => chunks.push(Buffer.from(c)));
-          res.on("end", () => {
-            try {
-              const body = Buffer.concat(chunks).toString("utf8");
-              const parsed = JSON.parse(body) as Record<string, string>;
-              resolve(parsed);
-            } catch {
-              resolve(null);
-            }
-          });
-        }
-      );
-      req.on("timeout", () => {
+      const lib = url.protocol === 'https:' ? httpsRequest : httpRequest;
+      const req = lib(url, { method: 'GET', timeout: timeoutMs }, (res) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c) => chunks.push(Buffer.from(c)));
+        res.on('end', () => {
+          try {
+            const body = Buffer.concat(chunks).toString('utf8');
+            const parsed = JSON.parse(body) as Record<string, string>;
+            resolve(parsed);
+          } catch {
+            resolve(null);
+          }
+        });
+      });
+      req.on('timeout', () => {
         req.destroy();
         resolve(null);
       });
-      req.on("error", () => resolve(null));
+      req.on('error', () => resolve(null));
       req.end();
     } catch {
       resolve(null);
@@ -61,7 +57,7 @@ export class HttpKeySource implements KeySource {
     for (const map of maps) {
       if (!map) continue;
       const pem = map[keyId];
-      if (typeof pem !== "string" || pem.length === 0) continue;
+      if (typeof pem !== 'string' || pem.length === 0) continue;
       counts.set(pem, (counts.get(pem) ?? 0) + 1);
     }
 
@@ -82,14 +78,14 @@ export class HttpKeySource implements KeySource {
     if (!ok) {
       if (counts.size > 0) {
         resolverTelemetry.quorumFailures += 1;
-        lastResolverOutcomeByKey.set(keyId, "quorum_failed");
+        lastResolverOutcomeByKey.set(keyId, 'quorum_failed');
       } else {
-        lastResolverOutcomeByKey.set(keyId, "missing");
+        lastResolverOutcomeByKey.set(keyId, 'missing');
       }
       return null;
     }
 
-    lastResolverOutcomeByKey.set(keyId, "ok");
+    lastResolverOutcomeByKey.set(keyId, 'ok');
     return winner;
   }
 }
@@ -106,6 +102,6 @@ export function getResolverTelemetry(): {
   };
 }
 
-export function getLastResolverOutcome(keyId: string): "ok" | "missing" | "quorum_failed" | null {
+export function getLastResolverOutcome(keyId: string): 'ok' | 'missing' | 'quorum_failed' | null {
   return lastResolverOutcomeByKey.get(keyId) ?? null;
 }

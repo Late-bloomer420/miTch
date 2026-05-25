@@ -1,4 +1,4 @@
-import { verifyWebauthnEvidence } from "./webauthnVerifier";
+import { verifyWebauthnEvidence } from './webauthnVerifier';
 
 const usedWebauthnChallenges = new Map<string, number>();
 
@@ -21,7 +21,7 @@ export function hasStrongRecentReAuth(meta?: {
 }): { ok: boolean; invalidEvidence: boolean } {
   if (!meta) return { ok: false, invalidEvidence: false };
 
-  if (process.env.REQUIRE_STRONG_REAUTH !== "1") {
+  if (process.env.REQUIRE_STRONG_REAUTH !== '1') {
     return { ok: meta.reAuthRecent === true, invalidEvidence: false };
   }
 
@@ -29,7 +29,11 @@ export function hasStrongRecentReAuth(meta?: {
     return { ok: false, invalidEvidence: meta.reAuthRecent === true };
   }
 
-  if (meta.reAuthMethod !== "webauthn" || !meta.reAuthAssertion || meta.reAuthAssertion.trim().length === 0) {
+  if (
+    meta.reAuthMethod !== 'webauthn' ||
+    !meta.reAuthAssertion ||
+    meta.reAuthAssertion.trim().length === 0
+  ) {
     return { ok: false, invalidEvidence: true };
   }
 
@@ -48,18 +52,18 @@ export function hasStrongRecentReAuth(meta?: {
     return { ok: false, invalidEvidence: true };
   }
 
-  const allowChallenges = (process.env.WEBAUTHN_CHALLENGE_ALLOWLIST ?? "")
-    .split(",")
+  const allowChallenges = (process.env.WEBAUTHN_CHALLENGE_ALLOWLIST ?? '')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const allowRpIds = (process.env.WEBAUTHN_RPID_ALLOWLIST ?? "")
-    .split(",")
+  const allowRpIds = (process.env.WEBAUTHN_RPID_ALLOWLIST ?? '')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const allowOrigins = (process.env.WEBAUTHN_ORIGIN_ALLOWLIST ?? "")
-    .split(",")
+  const allowOrigins = (process.env.WEBAUTHN_ORIGIN_ALLOWLIST ?? '')
+    .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 

@@ -3,7 +3,7 @@ import { mapWebAuthnReason } from '../webauthn-reason-map';
 import { DenyReasonCode } from '../deny-reason-codes';
 
 describe('mapWebAuthnReason', () => {
-  it('maps CHALLENGE_EXPIRED → PRESENCE_REQUIRED (user didn\'t tap in time)', () => {
+  it("maps CHALLENGE_EXPIRED → PRESENCE_REQUIRED (user didn't tap in time)", () => {
     expect(mapWebAuthnReason('CHALLENGE_EXPIRED')).toBe(DenyReasonCode.PRESENCE_REQUIRED);
   });
 
@@ -34,8 +34,13 @@ describe('mapWebAuthnReason', () => {
 
   it('is deterministic — same input always produces same output', () => {
     const reasons = [
-      'CHALLENGE_EXPIRED', 'CHALLENGE_NOT_FOUND', 'CHALLENGE_MISMATCH',
-      'COUNTER_REPLAY', 'SIGNATURE_INVALID', 'KEY_NOT_FOUND', 'UNKNOWN',
+      'CHALLENGE_EXPIRED',
+      'CHALLENGE_NOT_FOUND',
+      'CHALLENGE_MISMATCH',
+      'COUNTER_REPLAY',
+      'SIGNATURE_INVALID',
+      'KEY_NOT_FOUND',
+      'UNKNOWN',
     ];
     for (const reason of reasons) {
       expect(mapWebAuthnReason(reason)).toBe(mapWebAuthnReason(reason));

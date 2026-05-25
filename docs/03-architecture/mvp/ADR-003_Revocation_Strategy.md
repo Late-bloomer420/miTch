@@ -8,6 +8,7 @@
 ## Context
 
 Credential revocation is required for:
+
 - Compromised credentials (stolen keys)
 - Expired identity documents (passport renewal)
 - User-requested deletion (GDPR Art. 17)
@@ -20,6 +21,7 @@ Credential revocation is required for:
 **Strategy:** W3C StatusList2021 with bitstring encoding
 
 **How it works:**
+
 1. Issuer maintains bitstring (e.g., 1000000 bits = 125 KB)
 2. Each credential gets assigned index (e.g., credential #5 → bit 5)
 3. Verifier fetches entire list (not individual credential status)
@@ -27,12 +29,14 @@ Credential revocation is required for:
 5. Result: Issuer doesn't know which credential was checked
 
 **Privacy Properties:**
+
 - ✅ No per-credential network requests
 - ✅ Verifier anonymity (issuer sees list download, not credential check)
 - ✅ Minimal correlation (many credentials share same list)
 - ✅ Caching reduces network load
 
 **Implementation:**
+
 - Library: Custom implementation (lightweight)
 - Encoding: Base64-compressed bitstring
 - Cache: 60 minutes (configurable)
@@ -41,31 +45,38 @@ Credential revocation is required for:
 ## Alternatives Considered
 
 ### 1. OCSP (Online Certificate Status Protocol)
+
 ❌ **Rejected:** Privacy leak (issuer learns which verifier checks which credential)
 
 ### 2. CRL (Certificate Revocation List)
+
 ❌ **Rejected:** Large file size, poor scalability
 
 ### 3. Bloom Filters
+
 ⚠️ **Considered:** Good privacy, but false positives problematic
 
 ### 4. Accumulator-based (Cryptographic)
+
 ⚠️ **Future:** Better privacy, but complexity too high for MVP
 
 ## Consequences
 
 ### Positive
+
 ✅ W3C Standard compliance
 ✅ Privacy-preserving by design
 ✅ Good performance (cached list)
 ✅ Scalable (bitstring compression)
 
 ### Negative
+
 ⚠️ Issuer must host status list publicly
 ⚠️ Verifier must fetch list periodically
 ⚠️ Revocation not instant (cache delay)
 
 ### Mitigations
+
 - Cache TTL short for critical use cases (5-15 minutes)
 - Degraded mode: allow credential if list temporarily unavailable
 - Monitoring: alert if list fetch rate anomalous

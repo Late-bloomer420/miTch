@@ -3,11 +3,13 @@
 Stand: 2026-02-11
 
 ## Purpose
+
 Define a shared policy grammar that can govern both web data requests and AI tool/model I/O.
 
 ---
 
 ## Core entities
+
 - **Subject:** user/device/workspace context
 - **Requester:** website/service/model/tool
 - **Data Class:** PII, secret, business-sensitive, public
@@ -18,6 +20,7 @@ Define a shared policy grammar that can govern both web data requests and AI too
 ---
 
 ## Rule shape (concept)
+
 ```yaml
 ruleId: R-001
 scope: web|ai|global
@@ -34,6 +37,7 @@ retention:
 ---
 
 ## Semantics
+
 - Unknown requester/dataClass/purpose => deny or notify+deny (policy-defined fail-closed)
 - `transform` requires deterministic profile and receipt logging
 - `allow` without purpose is invalid
@@ -42,38 +46,43 @@ retention:
 ---
 
 ## Example rules
+
 1. Deny external model access to secrets:
+
 ```yaml
 scope: ai
-requester: "model:*"
+requester: 'model:*'
 dataClass: [SECRET]
-purpose: "*"
+purpose: '*'
 action: deny
 ```
 
 2. Allow age predicate exchange but never raw DOB:
+
 ```yaml
 scope: web
-requester: "rp:age-gate"
+requester: 'rp:age-gate'
 dataClass: [PII]
-purpose: "age_verification"
+purpose: 'age_verification'
 action: transform
-transformProfile: "predicate-age-gte18"
+transformProfile: 'predicate-age-gte18'
 retention:
   maxTtlSec: 0
   store: none
 ```
 
 3. Notify on unclassified web requests:
+
 ```yaml
 scope: web
-requester: "*"
+requester: '*'
 dataClass: [UNKNOWN]
-purpose: "*"
+purpose: '*'
 action: notify
 ```
 
 ---
 
 ## Next step
+
 Map this language to executable policy manifests after Core MVP reaches stable operations.

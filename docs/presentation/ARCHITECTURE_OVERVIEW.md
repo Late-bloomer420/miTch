@@ -1,17 +1,22 @@
 # miTch Architektur: The Forgetting Layer
-*Ein-Seiten-Übersicht für Fach- und Führungskräfte*
+
+_Ein-Seiten-Übersicht für Fach- und Führungskräfte_
 
 ## Was ist "The Forgetting Layer"?
-**miTch** fungiert als schützende Datenschicht (Middleware) zwischen der digitalen Identität eines Nutzers und den Parteien, die diese Identität überprüfen wollen (Verifiers, z.B. Krankenhäuser, Shops, Behörden). 
+
+**miTch** fungiert als schützende Datenschicht (Middleware) zwischen der digitalen Identität eines Nutzers und den Parteien, die diese Identität überprüfen wollen (Verifiers, z.B. Krankenhäuser, Shops, Behörden).
 
 Anstatt rohe Identitätsdaten (PII - Personally Identifiable Information) wie in einem klassischen Ausweis zu speichern und zu übertragen, erzeugt miTch passgenaue, mathematische Beweise. Nach jeder Transaktion greift das Prinzip des **Crypto-Shreddungs**: Für die Übertragung generierte, kurzlebige Schlüssel werden sofort und unwiderruflich zerstört. Das System vergisst strukturell, nicht nur aufgrund organisatorischer "Policy-Versprechen".
 
 ## Wie funktioniert selektive Disclosure?
-Selektive Disclosure (gezielte Offenlegung) bedeutet, dass immer nur exakt das preisgegeben wird, was zwingend notwendig ist. 
+
+Selektive Disclosure (gezielte Offenlegung) bedeutet, dass immer nur exakt das preisgegeben wird, was zwingend notwendig ist.
+
 - **Beispiel Klassisch:** Sie zeigen im Supermarkt Ihren Ausweis. Die Kassiererin sieht Name, Adresse, Geburtsdatum und Ausweisnummer.
 - **Beispiel miTch:** Das System übermittelt lediglich ein maschinenlesbares, fälschungssicheres "Ja" auf die Frage: "Ist diese Person über 18?". Alle anderen Daten verlassen das Smartphone niemals.
 
 ## Warum ist das besser als klassische ID-Checks?
+
 1. **Keine Daten-Honeypots:** Da Unternehmen (Verifiers) keine rohen Personendaten mehr speichern, gibt es bei einem Hackerangriff auf das Unternehmen auch keine Ausweisdaten zu stehlen.
 2. **Fail-Closed Prinzip:** Herrscht bei einer Anfrage Unklarheit (z.B. widersprüchliche Policies oder fehlende Erlaubnis), wird die Freigabe stets verweigert (Deny-Biased). Es gibt kein heimliches Durchwinken.
 3. **Data Minimization by Construction:** Datenschutz wird durch die Architektur der Software erzwungen, nicht nur durch AGBs oder menschliches Vertrauen.
@@ -45,13 +50,13 @@ flowchart LR
     C1 -- "Fordert Beweis\n(z.B. Alter > 18)" --> B2
     B3 -- "Kryptografischer Proof\n(Keine PII, Ephemeral Key)" --> C1
     C1 -- "Prüft Status" --> A2
-    
+
     style User fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
     style Issuer fill:#f9f9f9,stroke:#666,stroke-width:1px
     style RP fill:#fff2e6,stroke:#e67300,stroke-width:2px
 ```
 
-*Das Diagramm zeigt: Die rohen Identitätsdaten (Issuer) verbleiben sicher auf dem User Device. Der Requester kommuniziert ausschließlich auf Basis kryptografischer Beweise (Proofs), ohne jemals den vollständigen Datensatz zu Gesicht zu bekommen.*
+_Das Diagramm zeigt: Die rohen Identitätsdaten (Issuer) verbleiben sicher auf dem User Device. Der Requester kommuniziert ausschließlich auf Basis kryptografischer Beweise (Proofs), ohne jemals den vollständigen Datensatz zu Gesicht zu bekommen._
 
 ---
 
@@ -86,10 +91,10 @@ flowchart LR
 
 ### CIR Compliance (Stand Session 8)
 
-| Regulation | Coverage | Key Requirements |
-|------------|----------|-----------------|
-| CIR 2024/2977 (PID + EAA) | 87% ✅ | SD-JWT VC, Key Binding, OID4VCI |
-| CIR 2024/2979 (Integrity) | 80% ✅ | DPoP, Brainpool, Client Attestation, JWE |
-| CIR 2024/2982 (Protocols) | 80% ✅ | OID4VP, SIOPv2, HAIP, direct_post.jwt |
+| Regulation                | Coverage | Key Requirements                         |
+| ------------------------- | -------- | ---------------------------------------- |
+| CIR 2024/2977 (PID + EAA) | 87% ✅   | SD-JWT VC, Key Binding, OID4VCI          |
+| CIR 2024/2979 (Integrity) | 80% ✅   | DPoP, Brainpool, Client Attestation, JWE |
+| CIR 2024/2982 (Protocols) | 80% ✅   | OID4VP, SIOPv2, HAIP, direct_post.jwt    |
 
 Verbleibende Lücken: Status-Endpoint Deployment, brainpoolP384r1 BSI-Verifizierung, Batch Credential Issuance.

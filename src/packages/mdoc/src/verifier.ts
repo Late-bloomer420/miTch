@@ -24,11 +24,7 @@ import { extractAndVerifyMso } from './mso.js';
 import { verifyMsoValidity, verifyDocType } from './validity.js';
 import { verifyDeviceAuth } from './device-auth.js';
 import { decodeCoseSign1 } from './cose.js';
-import {
-  extractX5Chain,
-  importPublicKeyFromCert,
-  type TrustAnchorVerifier,
-} from './x5chain.js';
+import { extractX5Chain, importPublicKeyFromCert, type TrustAnchorVerifier } from './x5chain.js';
 
 /** Per-step verification status. */
 export interface VerificationStep {
@@ -90,9 +86,7 @@ export interface MdocVerifyOptions {
  *
  * @returns Detailed result with per-step status
  */
-export async function verifyMdocOffline(
-  opts: MdocVerifyOptions
-): Promise<MdocVerificationResult> {
+export async function verifyMdocOffline(opts: MdocVerifyOptions): Promise<MdocVerificationResult> {
   const { document, sessionTranscript, now } = opts;
   const steps: VerificationStep[] = [];
 
@@ -107,7 +101,11 @@ export async function verifyMdocOffline(
       if (opts.trustAnchorVerifier) {
         const trusted = await opts.trustAnchorVerifier(x5result.chain);
         if (!trusted) {
-          steps.push({ step: 'trust-anchor', valid: false, reason: 'Certificate chain not trusted' });
+          steps.push({
+            step: 'trust-anchor',
+            valid: false,
+            reason: 'Certificate chain not trusted',
+          });
           return { valid: false, steps, reason: 'Certificate chain not trusted' };
         }
         steps.push({ step: 'trust-anchor', valid: true });
@@ -185,7 +183,7 @@ export async function verifyMdocOffline(
       document.deviceSigned.deviceAuth,
       mso,
       sessionTranscript,
-      opts.eReaderPrivateKey,
+      opts.eReaderPrivateKey
     );
     steps.push({
       step: 'device-auth',

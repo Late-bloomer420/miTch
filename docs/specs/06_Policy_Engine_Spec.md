@@ -1,6 +1,7 @@
 # Policy Engine Spec (Phase 0)
 
 ## Artifacts
+
 - **Policy Manifest**: canonical description of:
   - supported predicates
   - required bindings
@@ -16,6 +17,7 @@
   - protect verification API (Phase 0: fixed window per requester)
 
 ## Gate precedence (must be enforced)
+
 1. Rate limit (cheap, early)
 2. Schema validation (fail closed)
 3. Binding validation (request hash / nonce / audience / expiry)
@@ -24,15 +26,18 @@
 6. Receipt logging (WORM)
 
 ## Error handling
+
 - Any missing field, unknown predicate, or ambiguous match => **DENY**
 - Deny must be explicit + machine-readable reason codes.
 
 ## Logging policy
+
 - Logs must not contain raw PII.
 - Avoid stable identifiers.
 - Prefer coarse-grained operational metrics (counts, buckets) over per-user traces.
 
 ## Testing requirements
+
 - “Honesty Check”: zero matches for enclave/TEE claims if not implemented.
 - Regression tests:
   - fail closed on missing path

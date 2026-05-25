@@ -48,9 +48,9 @@ const VERIFIER_PATTERN_PATTERN = /^(\*|did:[a-zA-Z0-9]+:[a-zA-Z0-9._\-:%*]{1,400
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export interface ClaimValidationResult {
-    valid: boolean;
-    normalized: string[];
-    rejected: Array<{ claim: string; reason: string }>;
+  valid: boolean;
+  normalized: string[];
+  rejected: Array<{ claim: string; reason: string }>;
 }
 
 /**
@@ -58,9 +58,9 @@ export interface ClaimValidationResult {
  * Returns null if the result is empty.
  */
 export function normalizeClaimName(raw: string): string | null {
-    if (typeof raw !== 'string') return null;
-    const normalized = raw.trim().toLowerCase();
-    return normalized.length > 0 ? normalized : null;
+  if (typeof raw !== 'string') return null;
+  const normalized = raw.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
 }
 
 /**
@@ -71,51 +71,60 @@ export function normalizeClaimName(raw: string): string | null {
  * - Returns both the valid normalized list and the rejected items with reasons
  */
 export function validateClaimNames(claims: unknown[]): ClaimValidationResult {
-    const normalized: string[] = [];
-    const rejected: Array<{ claim: string; reason: string }> = [];
+  const normalized: string[] = [];
+  const rejected: Array<{ claim: string; reason: string }> = [];
 
-    if (!Array.isArray(claims)) {
-        return { valid: false, normalized: [], rejected: [{ claim: '<input>', reason: 'Must be an array' }] };
-    }
-
-    if (claims.length > MAX_CLAIMS_PER_LIST) {
-        return {
-            valid: false,
-            normalized: [],
-            rejected: [{ claim: '<list>', reason: `Too many claims: ${claims.length} > ${MAX_CLAIMS_PER_LIST}` }]
-        };
-    }
-
-    for (const raw of claims) {
-        if (typeof raw !== 'string') {
-            rejected.push({ claim: String(raw), reason: 'Not a string' });
-            continue;
-        }
-
-        const norm = normalizeClaimName(raw);
-        if (!norm) {
-            rejected.push({ claim: raw, reason: 'Empty after normalization' });
-            continue;
-        }
-
-        if (norm.length > MAX_CLAIM_NAME_LENGTH) {
-            rejected.push({ claim: raw, reason: `Exceeds max length of ${MAX_CLAIM_NAME_LENGTH}` });
-            continue;
-        }
-
-        if (!CLAIM_NAME_PATTERN.test(norm)) {
-            rejected.push({ claim: raw, reason: 'Failed whitelist pattern (only a-z, 0-9, _, - allowed; must start with letter)' });
-            continue;
-        }
-
-        normalized.push(norm);
-    }
-
+  if (!Array.isArray(claims)) {
     return {
-        valid: rejected.length === 0,
-        normalized,
-        rejected,
+      valid: false,
+      normalized: [],
+      rejected: [{ claim: '<input>', reason: 'Must be an array' }],
     };
+  }
+
+  if (claims.length > MAX_CLAIMS_PER_LIST) {
+    return {
+      valid: false,
+      normalized: [],
+      rejected: [
+        { claim: '<list>', reason: `Too many claims: ${claims.length} > ${MAX_CLAIMS_PER_LIST}` },
+      ],
+    };
+  }
+
+  for (const raw of claims) {
+    if (typeof raw !== 'string') {
+      rejected.push({ claim: String(raw), reason: 'Not a string' });
+      continue;
+    }
+
+    const norm = normalizeClaimName(raw);
+    if (!norm) {
+      rejected.push({ claim: raw, reason: 'Empty after normalization' });
+      continue;
+    }
+
+    if (norm.length > MAX_CLAIM_NAME_LENGTH) {
+      rejected.push({ claim: raw, reason: `Exceeds max length of ${MAX_CLAIM_NAME_LENGTH}` });
+      continue;
+    }
+
+    if (!CLAIM_NAME_PATTERN.test(norm)) {
+      rejected.push({
+        claim: raw,
+        reason: 'Failed whitelist pattern (only a-z, 0-9, _, - allowed; must start with letter)',
+      });
+      continue;
+    }
+
+    normalized.push(norm);
+  }
+
+  return {
+    valid: rejected.length === 0,
+    normalized,
+    rejected,
+  };
 }
 
 /**
@@ -123,10 +132,11 @@ export function validateClaimNames(claims: unknown[]): ClaimValidationResult {
  * Used for VerifierRequest.verifierId.
  */
 export function validateVerifierDID(did: unknown): { valid: boolean; reason?: string } {
-    if (typeof did !== 'string') return { valid: false, reason: 'Not a string' };
-    if (did.length > MAX_DID_LENGTH) return { valid: false, reason: `DID too long (max ${MAX_DID_LENGTH})` };
-    if (!DID_PATTERN.test(did)) return { valid: false, reason: 'Invalid DID format' };
-    return { valid: true };
+  if (typeof did !== 'string') return { valid: false, reason: 'Not a string' };
+  if (did.length > MAX_DID_LENGTH)
+    return { valid: false, reason: `DID too long (max ${MAX_DID_LENGTH})` };
+  if (!DID_PATTERN.test(did)) return { valid: false, reason: 'Invalid DID format' };
+  return { valid: true };
 }
 
 /**
@@ -134,10 +144,12 @@ export function validateVerifierDID(did: unknown): { valid: boolean; reason?: st
  * Used for PolicyRule.verifierPattern.
  */
 export function validateVerifierPattern(pattern: unknown): { valid: boolean; reason?: string } {
-    if (typeof pattern !== 'string') return { valid: false, reason: 'Not a string' };
-    if (pattern.length > MAX_DID_LENGTH) return { valid: false, reason: `Pattern too long (max ${MAX_DID_LENGTH})` };
-    if (!VERIFIER_PATTERN_PATTERN.test(pattern)) return { valid: false, reason: 'Invalid verifier pattern' };
-    return { valid: true };
+  if (typeof pattern !== 'string') return { valid: false, reason: 'Not a string' };
+  if (pattern.length > MAX_DID_LENGTH)
+    return { valid: false, reason: `Pattern too long (max ${MAX_DID_LENGTH})` };
+  if (!VERIFIER_PATTERN_PATTERN.test(pattern))
+    return { valid: false, reason: 'Invalid verifier pattern' };
+  return { valid: true };
 }
 
 /**
@@ -146,7 +158,7 @@ export function validateVerifierPattern(pattern: unknown): { valid: boolean; rea
  * Malformed claims are silently dropped (fail-safe).
  */
 export function sanitizeRequestedClaims(claims: unknown): string[] {
-    if (!Array.isArray(claims)) return [];
-    const result = validateClaimNames(claims);
-    return result.normalized;
+  if (!Array.isArray(claims)) return [];
+  const result = validateClaimNames(claims);
+  return result.normalized;
 }

@@ -11,11 +11,7 @@
  * Detached payload: fail-closed (not supported).
  */
 
-import type {
-  DeviceAuth,
-  MobileSecurityObject,
-  SessionTranscript,
-} from './mdoc-types.js';
+import type { DeviceAuth, MobileSecurityObject, SessionTranscript } from './mdoc-types.js';
 import { encode } from './cbor.js';
 import { verifySign1, verifyMac0, deriveSessionMacKey } from './cose.js';
 import { importCoseKey } from './cose-key.js';
@@ -39,7 +35,7 @@ export interface DeviceAuthResult {
 export async function verifyDeviceSignature(
   deviceSignature: Uint8Array,
   devicePublicKey: CryptoKey,
-  sessionTranscript: SessionTranscript,
+  sessionTranscript: SessionTranscript
 ): Promise<DeviceAuthResult> {
   // Encode SessionTranscript as CBOR → externalAad
   const externalAad = encode(sessionTranscript);
@@ -78,7 +74,7 @@ export async function verifyDeviceSignature(
 export async function verifyDeviceMac(
   deviceMac: Uint8Array,
   macKey: CryptoKey,
-  sessionTranscript: SessionTranscript,
+  sessionTranscript: SessionTranscript
 ): Promise<DeviceAuthResult> {
   const externalAad = encode(sessionTranscript);
 
@@ -115,7 +111,7 @@ export async function verifyDeviceAuth(
   deviceAuth: DeviceAuth,
   mso: MobileSecurityObject,
   sessionTranscript: SessionTranscript,
-  eReaderPrivateKey?: CryptoKey,
+  eReaderPrivateKey?: CryptoKey
 ): Promise<DeviceAuthResult> {
   // Extract device public key from MSO (needed for both paths)
   if (!mso.deviceKeyInfo?.deviceKey) {
@@ -134,17 +130,16 @@ export async function verifyDeviceAuth(
       };
     }
 
-    return verifyDeviceSignature(
-      deviceAuth.deviceSignature,
-      devicePublicKey,
-      sessionTranscript,
-    );
+    return verifyDeviceSignature(deviceAuth.deviceSignature, devicePublicKey, sessionTranscript);
   }
 
   // COSE_Mac0 path (NFC proximity)
   if (deviceAuth.deviceMac) {
     if (!eReaderPrivateKey) {
-      return { valid: false, reason: 'COSE_Mac0 requires eReaderPrivateKey for ECDH key agreement' };
+      return {
+        valid: false,
+        reason: 'COSE_Mac0 requires eReaderPrivateKey for ECDH key agreement',
+      };
     }
 
     // Import device public key as ECDH key for key agreement
@@ -179,9 +174,7 @@ export async function verifyDeviceAuth(
  * Import a COSE_Key as an ECDH public key (for key agreement).
  * Similar to importCoseKey but with ECDH key usage instead of ECDSA verify.
  */
-async function importCoseKeyForEcdh(
-  coseKey: Map<number, unknown>,
-): Promise<CryptoKey> {
+async function importCoseKeyForEcdh(coseKey: Map<number, unknown>): Promise<CryptoKey> {
   // COSE_Key: kty=2 (EC2), crv=1 (P-256), x=(-2), y=(-3)
   const x = coseKey.get(-2) as Uint8Array;
   const y = coseKey.get(-3) as Uint8Array;

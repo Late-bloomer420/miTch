@@ -3,6 +3,7 @@
 Stand: 2026-02-11
 
 ## Phase A — Contract Freeze (Week 1)
+
 1. Accept ADR-001/004/006/008
 2. Freeze `17_API_Contract_v0.md`
 3. Freeze `20_Canonicalization_and_Binding_Spec_v0.md`
@@ -13,6 +14,7 @@ Stand: 2026-02-11
 ---
 
 ## Phase B — Core Runtime (Week 2)
+
 1. Schema validator
 2. Policy evaluator (deterministic)
 3. Deny-code mapper
@@ -23,6 +25,7 @@ Stand: 2026-02-11
 ---
 
 ## Phase C — Security Controls (Week 3)
+
 1. Nonce store + replay prevention
 2. Audience/expiry/clock-skew validation
 3. Crypto verify path + algorithm policy
@@ -33,6 +36,7 @@ Stand: 2026-02-11
 ---
 
 ## Phase D — Integrations (Week 4-5)
+
 1. Issuer adapter
 2. Verifier API endpoint v0
 3. RP integration #1
@@ -43,6 +47,7 @@ Stand: 2026-02-11
 ---
 
 ## Phase E — Pilot Gate (Week 6)
+
 1. Run `18_Test_Plan_Adversarial_and_E2E.md`
 2. Validate `19_Data_Retention_Matrix.md`
 3. Complete `13_MVP_Readiness_Checklist.md`

@@ -1,4 +1,4 @@
-import { loadMetrics, saveMetrics } from "./metricsStore";
+import { loadMetrics, saveMetrics } from './metricsStore';
 
 export interface ServiceMetrics {
   startedAt: string;
@@ -11,7 +11,7 @@ export interface ServiceMetrics {
   recentDecisions: Array<{
     at: string;
     requestId: string;
-    decision: "ALLOW" | "DENY";
+    decision: 'ALLOW' | 'DENY';
     decisionCode: string;
   }>;
 }
@@ -40,9 +40,9 @@ const metrics: ServiceMetrics = loaded
     };
 
 export function recordDecision(
-  decision: "ALLOW" | "DENY",
+  decision: 'ALLOW' | 'DENY',
   decisionCode: string,
-  requestId = "unknown"
+  requestId = 'unknown'
 ): void {
   metrics.totals.requests += 1;
 
@@ -54,7 +54,7 @@ export function recordDecision(
   });
   metrics.recentDecisions = metrics.recentDecisions.slice(0, 10);
 
-  if (decision === "ALLOW") {
+  if (decision === 'ALLOW') {
     metrics.totals.allow += 1;
     saveMetrics(metrics);
     return;

@@ -16,11 +16,11 @@ AI agents get scoped delegation tokens — pre-authorized by the human for speci
 
 ### Models Evaluated
 
-| Model | Description | Verdict |
-|---|---|---|
-| A: AI as Credential Proxy | Full wallet access, autonomous | **Rejected** — no consent per interaction |
-| B: AI as Consent Requestor | Human approves every action | Correct but unusable at scale |
-| **C: AI with Scoped Delegation** | Pre-authorized bounded scope | **Selected** ✅ |
+| Model                            | Description                    | Verdict                                   |
+| -------------------------------- | ------------------------------ | ----------------------------------------- |
+| A: AI as Credential Proxy        | Full wallet access, autonomous | **Rejected** — no consent per interaction |
+| B: AI as Consent Requestor       | Human approves every action    | Correct but unusable at scale             |
+| **C: AI with Scoped Delegation** | Pre-authorized bounded scope   | **Selected** ✅                           |
 
 ---
 
@@ -28,28 +28,29 @@ AI agents get scoped delegation tokens — pre-authorized by the human for speci
 
 ```typescript
 interface DelegationToken {
-  version: "v0";
+  version: 'v0';
   id: string;
-  delegator: { walletId: string; signature: string; };
-  delegate: { agentId: string; agentType: string; };
+  delegator: { walletId: string; signature: string };
+  delegate: { agentId: string; agentType: string };
   scope: {
-    allowedClaims: string[];       // ["over_18", "email_verified"]
-    allowedVerifiers: string[];    // ["coolshop.at", "*.trusted-merchants.eu"]
+    allowedClaims: string[]; // ["over_18", "email_verified"]
+    allowedVerifiers: string[]; // ["coolshop.at", "*.trusted-merchants.eu"]
     validFrom: number;
-    validUntil: number;            // hard expiry
-    maxPresentations: number;      // e.g., 10 uses
-    taskDescription: string;       // "Book hotel in Vienna"
-    purposeConstraint: string;     // "travel_booking"
+    validUntil: number; // hard expiry
+    maxPresentations: number; // e.g., 10 uses
+    taskDescription: string; // "Book hotel in Vienna"
+    purposeConstraint: string; // "travel_booking"
   };
   deny: {
-    claims: string[];              // never, regardless of scope
-    verifiers: string[];           // blocked even if wildcard matches
+    claims: string[]; // never, regardless of scope
+    verifiers: string[]; // blocked even if wildcard matches
   };
-  escalation: "ask_human" | "fail_silent" | "fail_with_reason";
+  escalation: 'ask_human' | 'fail_silent' | 'fail_with_reason';
 }
 ```
 
 ### Security Constraints
+
 - Max delegation duration: 24 hours
 - Max claims per delegation: 5
 - Never-delegatable: `health_data`, `biometric`, `financial_full`
@@ -86,16 +87,18 @@ Layer 4: Transport Relay (absolute limits)
 ```
 
 ### Critical Architecture Decision
+
 **SDK Gateway runs in a separate process/sandbox from the AI.** The AI calls it over an API boundary (JSON-RPC/REST). The AI can send requests but cannot modify, patch, or bypass enforcement logic.
 
 ### Failure Modes
-| Scenario | What stops it |
-|---|---|
-| AI requests out-of-scope claim | Layer 2 (SDK) |
+
+| Scenario                             | What stops it                                                |
+| ------------------------------------ | ------------------------------------------------------------ |
+| AI requests out-of-scope claim       | Layer 2 (SDK)                                                |
 | AI prompt-injected to dump all creds | Layer 2 (scope) + Layer 3 (per-claim) + Layer 4 (rate limit) |
-| Delegation token stolen | Layer 2 (session binding) + Layer 3 (sig check) |
-| Bug in SDK | Layer 3 (audience) + Layer 4 (rate/size limits) |
-| Everything compromised | Human revokes delegation via kill switch |
+| Delegation token stolen              | Layer 2 (session binding) + Layer 3 (sig check)              |
+| Bug in SDK                           | Layer 3 (audience) + Layer 4 (rate/size limits)              |
+| Everything compromised               | Human revokes delegation via kill switch                     |
 
 ---
 
@@ -107,7 +110,7 @@ interface MitchAgentSession {
   present(request: VerificationRequestV0): Promise<PresentationResult>;
   requestEscalation(additionalClaims: string[], reason: string): Promise<EscalationResult>;
   remainingScope(): ScopeStatus;
-  release(): void;  // voluntary token destruction
+  release(): void; // voluntary token destruction
 }
 ```
 
@@ -118,27 +121,32 @@ Works with OpenAI function calling, LangChain tools, or any framework that suppo
 ## Tool I/O Certification & Output Redaction
 
 ### Problem
+
 Once data enters the AI context window, you've lost control. Prevention > cleanup.
 
 ### Three Enforcement Layers
 
 **Layer A: Certified Output Schemas (compile-time)**
+
 - TypeScript types with forbidden field names
 - `additionalProperties: false` at every level of JSON Schema
 - If it's not in the schema, it can't exist in the output
 
 **Layer B: Runtime Output Sanitizer (belt-and-suspenders)**
+
 - Deep scan for banned keys (`birthdate`, `name`, `email`, `address`, etc.)
 - Regex scan for PII patterns (dates, emails, phone numbers)
 - Runs on every tool output before it enters AI context
 - Also runs on tool INPUTS (blocks AI from stuffing PII into tool calls)
 
 **Layer C: Cryptographic Tool Certification (Phase 2)**
+
 - Tools sign their output against a registered schema
 - Runtime verifies signature + schema conformance + no extra fields
 - For untrusted third-party tools in the ecosystem
 
 ### Pipeline
+
 ```
 Tool executes → Tool signs output (Layer C)
   → Runtime verifies cert (Layer C) → Sanitizer scans (Layer B)
@@ -170,14 +178,14 @@ Tool executes → Tool signs output (Layer C)
 
 ## Phase Deliverables
 
-| Feature | Phase |
-|---|---|
-| Delegation token spec (data model only) | 0 (design) |
-| SDK gateway + scope enforcement | 1 |
-| Process isolation (SDK separate from AI) | 1 |
-| Escalation to human | 1 |
-| Certified output schemas | 1 |
-| Runtime output sanitizer | 1 |
-| Framework integrations (OpenAI, LangChain) | 2 |
-| Cryptographic tool certification | 2 |
-| Live activity feed + kill switch | 2 |
+| Feature                                    | Phase      |
+| ------------------------------------------ | ---------- |
+| Delegation token spec (data model only)    | 0 (design) |
+| SDK gateway + scope enforcement            | 1          |
+| Process isolation (SDK separate from AI)   | 1          |
+| Escalation to human                        | 1          |
+| Certified output schemas                   | 1          |
+| Runtime output sanitizer                   | 1          |
+| Framework integrations (OpenAI, LangChain) | 2          |
+| Cryptographic tool certification           | 2          |
+| Live activity feed + kill switch           | 2          |

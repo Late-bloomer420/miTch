@@ -61,5 +61,4 @@ Abweichungen zwischen Grundrecht und technischer Abfrage unterliegen einer ex‑
 
 > **Freiheit entsteht durch begrenztes Wissen – nicht durch totale Erinnerung.**
 
-*Ende der Charta*
-
+_Ende der Charta_

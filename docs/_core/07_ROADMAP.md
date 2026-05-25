@@ -17,36 +17,36 @@
 
 ## BUILD NOW (0–3 Monate)
 
-| Aufgabe | Paket | Warum |
-|---|---|---|
-| Wallet Sync / CRDT fertigstellen | `wallet-core` | Produkt B Fundament |
-| WebAuthn Step-Up Auth | `webauthn-verifier` | Regulierte Märkte brauchen starke Auth |
-| Erster Pilot-Partner identifizieren | Business | Revenue + Validierung |
-| Förderantrag vorbereiten (DEP/FFG) | Business | Alternative Finanzierung |
+| Aufgabe                             | Paket               | Warum                                  |
+| ----------------------------------- | ------------------- | -------------------------------------- |
+| Wallet Sync / CRDT fertigstellen    | `wallet-core`       | Produkt B Fundament                    |
+| WebAuthn Step-Up Auth               | `webauthn-verifier` | Regulierte Märkte brauchen starke Auth |
+| Erster Pilot-Partner identifizieren | Business            | Revenue + Validierung                  |
+| Förderantrag vorbereiten (DEP/FFG)  | Business            | Alternative Finanzierung               |
 
 ---
 
 ## BUILD NEXT (3–6 Monate)
 
-| Aufgabe | Abhängigkeit |
-|---|---|
-| SQL Storage Layer (Drizzle ORM, aus M.I.T.C.H.) | wallet-core stabil |
-| Parser: Google Takeout / Meta / Browser History | wallet-core stabil |
-| Privacy Revocation Design für Sportwetten | Pilot-Partner definiert |
-| Cross-Predicate Proofs (age + residency + license) | sd-jwt-vc Erweiterung |
+| Aufgabe                                            | Abhängigkeit            |
+| -------------------------------------------------- | ----------------------- |
+| SQL Storage Layer (Drizzle ORM, aus M.I.T.C.H.)    | wallet-core stabil      |
+| Parser: Google Takeout / Meta / Browser History    | wallet-core stabil      |
+| Privacy Revocation Design für Sportwetten          | Pilot-Partner definiert |
+| Cross-Predicate Proofs (age + residency + license) | sd-jwt-vc Erweiterung   |
 
 ---
 
 ## BUILD LATER (6–18 Monate)
 
-| Aufgabe | Voraussetzung |
-|---|---|
-| Probabilistische Inferenz (Produkt B) | Ethik-Review, AI-Act Prüfung |
-| Multi-Device Sync | wallet-core production-ready |
-| Sportwetten Pilot (vollständig) | Privacy Revocation gelöst |
-| Health Pilot | Regulatorische Klärung EHDS |
-| ML-DSA Migration (Post-Quantum) | Library-Reifegrad |
-| Digital Euro Integration | Gesetzgebung 2026 + Pilot 2027 |
+| Aufgabe                               | Voraussetzung                  |
+| ------------------------------------- | ------------------------------ |
+| Probabilistische Inferenz (Produkt B) | Ethik-Review, AI-Act Prüfung   |
+| Multi-Device Sync                     | wallet-core production-ready   |
+| Sportwetten Pilot (vollständig)       | Privacy Revocation gelöst      |
+| Health Pilot                          | Regulatorische Klärung EHDS    |
+| ML-DSA Migration (Post-Quantum)       | Library-Reifegrad              |
+| Digital Euro Integration              | Gesetzgebung 2026 + Pilot 2027 |
 
 ---
 
@@ -61,11 +61,11 @@
 
 ## Meilensteine
 
-| Datum | Meilenstein |
-|---|---|
-| 2026-02-16 | MVP Complete — 42/42 Tests, 0 TS-Errors |
+| Datum      | Meilenstein                                |
+| ---------- | ------------------------------------------ |
+| 2026-02-16 | MVP Complete — 42/42 Tests, 0 TS-Errors    |
 | 2026-05-02 | Marktanalyse + Strategische Neuausrichtung |
-| 2026-Q3 | Erster Pilot-Partner (Ziel) |
-| 2026-Q4 | Förderantrag eingereicht (Ziel) |
-| 2027 | Produkt A kommerziell (Ziel) |
-| 2028+ | Digital Euro Layer Opportunity |
+| 2026-Q3    | Erster Pilot-Partner (Ziel)                |
+| 2026-Q4    | Förderantrag eingereicht (Ziel)            |
+| 2027       | Produkt A kommerziell (Ziel)               |
+| 2028+      | Digital Euro Layer Opportunity             |

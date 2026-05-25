@@ -18,6 +18,7 @@ Even with Selective Disclosure, a persistent DID or public key allows cross-sess
 ## Solution: Pairwise-Ephemeral DIDs
 
 Every verification interaction uses a **fresh, unique DID** that is:
+
 - Generated per-verifier, per-session
 - Not resolvable by third parties
 - Destroyed (shredded) after the interaction completes
@@ -86,6 +87,7 @@ Master Holder Key (never leaves wallet)
 ```
 
 **Why HKDF?**
+
 - Same master key, but different output every time (nonce changes)
 - Verifier cannot reverse-engineer master key from ephemeral key
 - No two interactions produce the same DID
@@ -104,6 +106,7 @@ did:peer:0z<multibase-encoded-ephemeral-pubkey>
 ### 5. Proof Binding
 
 The ephemeral DID signs the selective disclosure proof:
+
 - Proof is bound to THIS session's DID (not the master key)
 - Verifier can verify the proof using the embedded pubkey in did:peer
 - Verifier CANNOT link this proof to any other interaction
@@ -111,6 +114,7 @@ The ephemeral DID signs the selective disclosure proof:
 ### 6. Key Shredding (Post-Interaction)
 
 After proof delivery + verifier acknowledgment:
+
 1. `EphemeralKey.shred()` on signing key
 2. `EphemeralKey.shred()` on encryption key
 3. DID is forgotten — no record in wallet (unless user opts in to receipt)
@@ -121,60 +125,62 @@ Uses existing `EphemeralKey` class from `shared-crypto/src/ephemeral-key.ts`.
 
 ## Files to Create/Modify
 
-| File | Action | Description |
-|---|---|---|
-| `shared-crypto/src/pairwise-did.ts` | CREATE | `generatePairwiseDID()`, did:peer generation, HKDF derivation |
-| `shared-crypto/src/did.ts` | MODIFY | Add `did:peer` resolution (inline, no network) |
-| `shared-crypto/test/pairwise-did.test.ts` | CREATE | Unlinkability tests (see below) |
-| `shared-types/src/did.ts` | MODIFY | Add `PairwiseDIDResult` type |
-| `policy-engine/src/engine.ts` | MODIFY | Use pairwise DID in proof generation |
+| File                                      | Action | Description                                                   |
+| ----------------------------------------- | ------ | ------------------------------------------------------------- |
+| `shared-crypto/src/pairwise-did.ts`       | CREATE | `generatePairwiseDID()`, did:peer generation, HKDF derivation |
+| `shared-crypto/src/did.ts`                | MODIFY | Add `did:peer` resolution (inline, no network)                |
+| `shared-crypto/test/pairwise-did.test.ts` | CREATE | Unlinkability tests (see below)                               |
+| `shared-types/src/did.ts`                 | MODIFY | Add `PairwiseDIDResult` type                                  |
+| `policy-engine/src/engine.ts`             | MODIFY | Use pairwise DID in proof generation                          |
 
 ---
 
 ## Test Requirements
 
 ### Unlinkability Tests
+
 ```typescript
 // Same verifier, different sessions → different DIDs
-test('two interactions with same verifier produce different DIDs')
+test('two interactions with same verifier produce different DIDs');
 
 // Different verifiers → different DIDs (obviously)
-test('two interactions with different verifiers produce different DIDs')
+test('two interactions with different verifiers produce different DIDs');
 
 // DID cannot be linked back to master key
-test('ephemeral DID reveals no information about holder master key')
+test('ephemeral DID reveals no information about holder master key');
 
 // Key shredding works
-test('key material is zeroed after destroy()')
+test('key material is zeroed after destroy()');
 
 // Proof is valid with ephemeral DID
-test('selective disclosure proof verifies against did:peer pubkey')
+test('selective disclosure proof verifies against did:peer pubkey');
 
 // Proof is not valid with a different session's DID
-test('proof from session A does not verify with session B DID')
+test('proof from session A does not verify with session B DID');
 ```
 
 ### Anti-Correlation Tests
+
 ```typescript
 // Statistical test: generate 1000 DIDs, verify no patterns
-test('no statistical correlation between sequential DIDs')
+test('no statistical correlation between sequential DIDs');
 
 // Timing test: generation time is constant (no timing side-channel)
-test('DID generation time is constant regardless of verifier')
+test('DID generation time is constant regardless of verifier');
 ```
 
 ---
 
 ## Security Properties
 
-| Property | Guarantee |
-|---|---|
-| Cross-verifier unlinkability | ✅ Different DID per verifier |
-| Cross-session unlinkability | ✅ Different DID per session (nonce) |
-| Master key protection | ✅ HKDF is one-way |
-| Forward secrecy | ✅ Shredded keys can't decrypt past sessions |
-| Proof binding | ✅ Proof is bound to ephemeral DID |
-| Verifier collusion resistance | ✅ No shared identifier to correlate |
+| Property                      | Guarantee                                    |
+| ----------------------------- | -------------------------------------------- |
+| Cross-verifier unlinkability  | ✅ Different DID per verifier                |
+| Cross-session unlinkability   | ✅ Different DID per session (nonce)         |
+| Master key protection         | ✅ HKDF is one-way                           |
+| Forward secrecy               | ✅ Shredded keys can't decrypt past sessions |
+| Proof binding                 | ✅ Proof is bound to ephemeral DID           |
+| Verifier collusion resistance | ✅ No shared identifier to correlate         |
 
 ---
 

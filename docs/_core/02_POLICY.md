@@ -29,7 +29,7 @@
 - miTch ist **kein** Verifier (prüft keine Identitäten im Auftrag von Dritten)
 - miTch ist **Convener** — setzt Regeln und erzwingt sie technisch
 
-Vertrauen entsteht nicht dadurch, dass miTch etwas *weiß*,  
+Vertrauen entsteht nicht dadurch, dass miTch etwas _weiß_,  
 sondern dadurch, dass überprüfbar festgelegt ist, **was niemand wissen darf**.
 
 ---
@@ -42,4 +42,4 @@ sondern dadurch, dass überprüfbar festgelegt ist, **was niemand wissen darf**.
 
 ---
 
-*Quelle: docs/00-welt/mitch_policy_manifest.md + docs/00-welt/03_Architecture_Core.md*
+_Quelle: docs/00-welt/mitch_policy_manifest.md + docs/00-welt/03_Architecture_Core.md_

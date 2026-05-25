@@ -117,7 +117,9 @@ export async function verifyMdocPresentation(
       valid: false,
       disclosedClaims: {},
       documents: [],
-      errors: [`Failed to decode DeviceResponse base64: ${err instanceof Error ? err.message : String(err)}`],
+      errors: [
+        `Failed to decode DeviceResponse base64: ${err instanceof Error ? err.message : String(err)}`,
+      ],
     };
   }
 
@@ -130,7 +132,9 @@ export async function verifyMdocPresentation(
       valid: false,
       disclosedClaims: {},
       documents: [],
-      errors: [`Failed to parse DeviceResponse CBOR: ${err instanceof Error ? err.message : String(err)}`],
+      errors: [
+        `Failed to parse DeviceResponse CBOR: ${err instanceof Error ? err.message : String(err)}`,
+      ],
     };
   }
 

@@ -4,14 +4,14 @@
 
 **JA, wir können es DEUTLICH sicherer machen – und zwar gegen ALLE Angreifer:**
 
-| Gegner | Schwachstelle (Standard-SSI) | miTch-Lösung |
-|--------|------------------------------|--------------|
-| **Google/Apple** | Zugriff auf OS Keychain | Split-Key (Shamir 2-of-3) ODER User-Derived Keys |
-| **NSA/BND** | TLS-Interception, DNS-Überwachung | Tor-Routing + Certificate Pinning |
-| **Malware** | Memory-Dumps extrahieren Keys | Non-extractable Keys + 5min TTL + operation-specific derivation |
-| **Polizei** | Gerät beschlagnahmt, Keychain extrahiert | Panic Button + Duress PIN + Dead Man's Switch |
-| **KI-Agenten** | Automatisierte Credential-Präsentation | Behavioral Biometrics + Rate Limiting + Proof-of-Humanity |
-| **Supply-Chain** | Backdoor in npm-Paketen | SRI + nur 2 Dependencies + Reproducible Builds |
+| Gegner           | Schwachstelle (Standard-SSI)             | miTch-Lösung                                                    |
+| ---------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| **Google/Apple** | Zugriff auf OS Keychain                  | Split-Key (Shamir 2-of-3) ODER User-Derived Keys                |
+| **NSA/BND**      | TLS-Interception, DNS-Überwachung        | Tor-Routing + Certificate Pinning                               |
+| **Malware**      | Memory-Dumps extrahieren Keys            | Non-extractable Keys + 5min TTL + operation-specific derivation |
+| **Polizei**      | Gerät beschlagnahmt, Keychain extrahiert | Panic Button + Duress PIN + Dead Man's Switch                   |
+| **KI-Agenten**   | Automatisierte Credential-Präsentation   | Behavioral Biometrics + Rate Limiting + Proof-of-Humanity       |
+| **Supply-Chain** | Backdoor in npm-Paketen                  | SRI + nur 2 Dependencies + Reproducible Builds                  |
 
 ---
 
@@ -44,6 +44,7 @@
 **Problem:** Apple/Google können OS Keychain auslesen.
 
 **Lösung A: User-Derived Keys (bypasses Keychain)**
+
 ```typescript
 // Key wird aus Biometric + PIN abgeleitet
 // NIEMALS gespeichert (weder in Keychain noch sonstwo)
@@ -51,15 +52,18 @@ const key = await deriveKeyFromUser(fingerprintHash, userPIN);
 ```
 
 **Vorteil:**
+
 - ✅ Google/Apple sehen NICHTS (Key existiert nur während Eingabe)
 - ✅ Bei Geräteverlust: Key ist weg (kein Restore = kein Leak)
 
 **Nachteil:**
+
 - ❌ User muss PIN bei JEDER Session eingeben (UX-Friction)
 
 ---
 
 **Lösung B: Split-Key (Shamir 2-of-3)**
+
 ```typescript
 // Key wird in 3 Teile gespalten:
 // Teil 1: OS Keychain (Google kann sehen, nutzlos allein)
@@ -70,10 +74,12 @@ const key = await deriveKeyFromUser(fingerprintHash, userPIN);
 ```
 
 **Vorteil:**
+
 - ✅ Selbst wenn Google Teil 1 extrahiert: nutzlos ohne Teil 2+3
 - ✅ Defense-in-Depth (3 unabhängige Systeme)
 
 **Nachteil:**
+
 - ⚠️ Komplexität (User braucht YubiKey + Password-Manager)
 
 ---
@@ -83,6 +89,7 @@ const key = await deriveKeyFromUser(fingerprintHash, userPIN);
 **Problem:** WebCrypto "non-extractable" verhindert nur `exportKey()`, nicht Memory-Zugriff.
 
 **Lösung A: Operation-Specific Key Derivation**
+
 ```typescript
 // Statt Master-Key zu speichern:
 // Derive unique key für jede Operation
@@ -93,6 +100,7 @@ const opKey = await deriveOperationKey(masterKey, 'encrypt-credential-123');
 ```
 
 **Lösung B: 5-Minute TTL**
+
 ```typescript
 // Key existiert max. 5min
 // Selbst bei Memory-Dump: Angreifer hat nur 5min Zeitfenster
@@ -100,6 +108,7 @@ setTimeout(() => destroyKey(keyId), 300000);
 ```
 
 **Lösung C: Memory Encryption**
+
 ```typescript
 // Key verschlüsseln, bevor er in RAM landet
 // Entschlüsselung nur via Hardware-Key (WebAuthn)
@@ -113,6 +122,7 @@ const encryptedKey = await encryptWithHardwareKey(key);
 **Problem:** TLS kann intercepted werden (government-issued certs), DNS reveals targets.
 
 **Lösung A: Certificate Pinning**
+
 ```typescript
 // Nur akzeptieren: Verifier's eigenes Cert (nicht CA-issued)
 await fetchWithCertPinning(verifierURL, expectedCertHash);
@@ -120,6 +130,7 @@ await fetchWithCertPinning(verifierURL, expectedCertHash);
 ```
 
 **Lösung B: Tor-Routing**
+
 ```typescript
 // Alle Verifier-Direct-Requests über Tor
 // Verifier's callbackURL ist .onion-Adresse
@@ -130,6 +141,7 @@ await sendProofViaOnionRouting('http://liquorstore.onion/verify', proof);
 ```
 
 **Lösung C: Encrypted DNS**
+
 ```typescript
 // DNS-Queries über DNS-over-HTTPS (Cloudflare)
 // ISP/Government kann NICHT sehen, welche Domains abgefragt werden
@@ -143,6 +155,7 @@ const ip = await resolveDNSEncrypted('liquor-store.com');
 **Problem:** miTch importiert npm-Pakete (z.B. crypto-libs). Jedes könnte kompromittiert sein.
 
 **Lösung A: Subresource Integrity (SRI)**
+
 ```typescript
 // Jedes Paket hat erwarteten Hash
 const TRUSTED_HASHES = {
@@ -156,6 +169,7 @@ if (actualHash !== expectedHash) {
 ```
 
 **Lösung B: Minimal Dependencies**
+
 ```typescript
 // Phase-0 erlaubt NUR 2 Dependencies:
 const ALLOWED = ['@noble/curves', '@noble/hashes'];
@@ -165,6 +179,7 @@ const ALLOWED = ['@noble/curves', '@noble/hashes'];
 ```
 
 **Lösung C: Reproducible Builds**
+
 ```typescript
 // User kann miTch selbst kompilieren
 // Vergleicht Hash mit published build
@@ -178,6 +193,7 @@ const ALLOWED = ['@noble/curves', '@noble/hashes'];
 **Problem:** Gerät wird beschlagnahmt, Forensik-Tools extrahieren Keychain.
 
 **Lösung A: Panic Button**
+
 ```typescript
 // User drückt Knopf → instant wipe
 await triggerPanicWipe();
@@ -185,6 +201,7 @@ await triggerPanicWipe();
 ```
 
 **Lösung B: Duress PIN**
+
 ```typescript
 // User hat 2 PINs:
 // - Real PIN: "1234" → echte Credentials
@@ -196,6 +213,7 @@ const wallet = await unlockWallet(pin);
 ```
 
 **Lösung C: Dead Man's Switch**
+
 ```typescript
 // User muss alle 24h "check in"
 // Wenn kein Check-in: assume device seized
@@ -209,6 +227,7 @@ const wallet = await unlockWallet(pin);
 **Problem:** KI-Agent automatisiert Credential-Präsentation (bypasses Proof-of-Humanity).
 
 **Lösung A: Behavioral Biometrics**
+
 ```typescript
 // Analysiere User-Events (Mouse-Bewegungen, Timing)
 const isHuman = await analyzeBehavior(events);
@@ -220,6 +239,7 @@ const isHuman = await analyzeBehavior(events);
 ```
 
 **Lösung B: Rate Limiting**
+
 ```typescript
 // >5 Presentations in 1h → require additional verification
 if (presentationCount > 5) {
@@ -232,15 +252,15 @@ if (presentationCount > 5) {
 
 ## 📈 Vergleich: miTch vs. "gibt es das schon?"
 
-| Feature | Microsoft Entra | Lissi | Trinsic | **miTch** |
-|---------|-----------------|-------|---------|-----------|
-| Verifier-Direct | ❌ Server relay | ✅ | ⚠️ | ✅ **TRUE P2P** |
-| Local Audit-Log | ❌ Server | ⚠️ | ❌ | ✅ **Hash-chain** |
-| Google/Apple-Defense | ❌ | ❌ | ❌ | ✅ **Split-Key** |
-| KI-Resilienz | ❌ | ❌ | ❌ | ✅ **Behavioral** |
-| NSA-Resistance | ❌ | ❌ | ❌ | ✅ **Tor-ready** |
-| Supply-Chain-Hardening | ⚠️ | ⚠️ | ⚠️ | ✅ **SRI + 2 deps** |
-| Physical Seizure Defense | ❌ | ❌ | ❌ | ✅ **Panic+Duress** |
+| Feature                  | Microsoft Entra | Lissi | Trinsic | **miTch**           |
+| ------------------------ | --------------- | ----- | ------- | ------------------- |
+| Verifier-Direct          | ❌ Server relay | ✅    | ⚠️      | ✅ **TRUE P2P**     |
+| Local Audit-Log          | ❌ Server       | ⚠️    | ❌      | ✅ **Hash-chain**   |
+| Google/Apple-Defense     | ❌              | ❌    | ❌      | ✅ **Split-Key**    |
+| KI-Resilienz             | ❌              | ❌    | ❌      | ✅ **Behavioral**   |
+| NSA-Resistance           | ❌              | ❌    | ❌      | ✅ **Tor-ready**    |
+| Supply-Chain-Hardening   | ⚠️              | ⚠️    | ⚠️      | ✅ **SRI + 2 deps** |
+| Physical Seizure Defense | ❌              | ❌    | ❌      | ✅ **Panic+Duress** |
 
 **Antwort auf "gibt es das schon?":**
 
@@ -254,6 +274,7 @@ if (presentationCount > 5) {
 ## 🎯 Was bleibt an Daten im Netzwerk?
 
 ### **VORHER (Standard-SSI):**
+
 ```
 ┌─────────┐         ┌──────────────┐         ┌──────────┐
 │ Wallet  │────────>│ miTch Server │────────>│ Verifier │
@@ -268,6 +289,7 @@ if (presentationCount > 5) {
 ```
 
 ### **NACHHER (miTch Phase-0):**
+
 ```
 ┌─────────┐                              ┌──────────┐
 │ Wallet  │─────────── HTTPS ────────────│ Verifier │
@@ -282,14 +304,15 @@ Netzwerk-Traffic:
 
 ### **Audit:**
 
-| Endpoint | Data in Network | Who Sees It |
-|----------|-----------------|-------------|
-| **Issuance** (1x) | User DID + birthdate | **Issuer only** (Government) |
-| **Re-Issuance** (pro Session) | New DID + pre-auth code | **Issuer only** |
-| **Presentation** (jedes Mal) | ZK-Proof (TRUE/FALSE) | **Verifier only** (Liquor Store) |
-| **miTch Server** | **NOTHING** | **Nobody** |
+| Endpoint                      | Data in Network         | Who Sees It                      |
+| ----------------------------- | ----------------------- | -------------------------------- |
+| **Issuance** (1x)             | User DID + birthdate    | **Issuer only** (Government)     |
+| **Re-Issuance** (pro Session) | New DID + pre-auth code | **Issuer only**                  |
+| **Presentation** (jedes Mal)  | ZK-Proof (TRUE/FALSE)   | **Verifier only** (Liquor Store) |
+| **miTch Server**              | **NOTHING**             | **Nobody**                       |
 
 **PII im Netzwerk:**
+
 - ✅ Issuance: Ja (aber nur Wallet ↔ Issuer, normal für Credential-Ausstellung)
 - ❌ Presentation: NEIN (nur ZK-Proof, kein PII)
 - ❌ miTch Server: NEIN (structural non-existence)
@@ -299,6 +322,7 @@ Netzwerk-Traffic:
 ## 💡 Empfehlung: Gestaffelte Implementierung
 
 ### **Phase-0 (JETZT - 2 Wochen):**
+
 ```
 ✅ Local Audit-Log (implemented)
 ✅ Verifier-Direct Protocol (implemented)
@@ -311,6 +335,7 @@ Netzwerk-Traffic:
 ---
 
 ### **Phase-1 (Q2 2025 - 8 Wochen):**
+
 ```
 🔨 WebAuthn-Integration (Hardware-backed keys)
 🔨 Behavioral Biometrics (AI-Resistance)
@@ -323,6 +348,7 @@ Netzwerk-Traffic:
 ---
 
 ### **Phase-2 (Q3 2025 - 12 Wochen):**
+
 ```
 🔨 Split-Key (Shamir 2-of-3)
 🔨 Duress PIN

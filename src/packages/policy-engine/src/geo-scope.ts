@@ -4,13 +4,53 @@
  */
 
 export const EU_EEA_COUNTRIES = new Set([
-  'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE',
-  'IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE',
-  'IS','LI','NO'
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
+  'IS',
+  'LI',
+  'NO',
 ]);
 
 export const ADEQUACY_COUNTRIES = new Set([
-  'AD','AR','CA','FO','GG','IL','IM','JP','JE','NZ','KR','CH','UY','UK'
+  'AD',
+  'AR',
+  'CA',
+  'FO',
+  'GG',
+  'IL',
+  'IM',
+  'JP',
+  'JE',
+  'NZ',
+  'KR',
+  'CH',
+  'UY',
+  'UK',
 ]);
 
 export function isAllowedByGeoScope(geoScope: string, countryCode: string | null): boolean {
@@ -18,7 +58,8 @@ export function isAllowedByGeoScope(geoScope: string, countryCode: string | null
   if (geoScope === 'global') return true;
   const upper = countryCode.toUpperCase();
   if (geoScope === 'eu-only') return EU_EEA_COUNTRIES.has(upper);
-  if (geoScope === 'eu-plus-adequacy') return EU_EEA_COUNTRIES.has(upper) || ADEQUACY_COUNTRIES.has(upper);
+  if (geoScope === 'eu-plus-adequacy')
+    return EU_EEA_COUNTRIES.has(upper) || ADEQUACY_COUNTRIES.has(upper);
   return true;
 }
 

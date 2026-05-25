@@ -29,11 +29,11 @@ Standards: GDPR Art. 25, eIDAS 2.0 / EUDI, OID4VP, OID4VCI, SD-JWT VC, ISO 18013
 
 ## Phasen-Überblick
 
-| Phase | Status | Beschreibung |
-|-------|--------|--------------|
-| 0 — Foundation | ✅ DONE | DID, Revocation, Policy, Crypto-Primitiven |
-| 1 — Unlinkability | ✅ DONE | Pairwise DIDs, Key Shredding, Data Flow Transparency |
-| 2 — EUDI/eIDAS 2.0 | 🟡 PARTIAL | OID4VP/VCI/SIOPv2 done; mdoc done; Regulatory Compliance offen |
+| Phase                  | Status     | Beschreibung                                                   |
+| ---------------------- | ---------- | -------------------------------------------------------------- |
+| 0 — Foundation         | ✅ DONE    | DID, Revocation, Policy, Crypto-Primitiven                     |
+| 1 — Unlinkability      | ✅ DONE    | Pairwise DIDs, Key Shredding, Data Flow Transparency           |
+| 2 — EUDI/eIDAS 2.0     | 🟡 PARTIAL | OID4VP/VCI/SIOPv2 done; mdoc done; Regulatory Compliance offen |
 | 3 — Security Hardening | 🟡 PARTIAL | Salt Typhoon Patterns; STRIDE Threat Model braucht ext. Review |
 
 ---

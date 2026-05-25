@@ -8,7 +8,9 @@ import type { PolicyEvaluationResult } from '@mitch/shared-types';
 const buildSDJWTPresentationMock = vi.hoisted(() => vi.fn());
 const walletServiceMockState = vi.hoisted(() => ({
   initialize: vi.fn().mockResolvedValue(undefined),
-  getPolicy: vi.fn().mockReturnValue({ version: 'test', rules: [], trustedIssuers: [], globalSettings: {} }),
+  getPolicy: vi
+    .fn()
+    .mockReturnValue({ version: 'test', rules: [], trustedIssuers: [], globalSettings: {} }),
   evaluateRequest: vi.fn(),
   generatePresentation: vi.fn(),
   recordIdentityFirewallEvents: vi.fn().mockResolvedValue([]),
@@ -28,13 +30,24 @@ const walletServiceMockState = vi.hoisted(() => ({
 }));
 
 vi.mock('./components/SecureZone', () => ({
-  SecureZone: ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
-    <div className={className} style={style}>{children}</div>
+  SecureZone: ({
+    children,
+    className,
+    style,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+  }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
   ),
 }));
 
 vi.mock('@mitch/shared-crypto', async () => {
-  const actual = await vi.importActual<typeof import('@mitch/shared-crypto')>('@mitch/shared-crypto');
+  const actual =
+    await vi.importActual<typeof import('@mitch/shared-crypto')>('@mitch/shared-crypto');
   return {
     ...actual,
     WebAuthnService: {
@@ -109,34 +122,40 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
   } as CryptoKeyPair);
   vi.spyOn(crypto.subtle, 'exportKey').mockResolvedValue({ kty: 'EC', crv: 'P-256' } as JsonWebKey);
 
-  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-    const url = String(input);
-    if (url.includes('/authorize')) {
-      return new Response(JSON.stringify({
-        authRequest: {
-          response_type: 'vp_token',
-          client_id: 'did:mitch:verifier-liquor-store',
-          redirect_uri: 'https://verifier.test/direct_post',
-          nonce: 'nonce-1',
-          presentation_definition: {
-            id: 'pd-1',
-            purpose: 'Age verification',
-            input_descriptors: [
-              { id: 'descriptor-1', constraints: { fields: [{ path: ['$.age'] }] } },
-            ],
-          },
-          state: 'state-1',
-        },
-      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    }
-    if (url.includes('/direct_post')) {
-      return new Response(JSON.stringify({ ok: true, disclosedClaims: { age: 24 } }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
-  }) as unknown as typeof fetch);
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/authorize')) {
+        return new Response(
+          JSON.stringify({
+            authRequest: {
+              response_type: 'vp_token',
+              client_id: 'did:mitch:verifier-liquor-store',
+              redirect_uri: 'https://verifier.test/direct_post',
+              nonce: 'nonce-1',
+              presentation_definition: {
+                id: 'pd-1',
+                purpose: 'Age verification',
+                input_descriptors: [
+                  { id: 'descriptor-1', constraints: { fields: [{ path: ['$.age'] }] } },
+                ],
+              },
+              state: 'state-1',
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (url.includes('/direct_post')) {
+        return new Response(JSON.stringify({ ok: true, disclosedClaims: { age: 24 } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }) as unknown as typeof fetch
+  );
 }
 
 beforeEach(() => {
@@ -165,7 +184,8 @@ describe('G-03 — Wallet App', () => {
 
   it('renders demo section', () => {
     render(<App />);
-    const demoSection = screen.queryByText('🚀 Advanced Feature Demos') || screen.queryByText('🚀 Demo Scenarios');
+    const demoSection =
+      screen.queryByText('🚀 Advanced Feature Demos') || screen.queryByText('🚀 Demo Scenarios');
     expect(demoSection).not.toBeNull();
   });
 
@@ -179,7 +199,11 @@ describe('G-03 — Wallet App', () => {
 
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
     await bootstrapFetchMocks('ALLOW');
-    window.history.replaceState({}, '', '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store');
+    window.history.replaceState(
+      {},
+      '',
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store'
+    );
 
     render(<App />);
 
@@ -193,40 +217,50 @@ describe('G-03 — Wallet App', () => {
 
   it('persists a DENIED receipt when the verifier rejects the presentation', async () => {
     await bootstrapFetchMocks('ALLOW');
-    window.history.replaceState({}, '', '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store');
+    window.history.replaceState(
+      {},
+      '',
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store'
+    );
     buildSDJWTPresentationMock.mockResolvedValue({
       vpTokenString: 'vp-token',
       presentationSubmission: { id: 'ps-1', definition_id: 'def-1', descriptor_map: [] },
       disclosedClaims: { age: 24 },
     });
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('/authorize')) {
-        return new Response(JSON.stringify({
-          authRequest: {
-            response_type: 'vp_token',
-            client_id: 'did:mitch:verifier-liquor-store',
-            redirect_uri: 'https://verifier.test/direct_post',
-            nonce: 'nonce-1',
-            presentation_definition: {
-              id: 'pd-1',
-              purpose: 'Age verification',
-              input_descriptors: [
-                { id: 'descriptor-1', constraints: { fields: [{ path: ['$.age'] }] } },
-              ],
-            },
-            state: 'state-1',
-          },
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      }
-      if (url.includes('/direct_post')) {
-        return new Response(JSON.stringify({ ok: false, error: 'rejected' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
-    }) as unknown as typeof fetch);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/authorize')) {
+          return new Response(
+            JSON.stringify({
+              authRequest: {
+                response_type: 'vp_token',
+                client_id: 'did:mitch:verifier-liquor-store',
+                redirect_uri: 'https://verifier.test/direct_post',
+                nonce: 'nonce-1',
+                presentation_definition: {
+                  id: 'pd-1',
+                  purpose: 'Age verification',
+                  input_descriptors: [
+                    { id: 'descriptor-1', constraints: { fields: [{ path: ['$.age'] }] } },
+                  ],
+                },
+                state: 'state-1',
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        if (url.includes('/direct_post')) {
+          return new Response(JSON.stringify({ ok: false, error: 'rejected' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }) as unknown as typeof fetch
+    );
 
     render(<App />);
 

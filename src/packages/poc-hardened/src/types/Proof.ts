@@ -1,6 +1,6 @@
 /**
  * Proof - Minimal proof to send to external systems
- * 
+ *
  * CONSTRAINT: Contains NO raw data. Only attestation of validity.
  * Example: { isValid: true, proofType: "age_over_18" } - not "age: 27"
  */

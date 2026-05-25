@@ -82,13 +82,19 @@ describe('Conflict Resolution: deny-wins', () => {
   it('multiple DENYs merge reason codes and deduplicate', () => {
     const verdicts: VerdictWithReason[] = [
       { verdict: 'DENY', reasonCodes: [DenyReasonCode.LAYER_VIOLATION], ruleId: 'rule-a' },
-      { verdict: 'DENY', reasonCodes: [DenyReasonCode.LAYER_VIOLATION, DenyReasonCode.EXPIRED], ruleId: 'rule-b' },
+      {
+        verdict: 'DENY',
+        reasonCodes: [DenyReasonCode.LAYER_VIOLATION, DenyReasonCode.EXPIRED],
+        ruleId: 'rule-b',
+      },
     ];
 
     const result = resolveConflict(verdicts);
     expect(result.verdict).toBe('DENY');
     // Deduplicated
-    const layerCount = result.reasonCodes.filter(r => r === DenyReasonCode.LAYER_VIOLATION).length;
+    const layerCount = result.reasonCodes.filter(
+      (r) => r === DenyReasonCode.LAYER_VIOLATION
+    ).length;
     expect(layerCount).toBe(1);
     expect(result.reasonCodes).toContain(DenyReasonCode.EXPIRED);
     expect(result.reasonCodes).toContain(DenyReasonCode.CONFLICT_DENY_WINS);
@@ -113,9 +119,21 @@ describe('Determinism: same inputs → same output', () => {
   });
 
   it('order of verdicts does not change outcome', () => {
-    const a: VerdictWithReason = { verdict: 'ALLOW', reasonCodes: ['RULE_MATCHED'], ruleId: 'rule-a' };
-    const b: VerdictWithReason = { verdict: 'DENY', reasonCodes: [DenyReasonCode.EXPIRED], ruleId: 'rule-b' };
-    const c: VerdictWithReason = { verdict: 'PROMPT', reasonCodes: ['CONSENT_REQUIRED'], ruleId: 'rule-c' };
+    const a: VerdictWithReason = {
+      verdict: 'ALLOW',
+      reasonCodes: ['RULE_MATCHED'],
+      ruleId: 'rule-a',
+    };
+    const b: VerdictWithReason = {
+      verdict: 'DENY',
+      reasonCodes: [DenyReasonCode.EXPIRED],
+      ruleId: 'rule-b',
+    };
+    const c: VerdictWithReason = {
+      verdict: 'PROMPT',
+      reasonCodes: ['CONSENT_REQUIRED'],
+      ruleId: 'rule-c',
+    };
 
     const r1 = resolveConflict([a, b, c]);
     const r2 = resolveConflict([c, a, b]);

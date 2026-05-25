@@ -32,6 +32,7 @@ Begruendung:
 **Dann Studenten:** Wenn miTch 500-1000 aktive Nutzer hat (Privacy-Enthusiasten), hast du Verhandlungsmasse fuer den ersten Verifier-Piloten. "500 Leute nutzen das schon, wollt ihr der erste Verifier sein?" Das ist ein anderes Gespraech als "ich hab ein Wallet gebaut, will wer mitmachen?"
 
 **Reihenfolge:**
+
 1. Privacy-Enthusiasten → Data Import → Roentgenbild → Evangelismus
 2. Studenten Innsbruck → Student-Discount Pilot → erster Verifier
 3. Breiter Markt → Gemeinde-Pilot → PaaS API
@@ -41,6 +42,7 @@ Begruendung:
 ## Offene Fragen zu #1: Personal Privacy Profile
 
 ### Aha-Moment
+
 **Meine Antwort: Der Data Import IST der Aha-Moment.**
 
 Erster Screen nach Onboarding: "Lade deine Daten herunter. Wir zeigen dir was drin steckt."
@@ -51,11 +53,13 @@ Dann: ein einfaches Dashboard — "X Apps haben deinen Standort getrackt. Y Trac
 Kein Wallet, kein Credential, keine Crypto-Erklaerung. Nur: "Hier ist was du nicht wusstest." Der Rest kommt spaeter.
 
 ### Granularitaet
+
 **Meine Antwort: Pro-Feld — aber mit Credential-Gruppierung.**
 
 Der Nutzer denkt nicht in Credentials ("mein SD-JWT VC"). Er denkt in Feldern ("mein Geburtsdatum", "meine Adresse"). Also zeig Felder. Aber gruppiere sie visuell nach Credential-Herkunft, damit klar ist woher die Daten kommen.
 
 ### Notifications
+
 **Meine Antwort: In-App first, Push spaeter.**
 
 Push-Notifications haben ein Vertrauensproblem — eine neue App die sofort Push will, wird abgelehnt. Besser: In-App Badge (rote Zahl wie bei E-Mail). Push kommt spaeter wenn der Nutzer die App schon vertraut und es selbst aktiviert.
@@ -63,6 +67,7 @@ Push-Notifications haben ein Vertrauensproblem — eine neue App die sofort Push
 Ausnahme: Wirklich kritische Events (Breach-Detection, Credential-Missbrauch) sollten Push koennen — aber nur wenn der Nutzer das explizit erlaubt hat.
 
 ### Overreaching-Threshold
+
 **Meine Antwort: Relativ, nicht absolut.**
 
 Nicht "ein Verifier der mehr als 3 Felder will ist overreaching". Sondern: "Ein Liquor Store der deine Adresse will, ist overreaching — ein Krankenhaus das deine Adresse will, ist es nicht." Der Threshold muss kontextabhaengig sein.
@@ -72,6 +77,7 @@ Technisch: Der Policy Engine kennt schon Use-Case-Profile (config-profiles.ts). 
 Wer definiert das? Initialer Vorschlag: miTch-Team kuratiert Basis-Profile (Einzelhandel, Gesundheit, oeffentliche Hand, Bildung). Community kann spaeter Profile vorschlagen. Aber die Defaults muessen stimmen — sonst ist alles gelb und gelb bedeutet nichts.
 
 ### MVP-Definition
+
 **Meine Antwort: Nur Data Import. Kein Daily Review im MVP.**
 
 Die kleinste wertvolle Einheit: Du laedt Google Takeout hoch, miTch zeigt dir 5 Insights in Plain Language. Fertig. Kein Wallet, kein Consent-Dialog, keine Transaktion. Nur das Roentgenbild.
@@ -79,12 +85,14 @@ Die kleinste wertvolle Einheit: Du laedt Google Takeout hoch, miTch zeigt dir 5 
 Warum: Das ist in Wochen baubar (Parser + einfache UI). Der Daily Review braucht eine funktionierende Wallet + Transaktionen + Verifier — das sind Monate. Der Data Import beweist den Wert sofort.
 
 **MVP-Scope:**
+
 - Google Takeout Parser (JSON, gut dokumentiert, groesste Nutzerbasis)
 - 5 Insight-Kategorien: Standort-Zugriffe, Tracking-Netzwerke, App-Aktivitaet, Suchhistorie-Umfang, Datenmenge gesamt
 - Einfache Web-UI (kann in wallet-pwa leben)
 - Alles lokal, kein Upload
 
 ### Plattformen
+
 **Meine Antwort: Google Takeout zuerst.**
 
 Google Takeout ist am besten dokumentiert, hat die groesste Nutzerbasis (Android > iOS weltweit), und die Daten sind am reichhaltigsten (Suche, Standort, YouTube, Gmail-Metadaten, App-Nutzung). Apple Privacy Report ist kleiner und weniger ueberraschend (Apple sammelt weniger). Facebook hat die emotionalste Wirkung aber schmaelere Nutzerbasis (2026, viele junge Nutzer sind nicht mehr auf Facebook).
@@ -92,6 +100,7 @@ Google Takeout ist am besten dokumentiert, hat die groesste Nutzerbasis (Android
 Reihenfolge: Google → Apple → Instagram/WhatsApp → Facebook
 
 ### Wartung Export-Formate
+
 **Meine Antwort: Moderat, aber beherrschbar.**
 
 Google Takeout Format aendert sich selten (JSON-Struktur ist seit Jahren stabil). Groesstes Risiko: neue Datentypen die der Parser nicht kennt. Loesung: Parser der unbekannte Felder nicht ignoriert sondern als "Unbekannt — X Eintraege" anzeigt. So ist der Output nie falsch, nur manchmal unvollstaendig.
@@ -99,15 +108,18 @@ Google Takeout Format aendert sich selten (JSON-Struktur ist seit Jahren stabil)
 Wartungsaufwand: Realistisch 1-2 Tage pro Quartal um neue Felder einzupflegen. Kein Blocker.
 
 ### Automatisierung
+
 **Meine Antwort: Bewusst manuell. Fuer jetzt.**
 
 Automatisierung (Apple Shortcuts, Google API) klingt besser, hat aber zwei Probleme:
+
 1. Google/Apple koennen die API jederzeit einschraenken → Abhaengigkeit
 2. Der manuelle Download ist ein bewusster Akt — der Nutzer WILL seine Daten sehen. Das ist ein Feature, kein Bug.
 
 Spaeter vielleicht ein "Erinnere mich alle 3 Monate" Reminder. Aber kein Auto-Sync.
 
 ### Re-Identifikations-Score
+
 **Meine Antwort: Ja, es gibt nutzbare Forschung.**
 
 Latanya Sweeney (Harvard, 2000): 87% der US-Bevoelkerung sind mit PLZ + Geburtsdatum + Geschlecht eindeutig identifizierbar. Das ist der Klassiker.
@@ -119,6 +131,7 @@ l-Diversity (Machanavajjhala et al., 2007): Erweiterung — auch wenn k gross is
 Praktisch fuer miTch: Ein einfaches Scoring-Modell das pro Transaktion berechnet welche Quasi-Identifier-Kombination geteilt wurde und das geschaetzte k anzeigt. "Mit diesen Daten bist du in einer Gruppe von ~50 Personen" vs. "~3 Personen" vs. "eindeutig identifizierbar". Kein perfektes k — eine Schaetzung reicht fuer den Nutzer.
 
 ### Differenzierung Apple/Google
+
 **Meine Antwort: Drei Dinge die kein Konkurrent hat.**
 
 1. **Cross-Platform:** Apple zeigt Apple-Daten. Google zeigt Google-Daten. miTch zeigt ALLES zusammen — und berechnet was die Kombination ueber dich verraet. Das Ganze ist mehr als die Summe.
@@ -132,6 +145,7 @@ Praktisch fuer miTch: Ein einfaches Scoring-Modell das pro Transaktion berechnet
 ## Offene Fragen zu #2: Collective Signal
 
 ### Sybil-Protection
+
 **Meine Antwort: Nullifier-basiert, aber einfach.**
 
 Jeder Nutzer hat einen deterministischen Nullifier pro Verifier (HKDF aus Wallet-Seed + Verifier-ID). Das Flag "overreaching" wird mit dem Nullifier signiert. Zwei Flags vom selben Nullifier = eins. Kein zentraler Server kennt den Nutzer — nur dass ein einzigartiger Nullifier einmal geflagt hat.
@@ -139,6 +153,7 @@ Jeder Nutzer hat einen deterministischen Nullifier pro Verifier (HKDF aus Wallet
 Das ist nicht perfekt (wer zwei Wallets hat, kann doppelt flaggen) — aber fuer ein Scoring-System reicht es. Es ist kein Wahlsystem, es ist ein Signal.
 
 ### Rechtliche Implikationen
+
 **Meine Antwort: Niedrig, wenn die Methodik transparent ist.**
 
 Oeffentliche Scores von Restaurants (TripAdvisor), Hotels (Booking), Arbeitgebern (Glassdoor) sind legal — solange die Methodik offenliegt und keine falschen Tatsachenbehauptungen gemacht werden. "X% der Nutzer bewerten diesen Verifier als ueberfordernd" ist eine Meinungsaeusserung, keine Tatsachenbehauptung.
@@ -172,4 +187,4 @@ Die Crypto-Infrastruktur (26 Packages, 1411 Tests) ist die Grundlage — aber de
 
 ---
 
-*Geschrieben: 2026-03-16, Claude Opus 4.6*
+_Geschrieben: 2026-03-16, Claude Opus 4.6_

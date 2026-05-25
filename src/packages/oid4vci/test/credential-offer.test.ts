@@ -150,39 +150,48 @@ describe('OID4VCIIssuer.issueCredential() — input validation', () => {
   });
 
   it('rejects wrong credential_type', async () => {
-    await expect(issuer.issueCredential({ ...validRequest(), credential_type: 'EvilCred' as any }))
-      .rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(
+      issuer.issueCredential({ ...validRequest(), credential_type: 'EvilCred' as any })
+    ).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
   });
 
   it('rejects subject_did not starting with "did:"', async () => {
-    await expect(issuer.issueCredential({ ...validRequest(), subject_did: 'not-a-did' }))
-      .rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(
+      issuer.issueCredential({ ...validRequest(), subject_did: 'not-a-did' })
+    ).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
   });
 
   it('rejects missing name claim', async () => {
-    await expect(issuer.issueCredential({
-      ...validRequest(),
-      claims: { birthDate: '1995-07-04', residency: 'DE' } as any
-    })).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(
+      issuer.issueCredential({
+        ...validRequest(),
+        claims: { birthDate: '1995-07-04', residency: 'DE' } as any,
+      })
+    ).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
   });
 
   it('rejects invalid birthDate format', async () => {
-    await expect(issuer.issueCredential({
-      ...validRequest(),
-      claims: { ...validRequest().claims, birthDate: '04-07-1995' }
-    })).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(
+      issuer.issueCredential({
+        ...validRequest(),
+        claims: { ...validRequest().claims, birthDate: '04-07-1995' },
+      })
+    ).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
   });
 
   it('rejects residency code longer than 2 chars', async () => {
-    await expect(issuer.issueCredential({
-      ...validRequest(),
-      claims: { ...validRequest().claims, residency: 'DEU' }
-    })).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(
+      issuer.issueCredential({
+        ...validRequest(),
+        claims: { ...validRequest().claims, residency: 'DEU' },
+      })
+    ).rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
   });
 
   it('rejects short nonce (< 8 chars)', async () => {
-    await expect(issuer.issueCredential({ ...validRequest(), nonce: 'short' }))
-      .rejects.toThrow(/FAIL_INPUT_ARBITRATION/);
+    await expect(issuer.issueCredential({ ...validRequest(), nonce: 'short' })).rejects.toThrow(
+      /FAIL_INPUT_ARBITRATION/
+    );
   });
 
   it('rejects missing nonce entirely', async () => {
@@ -196,8 +205,9 @@ describe('OID4VCIIssuer.issueCredential() — input validation', () => {
 describe('OID4VCIIssuer.issueCredential() — policy', () => {
   it('rejects blocked subject DID containing "did:evil"', async () => {
     const issuer = makeIssuer();
-    await expect(issuer.issueCredential(validRequest({ subject_did: 'did:evil:xyz' })))
-      .rejects.toThrow(/FAIL_POLICY/);
+    await expect(
+      issuer.issueCredential(validRequest({ subject_did: 'did:evil:xyz' }))
+    ).rejects.toThrow(/FAIL_POLICY/);
   });
 
   it('accepts legitimate did:web subject DID', async () => {
@@ -220,8 +230,8 @@ describe('OID4VCIIssuer — audit logging', () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const issuer = makeIssuer();
     await issuer.issueCredential(validRequest());
-    const auditCall = consoleSpy.mock.calls.find(args =>
-      typeof args[0] === 'string' && args[0].includes('[AUDIT]')
+    const auditCall = consoleSpy.mock.calls.find(
+      (args) => typeof args[0] === 'string' && args[0].includes('[AUDIT]')
     );
     expect(auditCall).toBeDefined();
     consoleSpy.mockRestore();
@@ -232,8 +242,8 @@ describe('OID4VCIIssuer — audit logging', () => {
     const issuer = makeIssuer();
     await issuer.issueCredential(validRequest({ subject_did: 'did:key:z6MkAuditCheck' }));
     const auditRaw = consoleSpy.mock.calls
-      .map(args => String(args[0]))
-      .find(s => s.includes('[AUDIT]'))!;
+      .map((args) => String(args[0]))
+      .find((s) => s.includes('[AUDIT]'))!;
     const entry = JSON.parse(auditRaw.replace('[AUDIT] ', ''));
     expect(entry.details.subject).toBe('did:key:z6MkAuditCheck');
     consoleSpy.mockRestore();
@@ -242,8 +252,10 @@ describe('OID4VCIIssuer — audit logging', () => {
   it('audit log does NOT contain raw claim values (data minimization)', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const issuer = makeIssuer();
-    await issuer.issueCredential(validRequest({ claims: { name: 'SensitiveName', birthDate: '1990-01-01', residency: 'DE' } }));
-    const allLogs = consoleSpy.mock.calls.map(args => String(args[0])).join(' ');
+    await issuer.issueCredential(
+      validRequest({ claims: { name: 'SensitiveName', birthDate: '1990-01-01', residency: 'DE' } })
+    );
+    const allLogs = consoleSpy.mock.calls.map((args) => String(args[0])).join(' ');
     // Raw PII values must not appear in audit output
     expect(allLogs).not.toContain('SensitiveName');
     consoleSpy.mockRestore();

@@ -53,7 +53,7 @@ describe('Anti-Oracle: verifier message bucketing', () => {
   ];
 
   it('all policy-distinguishing deny codes produce identical verifier message', () => {
-    const messages = INDISTINGUISHABLE_CODES.map(code => getVerifierDenyMessage(code));
+    const messages = INDISTINGUISHABLE_CODES.map((code) => getVerifierDenyMessage(code));
     const unique = new Set(messages);
 
     expect(unique.size).toBe(1);
@@ -155,7 +155,7 @@ describe('Anti-Oracle: catalog completeness', () => {
   });
 
   it('total verifier bucket count is ≤ 4 (anti-oracle surface area)', () => {
-    const allVerifierMessages = Object.values(DENY_REASON_CATALOG).map(e => e.verifier);
+    const allVerifierMessages = Object.values(DENY_REASON_CATALOG).map((e) => e.verifier);
     const uniqueMessages = new Set(allVerifierMessages);
 
     // We allow at most 4 distinct verifier messages

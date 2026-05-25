@@ -121,15 +121,17 @@ describe('E2E: Full Credential Lifecycle', () => {
     });
 
     // STEP 3: Mock WebAuthn assertion (simulates hardware authenticator response)
-    const clientDataJSON = Buffer.from(JSON.stringify({
-      type: 'webauthn.get',
-      challenge: challenge.challenge,
-      origin: 'https://mitch.example.com',
-      crossOrigin: false,
-    })).toString('base64url');
+    const clientDataJSON = Buffer.from(
+      JSON.stringify({
+        type: 'webauthn.get',
+        challenge: challenge.challenge,
+        origin: 'https://mitch.example.com',
+        crossOrigin: false,
+      })
+    ).toString('base64url');
 
     // Build authenticator data: 32-byte rpIdHash + 1 flags byte + 4-byte counter (BE)
-    const rpIdHash = Buffer.alloc(32, 0xAA); // Mock RP ID hash
+    const rpIdHash = Buffer.alloc(32, 0xaa); // Mock RP ID hash
     const flags = Buffer.from([0x01]); // UP flag set
     const counterBuf = Buffer.alloc(4);
     counterBuf.writeUInt32BE(1, 0); // Counter = 1 (incremented from 0)
@@ -211,25 +213,30 @@ describe('E2E: Full Credential Lifecycle', () => {
       counter: 0,
     });
 
-    const clientDataJSON = Buffer.from(JSON.stringify({
-      type: 'webauthn.get',
-      challenge: challenge.challenge,
-      origin: 'https://mitch.example.com',
-    })).toString('base64url');
+    const clientDataJSON = Buffer.from(
+      JSON.stringify({
+        type: 'webauthn.get',
+        challenge: challenge.challenge,
+        origin: 'https://mitch.example.com',
+      })
+    ).toString('base64url');
 
-    const authData = Buffer.concat([Buffer.alloc(32, 0xAA), Buffer.from([0x01]), Buffer.alloc(4)]);
+    const authData = Buffer.concat([Buffer.alloc(32, 0xaa), Buffer.from([0x01]), Buffer.alloc(4)]);
     authData.writeUInt32BE(1, 33);
 
-    const result = await verifier.verifyAssertion({
-      id: mockCredentialID.toString('base64url'),
-      rawId: mockCredentialID.toString('base64url'),
-      response: {
-        clientDataJSON,
-        authenticatorData: authData.toString('base64url'),
-        signature: Buffer.from('sig').toString('base64url'),
+    const result = await verifier.verifyAssertion(
+      {
+        id: mockCredentialID.toString('base64url'),
+        rawId: mockCredentialID.toString('base64url'),
+        response: {
+          clientDataJSON,
+          authenticatorData: authData.toString('base64url'),
+          signature: Buffer.from('sig').toString('base64url'),
+        },
+        type: 'public-key',
       },
-      type: 'public-key',
-    }, userDID);
+      userDID
+    );
 
     expect(result.verified).toBe(false);
     expect(result.reason).toBe('CHALLENGE_EXPIRED');
@@ -251,26 +258,31 @@ describe('E2E: Full Credential Lifecycle', () => {
 
     const challenge = await verifier.generateChallenge(userDID);
 
-    const clientDataJSON = Buffer.from(JSON.stringify({
-      type: 'webauthn.get',
-      challenge: challenge.challenge,
-      origin: 'https://mitch.example.com',
-    })).toString('base64url');
+    const clientDataJSON = Buffer.from(
+      JSON.stringify({
+        type: 'webauthn.get',
+        challenge: challenge.challenge,
+        origin: 'https://mitch.example.com',
+      })
+    ).toString('base64url');
 
     // Counter = 3, which is <= stored counter 5 → replay
-    const authData = Buffer.concat([Buffer.alloc(32, 0xAA), Buffer.from([0x01]), Buffer.alloc(4)]);
+    const authData = Buffer.concat([Buffer.alloc(32, 0xaa), Buffer.from([0x01]), Buffer.alloc(4)]);
     authData.writeUInt32BE(3, 33);
 
-    const result = await verifier.verifyAssertion({
-      id: mockCredentialID.toString('base64url'),
-      rawId: mockCredentialID.toString('base64url'),
-      response: {
-        clientDataJSON,
-        authenticatorData: authData.toString('base64url'),
-        signature: Buffer.from('sig').toString('base64url'),
+    const result = await verifier.verifyAssertion(
+      {
+        id: mockCredentialID.toString('base64url'),
+        rawId: mockCredentialID.toString('base64url'),
+        response: {
+          clientDataJSON,
+          authenticatorData: authData.toString('base64url'),
+          signature: Buffer.from('sig').toString('base64url'),
+        },
+        type: 'public-key',
       },
-      type: 'public-key',
-    }, userDID);
+      userDID
+    );
 
     expect(result.verified).toBe(false);
     expect(result.reason).toBe('COUNTER_REPLAY');

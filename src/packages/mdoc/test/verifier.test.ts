@@ -18,16 +18,14 @@ let issuerKeyPair: CryptoKeyPair;
 let deviceKeyPair: CryptoKeyPair;
 
 beforeAll(async () => {
-  issuerKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
-  deviceKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
+  issuerKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
+  deviceKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
 });
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -60,11 +58,7 @@ function makeValidity(overrides?: Partial<Record<string, string>>): ValidityInfo
 }
 
 function makeSessionTranscript(): SessionTranscript {
-  return [
-    new Uint8Array([0x01, 0x02, 0x03]),
-    new Uint8Array([0x04, 0x05, 0x06]),
-    'handover-data',
-  ];
+  return [new Uint8Array([0x01, 0x02, 0x03]), new Uint8Array([0x04, 0x05, 0x06]), 'handover-data'];
 }
 
 async function buildMso(
@@ -89,10 +83,7 @@ async function buildMso(
   };
 }
 
-async function signMso(
-  mso: MobileSecurityObject,
-  privateKey: CryptoKey
-): Promise<Uint8Array> {
+async function signMso(mso: MobileSecurityObject, privateKey: CryptoKey): Promise<Uint8Array> {
   return createSign1({ payload: encode(mso), privateKey });
 }
 
@@ -121,7 +112,12 @@ async function buildValidDocument(overrides?: {
   const mso = await buildMso(
     overrides?.tamperItems ? [] : items,
     overrides?.wrongDeviceKey
-      ? (await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])).publicKey
+      ? (
+          await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+            'sign',
+            'verify',
+          ])
+        ).publicKey
       : deviceKeyPair.publicKey,
     overrides?.msoOverrides
   );
@@ -172,7 +168,7 @@ describe('verifyMdocOffline', () => {
       now: new Date('2026-06-15T00:00:00Z'),
     });
 
-    const stepNames = result.steps.map(s => s.step);
+    const stepNames = result.steps.map((s) => s.step);
     expect(stepNames).toContain('issuer-auth');
     expect(stepNames).toContain('validity');
     expect(stepNames).toContain('doctype');
@@ -186,7 +182,7 @@ describe('verifyMdocOffline', () => {
     const wrongKey = await crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       false,
-      ['sign', 'verify'],
+      ['sign', 'verify']
     );
 
     const result = await verifyMdocOffline({
@@ -197,7 +193,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'issuer-auth')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'issuer-auth')?.valid).toBe(false);
   });
 
   test('fail-closed: tampered item digests', async () => {
@@ -227,7 +223,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'validity')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'validity')?.valid).toBe(false);
     expect(result.reason).toContain('expired');
   });
 
@@ -260,7 +256,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'doctype')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'doctype')?.valid).toBe(false);
     expect(result.reason).toContain('mismatch');
   });
 
@@ -277,7 +273,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'device-auth')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'device-auth')?.valid).toBe(false);
     expect(result.reason).toContain('deviceSigned');
   });
 
@@ -296,7 +292,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'device-auth')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'device-auth')?.valid).toBe(false);
   });
 
   test('fail-closed: device key mismatch (MSO has different key)', async () => {
@@ -310,7 +306,7 @@ describe('verifyMdocOffline', () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.steps.find(s => s.step === 'device-auth')?.valid).toBe(false);
+    expect(result.steps.find((s) => s.step === 'device-auth')?.valid).toBe(false);
   });
 
   // ── Issuer key from x5chain (no issuerPublicKey provided) ─────────────
@@ -363,22 +359,24 @@ describe('parseDeviceResponse integration', () => {
     const deviceResponse = {
       version: '1.0',
       status: 0,
-      documents: [{
-        docType: MDL_DOCTYPE,
-        issuerSigned: {
-          nameSpaces: new Map([[MDL_NAMESPACE, items]]),
-          issuerAuth,
-        },
-        deviceSigned: {
-          nameSpaces: new Map(),
-          deviceAuth: {
-            deviceSignature: await signDeviceAuth(
-              deviceKeyPair.privateKey,
-              makeSessionTranscript()
-            ),
+      documents: [
+        {
+          docType: MDL_DOCTYPE,
+          issuerSigned: {
+            nameSpaces: new Map([[MDL_NAMESPACE, items]]),
+            issuerAuth,
+          },
+          deviceSigned: {
+            nameSpaces: new Map(),
+            deviceAuth: {
+              deviceSignature: await signDeviceAuth(
+                deviceKeyPair.privateKey,
+                makeSessionTranscript()
+              ),
+            },
           },
         },
-      }],
+      ],
     };
 
     const encoded = encode(deviceResponse);

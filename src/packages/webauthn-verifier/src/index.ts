@@ -76,10 +76,7 @@ export class WebAuthnNativeVerifier {
    * @param userDID - User's DID
    * @param authenticator - Authenticator information from registration
    */
-  async registerAuthenticator(
-    userDID: string,
-    authenticator: AuthenticatorInfo
-  ): Promise<void> {
+  async registerAuthenticator(userDID: string, authenticator: AuthenticatorInfo): Promise<void> {
     const credentialID = authenticator.credentialID.toString('base64url');
     this.authenticators.set(credentialID, {
       ...authenticator,

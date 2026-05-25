@@ -13,7 +13,7 @@ import { MockGovernmentIssuer, computeAgeProof } from '@mitch/mock-issuer';
 import { ProtectionLayer, getLayerName } from '@mitch/layer-resolver';
 
 async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function log(message: string, style: 'header' | 'info' | 'success' | 'error' | 'warn' = 'info') {

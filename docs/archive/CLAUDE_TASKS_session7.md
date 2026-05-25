@@ -21,7 +21,9 @@
 ## Block H — ESLint Warnings Cleanup 🔴 (Übertrag aus Session 6)
 
 ### H-01b: ESLint Warnings eliminieren
+
 **Was:**
+
 - [ ] `no-unused-vars`: Unbenutzte Variablen entfernen oder mit `_` prefixen
 - [ ] `no-explicit-any`: Durch spezifische Types ersetzen wo möglich, `unknown` wo nötig
 - [ ] Package für Package durchgehen (shared-types → shared-crypto → policy-engine → ... → wallet-pwa)
@@ -35,7 +37,9 @@
 ## Block G — GitHub Pages Deployment 🔴
 
 ### G-01: standalone.html als GitHub Pages deployen
+
 **Was:**
+
 - [ ] `.github/workflows/pages.yml` erstellen — deployt `src/packages/poc-hardened/src/poc-web/standalone.html` als `index.html`
 - [ ] Workflow: on push to master, nimmt nur die eine HTML-Datei
 - [ ] KEIN Build-Step nötig — Datei ist self-contained
@@ -45,7 +49,9 @@
 **Acceptance:** Nach Push ist die Demo unter `https://late-bloomer420.github.io/miTch/` erreichbar.
 
 ### G-02: OpenGraph / Social Meta Tags
+
 **Was:**
+
 - [ ] `<meta property="og:title">`, `og:description`, `og:image` in standalone.html
 - [ ] `<meta name="twitter:card">` für Link-Previews
 - [ ] Titel: "miTch — The Forgetting Layer"
@@ -58,7 +64,9 @@
 ## Block R — Repo Cleanup 🟡
 
 ### R-01: README.md aufräumen
+
 **Was:**
+
 - [ ] Kurze Projektbeschreibung oben (max 5 Zeilen)
 - [ ] Badges: Tests passing, License, GDPR compliant
 - [ ] Quick Start: `pnpm install && pnpm dev`
@@ -67,6 +75,7 @@
 - [ ] Alte/veraltete Sections entfernen
 
 ### R-02: Stale Files entfernen
+
 - [ ] `CLAUDE_TASKS.md` → nach `docs/archive/` verschieben (nicht auf GitHub Pages sichtbar)
 - [ ] `ANTIGRAVITY_TASKS.md` → nach `docs/archive/`
 - [ ] `BLOCKED.md` löschen falls leer
@@ -77,6 +86,7 @@
 ---
 
 ## Reihenfolge
+
 1. H-01b (ESLint — aufräumen bevor neue Leute den Code sehen)
 2. G-01 + G-02 (GitHub Pages — Demo muss teilbar sein)
 3. R-01 + R-02 (Repo polish)

@@ -8,7 +8,10 @@ import { encryptCredentialJWE, decryptCredentialJWE, isJWEToken } from '../src/j
 let cek: CryptoKey;
 
 beforeAll(async () => {
-  cek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  cek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
 });
 
 describe('G-08: JWE credential encryption', () => {
@@ -56,7 +59,10 @@ describe('G-08: JWE credential encryption', () => {
   });
 
   test('decryptCredentialJWE throws or returns wrong data on wrong key', async () => {
-    const wrongKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    const wrongKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+      'encrypt',
+      'decrypt',
+    ]);
     const original = { data: 'secret' };
     const token = await encryptCredentialJWE(original, cek);
 

@@ -7,6 +7,7 @@
 
 ⚠️ **WICHTIG:** Claude Code arbeitet parallel auf `master` an Engine/Crypto.
 Du darfst NUR Dateien in `src/apps/wallet-pwa/` ändern. Keine Änderungen an:
+
 - `src/packages/*` (tabu!)
 - `shared-types`, `shared-crypto`, `policy-engine` (tabu!)
 - `STATE.md`, `BACKLOG.md` (tabu — Claude updatet die)
@@ -18,6 +19,7 @@ Du darfst NUR Dateien in `src/apps/wallet-pwa/` ändern. Keine Änderungen an:
 Die Wallet-PWA ist eine Demo-App für eine Uni-Präsentation. Sie funktioniert, aber die UX ist "Entwickler-UI" — inline styles, kein Feedback, kein Flow-Gefühl. Ziel: **Stakeholder sollen "Wow" sagen**, nicht "was muss ich hier klicken?"
 
 Aktuelle Struktur:
+
 - `App.tsx` (797 Zeilen) — Monolith, alles in einer Komponente
 - `ConsentModal.tsx` (373 Z.) — Consent + WebAuthn, gut strukturiert
 - `GuidedDemoMode.tsx` (297 Z.) — Bottom-Sheet Tutorial
@@ -33,6 +35,7 @@ Aktuelle Struktur:
 
 **Problem:** ~90% der Styles sind inline in JSX. Unlesbar, nicht wartbar, keine Hover/Focus States möglich.
 **Was:**
+
 - [ ] CSS-Datei(en) erstellen für wiederkehrende Patterns (Cards, Buttons, Badges, Grid)
 - [ ] Inline Styles in App.tsx durch Klassen ersetzen
 - [ ] Hover-Effects für alle interaktiven Elemente
@@ -47,6 +50,7 @@ Aktuelle Struktur:
 
 **Problem:** Zustandswechsel (IDLE → EVALUATING → PROVING → SHREDDED) sind abrupt. Kein visuelles Feedback.
 **Was:**
+
 - [ ] Loading Spinner oder Pulse-Animation während EVALUATING
 - [ ] Fortschritts-Indikator während PROVING (z.B. animierter Balken)
 - [ ] Smooth Transitions zwischen Zuständen (CSS transitions, nicht harte Swaps)
@@ -60,6 +64,7 @@ Aktuelle Struktur:
 
 **Problem:** Die Credential-Anzeige oben ist ein statisches Div mit hartcodierten Werten. Sieht nicht nach "Wallet" aus.
 **Was:**
+
 - [ ] Card-Design das an eine echte Karte/Ausweis erinnert (abgerundete Ecken, Gradient, Shadow)
 - [ ] Subtle Hologramm/Shimmer-Effekt (CSS only — `background: linear-gradient` Animation)
 - [ ] Credential-Type Icon (🪪 für GovID, 🏥 für Hospital)
@@ -72,6 +77,7 @@ Aktuelle Struktur:
 
 **Problem:** "Advanced Feature Demos" Grid hat 8 Buttons, alle gleich groß, keine klare Hierarchie.
 **Was:**
+
 - [ ] Primäre Szenarien (Liquor, Doctor, ER, Pharmacy) prominenter — größer, oben
 - [ ] Sekundäre (WebAuthn, Recovery, Research, Cross-Border) kleiner, als "More Demos" collapsible
 - [ ] Button-Labels kürzer und klarer (z.B. "🍺 Age Check" statt "🍺 Liquor Store")
@@ -84,6 +90,7 @@ Aktuelle Struktur:
 
 **Problem:** Monospace-Log ist funktional aber trocken. Für eine Demo sollte es "leben".
 **Was:**
+
 - [ ] Neue Log-Einträge sliden rein (CSS animation: slideIn)
 - [ ] Farbige Icons statt Text-Prefixes (✅ grün, ⚠️ gelb, ❌ rot — schon da, aber größer/prominenter)
 - [ ] Auto-Scroll zum neuesten Eintrag
@@ -96,6 +103,7 @@ Aktuelle Struktur:
 
 **Problem:** ConsentModal funktioniert gut, aber der Flow könnte flüssiger sein.
 **Was:**
+
 - [ ] Entry-Animation: Modal gleitet von unten rein (mobile Pattern)
 - [ ] Claim-Liste: Chips statt Textliste (grüne Chips = freigegeben, rote = geblockt)
 - [ ] Risk-Level prominenter anzeigen (farbiger Banner oben im Modal)
@@ -109,6 +117,7 @@ Aktuelle Struktur:
 
 **Problem:** Bottom-Sheet ist informativ aber statisch. Für die Präsentation brauchen wir Flow.
 **Was:**
+
 - [ ] Step-Indicator (Dots oder Progress Bar: 1/4, 2/4...)
 - [ ] Transition zwischen Steps (Slide left/right)
 - [ ] "What the Verifier sees" als visueller Diff (grün = sichtbar, durchgestrichen rot = geblockt)
@@ -121,6 +130,7 @@ Aktuelle Struktur:
 
 **Problem:** Die App soll auf einem Handy-Screen bei der Präsentation gut aussehen.
 **Was:**
+
 - [ ] Viewport meta tag checken (`<meta name="viewport" content="width=device-width, initial-scale=1">`)
 - [ ] Touch-Targets: mindestens 44x44px für alle Buttons
 - [ ] Safe Area Insets (für Notch-Phones): `env(safe-area-inset-*)`
@@ -150,4 +160,4 @@ Aktuelle Struktur:
 
 ---
 
-*Erstellt von Claw 🦀 — 2026-03-06*
+_Erstellt von Claw 🦀 — 2026-03-06_

@@ -14,11 +14,11 @@ Model B: Adapter layer. miTch defines the credential format and adapter interfac
 
 ## Models Evaluated
 
-| Model | Description | Verdict |
-|---|---|---|
-| A: miTch IS the issuer | Self-contained, but who trusts it? | Mock/demo only |
-| **B: miTch wraps external issuers** | Adapter layer, miTch defines format | **Selected** ✅ |
-| C: miTch is purely wallet/verifier | Accepts external VCs, least control | Can't enforce privacy guarantees |
+| Model                               | Description                         | Verdict                          |
+| ----------------------------------- | ----------------------------------- | -------------------------------- |
+| A: miTch IS the issuer              | Self-contained, but who trusts it?  | Mock/demo only                   |
+| **B: miTch wraps external issuers** | Adapter layer, miTch defines format | **Selected** ✅                  |
+| C: miTch is purely wallet/verifier  | Accepts external VCs, least control | Can't enforce privacy guarantees |
 
 ---
 
@@ -26,11 +26,11 @@ Model B: Adapter layer. miTch defines the credential format and adapter interfac
 
 ### Three Patterns
 
-| Pattern | State Provider Changes? | Privacy | Phase |
-|---|---|---|---|
-| A: Issuer-side predicates (provider computes predicates internally) | Yes (new API) | High | Future |
-| B: Blind issuance (BBS+ blind signatures) | Yes (crypto upgrade) | Maximum | Far future |
-| **C: On-device derivation** | **No** | **High** | **Phase 0** ⭐ |
+| Pattern                                                             | State Provider Changes? | Privacy  | Phase          |
+| ------------------------------------------------------------------- | ----------------------- | -------- | -------------- |
+| A: Issuer-side predicates (provider computes predicates internally) | Yes (new API)           | High     | Future         |
+| B: Blind issuance (BBS+ blind signatures)                           | Yes (crypto upgrade)    | Maximum  | Far future     |
+| **C: On-device derivation**                                         | **No**                  | **High** | **Phase 0** ⭐ |
 
 ### Pattern C Flow (Selected)
 
@@ -67,25 +67,22 @@ The issuer doesn't see raw PII. But it verifies the user actually authenticated 
 
 ```typescript
 interface IssuerAdapter {
-  credentialTypes: string[];  // ["age_verification", "email_verified"]
-  
-  resolveClaims(
-    userId: string, 
-    requestedClaims: string[]
-  ): Promise<ResolvedClaims>;
-  
+  credentialTypes: string[]; // ["age_verification", "email_verified"]
+
+  resolveClaims(userId: string, requestedClaims: string[]): Promise<ResolvedClaims>;
+
   issuerMetadata(): IssuerMeta;
 }
 
 interface ResolvedClaims {
-  claims: Record<string, unknown>;     // empty for Pattern C (no raw PII crosses boundary)
+  claims: Record<string, unknown>; // empty for Pattern C (no raw PII crosses boundary)
   predicates: Record<string, boolean>; // { over_18: true }
-  evidence: string;                    // "eid-at:session:abc123"
+  evidence: string; // "eid-at:session:abc123"
 }
 
 interface IssuerMeta {
-  id: string;             // "eid-austria"
-  name: string;           // "Austrian eID Bridge"
+  id: string; // "eid-austria"
+  name: string; // "Austrian eID Bridge"
   trustFramework: string; // "eIDAS_LOA_HIGH"
   publicKeyJwk: JsonWebKey;
 }

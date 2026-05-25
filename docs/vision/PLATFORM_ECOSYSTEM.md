@@ -20,6 +20,7 @@ The Digital Markets Act (March 2024) forces Apple to allow alternative app marke
 AltStore PAL and Setapp Mobile are already live.
 
 **Why this matters:**
+
 - No App Store review gatekeeping — Apple cannot reject miTch for conflicting with their ad/data business
 - Apple still notarizes for malware/security, cannot block on business grounds
 - More permissive APIs: background processing, deeper WebAuthn integration, system-level crypto access
@@ -91,12 +92,12 @@ The wallet becomes the negotiation layer. The user's interests are represented b
 
 ## Revenue Model
 
-| Stream | Who pays | What for |
-|---|---|---|
-| Core wallet | nobody | open source, always free |
-| Business verifier plugins | companies (B2B) | listed as verified interaction partner, certified profile |
-| Premium data connectors | users (subscription) | automated GDPR Art. 20 portability — the hard work of negotiating with specific institutions |
-| Certified proof modules | regulated industries | audit-certified ZK circuits for insurance, healthcare, government — certification has commercial value |
+| Stream                    | Who pays             | What for                                                                                               |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| Core wallet               | nobody               | open source, always free                                                                               |
+| Business verifier plugins | companies (B2B)      | listed as verified interaction partner, certified profile                                              |
+| Premium data connectors   | users (subscription) | automated GDPR Art. 20 portability — the hard work of negotiating with specific institutions           |
+| Certified proof modules   | regulated industries | audit-certified ZK circuits for insurance, healthcare, government — certification has commercial value |
 
 **Key constraint:** revenue model must never create incentive to collect or retain user data.
 B2B (verifiers paying) and certification fees are structurally safe.
@@ -107,16 +108,16 @@ Anything involving user data as a revenue input is not.
 
 ## Roadmap Horizon
 
-| Horizon | What | Status |
-|---|---|---|
-| Now (build on current) | Daily review UX — transaction log, danger levels, notification, escalation path | Partially exists (audit-log package, PrivacyAuditService) |
-| Now | Consent receipt as portable evidence — core wallet feature, not plugin | Partially implemented |
-| Near term | Enterprise B2B: forgetting layer as compliance middleware for institutions | Verifier SDK implemented, ad-tech module exists |
-| Near term | PSD2 open banking connector — first real data portability flow (EU banks already have APIs) | First real data connector |
-| Medium term | In-app module registry — open API for developers to publish modules | Requires stable core + defined module API |
-| Medium term | Predicate proof layer (Bulletproofs range proofs) for specific claim types | Narrowed from general ZK |
-| Long term | Verifier profiles as standard interface for business data requirements | Requires ecosystem adoption |
-| Long term | General ZK for complex computations | Research horizon |
+| Horizon                | What                                                                                        | Status                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Now (build on current) | Daily review UX — transaction log, danger levels, notification, escalation path             | Partially exists (audit-log package, PrivacyAuditService) |
+| Now                    | Consent receipt as portable evidence — core wallet feature, not plugin                      | Partially implemented                                     |
+| Near term              | Enterprise B2B: forgetting layer as compliance middleware for institutions                  | Verifier SDK implemented, ad-tech module exists           |
+| Near term              | PSD2 open banking connector — first real data portability flow (EU banks already have APIs) | First real data connector                                 |
+| Medium term            | In-app module registry — open API for developers to publish modules                         | Requires stable core + defined module API                 |
+| Medium term            | Predicate proof layer (Bulletproofs range proofs) for specific claim types                  | Narrowed from general ZK                                  |
+| Long term              | Verifier profiles as standard interface for business data requirements                      | Requires ecosystem adoption                               |
+| Long term              | General ZK for complex computations                                                         | Research horizon                                          |
 
 **Note:** As of March 2026, the miTch repository contains 26 packages + 3 apps.
 
@@ -137,6 +138,7 @@ General ZK for complex computations stays long-term / research horizon.
 **Revenue model tension — RESOLVED**
 Verifier-pays creates incentive for more sharing. That's misaligned.
 Cleaner paths:
+
 - Users pay for premium utility (insight automation, portability connectors)
 - Enterprise B2B licensing: institutions run miTch as compliance middleware (GDPR liability reduction)
 - Certified proof modules for regulated industries (audit certification fees)

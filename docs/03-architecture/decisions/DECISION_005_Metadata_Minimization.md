@@ -15,54 +15,60 @@ Even with perfect ZK proofs, metadata leaks (IP, timing, payload size, credentia
 ## Attack Surfaces
 
 ### Network Level
-| Leak | Reveals | Mitigation |
-|---|---|---|
-| IP address | Location, ISP | Relay proxy (Phase 1) |
-| TLS fingerprint | Device type, OS | Relay normalization (Phase 1) |
-| Request timing | When user interacts | Timing jitter (Phase 0) |
-| Packet size | Credential complexity | Response padding (Phase 0) |
+
+| Leak            | Reveals               | Mitigation                    |
+| --------------- | --------------------- | ----------------------------- |
+| IP address      | Location, ISP         | Relay proxy (Phase 1)         |
+| TLS fingerprint | Device type, OS       | Relay normalization (Phase 1) |
+| Request timing  | When user interacts   | Timing jitter (Phase 0)       |
+| Packet size     | Credential complexity | Response padding (Phase 0)    |
 
 ### Protocol Level
-| Leak | Reveals | Mitigation |
-|---|---|---|
-| Credential structure (hash count) | Number of claims | Dummy disclosure padding (Phase 0) |
-| Issuer identifier | Demographics (nationality) | Issuer aliasing (Phase 2) |
-| Response time | Device class | Timing jitter (Phase 0) |
-| Error patterns | What user doesn't have | Identical decline/missing responses (Phase 0) |
+
+| Leak                              | Reveals                    | Mitigation                                    |
+| --------------------------------- | -------------------------- | --------------------------------------------- |
+| Credential structure (hash count) | Number of claims           | Dummy disclosure padding (Phase 0)            |
+| Issuer identifier                 | Demographics (nationality) | Issuer aliasing (Phase 2)                     |
+| Response time                     | Device class               | Timing jitter (Phase 0)                       |
+| Error patterns                    | What user doesn't have     | Identical decline/missing responses (Phase 0) |
 
 ### Behavioral Level
-| Leak | Reveals | Mitigation |
-|---|---|---|
-| Verification frequency | Usage patterns | Per-session derived IDs (Phase 0) |
-| Decline patterns | What user refuses | Identical decline responses (Phase 0) |
+
+| Leak                   | Reveals           | Mitigation                            |
+| ---------------------- | ----------------- | ------------------------------------- |
+| Verification frequency | Usage patterns    | Per-session derived IDs (Phase 0)     |
+| Decline patterns       | What user refuses | Identical decline responses (Phase 0) |
 
 ---
 
 ## Phase 0 Mitigations (~80 lines total)
 
 ### 1. Response Padding (every response = fixed 4KB)
+
 ```typescript
 // Without: 127 bytes → "1 claim", 893 bytes → "6 claims"
 // With: every response = 4096 bytes
-function padResponse(data: Buffer, targetBytes: number = 4096): Buffer
+function padResponse(data: Buffer, targetBytes: number = 4096): Buffer;
 ```
 
 ### 2. Strip Unnecessary Bundle Fields
+
 ```typescript
 function minimizePresentation(bundle: ProofBundleV0): ProofBundleV0 {
   return {
     format: bundle.format,
     proof: bundle.proof,
     disclosures: bundle.disclosures,
-    keyId: bundle.keyId,           // session-derived, unlinkable
-    credentialId: undefined,       // NEVER send
-    credentialStatus: undefined,   // verifier checks status list themselves
-    alg: undefined,                // verifier detects from format
+    keyId: bundle.keyId, // session-derived, unlinkable
+    credentialId: undefined, // NEVER send
+    credentialStatus: undefined, // verifier checks status list themselves
+    alg: undefined, // verifier detects from format
   };
 }
 ```
 
 ### 3. Identical Decline/Missing Responses
+
 ```typescript
 // Verifier can't tell if user declined or doesn't have the credential
 { decision: "DENY", decisionCode: "not_available" }
@@ -70,17 +76,19 @@ function minimizePresentation(bundle: ProofBundleV0): ProofBundleV0 {
 ```
 
 ### 4. Dummy Disclosure Padding
+
 ```typescript
 // Pad SD-JWT to always have 8 disclosure hashes
 // Hides actual number of claims
-function padDisclosures(real: string[], target: number = 8): string[]
+function padDisclosures(real: string[], target: number = 8): string[];
 ```
 
 ### 5. Timing Jitter
+
 ```typescript
 // 0-3 seconds random delay on every presentation
 // Prevents timing correlation
-async function presentWithJitter(proof: ProofBundleV0): Promise<void>
+async function presentWithJitter(proof: ProofBundleV0): Promise<void>;
 ```
 
 ---
@@ -96,10 +104,10 @@ function deriveUnlinkablePresentation(
 ): ProofBundleV0 {
   const sessionId = hmac(credential.id, verifierNonce);
   return {
-    format: "sd-jwt",
+    format: 'sd-jwt',
     proof: credential.presentWithDisclosure(requestedClaims),
-    keyId: sessionId,          // unlinkable across verifiers
-    credentialId: undefined,   // never exposed
+    keyId: sessionId, // unlinkable across verifiers
+    credentialId: undefined, // never exposed
   };
 }
 ```
@@ -109,11 +117,13 @@ function deriveUnlinkablePresentation(
 ## Server-Side Logging Policy
 
 ### What IS Logged
+
 - Aggregate metrics only: "47 verifications this hour"
 - Error rates by type (no request details)
 - System health (uptime, memory, latency percentiles)
 
 ### What is NEVER Logged
+
 - IP addresses (not even hashed)
 - User agents
 - Request/response bodies
@@ -122,18 +132,21 @@ function deriveUnlinkablePresentation(
 - Claim types
 
 ### Retention
+
 - Aggregate metrics: 90 days
 - Security events (no identifiers): 30 days
 - Debug: in-memory ring buffer only, never persisted
 
 ### Code-Level Enforcement
+
 ```typescript
 // safeLog wrapper strips banned fields before any logger touches them
 // Deep scan for PII patterns — throws if detected
-function safeLog(event: Record<string, unknown>): void
+function safeLog(event: Record<string, unknown>): void;
 ```
 
 ### Deployment Constraint
+
 - No persistent log volume in containers
 - Filesystem is read-only
 - Aggregate metrics to in-memory Prometheus-style store
@@ -142,19 +155,21 @@ function safeLog(event: Record<string, unknown>): void
 
 ## Abuse Monitoring Without User Profiling
 
-| Technique | What It Catches | Privacy Cost | Phase |
-|---|---|---|---|
-| Aggregate anomaly detection | DDoS, stuffing, replay waves | Zero | 0 |
-| Blind rate limiting (HMAC tokens) | Per-user abuse without knowing user | Zero | 0 |
-| Streaming counters (no-log alerting) | Threshold violations | Zero | 0 |
-| Adaptive PoW challenges | Bot farms | Slight UX under attack | 1 |
-| Cryptographic abuse tokens (hot list) | Replay attacks | Zero | 1 |
-| Sealed audit envelopes | Legal compliance | Minimal (encrypted) | 1 |
+| Technique                             | What It Catches                     | Privacy Cost           | Phase |
+| ------------------------------------- | ----------------------------------- | ---------------------- | ----- |
+| Aggregate anomaly detection           | DDoS, stuffing, replay waves        | Zero                   | 0     |
+| Blind rate limiting (HMAC tokens)     | Per-user abuse without knowing user | Zero                   | 0     |
+| Streaming counters (no-log alerting)  | Threshold violations                | Zero                   | 0     |
+| Adaptive PoW challenges               | Bot farms                           | Slight UX under attack | 1     |
+| Cryptographic abuse tokens (hot list) | Replay attacks                      | Zero                   | 1     |
+| Sealed audit envelopes                | Legal compliance                    | Minimal (encrypted)    | 1     |
 
 ### Blind Rate Limiting
+
 Wallet generates `token = HMAC(credential.cnfKey, timeWindow)`. Server counts per token. Can't reverse token to identity. Token rotates each window — no cross-window tracking.
 
 ### What Cannot Be Caught (Accepted)
+
 - Single sophisticated attacker making normal-looking requests
 - Social engineering
 - Compromised wallet on user's device
@@ -165,12 +180,12 @@ These are endpoint security problems, not infrastructure monitoring problems.
 
 ## Future Phases
 
-| Mitigation | Phase |
-|---|---|
-| Relay proxy (strip IP/UA) | 1 |
-| OHTTP (Oblivious HTTP) for status list fetches | 1 |
-| Dummy/cover traffic | 2 |
-| Issuer aliasing (hide nationality) | 2 |
+| Mitigation                                     | Phase |
+| ---------------------------------------------- | ----- |
+| Relay proxy (strip IP/UA)                      | 1     |
+| OHTTP (Oblivious HTTP) for status list fetches | 1     |
+| Dummy/cover traffic                            | 2     |
+| Issuer aliasing (hide nationality)             | 2     |
 
 ---
 

@@ -48,4 +48,3 @@ This file is the canonical naming reference for product, marketing, and demo cop
 ## Naming rule
 
 If a term can be mistaken for a generic privacy feature, prefer the more specific term.
-

@@ -1,6 +1,7 @@
 # Principles & Non‑Negotiables (Binding)
 
 ## Invariants (must always hold)
+
 1. **Edge‑First Decisions**
    - Authorization and identity decisions occur on the user device.
    - Servers may verify proofs, but must not decide based on hidden user profiles.
@@ -23,6 +24,7 @@
    - “Proceed anyway” is not allowed.
 
 ## Automatic rejections (architectural anti-patterns)
+
 - Centralized identity storage (any “master database of identities”).
 - User profiling, behavioral analytics, or cross-service correlation.
 - Blockchain dependency for core identity functions.
@@ -30,6 +32,7 @@
 - “Trust us” models where guarantees are not mechanically enforced.
 
 ## EU framing (engineering implications)
+
 - **GDPR**: purpose limitation, data minimization, storage limitation, integrity/confidentiality.
 - **Proportionality**: requesters should not receive more than needed; policy must encode “least disclosure”.
-- **Auditability without exposure**: log *proofs and decisions*, not identity records.
+- **Auditability without exposure**: log _proofs and decisions_, not identity records.

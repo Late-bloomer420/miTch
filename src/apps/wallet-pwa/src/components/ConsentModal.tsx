@@ -33,25 +33,34 @@ type BiometricState = 'idle' | 'pending' | 'verified' | 'failed';
 
 function riskColor(level: string | undefined): string {
   switch (level) {
-    case 'HIGH': return '#E53935';
-    case 'MEDIUM': return '#F57C00';
-    default: return '#2e7d32';
+    case 'HIGH':
+      return '#E53935';
+    case 'MEDIUM':
+      return '#F57C00';
+    default:
+      return '#2e7d32';
   }
 }
 
 function riskBannerClass(level: string | undefined): string {
   switch (level) {
-    case 'HIGH': return 'consent-risk-banner consent-risk-banner--high';
-    case 'MEDIUM': return 'consent-risk-banner consent-risk-banner--medium';
-    default: return 'consent-risk-banner consent-risk-banner--low';
+    case 'HIGH':
+      return 'consent-risk-banner consent-risk-banner--high';
+    case 'MEDIUM':
+      return 'consent-risk-banner consent-risk-banner--medium';
+    default:
+      return 'consent-risk-banner consent-risk-banner--low';
   }
 }
 
 function riskLabel(level: string | undefined): string {
   switch (level) {
-    case 'HIGH': return '⚠️ High Risk — Sensitive Data';
-    case 'MEDIUM': return '⚡ Medium Risk — Review Before Approving';
-    default: return '✅ Low Risk — Standard Disclosure';
+    case 'HIGH':
+      return '⚠️ High Risk — Sensitive Data';
+    case 'MEDIUM':
+      return '⚡ Medium Risk — Review Before Approving';
+    default:
+      return '✅ Low Risk — Standard Disclosure';
   }
 }
 
@@ -65,8 +74,11 @@ function CountdownRing({ totalSeconds }: { totalSeconds: number }) {
   useEffect(() => {
     if (totalSeconds <= 0) return;
     const interval = setInterval(() => {
-      setRemaining(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0; }
+      setRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
@@ -86,7 +98,9 @@ function CountdownRing({ totalSeconds }: { totalSeconds: number }) {
         <svg width="32" height="32" viewBox="0 0 32 32">
           <circle cx="16" cy="16" r={R} fill="none" stroke="#222" strokeWidth="3" />
           <circle
-            cx="16" cy="16" r={R}
+            cx="16"
+            cy="16"
+            r={R}
             fill="none"
             stroke={remaining < 30 ? '#E53935' : 'var(--accent-blue)'}
             strokeWidth="3"
@@ -105,7 +119,10 @@ function CountdownRing({ totalSeconds }: { totalSeconds: number }) {
 
 // ── Claim Chips ───────────────────────────────────────────────────────────────
 
-function ClaimChips({ claims, variant }: {
+function ClaimChips({
+  claims,
+  variant,
+}: {
   claims: string[];
   variant: 'allowed' | 'raw' | 'blocked';
 }) {
@@ -113,7 +130,7 @@ function ClaimChips({ claims, variant }: {
   const icons = { allowed: '✅', raw: '⚠️', blocked: '❌' };
   return (
     <div className="consent-chips-container">
-      {claims.map(c => (
+      {claims.map((c) => (
         <span key={c} className={`consent-chip consent-chip--${variant}`}>
           {icons[variant]} {translateClaim(c)}
         </span>
@@ -124,14 +141,19 @@ function ClaimChips({ claims, variant }: {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, onReject, onLog }: ConsentModalProps) {
-
+export function ConsentModal({
+  capsule,
+  reasonCodes,
+  timeoutMinutes,
+  onApprove,
+  onReject,
+  onLog,
+}: ConsentModalProps) {
   const [biometricState, setBiometricState] = useState<BiometricState>('idle');
   const [presenceProof, setPresenceProof] = useState<string | undefined>(undefined);
   const promptRef = useRef<HTMLDivElement>(null);
 
-  const requiresPresence = capsule.requires_presence === true
-    || capsule.risk_level === 'HIGH';
+  const requiresPresence = capsule.requires_presence === true || capsule.risk_level === 'HIGH';
 
   const canApprove = !requiresPresence || biometricState === 'verified';
 
@@ -140,7 +162,10 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
     onLog?.('👤 Starting biometric verification...', 'info');
 
     try {
-      const proof = await WebAuthnService.provePresenceDetailed(capsule.decision_id, timeoutMinutes || 0);
+      const proof = await WebAuthnService.provePresenceDetailed(
+        capsule.decision_id,
+        timeoutMinutes || 0
+      );
       setPresenceProof(proof.signature);
       setBiometricState('verified');
       onLog?.('✅ Biometrics confirmed — presence cryptographically bound', 'success');
@@ -158,9 +183,10 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
     }
   }, [capsule.decision_id, onLog, timeoutMinutes]);
 
-  const verifierShort = capsule.verifier_did.length > 40
-    ? capsule.verifier_did.substring(0, 40) + '…'
-    : capsule.verifier_did;
+  const verifierShort =
+    capsule.verifier_did.length > 40
+      ? capsule.verifier_did.substring(0, 40) + '…'
+      : capsule.verifier_did;
 
   const decisionShort = capsule.decision_id.substring(0, 18) + '…';
 
@@ -190,38 +216,50 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
 
   return (
     <div className="secure-backdrop">
-      <div className="secure-prompt consent-sheet-enter" ref={promptRef} style={{
-        borderTop: `4px solid ${riskColor(capsule.risk_level)}`
-      }}>
-
+      <div
+        className="secure-prompt consent-sheet-enter"
+        ref={promptRef}
+        style={{
+          borderTop: `4px solid ${riskColor(capsule.risk_level)}`,
+        }}
+      >
         {/* UX-06: Risk Banner */}
-        <div className={riskBannerClass(capsule.risk_level)}>
-          {riskLabel(capsule.risk_level)}
-        </div>
+        <div className={riskBannerClass(capsule.risk_level)}>{riskLabel(capsule.risk_level)}</div>
 
         {/* Header */}
         <div className="secure-header">
           <span className="secure-badge">WALLET DECISION BOUNDARY</span>
           <div style={{ flex: 1 }} />
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: 'var(--accent-green)',
-            boxShadow: '0 0 8px var(--accent-green)'
-          }} />
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: 'var(--accent-green)',
+              boxShadow: '0 0 8px var(--accent-green)',
+            }}
+          />
         </div>
 
-        <h2 style={{ fontSize: 20, margin: '8px 0 6px 0' }}>
-          🔐 Data Disclosure Request
-        </h2>
+        <h2 style={{ fontSize: 20, margin: '8px 0 6px 0' }}>🔐 Data Disclosure Request</h2>
 
         {/* Verifier */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 1 }}>VERIFIER</div>
-          <div style={{
-            background: '#0a0a0a', padding: '8px 12px', borderRadius: 8,
-            fontFamily: 'monospace', color: 'var(--accent-blue)', fontSize: 12,
-            wordBreak: 'break-all', border: '1px solid #1a1a1a'
-          }}>
+          <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 1 }}>
+            VERIFIER
+          </div>
+          <div
+            style={{
+              background: '#0a0a0a',
+              padding: '8px 12px',
+              borderRadius: 8,
+              fontFamily: 'monospace',
+              color: 'var(--accent-blue)',
+              fontSize: 12,
+              wordBreak: 'break-all',
+              border: '1px solid #1a1a1a',
+            }}
+          >
             {verifierShort}
           </div>
         </div>
@@ -229,14 +267,22 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
         {/* Reason Codes */}
         {reasonCodes.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 10, color: '#555', marginBottom: 6, letterSpacing: 1 }}>REASON</div>
+            <div style={{ fontSize: 10, color: '#555', marginBottom: 6, letterSpacing: 1 }}>
+              REASON
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {reasonCodes.map(code => (
-                <div key={code} style={{
-                  background: '#111', padding: '5px 10px', borderRadius: 6,
-                  fontSize: 12, color: '#bbb',
-                  borderLeft: `3px solid ${riskColor(capsule.risk_level)}`
-                }}>
+              {reasonCodes.map((code) => (
+                <div
+                  key={code}
+                  style={{
+                    background: '#111',
+                    padding: '5px 10px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: '#bbb',
+                    borderLeft: `3px solid ${riskColor(capsule.risk_level)}`,
+                  }}
+                >
                   {translateReason(code)}
                 </div>
               ))}
@@ -268,17 +314,19 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
           )}
 
           {hasNoClaims && (
-            <span className="consent-chip consent-chip--allowed">
-              ✅ ZKP only — no raw data
-            </span>
+            <span className="consent-chip consent-chip--allowed">✅ ZKP only — no raw data</span>
           )}
         </div>
 
         {/* Security Checksum */}
-        <div style={{
-          fontSize: 10, color: '#333', fontFamily: 'monospace',
-          marginBottom: 16
-        }}>
+        <div
+          style={{
+            fontSize: 10,
+            color: '#333',
+            fontFamily: 'monospace',
+            marginBottom: 16,
+          }}
+        >
           ID: {decisionShort} &nbsp;·&nbsp; RISK:&nbsp;
           <span style={{ color: riskColor(capsule.risk_level) }}>
             {capsule.risk_level ?? 'LOW'}
@@ -287,11 +335,15 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
 
         {/* UX-06: WebAuthn Block with pulsing button */}
         {requiresPresence && (
-          <div style={{
-            background: '#07071a',
-            border: `1px solid ${biometricState === 'verified' ? '#2e7d32' : 'rgba(57,73,171,0.4)'}`,
-            borderRadius: 14, padding: 16, marginBottom: 18
-          }}>
+          <div
+            style={{
+              background: '#07071a',
+              border: `1px solid ${biometricState === 'verified' ? '#2e7d32' : 'rgba(57,73,171,0.4)'}`,
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 18,
+            }}
+          >
             <div style={{ fontSize: 11, color: '#666', marginBottom: 6, letterSpacing: 0.5 }}>
               🔐 BIOMETRIC PRESENCE REQUIRED (Layer 2)
             </div>
@@ -300,30 +352,40 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
             </div>
 
             {biometricState === 'idle' && (
-              <button
-                onClick={handleBiometricChallenge}
-                className="btn-webauthn"
-              >
+              <button onClick={handleBiometricChallenge} className="btn-webauthn">
                 {bioIcon} Verify Now
               </button>
             )}
 
             {biometricState === 'pending' && (
-              <div style={{
-                textAlign: 'center', padding: 14,
-                color: '#7986cb', fontSize: 14,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
-              }}>
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: 14,
+                  color: '#7986cb',
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                }}
+              >
                 <span className="evaluating-spinner" style={{ borderTopColor: '#7986cb' }} />
                 Waiting for biometrics...
               </div>
             )}
 
             {biometricState === 'verified' && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                color: 'var(--accent-green)', fontWeight: 700, fontSize: 14
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  color: 'var(--accent-green)',
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
+              >
                 ✅ Presence confirmed&nbsp;
                 <span style={{ fontSize: 10, color: '#444', fontFamily: 'monospace' }}>
                   {presenceProof?.substring(0, 12)}…
@@ -333,15 +395,17 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
 
             {biometricState === 'failed' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ color: '#E53935', fontSize: 13 }}>
-                  ❌ Verification failed
-                </div>
+                <div style={{ color: '#E53935', fontSize: 13 }}>❌ Verification failed</div>
                 <button
                   onClick={handleBiometricChallenge}
                   style={{
-                    padding: 10, background: 'transparent',
-                    border: '1px solid #444', borderRadius: 8,
-                    color: '#aaa', cursor: 'pointer', fontSize: 13
+                    padding: 10,
+                    background: 'transparent',
+                    border: '1px solid #444',
+                    borderRadius: 8,
+                    color: '#aaa',
+                    cursor: 'pointer',
+                    fontSize: 13,
                   }}
                 >
                   Try again
@@ -353,17 +417,12 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
 
         {/* UX-06: Action buttons — Approve prominent, Reject as text-link */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={onReject}
-            className="btn-reject-link"
-          >
+          <button onClick={onReject} className="btn-reject-link">
             Decline
           </button>
 
           <SecureZone
-            onIntervention={(reason) =>
-              onLog?.(`🚨 Security Intervention: ${reason}`, 'error')
-            }
+            onIntervention={(reason) => onLog?.(`🚨 Security Intervention: ${reason}`, 'error')}
             className="secure-action-wrapper"
             style={{ flex: 1 }}
           >
@@ -371,11 +430,7 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
               onClick={() => canApprove && onApprove(presenceProof)}
               disabled={!canApprove}
               className="btn-approve"
-              title={
-                !canApprove
-                  ? 'Biometrics required — verify first'
-                  : 'Confirm disclosure'
-              }
+              title={!canApprove ? 'Biometrics required — verify first' : 'Confirm disclosure'}
             >
               {requiresPresence && biometricState !== 'verified'
                 ? '🔒 Biometrics Required'
@@ -390,14 +445,17 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
         )}
 
         {!timeoutMinutes && (
-          <div style={{
-            marginTop: 14, textAlign: 'center',
-            fontSize: 10, color: '#333'
-          }}>
+          <div
+            style={{
+              marginTop: 14,
+              textAlign: 'center',
+              fontSize: 10,
+              color: '#333',
+            }}
+          >
             🛡️ Decision cryptographically bound to this session · Expires in 5 min
           </div>
         )}
-
       </div>
     </div>
   );

@@ -3,11 +3,7 @@ import { verifyDeviceSignature, verifyDeviceMac, verifyDeviceAuth } from '../src
 import { exportCoseKey } from '../src/cose-key';
 import { createSign1, createMac0, deriveSessionMacKey } from '../src/cose';
 import { encode } from '../src/cbor';
-import type {
-  DeviceAuth,
-  MobileSecurityObject,
-  SessionTranscript,
-} from '../src/mdoc-types';
+import type { DeviceAuth, MobileSecurityObject, SessionTranscript } from '../src/mdoc-types';
 
 // ─── Test Key Setup ─────────────────────────────────────────────────────────
 
@@ -17,27 +13,23 @@ let deviceEcdhKeyPair: CryptoKeyPair;
 let readerEcdhKeyPair: CryptoKeyPair;
 
 beforeAll(async () => {
-  deviceKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
-  otherKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
+  deviceKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
+  otherKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
   // ECDH key pairs for Mac0 path
-  deviceEcdhKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDH', namedCurve: 'P-256' },
-    true,
-    ['deriveBits', 'deriveKey'],
-  );
-  readerEcdhKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDH', namedCurve: 'P-256' },
-    true,
-    ['deriveBits', 'deriveKey'],
-  );
+  deviceEcdhKeyPair = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, [
+    'deriveBits',
+    'deriveKey',
+  ]);
+  readerEcdhKeyPair = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, [
+    'deriveBits',
+    'deriveKey',
+  ]);
 });
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -46,13 +38,13 @@ function makeSessionTranscript(): SessionTranscript {
   return [
     new Uint8Array([0x01, 0x02, 0x03]), // deviceEngagementBytes
     new Uint8Array([0x04, 0x05, 0x06]), // eReaderKeyBytes
-    'handover-data',                     // handover
+    'handover-data', // handover
   ];
 }
 
 async function signDeviceAuth(
   privateKey: CryptoKey,
-  sessionTranscript: SessionTranscript,
+  sessionTranscript: SessionTranscript
 ): Promise<Uint8Array> {
   const externalAad = encode(sessionTranscript);
   const payload = encode({ deviceNameSpaces: {} });
@@ -111,7 +103,7 @@ function base64urlToUint8Array(b64url: string): Uint8Array {
 
 async function macDeviceAuth(
   macKey: CryptoKey,
-  sessionTranscript: SessionTranscript,
+  sessionTranscript: SessionTranscript
 ): Promise<Uint8Array> {
   const externalAad = encode(sessionTranscript);
   const payload = encode({ deviceNameSpaces: {} });
@@ -219,7 +211,10 @@ describe('verifyDeviceAuth', () => {
 
   test('invalid: deviceMac without eReaderPrivateKey', async () => {
     const transcript = makeSessionTranscript();
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
     const mso = await buildMsoWithEcdhDeviceKey(deviceEcdhKeyPair.publicKey);
     const deviceAuth: DeviceAuth = { deviceMac: mac };
@@ -262,7 +257,10 @@ describe('verifyDeviceAuth', () => {
 describe('verifyDeviceMac', () => {
   test('valid: correct MAC key + SessionTranscript', async () => {
     const transcript = makeSessionTranscript();
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
 
     const result = await verifyDeviceMac(mac, macKey, transcript);
@@ -272,11 +270,17 @@ describe('verifyDeviceMac', () => {
 
   test('invalid: wrong MAC key', async () => {
     const transcript = makeSessionTranscript();
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
 
     // Derive a different key (device↔device instead of reader↔device)
-    const wrongKey = await deriveSessionMacKey(deviceEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const wrongKey = await deriveSessionMacKey(
+      deviceEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const result = await verifyDeviceMac(mac, wrongKey, transcript);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('MAC tag invalid');
@@ -284,7 +288,10 @@ describe('verifyDeviceMac', () => {
 
   test('invalid: tampered SessionTranscript', async () => {
     const transcript = makeSessionTranscript();
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
 
     const tamperedTranscript: SessionTranscript = [
@@ -298,7 +305,10 @@ describe('verifyDeviceMac', () => {
 
   test('invalid: garbage bytes', async () => {
     const transcript = makeSessionTranscript();
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
 
     const result = await verifyDeviceMac(new Uint8Array([0x00, 0x01]), macKey, transcript);
     expect(result.valid).toBe(false);
@@ -313,12 +323,20 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
     const transcript = makeSessionTranscript();
 
     // Both sides derive the same MAC key (reader side)
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
     const mso = await buildMsoWithEcdhDeviceKey(deviceEcdhKeyPair.publicKey);
     const deviceAuth: DeviceAuth = { deviceMac: mac };
 
-    const result = await verifyDeviceAuth(deviceAuth, mso, transcript, readerEcdhKeyPair.privateKey);
+    const result = await verifyDeviceAuth(
+      deviceAuth,
+      mso,
+      transcript,
+      readerEcdhKeyPair.privateKey
+    );
     expect(result.valid).toBe(true);
   });
 
@@ -326,7 +344,10 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
     const transcript = makeSessionTranscript();
 
     // MAC was created with reader↔device key agreement
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
     const mso = await buildMsoWithEcdhDeviceKey(deviceEcdhKeyPair.publicKey);
     const deviceAuth: DeviceAuth = { deviceMac: mac };
@@ -335,7 +356,7 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
     const wrongReader = await crypto.subtle.generateKey(
       { name: 'ECDH', namedCurve: 'P-256' },
       false,
-      ['deriveBits', 'deriveKey'],
+      ['deriveBits', 'deriveKey']
     );
     const result = await verifyDeviceAuth(deviceAuth, mso, transcript, wrongReader.privateKey);
     expect(result.valid).toBe(false);
@@ -345,7 +366,10 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
   test('deviceSignature takes priority over deviceMac', async () => {
     const transcript = makeSessionTranscript();
     const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
-    const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
+    const macKey = await deriveSessionMacKey(
+      readerEcdhKeyPair.privateKey,
+      deviceEcdhKeyPair.publicKey
+    );
     const mac = await macDeviceAuth(macKey, transcript);
 
     // Both present — ECDSA key in MSO, so deviceSignature path is used
@@ -361,7 +385,12 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
     const mso = await buildMsoWithEcdhDeviceKey(deviceEcdhKeyPair.publicKey);
     const deviceAuth: DeviceAuth = {};
 
-    const result = await verifyDeviceAuth(deviceAuth, mso, transcript, readerEcdhKeyPair.privateKey);
+    const result = await verifyDeviceAuth(
+      deviceAuth,
+      mso,
+      transcript,
+      readerEcdhKeyPair.privateKey
+    );
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('No deviceSignature or deviceMac');
   });

@@ -14,12 +14,14 @@ miTch Phase-0 uses software-based keys (WebCrypto). For production, we need hard
 **Strategy:** WebAuthn Native Verifier with counter-based replay protection
 
 **Implementation:**
+
 - Library: `@simplewebauthn/server` (actively maintained, W3C compliant)
 - Key Storage: Hardware authenticators (TouchID, Windows Hello, YubiKey)
 - Replay Protection: Signature counter increment validation
 - Challenge Lifecycle: 5-minute expiry, single-use
 
 **Security Properties:**
+
 1. ✅ Keys non-extractable (hardware-backed)
 2. ✅ Replay protection (counter-based)
 3. ✅ Phishing resistance (origin binding)
@@ -67,6 +69,7 @@ miTch Phase-0 uses software-based keys (WebCrypto). For production, we need hard
 ```
 
 **Why Counter Matters:**
+
 - Each hardware authenticator has internal counter
 - Counter increments with each signature
 - If signature replayed, counter won't increment
@@ -89,8 +92,8 @@ miTch Phase-0 uses software-based keys (WebCrypto). For production, we need hard
 clientData = {
   type: 'webauthn.get',
   challenge: '<challenge>',
-  origin: 'https://mitch.example.com'
-}
+  origin: 'https://mitch.example.com',
+};
 
 // Server verifies:
 if (clientData.origin !== expectedOrigin) {
@@ -103,12 +106,14 @@ if (clientData.origin !== expectedOrigin) {
 ### Threat Model
 
 **Threats Mitigated:**
+
 1. ✅ Key extraction (keys in hardware)
 2. ✅ Replay attacks (counter validation)
 3. ✅ Phishing (origin binding)
 4. ✅ Coercion (user presence required)
 
 **Remaining Risks:**
+
 1. ⚠️ Device theft + biometric spoof (low probability)
 2. ⚠️ Browser compromise (out of scope)
 3. ⚠️ Legacy device fallback (software keys)
@@ -116,11 +121,13 @@ if (clientData.origin !== expectedOrigin) {
 ### Compliance
 
 **eIDAS 2.0:**
+
 - ✅ Level of Assurance: High (hardware-backed)
 - ✅ Strong authentication (2-factor inherent)
 - ✅ User presence verification
 
 **GDPR:**
+
 - ✅ Data minimization (no passwords stored)
 - ✅ Security by design (hardware keys)
 - ✅ Right to erasure (revoke credential)
@@ -141,6 +148,7 @@ if (clientData.origin !== expectedOrigin) {
 **Phase 3 (Production):** Hardware keys required for sensitive operations
 
 **Fallback Strategy:**
+
 ```typescript
 if (WebAuthn.isAvailable() && WebAuthn.isPlatformAuthenticatorAvailable()) {
   // Use hardware-backed keys

@@ -26,9 +26,7 @@ describe('DataFlowService', () => {
   });
 
   it('ignores entries without decision_id', () => {
-    const entries = [
-      makeEntry({ action: 'POLICY_EVALUATED', metadata: { result: 'ok' } }),
-    ];
+    const entries = [makeEntry({ action: 'POLICY_EVALUATED', metadata: { result: 'ok' } })];
     expect(service.buildTransactions(entries)).toEqual([]);
   });
 
@@ -129,7 +127,16 @@ describe('DataFlowService', () => {
 
   it('fullyShredded = false when no keys created', () => {
     const entries = [
-      makeEntry({ action: 'VP_GENERATED', metadata: { decision_id: DEC_ID, claims_shared: [], credential_types: [], proven_claims: [], used_zkp: false } }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          credential_types: [],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
     ];
     const txns = service.buildTransactions(entries);
     expect(txns[0].lifecycle.fullyShredded).toBe(false);
@@ -139,8 +146,16 @@ describe('DataFlowService', () => {
     const t0 = new Date('2026-03-15T10:00:00Z');
     const t1 = new Date('2026-03-15T10:00:05Z');
     const entries = [
-      makeEntry({ action: 'KEY_CREATED', timestamp: t0.toISOString(), metadata: { decision_id: DEC_ID } }),
-      makeEntry({ action: 'KEY_DESTROYED', timestamp: t1.toISOString(), metadata: { decision_id: DEC_ID } }),
+      makeEntry({
+        action: 'KEY_CREATED',
+        timestamp: t0.toISOString(),
+        metadata: { decision_id: DEC_ID },
+      }),
+      makeEntry({
+        action: 'KEY_DESTROYED',
+        timestamp: t1.toISOString(),
+        metadata: { decision_id: DEC_ID },
+      }),
     ];
     const txns = service.buildTransactions(entries);
     expect(txns[0].lifecycle.shreddingLatencyMs).toBe(5000);
@@ -148,7 +163,16 @@ describe('DataFlowService', () => {
 
   it('shreddingLatencyMs is null when no keys', () => {
     const entries = [
-      makeEntry({ action: 'VP_GENERATED', metadata: { decision_id: DEC_ID, claims_shared: [], credential_types: [], proven_claims: [], used_zkp: false } }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          credential_types: [],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
     ];
     const txns = service.buildTransactions(entries);
     expect(txns[0].lifecycle.shreddingLatencyMs).toBeNull();
@@ -173,17 +197,23 @@ describe('DataFlowService', () => {
   });
 
   it('uses fallback label when no verifier', () => {
-    const entries = [
-      makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
-    ];
+    const entries = [makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } })];
     const txns = service.buildTransactions(entries);
     expect(txns[0].verifierLabel).toBe('Unbekannter Verifier');
   });
 
   it('sorts transactions newest first', () => {
     const entries = [
-      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-03-15T08:00:00Z', metadata: { decision_id: DEC_ID } }),
-      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-03-15T10:00:00Z', metadata: { decision_id: DEC_ID_2 } }),
+      makeEntry({
+        action: 'KEY_CREATED',
+        timestamp: '2026-03-15T08:00:00Z',
+        metadata: { decision_id: DEC_ID },
+      }),
+      makeEntry({
+        action: 'KEY_CREATED',
+        timestamp: '2026-03-15T10:00:00Z',
+        metadata: { decision_id: DEC_ID_2 },
+      }),
     ];
     const txns = service.buildTransactions(entries);
     expect(txns[0].transactionId).toBe(DEC_ID_2);
@@ -191,9 +221,7 @@ describe('DataFlowService', () => {
   });
 
   it('builds single event transaction', () => {
-    const entries = [
-      makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
-    ];
+    const entries = [makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } })];
     const txns = service.buildTransactions(entries);
     expect(txns).toHaveLength(1);
     expect(txns[0].events).toHaveLength(1);
@@ -357,7 +385,16 @@ describe('DataFlowService', () => {
   it('maps events with correct labels and categories', () => {
     const entries = [
       makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
-      makeEntry({ action: 'VP_GENERATED', metadata: { decision_id: DEC_ID, claims_shared: [], credential_types: [], proven_claims: [], used_zkp: false } }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          credential_types: [],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
       makeEntry({ action: 'KEY_DESTROYED', metadata: { decision_id: DEC_ID } }),
     ];
     const txns = service.buildTransactions(entries);

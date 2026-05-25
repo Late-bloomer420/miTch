@@ -1,15 +1,11 @@
 {
-    "extends": "../../../tsconfig.base.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "outDir": "dist",
-        "paths": {
-            "@mitch/shared-types": [
-                "../shared-types/src"
-            ]
-        }
-    },
-    "include": [
-        "src/**/*"
-    ]
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "paths": {
+      "@mitch/shared-types": ["../shared-types/src"]
+    }
+  },
+  "include": ["src/**/*"]
 }

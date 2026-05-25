@@ -49,10 +49,7 @@ export class TransparencyLogAnchorProvider implements AnchorProvider {
    *
    * @stub Replace the body with a real HTTP POST to the log API.
    */
-  async publishRoot(
-    root: Hex32,
-    meta: { batchId: string; count: number }
-  ): Promise<AnchorRef> {
+  async publishRoot(root: Hex32, meta: { batchId: string; count: number }): Promise<AnchorRef> {
     // STUB: simulate log entry creation
     const entry = this._simulateLogEntry(root, meta);
 

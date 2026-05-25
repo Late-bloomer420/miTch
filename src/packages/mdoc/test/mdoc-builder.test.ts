@@ -17,11 +17,7 @@ import { verifySign1 } from '../src/cose';
 import { decode, decodeMdoc } from '../src/cbor';
 import { digestItem } from '../src/mso';
 import { createSign1, encode } from '../src/index';
-import {
-  MDL_DOCTYPE,
-  MDL_NAMESPACE,
-  MDL_ELEMENTS,
-} from '../src/mdoc-types';
+import { MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '../src/mdoc-types';
 import type { ValidityInfo, SessionTranscript } from '../src/mdoc-types';
 
 // ─── Key Setup ───────────────────────────────────────────────────────
@@ -30,16 +26,14 @@ let issuerKeyPair: CryptoKeyPair;
 let deviceKeyPair: CryptoKeyPair;
 
 beforeAll(async () => {
-  issuerKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
-  deviceKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify'],
-  );
+  issuerKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
+  deviceKeyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+    'sign',
+    'verify',
+  ]);
 });
 
 function makeValidity(): ValidityInfo {
@@ -51,11 +45,7 @@ function makeValidity(): ValidityInfo {
 }
 
 function makeSessionTranscript(): SessionTranscript {
-  return [
-    new Uint8Array([0x01, 0x02, 0x03]),
-    new Uint8Array([0x04, 0x05, 0x06]),
-    'handover-data',
-  ];
+  return [new Uint8Array([0x01, 0x02, 0x03]), new Uint8Array([0x04, 0x05, 0x06]), 'handover-data'];
 }
 
 // ─── buildIssuerSignedItems ──────────────────────────────────────────
@@ -85,7 +75,7 @@ describe('buildIssuerSignedItems', () => {
 
   test('each item gets unique random salt', () => {
     const items = buildIssuerSignedItems({ a: 1, b: 2, c: 3 });
-    const salts = items.map(i => Array.from(i.random).join(','));
+    const salts = items.map((i) => Array.from(i.random).join(','));
     const unique = new Set(salts);
     expect(unique.size).toBe(3);
   });
@@ -129,7 +119,10 @@ describe('buildMobileSecurityObject', () => {
 
     const mso = await buildMobileSecurityObject({
       docType: 'test.docType',
-      nameSpaceItems: new Map([['ns.one', ns1Items], ['ns.two', ns2Items]]),
+      nameSpaceItems: new Map([
+        ['ns.one', ns1Items],
+        ['ns.two', ns2Items],
+      ]),
       devicePublicKey: deviceKeyPair.publicKey,
       validityInfo: makeValidity(),
     });
@@ -309,7 +302,7 @@ describe('buildMdocDocument → verifyMdocOffline roundtrip', () => {
     const wrongKey = await crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       false,
-      ['sign', 'verify'],
+      ['sign', 'verify']
     );
 
     const verification = await verifyMdocOffline({
@@ -339,6 +332,6 @@ describe('buildMdocDocument → verifyMdocOffline roundtrip', () => {
     });
 
     expect(verification.valid).toBe(false);
-    expect(verification.steps.some(s => s.step === 'device-auth' && !s.valid)).toBe(true);
+    expect(verification.steps.some((s) => s.step === 'device-auth' && !s.valid)).toBe(true);
   });
 });

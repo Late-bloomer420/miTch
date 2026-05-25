@@ -1,6 +1,6 @@
 /**
  * PersonalDataVault (Layer 1)
- * 
+ *
  * CONSTRAINTS:
  * - Only stores encrypted/raw user data locally
  * - NEVER receives AccessRequest (doesn't know WHO is asking)
@@ -24,20 +24,20 @@ export class PersonalDataVault {
    */
   constructor() {
     // Dummy data for testing - never real data
-    this.vault.set("user_001", {
-      userId: "user_001",
+    this.vault.set('user_001', {
+      userId: 'user_001',
       age: 27,
-      email: "user@example.local"
+      email: 'user@example.local',
     });
   }
 
   /**
    * Internal: Retrieve raw data for a specific category
-   * 
+   *
    * @param userId - System user ID
    * @param category - What data? (e.g., "age")
    * @returns The raw value, or null if not found
-   * 
+   *
    * SECURITY: This method is ONLY called by ProofEngine.
    * It returns the raw value, but the Proof Engine MUST NOT expose it.
    */
@@ -47,9 +47,9 @@ export class PersonalDataVault {
 
     // Explicitly handle each category - no shortcuts
     switch (category) {
-      case "age":
+      case 'age':
         return userData.age;
-      case "email":
+      case 'email':
         return userData.email;
       default:
         return null;
@@ -65,8 +65,8 @@ export class PersonalDataVault {
     if (!userData) return [];
 
     return [
-      { category: "age", present: userData.age !== undefined },
-      { category: "email", present: userData.email !== undefined }
+      { category: 'age', present: userData.age !== undefined },
+      { category: 'email', present: userData.email !== undefined },
     ];
   }
 }
