@@ -18,6 +18,7 @@ import {
     createKeyBindingJWT,
     validateKeyBindingJWT,
     buildCNFClaim,
+    statusResolver,
     type SDJWTVCPayload,
 } from '@mitch/shared-crypto';
 import type { JWK } from 'jose';
@@ -343,12 +344,19 @@ export async function validateSDJWTPresentation(
     }
     const payload = vcResult.payload!;
 
-    // Step 2: Revocation check (status claim = revoked in demo)
+    // Step 2: Revocation check (live StatusList check)
     if (checkRevocation && payload.status) {
-        return {
-            ok: false,
-            errors: [`Credential revoked (status_list idx: ${payload.status.status_list.idx})`],
-        };
+        const result = await statusResolver.checkStatus(payload.status, 'high');
+        if (result.decision === 'DENY') {
+            return {
+                ok: false,
+                errors: [
+                    result.reason ||
+                        result.denyCode ||
+                        `Credential revoked (status_list idx: ${payload.status.status_list.idx})`,
+                ],
+            };
+        }
     }
 
     // Step 3: Extract holder JWK from cnf — pass JWK directly to avoid

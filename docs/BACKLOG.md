@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-05-16 (E-11 mdoc komplett — COSE_Mac0 + ECDH Key Derivation)
+**Stand:** 2026-05-25 (Session 11: Compliance Gap Sprint complete — 94% CIR coverage)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -99,16 +99,23 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.4 Regulatory Compliance
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
-| E-30 | 🟡 | CIR 2024/2977 Compliance (PID + EAA Anforderungen) | EU Implementing Reg |
-| E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool) | EU Implementing Reg |
-| E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity) | EU Implementing Reg |
-| E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + Gap-Analyse | EU Implementing Reg |
+| E-30 | 🟡 | CIR 2024/2977 Compliance (PID + EAA Anforderungen) — 93% (14/15 complete; Batch Issuance open) | EU Implementing Reg |
+| E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool + Hardware Binding) | EU Implementing Reg |
+| E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity + GDPR Rights) | EU Implementing Reg |
+| E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + LoA High Readiness | EU Implementing Reg |
 
 | E-34 | 🟢 | CIR 2025/846 Cross-Border Identity Matching | EU Implementing Reg |
 | E-35 | 🟢 | CIR 2025/848 Relying Party Registration | EU Implementing Reg |
 | E-36 | 🟢 | DSGVO Verarbeitungsverzeichnis (Art. 30) | DSGVO |
 | E-37 | 🟢 | Betroffenenrechte-Implementierung (Auskunft, Löschung, Berichtigung) | DSGVO |
 | E-38 | ✅ | EHDS Compliance (T-C2, T-C3) — Secondary Use Opt-Out + Localized Terms | EHDS |
+
+### 2.5 Pilot & Production Readiness (New Gaps)
+| ID | Prio | Beschreibung | Referenz |
+|---|---|---|---|
+| E-40 | 🟡 | EUDI Trust List Integration (TSL) — eIDAS Node Connector | Pilot Blocker |
+| E-41 | 🟢 | OID4VCI Batch Issuance Support (§7) | CIR 2024/2977 |
+| E-42 | 🟢 | Formal Certification Process (Common Criteria Evaluation) | CIR 2024/2981 |
 
 ---
 
