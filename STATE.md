@@ -3,9 +3,9 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-05-16
+**Date:** 2026-05-25
 **Branch:** `master` (default)
-**Release tag:** `pilot-ready-p0`
+**Release tag:** `pilot-ready-p1`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
 
 ---
@@ -28,14 +28,18 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 43/43 turbo tasks pass; 1618 individual tests (26 packages); 169/169 mdoc tests; 218/218 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests
+- **Tests:** 44/44 turbo tasks pass; 1655 individual tests (28 packages); 169/169 mdoc tests; 220/220 shared-crypto tests; 73/73 wallet-pwa tests; 52/52 oid4vp-verifier tests
 - **Lint:** 0 errors, 0 warnings
-- **Audit:** 7 npm vulnerabilities (4 high, 3 moderate — `undici` ≥7.0.0 <7.24.0, `flatted` <3.4.0; alle in devDependency-Ketten)
-- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
+- **Compliance Score:** 94% (50/53 requirements ✅)
+- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5174) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → disclosedClaims in UI
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 - **Demo Scenarios:** 5 clickable scenarios incl. Revoked Credential flow
 
-### Recent additions (since Session 10+)
+### Recent additions (since Session 11)
+- **Compliance Gap Sprint:** Updated EUDI CIR Matrix to reflect 94% coverage. Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), and GDPR Data Subject Rights.
+- **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@mitch/revocation-statuslist` package for live revocation fetch capability.
+- **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
+- **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
 - **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
 - **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
@@ -49,7 +53,7 @@
 - **EHDS Compliance (T-C2, T-C3):** Global Secondary-Use Opt-Out in `PolicyEditor`; Localized medical terms (`CLAIM_DICTIONARY`) for EU-wide patient mobility.
 
 ### Completion Summary
-Alle P0 + P1 Gaps geschlossen. Phase 0–1 complete, Phase 2–3 teilweise.
+Phase 0–1 complete, Phase 2–3 (Hardening) 94% functionally covered. miTch is technically ready for the EUDI Wallet Pilot Phase.
 Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 
 ---
