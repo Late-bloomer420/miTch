@@ -6,14 +6,22 @@ import type { ValidityInfo } from '@mitch/mdoc';
 import type { AgeCredential, CredentialRequest, CredentialResponse } from '@mitch/shared-types';
 
 const app = express();
-const allowedOrigins = new Set([
+const defaultAllowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5175',
-]);
+    'http://wallet.localhost',
+    'http://verifier.localhost',
+];
+const allowedOrigins = new Set(
+    (process.env.CORS_ORIGINS ?? defaultAllowedOrigins.join(','))
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+);
 // Restrictive CORS for local wallet development only
 app.use(cors({
     origin(origin, callback) {
@@ -27,7 +35,8 @@ app.use(express.json());
 
 // Global Issuer KeyPair (In-Memory for PoC)
 let issuerKeys: CryptoKeyPair | null = null;
-const ISSUER_DID = 'did:web:localhost%3A3005'; // encoding : to %3A for did:web
+const ISSUER_BASE_URL = process.env.ISSUER_BASE_URL ?? 'http://localhost:3005';
+const ISSUER_DID = process.env.ISSUER_DID ?? 'did:web:localhost%3A3005'; // encoding : to %3A for did:web
 
 // Initialize keys on startup
 async function initKeys() {
@@ -52,8 +61,8 @@ app.get('/', (req, res) => {
 // OID4VCI Metadata Endpoint
 app.get('/.well-known/openid-credential-issuer', (req, res) => {
     res.json({
-        credential_issuer: 'http://localhost:3005',
-        credential_endpoint: 'http://localhost:3005/credential',
+        credential_issuer: ISSUER_BASE_URL,
+        credential_endpoint: `${ISSUER_BASE_URL}/credential`,
         credentials_supported: [
             {
                 id: 'AgeCredential',

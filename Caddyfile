@@ -1,0 +1,29 @@
+{
+	admin off
+}
+
+{$MITCH_VERIFIER_SITE:http://verifier.localhost} {
+	reverse_proxy verifier-frontend:8080
+}
+
+{$MITCH_WALLET_SITE:http://wallet.localhost} {
+	reverse_proxy wallet-pwa:8080
+}
+
+{$MITCH_ISSUER_SITE:http://issuer.localhost} {
+	reverse_proxy issuer-mock:3005
+}
+
+{$MITCH_API_SITE:http://api.localhost} {
+	handle /verifier/* {
+		uri strip_prefix /verifier
+		reverse_proxy verifier-backend:3004
+	}
+
+	handle /issuer/* {
+		uri strip_prefix /issuer
+		reverse_proxy issuer-mock:3005
+	}
+
+	respond /health "ok" 200
+}

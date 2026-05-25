@@ -688,7 +688,7 @@ export default function App() {
         setCredentialStatus('fetching');
         addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
         try {
-            const res = await fetch('http://localhost:3005/credential', {
+            const res = await fetch(CONFIG.ISSUER_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -709,7 +709,7 @@ export default function App() {
             const subject = (vcPayload?.credentialSubject ?? payload['credentialSubject'] ?? {}) as Record<string, unknown>;
 
             const credId = `vc-issuer-${Date.now()}`;
-            await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
+            await walletRef.current.addIssuedCredential(credId, subject, CONFIG.ISSUER_DID);
 
             setCredentialStatus('done');
             addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
