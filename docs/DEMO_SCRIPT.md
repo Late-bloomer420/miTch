@@ -22,7 +22,8 @@ pnpm dev
 
 # 3. Sanity Check: Tests müssen grün sein
 pnpm test
-# Erwartete Ausgabe: 40/40 tasks, 1411 tests passed
+# Erwartete Ausgabe: 44/44 tasks, 1664 tests passed
+
 ```
 
 **Browser:** Chrome/Firefox, DevTools offen auf Console-Tab.

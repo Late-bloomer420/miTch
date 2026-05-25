@@ -15,7 +15,8 @@ pnpm install
 # Build all packages (respects dependency graph)
 pnpm build
 
-# Run all tests (1411 individual tests across 40 turbo tasks)
+# Run all tests (1664 individual tests across 44 turbo tasks)
+
 pnpm test
 
 # Run tests for a single package
@@ -31,11 +32,11 @@ pnpm lint
 pnpm format
 ```
 
-**Turbo v1** is used — config uses `pipeline` (not `tasks`) in `turbo.json`.
+**Turbo v2** is used — config uses `tasks` in `turbo.json`.
 
 ## Architecture
 
-**Monorepo layout:** `src/packages/` (26 packages) + `src/apps/` (3 apps)
+**Monorepo layout:** `src/packages/` (28 packages) + `src/apps/` (3 apps)
 
 ### Core packages
 
