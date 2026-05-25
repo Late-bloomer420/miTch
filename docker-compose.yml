@@ -1,0 +1,64 @@
+# miTch Sovereign Deployment Orchestration
+# 100% EUDI Compliance & Data Sovereignty
+
+services:
+  # 1. Verifier Backend (The RP Entry Point)
+  verifier-backend:
+    build:
+      context: .
+      dockerfile: src/apps/verifier-demo/backend/Dockerfile
+    environment:
+      - PORT=3000
+      - MITCH_TRUST_MODE=live
+      - MITCH_TSL_URL=https://trust.mitch.demo/v1/eudi-lotl.json
+      - VERIFIER_BASE_URL=https://verifier.mitch.demo
+    networks:
+      - mitch-network
+    restart: always
+
+  # 2. Mock Issuer (For Pilot/Testing Issuance)
+  issuer-mock:
+    build:
+      context: .
+      dockerfile: src/packages/mock-issuer/Dockerfile # (I will create this next)
+    environment:
+      - PORT=4000
+      - ISSUER_DID=did:web:issuer.mitch.demo
+    networks:
+      - mitch-network
+    restart: always
+
+  # 3. Wallet PWA (The Static Frontend)
+  wallet-pwa:
+    build:
+      context: .
+      dockerfile: src/apps/wallet-pwa/Dockerfile # (I will create this next)
+    networks:
+      - mitch-network
+    restart: always
+
+  # 4. Reverse Proxy (TLS Termination & Routing)
+  # Using Caddy for automatic HTTPS
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - mitch-proxy-data:/data
+      - mitch-proxy-config:/config
+    networks:
+      - mitch-network
+    depends_on:
+      - verifier-backend
+      - issuer-mock
+      - wallet-pwa
+
+networks:
+  mitch-network:
+    driver: bridge
+
+volumes:
+  mitch-proxy-data:
+  mitch-proxy-config:
