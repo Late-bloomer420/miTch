@@ -105,22 +105,38 @@ function CountdownRing({ totalSeconds }: { totalSeconds: number }) {
 
 // ── Claim Chips ───────────────────────────────────────────────────────────────
 
-function ClaimChips({ claims, variant }: {
+function ClaimChips({ claims, variant, caption }: {
   claims: string[];
   variant: 'allowed' | 'raw' | 'blocked';
+  caption?: string;
 }) {
   if (!claims || claims.length === 0) return null;
   const icons = { allowed: '✅', raw: '⚠️', blocked: '❌' };
   return (
-    <div className="consent-chips-container">
-      {claims.map(c => (
-        <span key={c} className={`consent-chip consent-chip--${variant}`}>
-          {icons[variant]} {translateClaim(c)}
-        </span>
-      ))}
-    </div>
+    <>
+      {caption && (
+        <div
+          className={`consent-chips-caption consent-chips-caption--${variant}`}
+          style={{ fontSize: 10, color: '#777', margin: '2px 0 4px', letterSpacing: 0.3 }}
+        >
+          {caption}
+        </div>
+      )}
+      <div className="consent-chips-container">
+        {claims.map(c => (
+          <span key={c} className={`consent-chip consent-chip--${variant}`}>
+            {icons[variant]} {translateClaim(c)}
+          </span>
+        ))}
+      </div>
+    </>
   );
 }
+
+// Captions that keep "proven" (zero-knowledge, nothing disclosed) visually and
+// verbally distinct from "disclosed" (raw value shared). See MIT-21 finding F1.
+const PROVEN_CAPTION = '✅ Proven — value NOT disclosed';
+const DISCLOSED_CAPTION = '⚠️ Disclosed — raw value shared';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -247,7 +263,7 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
         {/* UX-06: Claims as Chips */}
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 10, color: '#555', marginBottom: 8, letterSpacing: 1 }}>
-            WOULD BE DISCLOSED (strictly limited)
+            WHAT THIS VERIFIER LEARNS
           </div>
 
           {capsule.authorized_requirements?.map((req, i: number) => (
@@ -255,15 +271,15 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
               <div style={{ fontSize: 10, color: '#444', marginBottom: 6 }}>
                 {req.credential_type}
               </div>
-              <ClaimChips claims={req.proven_claims || []} variant="allowed" />
-              <ClaimChips claims={req.allowed_claims || []} variant="raw" />
+              <ClaimChips claims={req.proven_claims || []} variant="allowed" caption={PROVEN_CAPTION} />
+              <ClaimChips claims={req.allowed_claims || []} variant="raw" caption={DISCLOSED_CAPTION} />
             </div>
           ))}
 
           {!capsule.authorized_requirements && (
             <>
-              <ClaimChips claims={provenClaims} variant="allowed" />
-              <ClaimChips claims={rawClaims} variant="raw" />
+              <ClaimChips claims={provenClaims} variant="allowed" caption={PROVEN_CAPTION} />
+              <ClaimChips claims={rawClaims} variant="raw" caption={DISCLOSED_CAPTION} />
             </>
           )}
 

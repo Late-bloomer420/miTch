@@ -104,6 +104,47 @@ describe('ConsentModal — Rendering', () => {
     expect(screen.getByText(/ZKP only/i)).toBeInTheDocument();
   });
 
+  it('separates proven claims from disclosed claims (MIT-21 F1)', () => {
+    // makeCapsule() has proven_claims: ['age >= 18'] and allowed_claims: ['birthDate']
+    render(
+      <ConsentModal
+        capsule={makeCapsule()}
+        reasonCodes={[]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    // Proven (ZKP) and disclosed (raw) must be under distinct captions
+    expect(screen.getByText(/Proven — value NOT disclosed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Disclosed — raw value shared/i)).toBeInTheDocument();
+    // The misleading blanket "WOULD BE DISCLOSED" header must be gone
+    expect(screen.queryByText(/WOULD BE DISCLOSED/i)).not.toBeInTheDocument();
+  });
+
+  it('does not show the disclosed caption when only proven claims exist (MIT-21 F1)', () => {
+    const capsule = makeCapsule({
+      authorized_requirements: [
+        {
+          credential_type: 'AgeCredential',
+          allowed_claims: [],
+          proven_claims: ['age >= 18'],
+          selected_credential_id: 'vc-age-789',
+          issuer_trust_refs: [],
+        },
+      ],
+    });
+    render(
+      <ConsentModal
+        capsule={capsule}
+        reasonCodes={[]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Proven — value NOT disclosed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Disclosed — raw value shared/i)).not.toBeInTheDocument();
+  });
+
   it('shows low-risk banner for LOW risk_level', () => {
     render(
       <ConsentModal
