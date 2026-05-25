@@ -24,6 +24,9 @@ export * from './predicates.js';
 // Anchor Service Types
 export * from './anchor.js';
 
+// Consent Receipts
+export * from './consent.js';
+
 // Ad-Tech Blind Provider Types
 export * from './ad-preferences.js';
 export * from './ad-predicates.js';
@@ -32,9 +35,7 @@ export * from './verifier-trust.js';
 /**
  * Result type for operations that can fail
  */
-export type Result<T, E = Error> =
-    | { ok: true; value: T }
-    | { ok: false; error: E };
+export type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
 /**
  * Async result

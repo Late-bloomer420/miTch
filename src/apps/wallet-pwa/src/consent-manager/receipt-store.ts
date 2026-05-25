@@ -1,25 +1,15 @@
 import { canonicalStringify, sha256 } from '@mitch/shared-crypto';
-import type { ConsentReceipt } from './types';
+import type {
+  ConsentReceiptExportFilters,
+  ConsentReceiptExportScope,
+  ConsentReceiptExportV1,
+  ConsentReceiptV1,
+} from '@mitch/shared-types';
 
-export type StoredConsentReceiptEntry = ConsentReceipt;
+export type StoredConsentReceiptEntry = ConsentReceiptV1;
 
-export type ConsentReceiptExportScope = 'filtered' | 'full';
-
-export interface ConsentReceiptExportFilters {
-  verifierQuery: string;
-  timeframe: 'all' | '24h' | '7d' | '30d';
-}
-
-export interface ConsentReceiptExport {
-  exportedAt: string;
-  scope: ConsentReceiptExportScope;
-  filters: ConsentReceiptExportFilters;
-  count: number;
-  auditAnchorHash: string | null;
-  receiptSetHash: string;
-  exportHash: string;
-  receipts: ConsentReceipt[];
-}
+export type { ConsentReceiptExportFilters, ConsentReceiptExportScope };
+export type ConsentReceiptExport = ConsentReceiptExportV1;
 
 const STORAGE_KEY = 'mitch_consent_receipt_history';
 const MAX_HISTORY = 24;
@@ -29,16 +19,24 @@ function isString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function normalizeReceipt(receipt: unknown): ConsentReceipt | null {
+function normalizeReceipt(receipt: unknown): ConsentReceiptV1 | null {
   if (!receipt || typeof receipt !== 'object') return null;
-  const candidate = receipt as Partial<ConsentReceipt>;
+  const candidate = receipt as Partial<ConsentReceiptV1>;
   const schemaVersion = candidate.schemaVersion;
   if (schemaVersion !== undefined && schemaVersion !== 1) return null;
-  if (!isString(candidate.id) || !isString(candidate.verifier) || !isString(candidate.purpose) || !isString(candidate.timestamp)) {
+  if (
+    !isString(candidate.id) ||
+    !isString(candidate.verifier) ||
+    !isString(candidate.purpose) ||
+    !isString(candidate.timestamp)
+  ) {
     return null;
   }
   const claimsShared = Array.isArray(candidate.claimsShared)
-    ? candidate.claimsShared.filter(isString).map(claim => claim.trim()).slice(0, 24)
+    ? candidate.claimsShared
+        .filter(isString)
+        .map((claim) => claim.trim())
+        .slice(0, 24)
     : [];
   const outcome = candidate.outcome;
   if (outcome !== 'SUCCESS' && outcome !== 'DENIED' && outcome !== 'ERROR') {
@@ -61,9 +59,10 @@ function normalizeEntry(entry: unknown): StoredConsentReceiptEntry | null {
   const candidate = entry as Record<string, unknown>;
 
   if ('receipt' in candidate) {
-    const legacyReceipt = candidate.receipt && typeof candidate.receipt === 'object'
-      ? candidate.receipt as Record<string, unknown>
-      : {};
+    const legacyReceipt =
+      candidate.receipt && typeof candidate.receipt === 'object'
+        ? (candidate.receipt as Record<string, unknown>)
+        : {};
     const receipt = normalizeReceipt({
       ...legacyReceipt,
       schemaVersion: 1,
@@ -84,7 +83,9 @@ function readStorage(): StoredConsentReceiptEntry[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.map(normalizeEntry).filter((entry): entry is StoredConsentReceiptEntry => Boolean(entry));
+    return parsed
+      .map(normalizeEntry)
+      .filter((entry): entry is StoredConsentReceiptEntry => Boolean(entry));
   } catch {
     return memoryHistory;
   }
@@ -106,9 +107,11 @@ export function loadConsentReceiptHistory(): StoredConsentReceiptEntry[] {
   return readStorage();
 }
 
-export function appendConsentReceiptHistory(entry: StoredConsentReceiptEntry): StoredConsentReceiptEntry[] {
+export function appendConsentReceiptHistory(
+  entry: StoredConsentReceiptEntry
+): StoredConsentReceiptEntry[] {
   const current = readStorage();
-  const next = [entry, ...current.filter(existing => existing.id !== entry.id)];
+  const next = [entry, ...current.filter((existing) => existing.id !== entry.id)];
   writeStorage(next);
   return next;
 }
@@ -122,7 +125,7 @@ export async function buildConsentReceiptExport(
   }
 ): Promise<ConsentReceiptExport> {
   const exportedAt = new Date().toISOString();
-  const receipts = entries.map(entry => ({
+  const receipts = entries.map((entry) => ({
     schemaVersion: entry.schemaVersion,
     id: entry.id,
     verifier: entry.verifier,
@@ -132,18 +135,22 @@ export async function buildConsentReceiptExport(
     outcome: entry.outcome,
     decisionId: entry.decisionId,
   }));
-  const receiptSetHash = await sha256(canonicalStringify({
-    scope: options.scope,
-    filters: options.filters,
-    auditAnchorHash: options.auditAnchorHash,
-    receipts,
-  }));
-  const exportHash = await sha256(canonicalStringify({
-    scope: options.scope,
-    filters: options.filters,
-    auditAnchorHash: options.auditAnchorHash,
-    receiptSetHash,
-  }));
+  const receiptSetHash = await sha256(
+    canonicalStringify({
+      scope: options.scope,
+      filters: options.filters,
+      auditAnchorHash: options.auditAnchorHash,
+      receipts,
+    })
+  );
+  const exportHash = await sha256(
+    canonicalStringify({
+      scope: options.scope,
+      filters: options.filters,
+      auditAnchorHash: options.auditAnchorHash,
+      receiptSetHash,
+    })
+  );
   return {
     exportedAt,
     scope: options.scope,

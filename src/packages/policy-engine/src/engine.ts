@@ -1,18 +1,18 @@
 /**
  * @module @mitch/policy-engine
- * 
+ *
  * Privacy Firewall / Zero-Knowledge Query Firewall (ZKQF)
- * 
+ *
  * The PolicyEngine evaluates verifier requests against user-defined policies
  * to determine what data can be disclosed. It implements:
- * 
+ *
  * - T-10: Core policy evaluation logic
  * - Automated Actor delegation controls
  * - ZKP/Predicate proof enforcement
  * - Multi-VC bundle support
  * - ZKQF claim intersection, verifier binding, signed capsules
  * - Rate limiting and risk scoring
- * 
+ *
  * ## Verdict Types
  * - ALLOW: Request matches policy, proceed automatically
  * - DENY: Request blocked by policy
@@ -20,22 +20,22 @@
  */
 
 import type {
-    VerifierRequest,
-    PolicyManifest,
-    PolicyRule,
-    PolicyEvaluationResult,
-    DecisionCapsule,
-    InteractionMetadata,
-    StoredCredentialMetadata,
-    Requirement
+  VerifierRequest,
+  PolicyManifest,
+  PolicyRule,
+  PolicyEvaluationResult,
+  DecisionCapsule,
+  InteractionMetadata,
+  StoredCredentialMetadata,
+  Requirement,
 } from '@mitch/shared-types';
 import { DenialResolver } from './catalog';
 import { extractCountryFromDid, isAllowedByGeoScope } from './geo-scope';
 import {
-    ProtectionLayer,
-    getMinimumLayerForData,
-    includesLayer,
-    getLayerName
+  ProtectionLayer,
+  getMinimumLayerForData,
+  includesLayer,
+  getLayerName,
 } from '@mitch/layer-resolver';
 import { generatePairwiseDID, sha256, canonicalStringify } from '@mitch/shared-crypto';
 
@@ -44,63 +44,65 @@ import { generatePairwiseDID, sha256, canonicalStringify } from '@mitch/shared-c
  * Provides environmental data about the current request.
  */
 export interface EvaluationContext {
-    /** Current timestamp (milliseconds since epoch) */
-    timestamp: number;
-    /** DID of the wallet holder */
-    userDID: string;
-    /** Optional interaction metadata for risk assessment */
-    interaction?: InteractionMetadata;
-    /** User has granted override consent for unknown/blocked verifier */
-    overrideGranted?: boolean;
-    /** Reason for the override */
-    overrideReason?: string;
+  /** Current timestamp (milliseconds since epoch) */
+  timestamp: number;
+  /** DID of the wallet holder */
+  userDID: string;
+  /** Optional interaction metadata for risk assessment */
+  interaction?: InteractionMetadata;
+  /** User has granted override consent for unknown/blocked verifier */
+  overrideGranted?: boolean;
+  /** Reason for the override */
+  overrideReason?: string;
 }
 
 export enum ReasonCode {
-    // ALLOW
-    RULE_MATCHED = 'RULE_MATCHED',
-    TRUSTED_ISSUER = 'TRUSTED_ISSUER',
-    CREDENTIAL_VALID = 'CREDENTIAL_VALID',
-    AGENT_AUTHORIZED = 'AGENT_AUTHORIZED',
+  // ALLOW
+  RULE_MATCHED = 'RULE_MATCHED',
+  TRUSTED_ISSUER = 'TRUSTED_ISSUER',
+  CREDENTIAL_VALID = 'CREDENTIAL_VALID',
+  AGENT_AUTHORIZED = 'AGENT_AUTHORIZED',
 
-    // DENY
-    NO_MATCHING_RULE = 'NO_MATCHING_RULE',
-    UNKNOWN_VERIFIER = 'UNKNOWN_VERIFIER',
-    CLAIM_NOT_ALLOWED = 'CLAIM_NOT_ALLOWED',
-    LAYER_VIOLATION = 'LAYER_VIOLATION',
-    UNTRUSTED_ISSUER = 'UNTRUSTED_ISSUER',
-    CREDENTIAL_EXPIRED = 'CREDENTIAL_EXPIRED',
-    CREDENTIAL_TOO_OLD = 'CREDENTIAL_TOO_OLD',
-    NO_SUITABLE_CREDENTIAL = 'NO_SUITABLE_CREDENTIAL',
-    AGENT_NOT_AUTHORIZED = 'AGENT_NOT_AUTHORIZED',
-    AGENT_LIMIT_EXCEEDED = 'AGENT_LIMIT_EXCEEDED',
-    ERR_FUTURE_ISSUANCE = 'ERR_FUTURE_ISSUANCE',
-    ERR_LOGICAL_IMPOSSIBILITY = 'ERR_LOGICAL_IMPOSSIBILITY',
+  // DENY
+  NO_MATCHING_RULE = 'NO_MATCHING_RULE',
+  UNKNOWN_VERIFIER = 'UNKNOWN_VERIFIER',
+  CLAIM_NOT_ALLOWED = 'CLAIM_NOT_ALLOWED',
+  LAYER_VIOLATION = 'LAYER_VIOLATION',
+  UNTRUSTED_ISSUER = 'UNTRUSTED_ISSUER',
+  CREDENTIAL_EXPIRED = 'CREDENTIAL_EXPIRED',
+  CREDENTIAL_TOO_OLD = 'CREDENTIAL_TOO_OLD',
+  NO_SUITABLE_CREDENTIAL = 'NO_SUITABLE_CREDENTIAL',
+  AGENT_NOT_AUTHORIZED = 'AGENT_NOT_AUTHORIZED',
+  AGENT_LIMIT_EXCEEDED = 'AGENT_LIMIT_EXCEEDED',
+  PAIRWISE_DID_FAILED = 'PAIRWISE_DID_FAILED',
+  ERR_FUTURE_ISSUANCE = 'ERR_FUTURE_ISSUANCE',
+  ERR_LOGICAL_IMPOSSIBILITY = 'ERR_LOGICAL_IMPOSSIBILITY',
 
-    // PROMPT
-    CONSENT_REQUIRED = 'CONSENT_REQUIRED',
-    SENSITIVE_CLAIM = 'SENSITIVE_CLAIM',
-    PRESENCE_REQUIRED = 'PRESENCE_REQUIRED',
-    FINGERPRINT_MISMATCH = 'FINGERPRINT_MISMATCH',
+  // PROMPT
+  CONSENT_REQUIRED = 'CONSENT_REQUIRED',
+  SENSITIVE_CLAIM = 'SENSITIVE_CLAIM',
+  PRESENCE_REQUIRED = 'PRESENCE_REQUIRED',
+  FINGERPRINT_MISMATCH = 'FINGERPRINT_MISMATCH',
 
-    // EHDS Compliance
-    SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
-    HDAB_PERMIT_REQUIRED = 'HDAB_PERMIT_REQUIRED',
-    GEO_SCOPE_VIOLATION = 'GEO_SCOPE_VIOLATION',
-    BREAK_GLASS_ACTIVATED = 'BREAK_GLASS_ACTIVATED',
-    CREDENTIAL_DISPENSED = 'CREDENTIAL_DISPENSED'
+  // EHDS Compliance
+  SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
+  HDAB_PERMIT_REQUIRED = 'HDAB_PERMIT_REQUIRED',
+  GEO_SCOPE_VIOLATION = 'GEO_SCOPE_VIOLATION',
+  BREAK_GLASS_ACTIVATED = 'BREAK_GLASS_ACTIVATED',
+  CREDENTIAL_DISPENSED = 'CREDENTIAL_DISPENSED',
 }
 
 export type CapsuleSigner = (capsule: DecisionCapsule) => Promise<string>;
+type PairwiseDIDFactory = typeof generatePairwiseDID;
 
 /**
  * Rate Limiting & Risk Scoring State
  * Tracks request counts per verifier within a sliding window.
  */
 interface RateLimitEntry {
-    count: number;
-    firstRequestTime: number;
-    riskScore: number;
+  count: number;
+  firstRequestTime: number;
+  riskScore: number;
 }
 
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
@@ -108,652 +110,853 @@ const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests per verifier per minute
 const RISK_THRESHOLD = 5; // If riskScore > threshold, escalate to PROMPT
 
 export class PolicyEngine {
-    private signer?: CapsuleSigner;
+  private signer?: CapsuleSigner;
+  private pairwiseDIDFactory: PairwiseDIDFactory;
 
-    // In-memory rate limit tracking (per verifier session)
-    private rateLimits: Map<string, RateLimitEntry> = new Map();
+  // In-memory rate limit tracking (per verifier session)
+  private rateLimits: Map<string, RateLimitEntry> = new Map();
 
-    constructor(signer?: CapsuleSigner) {
-        this.signer = signer;
+  constructor(
+    signer?: CapsuleSigner,
+    pairwiseDIDFactory: PairwiseDIDFactory = generatePairwiseDID
+  ) {
+    this.signer = signer;
+    this.pairwiseDIDFactory = pairwiseDIDFactory;
+  }
+
+  /**
+   * Check rate limits and calculate risk score.
+   * Returns null if within limits, or a reason code if exceeded.
+   */
+  private checkRateLimits(
+    verifierId: string,
+    requestedClaimsCount: number,
+    allowedClaimsCount: number
+  ): string | null {
+    const now = Date.now();
+    let entry = this.rateLimits.get(verifierId);
+
+    // Initialize or reset if window expired
+    if (!entry || now - entry.firstRequestTime > RATE_LIMIT_WINDOW_MS) {
+      entry = { count: 0, firstRequestTime: now, riskScore: 0 };
     }
 
-    /**
-     * Check rate limits and calculate risk score.
-     * Returns null if within limits, or a reason code if exceeded.
-     */
-    private checkRateLimits(verifierId: string, requestedClaimsCount: number, allowedClaimsCount: number): string | null {
-        const now = Date.now();
-        let entry = this.rateLimits.get(verifierId);
+    // Increment count
+    entry.count++;
 
-        // Initialize or reset if window expired
-        if (!entry || (now - entry.firstRequestTime) > RATE_LIMIT_WINDOW_MS) {
-            entry = { count: 0, firstRequestTime: now, riskScore: 0 };
-        }
-
-        // Increment count
-        entry.count++;
-
-        // Calculate excess claims (over-requesting)
-        const excessClaims = Math.max(0, requestedClaimsCount - allowedClaimsCount);
-        if (excessClaims > 0) {
-            entry.riskScore += excessClaims; // Accumulate risk
-        }
-
-        // Update state
-        this.rateLimits.set(verifierId, entry);
-
-        // Check limits
-        if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
-            return 'RATE_LIMIT_EXCEEDED';
-        }
-
-        return null;
+    // Calculate excess claims (over-requesting)
+    const excessClaims = Math.max(0, requestedClaimsCount - allowedClaimsCount);
+    if (excessClaims > 0) {
+      entry.riskScore += excessClaims; // Accumulate risk
     }
 
-    /**
-     * Get current risk score for a verifier.
-     */
-    getRiskScore(verifierId: string): number {
-        return this.rateLimits.get(verifierId)?.riskScore || 0;
+    // Update state
+    this.rateLimits.set(verifierId, entry);
+
+    // Check limits
+    if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+      return 'RATE_LIMIT_EXCEEDED';
     }
 
-    async evaluate(
-        request: VerifierRequest,
-        context: EvaluationContext,
-        credentials: StoredCredentialMetadata[],
-        policy: PolicyManifest
-    ): Promise<PolicyEvaluationResult> {
-        const startTime = Date.now();
-        const reasonCodes: string[] = [];
-
-        // Normalize request to a list of requirements for T-29
-        const requirements: Requirement[] = request.requirements || [{
-            credentialType: '*', // Legacy fallback
-            requestedClaims: request.requestedClaims || [],
-            requestedProvenClaims: request.requestedProvenClaims || []
-        }];
-
-        let matchedRule = this.findMatchingRule(request, policy);
-
-        if (!matchedRule) {
-            // If user granted override, allow with PROMPT instead of hard DENY
-            if (context.overrideGranted) {
-                console.log('[PolicyEngine] Override granted - bypassing unknown verifier block');
-                // Create a synthetic "permissive" rule for override scenarios
-                const overrideRule: PolicyRule = {
-                    id: 'user-override',
-                    verifierPattern: request.verifierId,
-                    allowedClaims: [],
-                    provenClaims: requirements.flatMap(r => r.requestedProvenClaims || []),
-                    requiresTrustedIssuer: false,
-                    maxCredentialAgeDays: 365,
-                    priority: 0,
-                    requiresUserConsent: true
-                };
-                // Assign the override rule and continue normal evaluation
-                matchedRule = overrideRule;
-            } else {
-                if (policy.globalSettings?.blockUnknownVerifiers !== false) {
-                    return this.result('DENY', [ReasonCode.UNKNOWN_VERIFIER], context, policy, startTime, credentials, undefined, undefined, request);
-                }
-                return this.result('DENY', [ReasonCode.NO_MATCHING_RULE], context, policy, startTime, credentials, undefined, undefined, request);
-            }
-        }
-
-        // Rate Limiting & Risk Scoring Check
-        const totalRequestedClaims = requirements.reduce((acc, r) =>
-            acc + (r.requestedClaims?.length || 0) + (r.requestedProvenClaims?.length || 0), 0);
-        const allowedClaimsCount = matchedRule.allowedClaims?.length || 0;
-
-        const rateLimitViolation = this.checkRateLimits(request.verifierId, totalRequestedClaims, allowedClaimsCount);
-        if (rateLimitViolation) {
-            return this.result('DENY', [rateLimitViolation], context, policy, startTime, credentials, matchedRule);
-        }
-
-        // Escalate to PROMPT if risk score is high
-        const currentRisk = this.getRiskScore(request.verifierId);
-        if (currentRisk > RISK_THRESHOLD && !matchedRule.requiresUserConsent) {
-            // High-risk verifier that would normally auto-allow is escalated to PROMPT
-            reasonCodes.push('HIGH_RISK_VERIFIER');
-            return this.result('PROMPT', [...reasonCodes, ReasonCode.SENSITIVE_CLAIM], context, policy, startTime, credentials, matchedRule);
-        }
-
-        // S-01: Verifier Fingerprint Check
-        // If the matched rule declares a verifier_fingerprint, the request MUST present
-        // a matching fingerprint. Mismatch or absence → PROMPT (never auto-ALLOW).
-        if (matchedRule.verifier_fingerprint) {
-            const presented = request.verifier_fingerprint;
-            if (!presented || presented !== matchedRule.verifier_fingerprint) {
-                return this.result('PROMPT', [ReasonCode.FINGERPRINT_MISMATCH], context, policy, startTime, credentials, matchedRule, undefined, request);
-            }
-        }
-
-        // --- Automatism Delegation Check ---
-        const delegationResult = this.checkDelegation(request, context, policy);
-        if (delegationResult) {
-            return this.result('DENY', delegationResult, context, policy, startTime, credentials, matchedRule);
-        }
-
-        const authorizedRequirements: Array<{
-            credential_type: string;
-            allowed_claims: string[];
-            proven_claims: string[];
-            selected_credential_id: string;
-            issuer_trust_refs: string[];
-            requested_claims?: string[];
-        }> = [];
-        const allSelectedIds: string[] = [];
-
-        // 2. Evaluate Each Requirement (T-29 Pipelining)
-        for (const req of requirements) {
-            // Claim Intersection Engine
-            // Calculate effectiveClaims = Requested ∩ PolicyAllowed - ExplicitlyDenied
-            const intersection = this.calculateEffectiveClaims(req, matchedRule);
-
-            if (intersection.explicitlyDenied.length > 0) {
-                // Fail-closed: Explicitly denied claims trigger a hard block
-                return this.result('DENY', [ReasonCode.CLAIM_NOT_ALLOWED], context, policy, startTime, credentials, matchedRule);
-            }
-
-            if (intersection.effectiveClaims.length === 0 && intersection.effectiveProvenClaims.length === 0) {
-                // If nothing is left after intersection, we must deny.
-                // This handles cases where the request asks ONLY for things not in the allowed list.
-                return this.result('DENY', [ReasonCode.CLAIM_NOT_ALLOWED], context, policy, startTime, credentials, matchedRule);
-            }
-
-            // Layer-Based Protection Check
-            // Verify that the verifier's layer authorization includes all required claim layers
-            const verifierLayer = matchedRule.minimumLayer ?? ProtectionLayer.WELT;
-            const allRequestedClaims = [...intersection.effectiveClaims, ...intersection.effectiveProvenClaims];
-
-            for (const claim of allRequestedClaims) {
-                const requiredLayer = getMinimumLayerForData(claim);
-                if (!includesLayer(verifierLayer, requiredLayer)) {
-                    console.warn(
-                        `[PolicyEngine] LAYER_VIOLATION: Verifier at ${getLayerName(verifierLayer)} ` +
-                        `cannot access ${claim} (requires ${getLayerName(requiredLayer)})`
-                    );
-                    return this.result(
-                        'DENY',
-                        [ReasonCode.LAYER_VIOLATION],
-                        context,
-                        policy,
-                        startTime,
-                        credentials,
-                        matchedRule
-                    );
-                }
-            }
-
-            // Select Credential for THIS requirement using EFFECTIVE claims
-            const suitable = this.selectCompatibleCredentialsForRequirement(
-                req,
-                credentials,
-                matchedRule,
-                policy,
-                context,
-                intersection.effectiveClaims // Only search for what is allowed
-            );
-
-            if (suitable.credentials.length === 0) {
-                const reasons = suitable.reasons.length > 0 ? suitable.reasons : [ReasonCode.NO_SUITABLE_CREDENTIAL];
-                return this.result('DENY', reasons, context, policy, startTime, credentials, matchedRule);
-            }
-
-            const bestCred = suitable.credentials[0];
-            allSelectedIds.push(bestCred.id);
-
-            authorizedRequirements.push({
-                credential_type: req.credentialType || (bestCred.type[0] as string),
-                allowed_claims: intersection.effectiveClaims, // Bounded Disclosure
-                proven_claims: intersection.effectiveProvenClaims,
-                selected_credential_id: bestCred.id,
-                issuer_trust_refs: [bestCred.issuer],
-                requested_claims: req.requestedClaims,
-            });
-        }
-
-        // Accumulate positive reasons
-        reasonCodes.push(ReasonCode.RULE_MATCHED);
-        reasonCodes.push(ReasonCode.CREDENTIAL_VALID);
-        if (matchedRule.requiresTrustedIssuer) {
-            reasonCodes.push(ReasonCode.TRUSTED_ISSUER);
-        }
-
-        // 3b. EHDS Secondary Use Check
-        const declaredPurpose = request.usagePurpose || matchedRule.usagePurpose || 'primaryCare';
-        const isSecondaryUse = declaredPurpose !== 'primaryCare';
-        if (isSecondaryUse && policy.globalSettings?.denySecondaryUse) {
-            return this.result('DENY', [ReasonCode.SECONDARY_USE_DENIED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-        }
-
-        // 3b-ii. EHDS Secondary Use — Country-based denial
-        if (isSecondaryUse && policy.globalSettings?.denySecondaryUseCountries?.length) {
-            const verifierCountry = this.extractCountryFromDid(request.verifierId);
-            if (verifierCountry && policy.globalSettings.denySecondaryUseCountries
-                .map(c => c.toUpperCase()).includes(verifierCountry.toUpperCase())) {
-                return this.result('DENY', [ReasonCode.GEO_SCOPE_VIOLATION], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-            }
-        }
-
-        // 3c. HDAB Permit Check
-        if (matchedRule.requiresHdabPermit) {
-            const hasHdabPermit = policy.trustedIssuers?.some(
-                ti => ti.issuerRole === 'hdab' &&
-                      this.matchesPattern(ti.did, request.verifierId)
-            );
-            if (!hasHdabPermit) {
-                return this.result('DENY', [ReasonCode.HDAB_PERMIT_REQUIRED], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-            }
-        }
-
-        // 3d. Geographic Scope Check
-        if (matchedRule.geoScope && matchedRule.geoScope !== 'global') {
-            const country = extractCountryFromDid(request.verifierId);
-            if (!isAllowedByGeoScope(matchedRule.geoScope, country)) {
-                return this.result('DENY', [ReasonCode.GEO_SCOPE_VIOLATION], context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-            }
-        }
-
-        // 3e. Break-Glass Emergency Access (EHDS Art. 8(5))
-        // If rule allows break-glass AND requires presence but user isn't available,
-        // grant access with immediate audit alert instead of blocking
-        if (matchedRule.allowBreakGlass) {
-            const userAvailable = context.interaction?.userPresent !== false;
-            if (!userAvailable && (matchedRule.requiresPresence || matchedRule.requiresUserConsent)) {
-                // Break-glass: ALLOW without consent, but with audit trail
-                reasonCodes.push(ReasonCode.BREAK_GLASS_ACTIVATED);
-                return this.result('ALLOW', reasonCodes, context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-            }
-        }
-
-        // 4. Consent & Presence Logic
-        const requiresConsent = matchedRule.requiresUserConsent
-            || policy.globalSettings?.requireConsentForAll;
-        const requiresPresence = matchedRule.requiresPresence === true
-            || context.interaction?.accessibilityActive === true;
-
-        let verdict: 'ALLOW' | 'DENY' | 'PROMPT' = 'ALLOW';
-
-        if (requiresConsent || requiresPresence) {
-            verdict = 'PROMPT';
-            reasonCodes.push(ReasonCode.CONSENT_REQUIRED);
-            if (requiresPresence) reasonCodes.push(ReasonCode.PRESENCE_REQUIRED);
-        }
-
-        // 4. Sanity Check
-        if (allSelectedIds.length > 0) {
-            const potentialSanityIssues = this.performSanityChecks(credentials, allSelectedIds);
-            if (potentialSanityIssues.length > 0) {
-                return this.result('DENY', potentialSanityIssues, context, policy, startTime, credentials, matchedRule, allSelectedIds, request);
-            }
-        }
-
-        // 5. Success
-        return this.result(verdict, reasonCodes, context, policy, startTime, credentials, matchedRule, allSelectedIds, request, authorizedRequirements);
-    }
-
-    private performSanityChecks(credentials: StoredCredentialMetadata[], selectedIds: string[]): string[] {
-        const issues: string[] = [];
-        const now = new Date();
-
-        for (const id of selectedIds) {
-            const cred = credentials.find(c => c.id === id);
-            if (!cred) continue;
-
-            if (new Date(cred.issuedAt) > now) {
-                issues.push('ERR_FUTURE_ISSUANCE');
-            }
-        }
-
-        return issues;
-    }
-
-    private checkDelegation(request: VerifierRequest, context: EvaluationContext, policy: PolicyManifest): string[] | null {
-        if (!policy.delegationRules) return null;
-
-        if (policy.delegationRules.limits.max_claims_per_request) {
-            const totalRequestedByRequirements = (request.requirements || []).reduce((acc, r) => acc + r.requestedClaims.length, 0);
-            const totalRequestedLegacy = (request.requestedClaims || []).length;
-            const total = Math.max(totalRequestedByRequirements, totalRequestedLegacy);
-
-            if (total > policy.delegationRules.limits.max_claims_per_request) {
-                return [ReasonCode.AGENT_LIMIT_EXCEEDED];
-            }
-        }
-
-        return null;
-    }
-
-    private findMatchingRule(request: VerifierRequest, policy: PolicyManifest): PolicyRule | null {
-        // Verifier Identity Binding
-        // 1. First find rules that match the pattern
-        const candidates = policy.rules.filter(rule => {
-            // Check if verifierId matches pattern
-            const idMatches = this.matchesPattern(rule.verifierPattern, request.verifierId);
-
-            // If rule relies on Pattern, we must also check Origin if available (Strict Mode implicitly active for High Assurance)
-            // Ideally, the PolicyRule should define 'strictBinding', here we default to strict if origin is present.
-            if (idMatches && request.origin) {
-                // If verifierId claimed to be 'liquor-store-1' but origin is 'evil.com', we must be careful.
-                // For this PoC, we enforce that IF origin is present, the pattern must also loosely match the origin OR
-                // the verifierId and origin must have a trust relationship (out of scope).
-                // Simple implementation: verifierPattern must match the verifierId.
-                // We don't forcefully match origin to pattern yet unless specified, but we could add a check:
-                // if (!this.matchesPattern(rule.verifierPattern, request.origin)) return false;
-            }
-
-            return idMatches;
-        });
-
-        if (candidates.length === 0) return null;
-
-        // Sort by priority
-        candidates.sort((a, b) => (b.priority || 0) - (a.priority || 0));
-        const rule = candidates[0];
-
-        // Binding Enforcement
-        // If the request has an origin, we enforce that it aligns with the verifierId for security.
-        // If the ID is 'liquor-store-1' and origin is 'https://liquor-store.com', that's fine.
-        // If origin is 'https://hacker.com', we might want to block.
-        // Current Logic: We assume the 'verifierPattern' in the policy implies trust for IDs matching that pattern.
-        // Implementing strict origin check if 'strictBinding' is enabled in global settings.
-
-        if (policy.globalSettings?.strictVerifierBinding && request.origin) {
-            // F-09 Phase 1: Origin-vs-VerifierID check.
-            // Extracts the hostname from request.origin and verifies it is consistent
-            // with the verifierId. Accepts if the hostname appears as a substring of the
-            // verifierId (DID method path) or if the verifierId appears in the hostname.
-            // Phase 2 (planned): DNS-DID binding via .well-known/did-configuration.
-            let originHost: string;
-            try {
-                originHost = new URL(request.origin).hostname;
-            } catch {
-                // Unparseable origin — reject when strict binding is required
-                return null;
-            }
-
-            // Derive a comparable token from the verifierId.
-            // For did:web:example.com → 'example.com'; for opaque IDs → full string.
-            const verifierToken = request.verifierId.startsWith('did:web:')
-                ? request.verifierId.slice('did:web:'.length).split(':').join('/')
-                : request.verifierId;
-
-            const hostMatchesId = verifierToken.includes(originHost) || originHost.includes(verifierToken);
-            if (!hostMatchesId) {
-                return null; // Origin–VerifierID mismatch — fail-closed
-            }
-        }
-
-        return rule;
-    }
-
-    /**
-     * Extract country code from a DID in the format `did:XX:...`
-     * Returns the two-letter segment as uppercase, or null if not parseable.
-     */
-    private extractCountryFromDid(did: string): string | null {
-        if (!did) return null;
-        const parts = did.split(':');
-        // did:XX:identifier — second segment is the country code if exactly 2 chars
-        if (parts.length >= 3 && parts[1].length === 2) {
-            return parts[1].toUpperCase();
-        }
-        return null;
-    }
-
-    private matchesPattern(pattern: string, value: string): boolean {
-        // Safe glob — no RegExp, guards against ReDoS (F-02)
-        if (pattern === '*') return true;
-        if (pattern.length > 256 || value.length > 1024) return false;
-        if (!pattern.includes('*')) return pattern === value;
-
-        const segments = pattern.split('*');
-        const anchoredStart = pattern[0] !== '*';
-        const anchoredEnd = pattern[pattern.length - 1] !== '*';
-        let cursor = 0;
-
-        for (let i = 0; i < segments.length; i++) {
-            const seg = segments[i];
-            if (seg === '') continue;
-            if (i === 0 && anchoredStart) {
-                if (!value.startsWith(seg)) return false;
-                cursor = seg.length;
-            } else if (i === segments.length - 1 && anchoredEnd) {
-                if (!value.endsWith(seg)) return false;
-                if (value.length - seg.length < cursor) return false;
-            } else {
-                const idx = value.indexOf(seg, cursor);
-                if (idx === -1) return false;
-                cursor = idx + seg.length;
-            }
-        }
-        return true;
-    }
-
-    // Core Intersection Logic
-    private calculateEffectiveClaims(req: Requirement, rule: PolicyRule): {
-        effectiveClaims: string[],
-        effectiveProvenClaims: string[],
-        explicitlyDenied: string[]
-    } {
-        const effectiveClaims: string[] = [];
-        const effectiveProvenClaims: string[] = [];
-        const explicitlyDenied: string[] = [];
-
-        // 1. Process Raw Claims
-        for (const claim of req.requestedClaims) {
-            // Priority: Explicit Denial takes precedence
-            if (rule.deniedClaims?.includes(claim)) {
-                explicitlyDenied.push(claim);
-                continue;
-            }
-
-            // Intersection: Only allow if in rule.allowedClaims
-            if (rule.allowedClaims.includes(claim)) {
-                effectiveClaims.push(claim);
-            }
-            // Implementation Detail: Claims NOT in allowedClaims are implicitly clipped (dropped), not denied.
-        }
-
-        // 2. Process ZKP Claims (Proven Claims)
-        if (req.requestedProvenClaims) {
-            for (const claim of req.requestedProvenClaims) {
-                if (rule.provenClaims?.includes(claim)) {
-                    effectiveProvenClaims.push(claim);
-                }
-                // Typically ZKPs are strict, but here we clip them if not allowed by policy
-            }
-        }
-
-        return { effectiveClaims, effectiveProvenClaims, explicitlyDenied };
-    }
-
-    private selectCompatibleCredentialsForRequirement(
-        req: Requirement,
-        credentials: StoredCredentialMetadata[],
-        rule: PolicyRule,
-        policy: PolicyManifest,
-        context: EvaluationContext,
-        effectiveClaims: string[] // T-34a: Use effective claims
-    ): { credentials: StoredCredentialMetadata[], reasons: string[] } {
-        const reasons: string[] = [];
-
-        const suitable = credentials.filter(cred => {
-            // T-B2: Skip dispensed/revoked credentials (single-use nullifier)
-            if (cred.status === 'dispensed' || cred.status === 'revoked') {
-                if (!reasons.includes(ReasonCode.CREDENTIAL_DISPENSED)) reasons.push(ReasonCode.CREDENTIAL_DISPENSED);
-                return false;
-            }
-
-            if (req.credentialType !== '*' && !cred.type.includes(req.credentialType)) return false;
-
-            // Minimization Check
-            // We only check if the credential has the claims we are EFFECTIVELY allowed to ask for.
-            const hasClaims = effectiveClaims.every(c => cred.claims.includes(c));
-            if (!hasClaims) return false;
-
-            if (rule.requiresTrustedIssuer !== false) {
-                const isTrusted = policy.trustedIssuers.some(ti =>
-                    ti.did === cred.issuer &&
-                    ti.credentialTypes.some(t => cred.type.includes(t))
-                );
-                if (!isTrusted) {
-                    if (!reasons.includes(ReasonCode.UNTRUSTED_ISSUER)) reasons.push(ReasonCode.UNTRUSTED_ISSUER);
-                    return false;
-                }
-            }
-
-            if (cred.expiresAt && context.timestamp >= new Date(cred.expiresAt).getTime()) {
-                if (!reasons.includes(ReasonCode.CREDENTIAL_EXPIRED)) reasons.push(ReasonCode.CREDENTIAL_EXPIRED);
-                return false;
-            }
-
-            const maxAgeDays = rule.maxCredentialAgeDays || policy.globalSettings?.defaultFreshnessDays;
-            if (maxAgeDays) {
-                const ageDays = (context.timestamp - new Date(cred.issuedAt).getTime()) / (1000 * 60 * 60 * 24);
-                if (ageDays > maxAgeDays) {
-                    if (!reasons.includes(ReasonCode.CREDENTIAL_TOO_OLD)) reasons.push(ReasonCode.CREDENTIAL_TOO_OLD);
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        return { credentials: suitable, reasons };
-    }
-
-    private async result(
-        verdict: 'ALLOW' | 'DENY' | 'PROMPT',
-        reasonCodes: string[],
-        context: EvaluationContext,
-        policy: PolicyManifest,
-        startTime: number,
-        credentials: StoredCredentialMetadata[],
-        matchedRule?: PolicyRule,
-        selectedCredentials?: string[],
-        request?: VerifierRequest,
-        authorizedRequirements: DecisionCapsule['authorized_requirements'] = []
-    ): Promise<PolicyEvaluationResult> {
-        const processingTimeMs = Date.now() - startTime;
-
-        let decisionCapsule: DecisionCapsule | undefined;
-
-        if (request && matchedRule) {
-            const requestHash = await sha256(canonicalStringify(request));
-            const policyHash = await sha256(canonicalStringify(matchedRule));
-
-            decisionCapsule = {
-                decision_id: crypto.randomUUID(),
-                verdict: verdict,
-                request_hash: requestHash,
-                policy_hash: policyHash,
-                verifier_did: request.verifierId,
-                authorized_requirements: authorizedRequirements,
-                nonce: request.nonce || crypto.randomUUID(), // Propagate Verifier Nonce or generate internal one
-                audience: 'mitch-wallet-pwa',
-                issued_at: new Date().toISOString(),
-                risk_level: verdict === 'ALLOW' ? 'LOW' : 'MEDIUM',
-                requires_presence: reasonCodes.includes(ReasonCode.PRESENCE_REQUIRED),
-                // Tight Expiry (5 minutes) to prevent replay of this decision
-                expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-                // Keep legacy fields for PWA compatibility
-                allowed_claims: authorizedRequirements[0]?.allowed_claims || [],
-                proven_claims: authorizedRequirements[0]?.proven_claims || [],
-                selected_credential_id: authorizedRequirements[0]?.selected_credential_id,
-                issuer_trust_refs: authorizedRequirements[0]?.issuer_trust_refs || []
-            } as DecisionCapsule;
-
-            // T-88: Ephemeral Key Propagation
-            if (request.ephemeralResponseKey) {
-                const _key = request.ephemeralResponseKey as CryptoKey; // WebCrypto Key
-                // We can't synchronously export here if it's a CryptoKey.
-                // Ideally, the Request should have the JWK if it came from the parser?
-                // No, WalletService parsed it to CryptoKey.
-                // DecisionCapsule needs serializable data.
-                // We need to async export it? PolicyEngine.evaluate is async.
-                // BUT, I prefer to keep PolicyEngine clean of Crypto operations if possible.
-                // Let's pass the raw key reference if we can? No, Capsule must be JSON.
-                // Refactor: parseDeepLinkRequest should probably attach the JWK to the request too?
-                // Or we handle export here. 'globalThis.crypto' is available in engine context usually.
-            }
-            // For now, let's defer the export to the WalletService wrapper, 
-            // BUT simpler: Pass the JWK in the request alongside the Key?
-            // Actually, I'll modify DecisionCapsule to allow `CryptoKey` reference at runtime, 
-            // but for "signed/serialized" it needs JWK.
-            // Let's modify WalletService.parseDeepLinkRequest to put the JWK in the request as well?
-            // Just realized `VerifierRequest` update only added `CryptoKey`.
-            // Let's rely on WalletService to inject it into the Capsule AFTER evaluation?
-            // "if (this.signer)" block signs it.
-            // If I inject it after, the signature won't cover it.
-            // Is that critical? Yes, for integrity.
-            // So PolicyEngine MUST export it or receive the JWK.
-
-            // Let's assume we can export it here.
-            try {
-                if (request.ephemeralResponseKey && globalThis.crypto) {
-                    // We need to await export.
-                    const jwk = await globalThis.crypto.subtle.exportKey('jwk', request.ephemeralResponseKey);
-                    decisionCapsule.ephemeral_key = jwk;
-                }
-            } catch (e) {
-                console.error('[PolicyEngine] CRITICAL: Failed to export ephemeral key for capsule', e);
-                throw new Error(`SECURITY_ERROR: Could not bind ephemeral key to decision: ${(e as Error).message}`);
-            }
-
-            // Spec 111: Pairwise Ephemeral DID — attach a fresh did:peer:0 for unlinkability
-            // Only for decisions that produce a proof (ALLOW / PROMPT), not DENY.
-            if (verdict !== 'DENY') {
-                try {
-                    const pairwiseDID = await generatePairwiseDID({
-                        verifierOrigin: request.verifierId,
-                        sessionNonce: request.nonce || decisionCapsule.decision_id,
-                    });
-
-                    decisionCapsule.pairwise_did = pairwiseDID.did;
-
-                    // Sign decision_id to bind the ephemeral DID to this specific decision
-                    const encoder = new TextEncoder();
-                    const sigBytes = await pairwiseDID.sign(
-                        encoder.encode(decisionCapsule.decision_id)
-                    );
-                    decisionCapsule.pairwise_proof = Array.from(sigBytes)
-                        .map(b => b.toString(16).padStart(2, '0'))
-                        .join('');
-
-                    // Shred ephemeral key material immediately after signing
-                    pairwiseDID.destroy();
-                } catch (e) {
-                    console.error('[PolicyEngine] Failed to generate pairwise DID — continuing without it', e);
-                }
-            }
-
-            if (this.signer) {
-                // Sign the capsule to ensure integrity between Engine and WalletService
-                // This prevents "Parameter Tampering" attacks where the JS code might be modified in memory.
-                decisionCapsule.wallet_attestation = await this.signer(decisionCapsule);
-            }
-        }
-
-        return {
-            verdict,
-            reasonCodes,
-            matchedRule: matchedRule?.id,
-            selectedCredentials,
-            metadata: {
-                evaluatedAt: context.timestamp,
-                policyVersion: policy.version,
-                processingTimeMs
-            },
-            decisionCapsule,
-            originalRequest: request, // For override re-evaluation
-            denialResolution: verdict === 'DENY' && reasonCodes.length > 0
-                ? DenialResolver.resolve(reasonCodes[0], {
-                    verifierId: request?.verifierId || 'Unknown',
-                    issuer: matchedRule?.id || 'Unknown' // Ideally pass real issuer if available
-                })
-                : undefined
+    return null;
+  }
+
+  /**
+   * Get current risk score for a verifier.
+   */
+  getRiskScore(verifierId: string): number {
+    return this.rateLimits.get(verifierId)?.riskScore || 0;
+  }
+
+  async evaluate(
+    request: VerifierRequest,
+    context: EvaluationContext,
+    credentials: StoredCredentialMetadata[],
+    policy: PolicyManifest
+  ): Promise<PolicyEvaluationResult> {
+    const startTime = Date.now();
+    const reasonCodes: string[] = [];
+
+    // Normalize request to a list of requirements for T-29
+    const requirements: Requirement[] = request.requirements || [
+      {
+        credentialType: '*', // Legacy fallback
+        requestedClaims: request.requestedClaims || [],
+        requestedProvenClaims: request.requestedProvenClaims || [],
+      },
+    ];
+
+    let matchedRule = this.findMatchingRule(request, policy);
+
+    if (!matchedRule) {
+      // If user granted override, allow with PROMPT instead of hard DENY
+      if (context.overrideGranted) {
+        console.log('[PolicyEngine] Override granted - bypassing unknown verifier block');
+        // Create a synthetic "permissive" rule for override scenarios
+        const overrideRule: PolicyRule = {
+          id: 'user-override',
+          verifierPattern: request.verifierId,
+          allowedClaims: [],
+          provenClaims: requirements.flatMap((r) => r.requestedProvenClaims || []),
+          requiresTrustedIssuer: false,
+          maxCredentialAgeDays: 365,
+          priority: 0,
+          requiresUserConsent: true,
         };
+        // Assign the override rule and continue normal evaluation
+        matchedRule = overrideRule;
+      } else {
+        if (policy.globalSettings?.blockUnknownVerifiers !== false) {
+          return this.result(
+            'DENY',
+            [ReasonCode.UNKNOWN_VERIFIER],
+            context,
+            policy,
+            startTime,
+            credentials,
+            undefined,
+            undefined,
+            request
+          );
+        }
+        return this.result(
+          'DENY',
+          [ReasonCode.NO_MATCHING_RULE],
+          context,
+          policy,
+          startTime,
+          credentials,
+          undefined,
+          undefined,
+          request
+        );
+      }
     }
+
+    // Rate Limiting & Risk Scoring Check
+    const totalRequestedClaims = requirements.reduce(
+      (acc, r) => acc + (r.requestedClaims?.length || 0) + (r.requestedProvenClaims?.length || 0),
+      0
+    );
+    const allowedClaimsCount = matchedRule.allowedClaims?.length || 0;
+
+    const rateLimitViolation = this.checkRateLimits(
+      request.verifierId,
+      totalRequestedClaims,
+      allowedClaimsCount
+    );
+    if (rateLimitViolation) {
+      return this.result(
+        'DENY',
+        [rateLimitViolation],
+        context,
+        policy,
+        startTime,
+        credentials,
+        matchedRule
+      );
+    }
+
+    // Escalate to PROMPT if risk score is high
+    const currentRisk = this.getRiskScore(request.verifierId);
+    if (currentRisk > RISK_THRESHOLD && !matchedRule.requiresUserConsent) {
+      // High-risk verifier that would normally auto-allow is escalated to PROMPT
+      reasonCodes.push('HIGH_RISK_VERIFIER');
+      return this.result(
+        'PROMPT',
+        [...reasonCodes, ReasonCode.SENSITIVE_CLAIM],
+        context,
+        policy,
+        startTime,
+        credentials,
+        matchedRule
+      );
+    }
+
+    // S-01: Verifier Fingerprint Check
+    // If the matched rule declares a verifier_fingerprint, the request MUST present
+    // a matching fingerprint. Mismatch or absence → PROMPT (never auto-ALLOW).
+    if (matchedRule.verifier_fingerprint) {
+      const presented = request.verifier_fingerprint;
+      if (!presented || presented !== matchedRule.verifier_fingerprint) {
+        return this.result(
+          'PROMPT',
+          [ReasonCode.FINGERPRINT_MISMATCH],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          undefined,
+          request
+        );
+      }
+    }
+
+    // --- Automatism Delegation Check ---
+    const delegationResult = this.checkDelegation(request, context, policy);
+    if (delegationResult) {
+      return this.result(
+        'DENY',
+        delegationResult,
+        context,
+        policy,
+        startTime,
+        credentials,
+        matchedRule
+      );
+    }
+
+    const authorizedRequirements: Array<{
+      credential_type: string;
+      allowed_claims: string[];
+      proven_claims: string[];
+      selected_credential_id: string;
+      issuer_trust_refs: string[];
+      requested_claims?: string[];
+    }> = [];
+    const allSelectedIds: string[] = [];
+
+    // 2. Evaluate Each Requirement (T-29 Pipelining)
+    for (const req of requirements) {
+      // Claim Intersection Engine
+      // Calculate effectiveClaims = Requested ∩ PolicyAllowed - ExplicitlyDenied
+      const intersection = this.calculateEffectiveClaims(req, matchedRule);
+
+      if (intersection.explicitlyDenied.length > 0) {
+        // Fail-closed: Explicitly denied claims trigger a hard block
+        return this.result(
+          'DENY',
+          [ReasonCode.CLAIM_NOT_ALLOWED],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule
+        );
+      }
+
+      if (
+        intersection.effectiveClaims.length === 0 &&
+        intersection.effectiveProvenClaims.length === 0
+      ) {
+        // If nothing is left after intersection, we must deny.
+        // This handles cases where the request asks ONLY for things not in the allowed list.
+        return this.result(
+          'DENY',
+          [ReasonCode.CLAIM_NOT_ALLOWED],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule
+        );
+      }
+
+      // Layer-Based Protection Check
+      // Verify that the verifier's layer authorization includes all required claim layers
+      const verifierLayer = matchedRule.minimumLayer ?? ProtectionLayer.WELT;
+      const allRequestedClaims = [
+        ...intersection.effectiveClaims,
+        ...intersection.effectiveProvenClaims,
+      ];
+
+      for (const claim of allRequestedClaims) {
+        const requiredLayer = getMinimumLayerForData(claim);
+        if (!includesLayer(verifierLayer, requiredLayer)) {
+          console.warn(
+            `[PolicyEngine] LAYER_VIOLATION: Verifier at ${getLayerName(verifierLayer)} ` +
+              `cannot access ${claim} (requires ${getLayerName(requiredLayer)})`
+          );
+          return this.result(
+            'DENY',
+            [ReasonCode.LAYER_VIOLATION],
+            context,
+            policy,
+            startTime,
+            credentials,
+            matchedRule
+          );
+        }
+      }
+
+      // Select Credential for THIS requirement using EFFECTIVE claims
+      const suitable = this.selectCompatibleCredentialsForRequirement(
+        req,
+        credentials,
+        matchedRule,
+        policy,
+        context,
+        intersection.effectiveClaims // Only search for what is allowed
+      );
+
+      if (suitable.credentials.length === 0) {
+        const reasons =
+          suitable.reasons.length > 0 ? suitable.reasons : [ReasonCode.NO_SUITABLE_CREDENTIAL];
+        return this.result('DENY', reasons, context, policy, startTime, credentials, matchedRule);
+      }
+
+      const bestCred = suitable.credentials[0];
+      allSelectedIds.push(bestCred.id);
+
+      authorizedRequirements.push({
+        credential_type: req.credentialType || (bestCred.type[0] as string),
+        allowed_claims: intersection.effectiveClaims, // Bounded Disclosure
+        proven_claims: intersection.effectiveProvenClaims,
+        selected_credential_id: bestCred.id,
+        issuer_trust_refs: [bestCred.issuer],
+        requested_claims: req.requestedClaims,
+      });
+    }
+
+    // Accumulate positive reasons
+    reasonCodes.push(ReasonCode.RULE_MATCHED);
+    reasonCodes.push(ReasonCode.CREDENTIAL_VALID);
+    if (matchedRule.requiresTrustedIssuer) {
+      reasonCodes.push(ReasonCode.TRUSTED_ISSUER);
+    }
+
+    // 3b. EHDS Secondary Use Check
+    const declaredPurpose = request.usagePurpose || matchedRule.usagePurpose || 'primaryCare';
+    const isSecondaryUse = declaredPurpose !== 'primaryCare';
+    if (isSecondaryUse && policy.globalSettings?.denySecondaryUse) {
+      return this.result(
+        'DENY',
+        [ReasonCode.SECONDARY_USE_DENIED],
+        context,
+        policy,
+        startTime,
+        credentials,
+        matchedRule,
+        allSelectedIds,
+        request
+      );
+    }
+
+    // 3b-ii. EHDS Secondary Use — Country-based denial
+    if (isSecondaryUse && policy.globalSettings?.denySecondaryUseCountries?.length) {
+      const verifierCountry = this.extractCountryFromDid(request.verifierId);
+      if (
+        verifierCountry &&
+        policy.globalSettings.denySecondaryUseCountries
+          .map((c) => c.toUpperCase())
+          .includes(verifierCountry.toUpperCase())
+      ) {
+        return this.result(
+          'DENY',
+          [ReasonCode.GEO_SCOPE_VIOLATION],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          allSelectedIds,
+          request
+        );
+      }
+    }
+
+    // 3c. HDAB Permit Check
+    if (matchedRule.requiresHdabPermit) {
+      const hasHdabPermit = policy.trustedIssuers?.some(
+        (ti) => ti.issuerRole === 'hdab' && this.matchesPattern(ti.did, request.verifierId)
+      );
+      if (!hasHdabPermit) {
+        return this.result(
+          'DENY',
+          [ReasonCode.HDAB_PERMIT_REQUIRED],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          allSelectedIds,
+          request
+        );
+      }
+    }
+
+    // 3d. Geographic Scope Check
+    if (matchedRule.geoScope && matchedRule.geoScope !== 'global') {
+      const country = extractCountryFromDid(request.verifierId);
+      if (!isAllowedByGeoScope(matchedRule.geoScope, country)) {
+        return this.result(
+          'DENY',
+          [ReasonCode.GEO_SCOPE_VIOLATION],
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          allSelectedIds,
+          request
+        );
+      }
+    }
+
+    // 3e. Break-Glass Emergency Access (EHDS Art. 8(5))
+    // If rule allows break-glass AND requires presence but user isn't available,
+    // grant access with immediate audit alert instead of blocking
+    if (matchedRule.allowBreakGlass) {
+      const userAvailable = context.interaction?.userPresent !== false;
+      if (!userAvailable && (matchedRule.requiresPresence || matchedRule.requiresUserConsent)) {
+        // Break-glass: ALLOW without consent, but with audit trail
+        reasonCodes.push(ReasonCode.BREAK_GLASS_ACTIVATED);
+        return this.result(
+          'ALLOW',
+          reasonCodes,
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          allSelectedIds,
+          request
+        );
+      }
+    }
+
+    // 4. Consent & Presence Logic
+    const requiresConsent =
+      matchedRule.requiresUserConsent || policy.globalSettings?.requireConsentForAll;
+    const requiresPresence =
+      matchedRule.requiresPresence === true || context.interaction?.accessibilityActive === true;
+
+    let verdict: 'ALLOW' | 'DENY' | 'PROMPT' = 'ALLOW';
+
+    if (requiresConsent || requiresPresence) {
+      verdict = 'PROMPT';
+      reasonCodes.push(ReasonCode.CONSENT_REQUIRED);
+      if (requiresPresence) reasonCodes.push(ReasonCode.PRESENCE_REQUIRED);
+    }
+
+    // 4. Sanity Check
+    if (allSelectedIds.length > 0) {
+      const potentialSanityIssues = this.performSanityChecks(credentials, allSelectedIds);
+      if (potentialSanityIssues.length > 0) {
+        return this.result(
+          'DENY',
+          potentialSanityIssues,
+          context,
+          policy,
+          startTime,
+          credentials,
+          matchedRule,
+          allSelectedIds,
+          request
+        );
+      }
+    }
+
+    // 5. Success
+    return this.result(
+      verdict,
+      reasonCodes,
+      context,
+      policy,
+      startTime,
+      credentials,
+      matchedRule,
+      allSelectedIds,
+      request,
+      authorizedRequirements
+    );
+  }
+
+  private performSanityChecks(
+    credentials: StoredCredentialMetadata[],
+    selectedIds: string[]
+  ): string[] {
+    const issues: string[] = [];
+    const now = new Date();
+
+    for (const id of selectedIds) {
+      const cred = credentials.find((c) => c.id === id);
+      if (!cred) continue;
+
+      if (new Date(cred.issuedAt) > now) {
+        issues.push('ERR_FUTURE_ISSUANCE');
+      }
+    }
+
+    return issues;
+  }
+
+  private checkDelegation(
+    request: VerifierRequest,
+    context: EvaluationContext,
+    policy: PolicyManifest
+  ): string[] | null {
+    if (!policy.delegationRules) return null;
+
+    if (policy.delegationRules.limits.max_claims_per_request) {
+      const totalRequestedByRequirements = (request.requirements || []).reduce(
+        (acc, r) => acc + r.requestedClaims.length,
+        0
+      );
+      const totalRequestedLegacy = (request.requestedClaims || []).length;
+      const total = Math.max(totalRequestedByRequirements, totalRequestedLegacy);
+
+      if (total > policy.delegationRules.limits.max_claims_per_request) {
+        return [ReasonCode.AGENT_LIMIT_EXCEEDED];
+      }
+    }
+
+    return null;
+  }
+
+  private findMatchingRule(request: VerifierRequest, policy: PolicyManifest): PolicyRule | null {
+    // Verifier Identity Binding
+    // 1. First find rules that match the pattern
+    const candidates = policy.rules.filter((rule) => {
+      // Check if verifierId matches pattern
+      const idMatches = this.matchesPattern(rule.verifierPattern, request.verifierId);
+
+      // If rule relies on Pattern, we must also check Origin if available (Strict Mode implicitly active for High Assurance)
+      // Ideally, the PolicyRule should define 'strictBinding', here we default to strict if origin is present.
+      if (idMatches && request.origin) {
+        // If verifierId claimed to be 'liquor-store-1' but origin is 'evil.com', we must be careful.
+        // For this PoC, we enforce that IF origin is present, the pattern must also loosely match the origin OR
+        // the verifierId and origin must have a trust relationship (out of scope).
+        // Simple implementation: verifierPattern must match the verifierId.
+        // We don't forcefully match origin to pattern yet unless specified, but we could add a check:
+        // if (!this.matchesPattern(rule.verifierPattern, request.origin)) return false;
+      }
+
+      return idMatches;
+    });
+
+    if (candidates.length === 0) return null;
+
+    // Sort by priority
+    candidates.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    const rule = candidates[0];
+
+    // Binding Enforcement
+    // If the request has an origin, we enforce that it aligns with the verifierId for security.
+    // If the ID is 'liquor-store-1' and origin is 'https://liquor-store.com', that's fine.
+    // If origin is 'https://hacker.com', we might want to block.
+    // Current Logic: We assume the 'verifierPattern' in the policy implies trust for IDs matching that pattern.
+    // Implementing strict origin check if 'strictBinding' is enabled in global settings.
+
+    if (policy.globalSettings?.strictVerifierBinding && request.origin) {
+      // F-09 Phase 1: Origin-vs-VerifierID check.
+      // Extracts the hostname from request.origin and verifies it is consistent
+      // with the verifierId. Accepts if the hostname appears as a substring of the
+      // verifierId (DID method path) or if the verifierId appears in the hostname.
+      // Phase 2 (planned): DNS-DID binding via .well-known/did-configuration.
+      let originHost: string;
+      try {
+        originHost = new URL(request.origin).hostname;
+      } catch {
+        // Unparseable origin — reject when strict binding is required
+        return null;
+      }
+
+      // Derive a comparable token from the verifierId.
+      // For did:web:example.com → 'example.com'; for opaque IDs → full string.
+      const verifierToken = request.verifierId.startsWith('did:web:')
+        ? request.verifierId.slice('did:web:'.length).split(':').join('/')
+        : request.verifierId;
+
+      const hostMatchesId =
+        verifierToken.includes(originHost) || originHost.includes(verifierToken);
+      if (!hostMatchesId) {
+        return null; // Origin–VerifierID mismatch — fail-closed
+      }
+    }
+
+    return rule;
+  }
+
+  /**
+   * Extract country code from a DID in the format `did:XX:...`
+   * Returns the two-letter segment as uppercase, or null if not parseable.
+   */
+  private extractCountryFromDid(did: string): string | null {
+    if (!did) return null;
+    const parts = did.split(':');
+    // did:XX:identifier — second segment is the country code if exactly 2 chars
+    if (parts.length >= 3 && parts[1].length === 2) {
+      return parts[1].toUpperCase();
+    }
+    return null;
+  }
+
+  private matchesPattern(pattern: string, value: string): boolean {
+    // Safe glob — no RegExp, guards against ReDoS (F-02)
+    if (pattern === '*') return true;
+    if (pattern.length > 256 || value.length > 1024) return false;
+    if (!pattern.includes('*')) return pattern === value;
+
+    const segments = pattern.split('*');
+    const anchoredStart = pattern[0] !== '*';
+    const anchoredEnd = pattern[pattern.length - 1] !== '*';
+    let cursor = 0;
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      if (seg === '') continue;
+      if (i === 0 && anchoredStart) {
+        if (!value.startsWith(seg)) return false;
+        cursor = seg.length;
+      } else if (i === segments.length - 1 && anchoredEnd) {
+        if (!value.endsWith(seg)) return false;
+        if (value.length - seg.length < cursor) return false;
+      } else {
+        const idx = value.indexOf(seg, cursor);
+        if (idx === -1) return false;
+        cursor = idx + seg.length;
+      }
+    }
+    return true;
+  }
+
+  // Core Intersection Logic
+  private calculateEffectiveClaims(
+    req: Requirement,
+    rule: PolicyRule
+  ): {
+    effectiveClaims: string[];
+    effectiveProvenClaims: string[];
+    explicitlyDenied: string[];
+  } {
+    const effectiveClaims: string[] = [];
+    const effectiveProvenClaims: string[] = [];
+    const explicitlyDenied: string[] = [];
+
+    // 1. Process Raw Claims
+    for (const claim of req.requestedClaims) {
+      // Priority: Explicit Denial takes precedence
+      if (rule.deniedClaims?.includes(claim)) {
+        explicitlyDenied.push(claim);
+        continue;
+      }
+
+      // Intersection: Only allow if in rule.allowedClaims
+      if (rule.allowedClaims.includes(claim)) {
+        effectiveClaims.push(claim);
+      }
+      // Implementation Detail: Claims NOT in allowedClaims are implicitly clipped (dropped), not denied.
+    }
+
+    // 2. Process ZKP Claims (Proven Claims)
+    if (req.requestedProvenClaims) {
+      for (const claim of req.requestedProvenClaims) {
+        if (rule.provenClaims?.includes(claim)) {
+          effectiveProvenClaims.push(claim);
+        }
+        // Typically ZKPs are strict, but here we clip them if not allowed by policy
+      }
+    }
+
+    return { effectiveClaims, effectiveProvenClaims, explicitlyDenied };
+  }
+
+  private selectCompatibleCredentialsForRequirement(
+    req: Requirement,
+    credentials: StoredCredentialMetadata[],
+    rule: PolicyRule,
+    policy: PolicyManifest,
+    context: EvaluationContext,
+    effectiveClaims: string[] // T-34a: Use effective claims
+  ): { credentials: StoredCredentialMetadata[]; reasons: string[] } {
+    const reasons: string[] = [];
+
+    const suitable = credentials.filter((cred) => {
+      // T-B2: Skip dispensed/revoked credentials (single-use nullifier)
+      if (cred.status === 'dispensed' || cred.status === 'revoked') {
+        if (!reasons.includes(ReasonCode.CREDENTIAL_DISPENSED))
+          reasons.push(ReasonCode.CREDENTIAL_DISPENSED);
+        return false;
+      }
+
+      if (req.credentialType !== '*' && !cred.type.includes(req.credentialType)) return false;
+
+      // Minimization Check
+      // We only check if the credential has the claims we are EFFECTIVELY allowed to ask for.
+      const hasClaims = effectiveClaims.every((c) => cred.claims.includes(c));
+      if (!hasClaims) return false;
+
+      if (rule.requiresTrustedIssuer !== false) {
+        const isTrusted = policy.trustedIssuers.some(
+          (ti) => ti.did === cred.issuer && ti.credentialTypes.some((t) => cred.type.includes(t))
+        );
+        if (!isTrusted) {
+          if (!reasons.includes(ReasonCode.UNTRUSTED_ISSUER))
+            reasons.push(ReasonCode.UNTRUSTED_ISSUER);
+          return false;
+        }
+      }
+
+      if (cred.expiresAt && context.timestamp >= new Date(cred.expiresAt).getTime()) {
+        if (!reasons.includes(ReasonCode.CREDENTIAL_EXPIRED))
+          reasons.push(ReasonCode.CREDENTIAL_EXPIRED);
+        return false;
+      }
+
+      const maxAgeDays = rule.maxCredentialAgeDays || policy.globalSettings?.defaultFreshnessDays;
+      if (maxAgeDays) {
+        const ageDays =
+          (context.timestamp - new Date(cred.issuedAt).getTime()) / (1000 * 60 * 60 * 24);
+        if (ageDays > maxAgeDays) {
+          if (!reasons.includes(ReasonCode.CREDENTIAL_TOO_OLD))
+            reasons.push(ReasonCode.CREDENTIAL_TOO_OLD);
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return { credentials: suitable, reasons };
+  }
+
+  private async result(
+    verdict: 'ALLOW' | 'DENY' | 'PROMPT',
+    reasonCodes: string[],
+    context: EvaluationContext,
+    policy: PolicyManifest,
+    startTime: number,
+    credentials: StoredCredentialMetadata[],
+    matchedRule?: PolicyRule,
+    selectedCredentials?: string[],
+    request?: VerifierRequest,
+    authorizedRequirements: DecisionCapsule['authorized_requirements'] = []
+  ): Promise<PolicyEvaluationResult> {
+    const processingTimeMs = Date.now() - startTime;
+
+    let decisionCapsule: DecisionCapsule | undefined;
+
+    if (request && matchedRule) {
+      const requestHash = await sha256(canonicalStringify(request));
+      const policyHash = await sha256(canonicalStringify(policy));
+      const ruleHash = await sha256(canonicalStringify(matchedRule));
+
+      decisionCapsule = {
+        decision_id: crypto.randomUUID(),
+        verdict: verdict,
+        request_hash: requestHash,
+        policy_hash: policyHash,
+        rule_hash: ruleHash,
+        verifier_did: request.verifierId,
+        authorized_requirements: authorizedRequirements,
+        nonce: request.nonce || crypto.randomUUID(), // Propagate Verifier Nonce or generate internal one
+        audience: 'mitch-wallet-pwa',
+        issued_at: new Date().toISOString(),
+        risk_level: verdict === 'ALLOW' ? 'LOW' : 'MEDIUM',
+        requires_presence: reasonCodes.includes(ReasonCode.PRESENCE_REQUIRED),
+        // Tight Expiry (5 minutes) to prevent replay of this decision
+        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+        // Keep legacy fields for PWA compatibility
+        allowed_claims: authorizedRequirements[0]?.allowed_claims || [],
+        proven_claims: authorizedRequirements[0]?.proven_claims || [],
+        selected_credential_id: authorizedRequirements[0]?.selected_credential_id,
+        issuer_trust_refs: authorizedRequirements[0]?.issuer_trust_refs || [],
+      } as DecisionCapsule;
+
+      // T-88: Ephemeral Key Propagation
+      if (request.ephemeralResponseKey) {
+        const _key = request.ephemeralResponseKey as CryptoKey; // WebCrypto Key
+        // We can't synchronously export here if it's a CryptoKey.
+        // Ideally, the Request should have the JWK if it came from the parser?
+        // No, WalletService parsed it to CryptoKey.
+        // DecisionCapsule needs serializable data.
+        // We need to async export it? PolicyEngine.evaluate is async.
+        // BUT, I prefer to keep PolicyEngine clean of Crypto operations if possible.
+        // Let's pass the raw key reference if we can? No, Capsule must be JSON.
+        // Refactor: parseDeepLinkRequest should probably attach the JWK to the request too?
+        // Or we handle export here. 'globalThis.crypto' is available in engine context usually.
+      }
+      // For now, let's defer the export to the WalletService wrapper,
+      // BUT simpler: Pass the JWK in the request alongside the Key?
+      // Actually, I'll modify DecisionCapsule to allow `CryptoKey` reference at runtime,
+      // but for "signed/serialized" it needs JWK.
+      // Let's modify WalletService.parseDeepLinkRequest to put the JWK in the request as well?
+      // Just realized `VerifierRequest` update only added `CryptoKey`.
+      // Let's rely on WalletService to inject it into the Capsule AFTER evaluation?
+      // "if (this.signer)" block signs it.
+      // If I inject it after, the signature won't cover it.
+      // Is that critical? Yes, for integrity.
+      // So PolicyEngine MUST export it or receive the JWK.
+
+      // Let's assume we can export it here.
+      try {
+        if (request.ephemeralResponseKey && globalThis.crypto) {
+          // We need to await export.
+          const jwk = await globalThis.crypto.subtle.exportKey('jwk', request.ephemeralResponseKey);
+          decisionCapsule.ephemeral_key = jwk;
+        }
+      } catch (e) {
+        console.error('[PolicyEngine] CRITICAL: Failed to export ephemeral key for capsule', e);
+        throw new Error(
+          `SECURITY_ERROR: Could not bind ephemeral key to decision: ${(e as Error).message}`
+        );
+      }
+
+      // Spec 111: Pairwise Ephemeral DID — attach a fresh did:peer:0 for unlinkability
+      // Only for decisions that produce a proof (ALLOW / PROMPT), not DENY.
+      if (verdict !== 'DENY') {
+        try {
+          const pairwiseDID = await this.pairwiseDIDFactory({
+            verifierOrigin: request.verifierId,
+            sessionNonce: request.nonce || decisionCapsule.decision_id,
+          });
+
+          decisionCapsule.pairwise_did = pairwiseDID.did;
+
+          // Sign decision_id to bind the ephemeral DID to this specific decision
+          const encoder = new TextEncoder();
+          const sigBytes = await pairwiseDID.sign(encoder.encode(decisionCapsule.decision_id));
+          decisionCapsule.pairwise_proof = Array.from(sigBytes)
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('');
+
+          // Shred ephemeral key material immediately after signing
+          pairwiseDID.destroy();
+        } catch (e) {
+          console.error('[PolicyEngine] Failed to generate pairwise DID - denying proof flow', e);
+          return this.result(
+            'DENY',
+            [ReasonCode.PAIRWISE_DID_FAILED],
+            context,
+            policy,
+            startTime,
+            credentials,
+            matchedRule,
+            undefined,
+            request,
+            []
+          );
+        }
+      }
+
+      if (this.signer) {
+        // Sign the capsule to ensure integrity between Engine and WalletService
+        // This prevents "Parameter Tampering" attacks where the JS code might be modified in memory.
+        decisionCapsule.wallet_attestation = await this.signer(decisionCapsule);
+      }
+    }
+
+    return {
+      verdict,
+      reasonCodes,
+      matchedRule: matchedRule?.id,
+      selectedCredentials,
+      metadata: {
+        evaluatedAt: context.timestamp,
+        policyVersion: policy.version,
+        processingTimeMs,
+      },
+      decisionCapsule,
+      originalRequest: request, // For override re-evaluation
+      denialResolution:
+        verdict === 'DENY' && reasonCodes.length > 0
+          ? DenialResolver.resolve(reasonCodes[0], {
+              verifierId: request?.verifierId || 'Unknown',
+              issuer: matchedRule?.id || 'Unknown', // Ideally pass real issuer if available
+            })
+          : undefined,
+    };
+  }
 }

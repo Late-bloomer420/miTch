@@ -116,11 +116,11 @@ Wichtige Architekturquellen:
 
 Es gibt drei Sammlungen:
 
-| Ort | Zweck | Zustand |
-| --- | --- | --- |
-| `docs/03-architecture/decisions/` | Fruehe Phase-0 Decision Notes | Accepted, aber historisch |
-| `docs/03-architecture/mvp/` | Formale Architekturstrategie-ADRs | ADR-001 bis ADR-003 Accepted, viele Proposed |
-| `docs/compliance/ADR/` | Compliance-/Implementierungs-ADRs | Accepted, eigene Nummerierung |
+| Ort                               | Zweck                             | Zustand                                      |
+| --------------------------------- | --------------------------------- | -------------------------------------------- |
+| `docs/03-architecture/decisions/` | Fruehe Phase-0 Decision Notes     | Accepted, aber historisch                    |
+| `docs/03-architecture/mvp/`       | Formale Architekturstrategie-ADRs | ADR-001 bis ADR-003 Accepted, viele Proposed |
+| `docs/compliance/ADR/`            | Compliance-/Implementierungs-ADRs | Accepted, eigene Nummerierung                |
 
 Problem:
 
@@ -143,28 +143,28 @@ Die extern gelesenen Skill-Dokumente liefern die haertesten Pruefkriterien.
 
 ### Axiome
 
-| Axiom | Architekturregel |
-| --- | --- |
-| Non-Existence | Daten, die nicht existieren, koennen nicht leaken. Wenn ZKP moeglich ist, muss ZKP bevorzugt werden. |
-| User Sovereignty | Private Keys bleiben auf dem User-Geraet. Keine zentralen Profile. |
-| Fail-Closed | UNKNOWN stoppt den Flow. Implizites Allow ist verboten. |
-| Explicit Intent | Keine breiten Scopes. "Bessere UX" ist keine Rechtsgrundlage fuer Datensammlung. |
+| Axiom            | Architekturregel                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| Non-Existence    | Daten, die nicht existieren, koennen nicht leaken. Wenn ZKP moeglich ist, muss ZKP bevorzugt werden. |
+| User Sovereignty | Private Keys bleiben auf dem User-Geraet. Keine zentralen Profile.                                   |
+| Fail-Closed      | UNKNOWN stoppt den Flow. Implizites Allow ist verboten.                                              |
+| Explicit Intent  | Keine breiten Scopes. "Bessere UX" ist keine Rechtsgrundlage fuer Datensammlung.                     |
 
 ### Reason Codes fuer Architekturpruefungen
 
-| Code | Wann anwenden |
-| --- | --- |
-| `FAIL_LOG_RAW_PII` | Raw PII wird geloggt oder in Audit/Receipt unsauber persistiert |
-| `FAIL_STORE_RAW_PII` | Raw PII wird ohne klare Verschluesselung/Retention gespeichert |
-| `FAIL_NON_EPHEMERAL` | Daten/Keys leben laenger als fachlich noetig |
-| `FAIL_LINKABILITY_REUSE` | Stable Identifier werden ueber Kontexte wiederverwendet |
-| `FAIL_LINKABILITY_NO_NONCE` | Proof/Request ohne Nonce oder Anti-Replay-Kontext |
-| `FAIL_SEC_IMPLICIT_ALLOW` | Ein Flow erlaubt Zugriff ohne explizite Policy-/Capsule-Evidenz |
-| `FAIL_SEC_UNHANDLED_ERROR` | Fehlerpfad kann zu unklarem Zustand oder Allow fuehren |
-| `FAIL_POLICY_MISMATCH` | Code und Policy/ADR widersprechen sich |
-| `FAIL_AUTHORITY_UNKNOWN` | Issuer/Verifier/Policy-Quelle ist nicht belegbar |
-| `FAIL_INPUT_MISSING` | Pflichtdaten fuer sichere Bewertung fehlen |
-| `FAIL_SPEC_AMBIGUOUS` | Spec/ADR ist mehrdeutig oder nicht entscheidungsfaehig |
+| Code                        | Wann anwenden                                                   |
+| --------------------------- | --------------------------------------------------------------- |
+| `FAIL_LOG_RAW_PII`          | Raw PII wird geloggt oder in Audit/Receipt unsauber persistiert |
+| `FAIL_STORE_RAW_PII`        | Raw PII wird ohne klare Verschluesselung/Retention gespeichert  |
+| `FAIL_NON_EPHEMERAL`        | Daten/Keys leben laenger als fachlich noetig                    |
+| `FAIL_LINKABILITY_REUSE`    | Stable Identifier werden ueber Kontexte wiederverwendet         |
+| `FAIL_LINKABILITY_NO_NONCE` | Proof/Request ohne Nonce oder Anti-Replay-Kontext               |
+| `FAIL_SEC_IMPLICIT_ALLOW`   | Ein Flow erlaubt Zugriff ohne explizite Policy-/Capsule-Evidenz |
+| `FAIL_SEC_UNHANDLED_ERROR`  | Fehlerpfad kann zu unklarem Zustand oder Allow fuehren          |
+| `FAIL_POLICY_MISMATCH`      | Code und Policy/ADR widersprechen sich                          |
+| `FAIL_AUTHORITY_UNKNOWN`    | Issuer/Verifier/Policy-Quelle ist nicht belegbar                |
+| `FAIL_INPUT_MISSING`        | Pflichtdaten fuer sichere Bewertung fehlen                      |
+| `FAIL_SPEC_AMBIGUOUS`       | Spec/ADR ist mehrdeutig oder nicht entscheidungsfaehig          |
 
 Analyse-Regel:
 
@@ -298,14 +298,14 @@ Vorhanden:
 
 ### Wichtige aktuelle Groessen
 
-| Datei | Zeilen |
-| --- | ---: |
-| `src/apps/wallet-pwa/src/services/WalletService.ts` | 1395 |
-| `src/packages/policy-engine/src/engine.ts` | 760 |
-| `src/packages/secure-storage/src/index.ts` | 305 |
-| `src/packages/shared-types/src/policy.ts` | 372 |
-| `src/apps/wallet-pwa/src/consent-manager/receipt-store.ts` | 158 |
-| `src/packages/oid4vp/src/demo-flow.ts` | 447 |
+| Datei                                                      | Zeilen |
+| ---------------------------------------------------------- | -----: |
+| `src/apps/wallet-pwa/src/services/WalletService.ts`        |   1395 |
+| `src/packages/policy-engine/src/engine.ts`                 |    760 |
+| `src/packages/secure-storage/src/index.ts`                 |    305 |
+| `src/packages/shared-types/src/policy.ts`                  |    372 |
+| `src/apps/wallet-pwa/src/consent-manager/receipt-store.ts` |    158 |
+| `src/packages/oid4vp/src/demo-flow.ts`                     |    447 |
 
 ### Policy Engine
 
@@ -638,6 +638,19 @@ Regel:
 - Keine grossen Refactors in dirty feature work mischen.
 
 ## 9. Konkrete offene Findings aus dieser Analyse
+
+### Remediation Notes nach Handoff
+
+- 2026-05-25: `F-ARCH-003` im Working Tree behoben. `policy-engine/src/engine.ts`
+  berechnet `policy_hash` nun aus dem vollstaendigen `PolicyManifest`; der gematchte
+  `PolicyRule` wird zusaetzlich als optionaler `rule_hash` gebunden.
+- 2026-05-25: `F-ARCH-005` fuer die aktuelle Wallet/OID4VP-Receipt-Schicht teilweise
+  behoben. `ConsentReceiptV1` und `ConsentReceiptExportV1` sind in
+  `shared-types/src/consent.ts` kanonisch definiert; historische/v0-Receipt-Modelle
+  muessen separat bewertet werden.
+- 2026-05-25: `F-ARCH-008` im Working Tree behoben. Pairwise-DID-Erzeugungsfehler
+  fuehren fuer ALLOW/PROMPT-Proof-Flows jetzt zu `DENY` mit
+  `PAIRWISE_DID_FAILED`.
 
 ### F-ARCH-001: Dirty Tree als Architektur-Risiko
 
