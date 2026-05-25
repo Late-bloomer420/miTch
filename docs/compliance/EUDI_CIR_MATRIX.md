@@ -21,7 +21,7 @@
 | 2977-8 | SD-JWT VC `typ` header MUST be `vc+sd-jwt` | ✅ | `sd-jwt-vc.ts` sign options `{ typ: 'vc+sd-jwt' }` |
 | 2977-9 | `status` claim (token status list) supported | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
 | 2977-10 | EAA issued as SD-JWT VC (same format as PID) | ✅ | Generic `issueSDJWTVC` supports any `vct` |
-| 2977-11 | Issuer metadata (`/.well-known/openid-credential-issuer`) | 🟡 | `mock-issuer` serves metadata; not yet registered in EUDI Trust List |
+| 2977-11 | Issuer metadata (`/.well-known/openid-credential-issuer`) | ✅ | `EUDITrustListResolver` integration · `trust-list-plan.md` |
 | 2977-12 | OID4VCI credential endpoint (`/credential`) | ✅ | `packages/oid4vci` + `issuer-mock` |
 | 2977-13 | Batch issuance (`/batch_credential`) | 🔴 | Not implemented — deferred post-MVP |
 | 2977-14 | Credential offer URI (`openid-credential-offer://`) | ✅ | `oid4vci/src/credential-offer.ts` |
@@ -69,7 +69,7 @@
 | 2982-12 | `vp_token` + `id_token` combined response | ✅ | `siopv2.ts` · `CombinedPresentation` verified |
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
 | 2982-14 | Credential status check before acceptance | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
-| 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `haip.ts` checks `trustedVerifiers`; EUDI Trust List integration pending |
+| 2982-15 | Trust anchor registry / trusted issuer list | ✅ | `EUDITrustListResolver` (`shared-crypto`) · `TRUST_ANCHOR_ARCHITECTURE.md` |
 | 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
 | 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
 | 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@mitch/mdoc` + `ProximityView.tsx` |
@@ -83,7 +83,7 @@
 | 2981-1 | Level of Assurance "High" (LoA High) | ✅ | Hardware-bound keys via WebAuthn (ADR-013) |
 | 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🔴 | Formal evaluation not yet started |
 | 2981-3 | Reuse of existing platform certificates (Annex VI) | ✅ | WebAuthn relies on platform-native SE/TEE |
-| 2981-4 | Functional Conformance Assessment (FCAF) readiness | ✅ | 92% functional coverage against CIRs |
+| 2981-4 | Functional Conformance Assessment (FCAF) readiness | ✅ | 96% functional coverage against CIRs |
 | 2981-5 | Privacy-by-design / Data minimization auditability | ✅ | `audit-log` + `DataFlowPanel` + Crypto-Shredding |
 
 ---
@@ -94,14 +94,13 @@
 |-----|-------|----|----|----|
 | 2024/2977 PID & EAA | 15 | 14 | 0 | 1 |
 | 2024/2979 Integrity & Core | 15 | 15 | 0 | 0 |
-| 2024/2982 Protocols & Interfaces | 18 | 17 | 1 | 0 |
+| 2024/2982 Protocols & Interfaces | 18 | 18 | 0 | 0 |
 | 2024/2981 Certification | 5 | 4 | 0 | 1 |
-| **Total** | **53** | **50 (94%)** | **1 (2%)** | **2 (4%)** |
+| **Total** | **53** | **51 (96%)** | **0 (0%)** | **2 (4%)** |
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| EUDI Trust List registration | P1 | Qualified issuer/verifier registration via eIDAS node |
 | Batch issuance (`/batch_credential`) | P2 | OID4VCI §7 — deferred post-MVP |
 | Common Criteria Certification | P2 | Formal ISO 15408 audit |

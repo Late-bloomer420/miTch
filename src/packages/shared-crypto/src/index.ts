@@ -27,4 +27,5 @@ export * from './dpop'; // E-05: DPoP (RFC 9449)
 export * from './brainpool'; // C-01: Brainpool Curves (BSI/SOG-IS)
 export * from './mac-verify'; // C-02: MAC-based Verification (ECDH + HMAC-SHA2)
 export * from './status-resolver'; // E-30: Live StatusList Revocation Check
+export * from './trust-list-resolver'; // E-40: EUDI Trust List (TSL) Integration
 export * from './pqc';        // Spec 93: PQC live — ML-DSA, ML-KEM, SLH-DSA, Hybrid
