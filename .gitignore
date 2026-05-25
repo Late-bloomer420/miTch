@@ -59,6 +59,11 @@ _tmp_*
 # Binary context packs — never commit
 *.zip
 
+# ── Paperclip-Runtime (Live-DB, Logs, Sessions, PIDs) — niemals tracken ──
+# Doku (PAPERCLIP.md, MITCH_COMPANY.md) bleibt absichtlich versioniert.
+paperclip-home/
+paperclip-mitch-company-home/
+
 # ── EXPLIZIT NICHT IGNORIEREN ───────────────────────────────
 # src/**/data/   ← Quellcode! (DemoPolicy.ts, Seed-Credentials)
 # docs/          ← Dokumentation
