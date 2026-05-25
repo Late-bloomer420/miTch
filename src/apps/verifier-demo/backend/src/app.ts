@@ -66,8 +66,8 @@ const metrics = new SimpleMetrics();
 // Pilot State (In-memory for PoC)
 let lastVerificationStatus: 'WAITING' | 'VERIFIED' | 'FAILED' = 'WAITING';
 let lastIssuer: string | null = null;
-let lastDisclosedClaims: Record<string, unknown> | null = null;
-let lastConsentReceipt: Record<string, unknown> | null = null;
+let lastVerifiedClaims: string[] = [];
+let lastReceiptId: string | null = null;
 
 // Scenario credential fixtures (wallet simulation claims)
 const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = {
@@ -176,8 +176,8 @@ app.get('/status', (req, res) => {
         status: lastVerificationStatus,
         issuer: lastIssuer,
         verifierDid: 'did:mitch:verifier-liquor-store',
-        disclosedClaims: lastDisclosedClaims,
-        consentReceipt: lastConsentReceipt,
+        verifiedClaims: lastVerifiedClaims,
+        receiptId: lastReceiptId,
     });
 });
 
@@ -265,20 +265,23 @@ app.post('/wallet-present', async (req, res) => {
         if (validation.ok) {
             lastVerificationStatus = 'VERIFIED';
             lastIssuer = 'https://issuer.mitch.demo';
-            lastDisclosedClaims = validation.disclosedClaims ?? null;
-            lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+            lastVerifiedClaims = Object.keys(validation.disclosedClaims ?? {});
+            lastReceiptId = consentReceipt.id;
             metrics.inc('oid4vp_success');
             console.log('[OID4VP] ✅ Presentation verified — scenario: %s', scenarioId, auditEntry);
-            return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt, auditEntry });
+            return res.json({ ok: true, verifiedClaims: lastVerifiedClaims, receiptId: lastReceiptId, auditEntry });
         } else {
             lastVerificationStatus = 'FAILED';
-            lastDisclosedClaims = null;
+            lastVerifiedClaims = [];
+            lastReceiptId = null;
             metrics.inc('oid4vp_rejected');
             console.warn(`[OID4VP] ❌ Presentation rejected — ${validation.errors.join(', ')}`);
-            return res.status(403).json({ ok: false, errors: validation.errors, consentReceipt, auditEntry });
+            return res.status(403).json({ ok: false, errors: validation.errors, receiptId: consentReceipt.id, auditEntry });
         }
     } catch (e: unknown) {
         lastVerificationStatus = 'FAILED';
+        lastVerifiedClaims = [];
+        lastReceiptId = null;
         console.error('[OID4VP] Error:', e instanceof Error ? e.message : String(e));
         return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
     }
@@ -356,20 +359,23 @@ app.post('/oid4vp-present', async (req, res) => {
         if (validation.ok) {
             lastVerificationStatus = 'VERIFIED';
             lastIssuer = 'https://issuer.mitch.demo';
-            lastDisclosedClaims = validation.disclosedClaims ?? null;
-            lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+            lastVerifiedClaims = Object.keys(validation.disclosedClaims ?? {});
+            lastReceiptId = consentReceipt.id;
             metrics.inc('oid4vp_success');
             console.log(`[OID4VP-Present] ✅ Verified`, auditEntry);
-            return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
+            return res.json({ ok: true, verifiedClaims: lastVerifiedClaims, receiptId: lastReceiptId });
         } else {
             lastVerificationStatus = 'FAILED';
-            lastDisclosedClaims = null;
+            lastVerifiedClaims = [];
+            lastReceiptId = null;
             metrics.inc('oid4vp_rejected');
             console.warn(`[OID4VP-Present] ❌ Rejected:`, validation.errors);
             return res.status(403).json({ ok: false, errors: validation.errors });
         }
     } catch (e: unknown) {
         lastVerificationStatus = 'FAILED';
+        lastVerifiedClaims = [];
+        lastReceiptId = null;
         console.error('[OID4VP-Present] Error:', e instanceof Error ? e.message : String(e));
         return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
     }
@@ -456,8 +462,8 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         const result = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
         const presentation = result.vp; // Extract the actual VC bundle
 
-        console.log('?? Decrypted Presentation Payload:', JSON.stringify(presentation, null, 2));
-        console.log(`??? Proof Verified: ${result.proof.public_key_alg}`);
+        console.log('[Provider] Presentation decrypted and proof-boundary verified');
+        console.log(`[Provider] Proof algorithm: ${result.proof.public_key_alg}`);
 
         // Pilot Logic: ZKP Range Proof Verification
         // The VP is structured as: { metadata, presentations: [{ proven_claims: {...}, zkp_proofs: {...} }] }
@@ -521,9 +527,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
                 console.error('? ZKP Verification Exception:', err);
             }
         } else {
-            // Fallback to legacy trusted boolean (during migration)
-            console.log('?? No ZKP Proof found, checking legacy claim...');
-            isVerified = (firstPres?.proven_claims as Record<string, unknown> | undefined)?.[agePredicateId] === true;
+            console.warn('[Provider] Missing required ZKP proof for protected age predicate');
         }
 
         if (isVerified) {
@@ -539,6 +543,8 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         } else {
             lastVerificationStatus = 'FAILED';
             lastIssuer = null;
+            lastVerifiedClaims = [];
+            lastReceiptId = null;
             console.log('? VERIFICATION FAILED: minor detected or proof invalid');
             res.status(403).json({ ok: false, error: 'AGE_NOT_VERIFIED' });
         }
@@ -555,6 +561,8 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         else if (errName === 'ProofSignatureError') { status = 401; errorKey = 'INVALID_SIGNATURE'; }
 
         lastVerificationStatus = 'FAILED';
+        lastVerifiedClaims = [];
+        lastReceiptId = null;
         res.status(status).json({ ok: false, error: errorKey, details: e instanceof Error ? e.message : String(e) });
     }
 });
@@ -563,8 +571,8 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
 app.post('/reset', (req, res) => {
     lastVerificationStatus = 'WAITING';
     lastIssuer = null;
-    lastDisclosedClaims = null;
-    lastConsentReceipt = null;
+    lastVerifiedClaims = [];
+    lastReceiptId = null;
     nonceStore.clear();
     res.json({ ok: true });
 });

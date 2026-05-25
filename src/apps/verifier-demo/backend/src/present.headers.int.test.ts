@@ -23,12 +23,21 @@ beforeEach(() => {
 });
 
 describe('POST /present rate-limit headers', () => {
+    it('rejects legacy boolean proven_claims without a ZKP proof', async () => {
+        const { app } = await import('./app');
+
+        const res = await request(app).post('/present').send({}).expect(403);
+
+        expect(res.body.ok).toBe(false);
+        expect(res.body.error).toBe('AGE_NOT_VERIFIED');
+    });
+
     it('returns 429 with coherent Retry-After and reset headers', { timeout: 30_000 }, async () => {
         const { app } = await import('./app');
         const agent = request(app);
 
         for (let i = 0; i < 10; i++) {
-            await agent.post('/present').send({}).expect(200);
+            await agent.post('/present').send({}).expect(403);
         }
 
         const res = await agent.post('/present').send({}).expect(429);

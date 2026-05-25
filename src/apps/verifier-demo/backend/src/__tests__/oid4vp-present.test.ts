@@ -106,13 +106,30 @@ describe('/oid4vp-present endpoint', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.ok).toBe(true);
-        expect(res.body.disclosedClaims).toBeDefined();
-        expect(res.body.consentReceipt).toBeDefined();
+        expect(res.body.verifiedClaims).toContain('age');
+        expect(res.body.receiptId).toMatch(/^consent-/);
+        expect(res.body.disclosedClaims).toBeUndefined();
+        expect(res.body.consentReceipt).toBeUndefined();
+
+        const responseJson = JSON.stringify(res.body);
+        expect(responseJson).not.toContain('Max Mustermann');
+        expect(responseJson).not.toContain('2000-01-01');
+        expect(responseJson).not.toContain('AT-123456');
+        expect(responseJson).not.toContain('Zirl, AT');
 
         // Verify status endpoint reflects the result
         const statusRes = await request(app).get('/status');
         expect(statusRes.body.status).toBe('VERIFIED');
-        expect(statusRes.body.disclosedClaims).toBeDefined();
+        expect(statusRes.body.verifiedClaims).toContain('age');
+        expect(statusRes.body.receiptId).toMatch(/^consent-/);
+        expect(statusRes.body.disclosedClaims).toBeUndefined();
+        expect(statusRes.body.consentReceipt).toBeUndefined();
+
+        const statusJson = JSON.stringify(statusRes.body);
+        expect(statusJson).not.toContain('Max Mustermann');
+        expect(statusJson).not.toContain('2000-01-01');
+        expect(statusJson).not.toContain('AT-123456');
+        expect(statusJson).not.toContain('Zirl, AT');
     });
 
     it('should reject a revoked credential', async () => {
@@ -156,7 +173,7 @@ describe('/oid4vp-present endpoint', () => {
 
         const doctorClaims = { age: 35, role: 'Surgeon', licenseId: 'MED-998877', employer: 'St. Mary Hospital', salary: 'redacted', homeAddress: 'redacted' };
 
-        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({
+        const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
             request: authRequest,
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,
@@ -179,10 +196,9 @@ describe('/oid4vp-present endpoint', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.ok).toBe(true);
-        // Selective disclosure: salary and homeAddress should be redacted
-        if (res.body.disclosedClaims) {
-            expect(disclosedClaims).toBeDefined();
-        }
+        expect(res.body.verifiedClaims).toEqual(expect.arrayContaining(['role', 'licenseId']));
+        expect(JSON.stringify(res.body)).not.toContain('St. Mary Hospital');
+        expect(JSON.stringify(res.body)).not.toContain('redacted');
     });
 
     it('should return 500 for malformed vp_token with valid issuer_jwk', async () => {
@@ -233,7 +249,9 @@ describe('/oid4vp-present endpoint', () => {
         // Status should now be VERIFIED
         const updatedStatus = await request(app).get('/status');
         expect(updatedStatus.body.status).toBe('VERIFIED');
-        expect(updatedStatus.body.disclosedClaims).toBeDefined();
-        expect(updatedStatus.body.consentReceipt).toBeDefined();
+        expect(updatedStatus.body.verifiedClaims).toContain('age');
+        expect(updatedStatus.body.receiptId).toMatch(/^consent-/);
+        expect(updatedStatus.body.disclosedClaims).toBeUndefined();
+        expect(updatedStatus.body.consentReceipt).toBeUndefined();
     });
 });

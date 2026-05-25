@@ -6,8 +6,8 @@ interface StatusResponse {
     status: 'WAITING' | 'VERIFIED' | 'FAILED';
     issuer?: string;
     verifierDid?: string;
-    disclosedClaims?: Record<string, unknown>;
-    consentReceipt?: { id: string; claimsShared: string[]; purpose: string; timestamp: string };
+    verifiedClaims?: string[];
+    receiptId?: string;
 }
 
 interface VerifierPanelProps {
@@ -90,37 +90,21 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
 
     // --- VERIFIED ---
     if (panelState === 'verified') {
-        const disclosed = statusData?.disclosedClaims ?? {};
-        const hasRealData = Object.keys(disclosed).length > 0;
+        const verifiedClaims = statusData?.verifiedClaims ?? scenario.verifierReceives.map((claim) => claim.key);
 
         return (
             <div>
-                {/* Real disclosed claims from OID4VP validation */}
-                {hasRealData ? (
-                    <>
-                        <div style={{ fontSize: 11, color: '#2e7d32', marginBottom: 10, fontWeight: 700 }}>
-                            ✅ Cryptographically verified claims:
-                        </div>
-                        {Object.entries(disclosed).map(([key, value]) => (
-                            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                <span style={{ color: '#2e7d32', fontWeight: 700 }}>✅</span>
-                                <span style={{ color: '#81c784', fontFamily: 'monospace', fontSize: 13 }}>
-                                    {key}: {String(value)}
-                                </span>
-                            </div>
-                        ))}
-                    </>
-                ) : (
-                    // Fallback to scenario fixtures if no real data yet
-                    scenario.verifierReceives.map((claim) => (
-                        <div key={claim.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                            <span style={{ color: '#2e7d32', fontWeight: 700 }}>✅</span>
-                            <span style={{ color: '#81c784', fontFamily: 'monospace', fontSize: 13 }}>
-                                {claim.key}: {claim.isProof ? <em>proof only</em> : claim.value}
-                            </span>
-                        </div>
-                    ))
-                )}
+                <div style={{ fontSize: 11, color: '#2e7d32', marginBottom: 10, fontWeight: 700 }}>
+                    ✅ Cryptographically verified claims:
+                </div>
+                {verifiedClaims.map((claimName) => (
+                    <div key={claimName} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{ color: '#2e7d32', fontWeight: 700 }}>✅</span>
+                        <span style={{ color: '#81c784', fontFamily: 'monospace', fontSize: 13 }}>
+                            {claimName}: <em>verified</em>
+                        </span>
+                    </div>
+                ))}
 
                 {/* Withheld fields */}
                 {scenario.blocked.map((field) => (
@@ -140,13 +124,13 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
                 }}>
                     🔐 Session keys shredded — W-05 cleanup complete
                 </div>
-                {statusData?.consentReceipt && (
+                {statusData?.receiptId && (
                     <div style={{
                         marginTop: 6, padding: '6px 10px',
                         background: '#0a0a14', borderRadius: 6,
                         fontSize: 10, color: '#444', fontFamily: 'monospace',
                     }}>
-                        Receipt: {statusData.consentReceipt.id}
+                        Receipt: {statusData.receiptId}
                     </div>
                 )}
             </div>
