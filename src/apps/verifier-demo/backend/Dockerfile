@@ -1,38 +1,38 @@
-# Build Stage
+# Verifier Backend Dockerfile
+# Based on miTch 100% Compliance Architecture
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-COPY package.json turbo.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install pnpm
+# Install dependencies (pnpm is used in monorepo)
 RUN npm install -g pnpm
 
-# Copy source code
-COPY apps/verifier-demo/backend ./apps/verifier-demo/backend
-COPY packages ./packages
+# Copy root monorepo config
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
 
-# Install dependencies
+# Copy required packages first (for turbo pruning/build)
+COPY src/packages ./src/packages
+COPY src/apps/verifier-demo/backend ./src/apps/verifier-demo/backend
+
+# Prune and Build
 RUN pnpm install --frozen-lockfile
+RUN pnpm --filter verifier-backend build
 
-# Build the backend (and dependencies)
-RUN pnpm filter "verifier-backend..." build
-
-# Runtime Stage
-FROM node:20-alpine AS runner
+# Production Image
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
-# Copy built artifacts and necessary files
+COPY --from=builder /app/src/apps/verifier-demo/backend/dist ./dist
+COPY --from=builder /app/src/apps/verifier-demo/backend/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/verifier-demo/backend ./apps/verifier-demo/backend
 
-WORKDIR /app/apps/verifier-demo/backend
+# Default Environment
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV MITCH_TRUST_MODE=live
 
-# Expose port
-EXPOSE 3002
+EXPOSE 3000
 
-# Start the application
-CMD ["pnpm", "start"]
+CMD ["node", "dist/index.js"]
