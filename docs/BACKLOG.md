@@ -116,6 +116,20 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | E-40 | ✅ | EUDI Trust List Integration (TSL) — eIDAS Node Connector | Pilot Blocker |
 | E-41 | ✅ | OID4VCI Batch Issuance Support (§7) | CIR 2024/2977 |
 | E-42 | ✅ | Formal Certification Process (Common Criteria Evaluation) — Security Target (ST) documented | CIR 2024/2981 |
+| E-45 | 🟡 | Visual Credential Rendering (W3C Spec) — Sandboxed SVG/Mustache & HTML Branding | W3C VC-Render |
+
+---
+
+## Phase 5 — Visual & Branding (UX Layer) 🟡
+
+Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
+
+| ID | Prio | Beschreibung | Standard |
+|---|---|---|---|
+| V-01 | 🟡 | `renderMethod` Property Support in SD-JWT VC Parser | W3C VC-Render |
+| V-02 | 🟡 | Sandboxed Iframe Renderer mit strikter CSP (No-Tracking Enforcement) | W3C §4.2 |
+| V-03 | 🟢 | `svg-mustache` Template-Engine Integration für Branded Cards | W3C §3.1.1 |
+| V-04 | 🟢 | Cryptographic Digest Verification (`digestMultibase`) für Templates | W3C §3.1.3 |
 
 ---
 
@@ -164,7 +178,7 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-03 | 🟢 | `miTch---Policy-Enforcement-Layer` Repo löschen |
 | H-04 | ✅ | GitHub `main` Branch löschen (nur `master` behalten) — war bereits gelöscht |
 | H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
-| H-06 | ✅ | Demo E2E Flow testen (4 Szenarien) — D-01: 17 E2E tests |
+| H-06 | ✅ | Demo E2E Flow testen (5 Szenarien) — 1664 Tests pass |
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
 
 ---
