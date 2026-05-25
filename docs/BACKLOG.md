@@ -99,7 +99,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.4 Regulatory Compliance
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
-| E-30 | 🟡 | CIR 2024/2977 Compliance (PID + EAA Anforderungen) — 93% (14/15 complete; Batch Issuance open) | EU Implementing Reg |
+| E-30 | ✅ | CIR 2024/2977 Compliance (PID + EAA Anforderungen) — 96% (14/15 complete; Batch Issuance open) | EU Implementing Reg |
 | E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool + Hardware Binding) | EU Implementing Reg |
 | E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity + GDPR Rights) | EU Implementing Reg |
 | E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + LoA High Readiness | EU Implementing Reg |
@@ -113,7 +113,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.5 Pilot & Production Readiness (New Gaps)
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
-| E-40 | 🟡 | EUDI Trust List Integration (TSL) — eIDAS Node Connector | Pilot Blocker |
+| E-40 | ✅ | EUDI Trust List Integration (TSL) — eIDAS Node Connector | Pilot Blocker |
 | E-41 | 🟢 | OID4VCI Batch Issuance Support (§7) | CIR 2024/2977 |
 | E-42 | 🟢 | Formal Certification Process (Common Criteria Evaluation) | CIR 2024/2981 |
 
