@@ -31,7 +31,7 @@ pnpm lint
 pnpm format
 ```
 
-**Turbo v1** is used — config uses `pipeline` (not `tasks`) in `turbo.json`.
+**Turbo v2** is used — config uses `tasks` (not `pipeline`) in `turbo.json`.
 
 ## Architecture
 
