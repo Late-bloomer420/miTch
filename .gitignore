@@ -54,6 +54,8 @@ blob-report/
 *.swp
 # Editor-crash lockfile artifacts (e.g. pnpm-lock.yaml.1184410667)
 pnpm-lock.yaml.*
+# pnpm atomic-write Temp-Stubs (Reste abgebrochener Installs, z.B. _tmp_3_<hash>)
+_tmp_*
 # Binary context packs — never commit
 *.zip
 
