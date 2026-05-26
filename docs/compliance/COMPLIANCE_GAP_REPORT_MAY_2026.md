@@ -1,5 +1,7 @@
 # Compliance Gap Report — May 2026
 
+> **Reconciliation update (2026-05-26):** Batch Issuance has since been implemented, raising coverage to **51/53 (96%)**. The two remaining items are **live TSL integration** (the resolver currently uses mock/static data) and **formal CC certification** (external CAB). Canonical per-requirement status: [`EUDI_CIR_MATRIX.md`](EUDI_CIR_MATRIX.md). Original May-25 figures preserved below for history.
+
 ## Executive Summary
 This report summarizes the compliance state of miTch against the EUDI Wallet Commission Implementing Regulations (CIR) as of May 25, 2026. Significant progress has been made since the March 2026 audit, increasing functional requirement coverage from **77% to 94%**.
 
