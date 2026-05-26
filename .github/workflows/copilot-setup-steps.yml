@@ -1,0 +1,484 @@
+name: Copilot Setup & Development Workflow
+
+on:
+  push:
+    branches: [main, develop, master]
+  pull_request:
+    branches: [main, develop, master]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run with debug logging enabled'
+        required: false
+        default: 'false'
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9'
+
+jobs:
+  # ───────────────────────────────────────────────────────────────
+  # Setup Job: Check out, cache, install dependencies
+  # ───────────────────────────────────────────────────────────────
+  setup:
+    name: Setup & Install Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for turbo analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+  # ───────────────────────────────────────────────────────────────
+  # Build Job: Compile all packages with Turbo caching
+  # ───────────────────────────────────────────────────────────────
+  build:
+    name: Build All Packages
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Build all packages
+        run: pnpm build --no-cache
+
+      - name: Check build output exists
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "⚠️  No dist directory found"
+            exit 1
+          fi
+          echo "✓ Build artifacts generated"
+
+  # ───────────────────────────────────────────────────────────────
+  # Test Job: Run full test suite with coverage
+  # ───────────────────────────────────────────────────────────────
+  test:
+    name: Test Suite (1411 tests)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run full test suite
+        run: pnpm test --no-coverage
+        env:
+          MITCH_TEST_MODE: '1'
+
+      - name: Generate coverage report
+        if: always()
+        run: pnpm test --coverage
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            .test-results/
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────
+  # Lint Job: ESLint + Prettier formatting checks
+  # ───────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+        continue-on-error: false
+
+      - name: Check formatting
+        run: pnpm format --check
+        continue-on-error: false
+
+      - name: Report lint results
+        if: failure()
+        run: echo "❌ Lint or format errors detected. Run 'pnpm format' locally."
+
+  # ───────────────────────────────────────────────────────────────
+  # Type Check Job: TypeScript strict mode validation
+  # ───────────────────────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check all packages
+        run: pnpm typecheck
+        continue-on-error: false
+
+  # ───────────────────────────────────────────────────────────────
+  # Security Audit Job: Dependency vulnerability scanning
+  # ───────────────────────────────────────────────────────────────
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audit
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for critical vulnerabilities
+        run: |
+          if pnpm audit --json | grep -q '"severity":"critical"'; then
+            echo "❌ Critical vulnerabilities found!"
+            exit 1
+          fi
+          echo "✓ No critical vulnerabilities"
+
+  # ───────────────────────────────────────────────────────────────
+  # Policy Engine E2E Test: Layer validation scenario
+  # ───────────────────────────────────────────────────────────────
+  policy-engine-e2e:
+    name: Policy Engine E2E Layer Validation
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run policy engine E2E tests
+        run: pnpm --filter @mitch/policy-engine test
+        env:
+          MITCH_TEST_MODE: '1'
+
+      - name: Verify fail-closed semantics
+        run: |
+          echo "Validating fail-closed policy behavior..."
+          pnpm --filter @mitch/policy-engine test -- --grep "fail-closed|DENY|ambiguous"
+
+  # ───────────────────────────────────────────────────────────────
+  # Package-specific Tests: Single package test runs
+  # ───────────────────────────────────────────────────────────────
+  test-crypto:
+    name: Test shared-crypto Package
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test shared-crypto
+        run: pnpm --filter @mitch/shared-crypto test
+        env:
+          MITCH_TEST_MODE: '1'
+
+  test-wallet:
+    name: Test wallet-pwa Package
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test wallet-pwa (jsdom environment)
+        run: pnpm --filter wallet-pwa test
+        env:
+          MITCH_TEST_MODE: '1'
+
+  # ───────────────────────────────────────────────────────────────
+  # Documentation Build: Verify docs generation
+  # ───────────────────────────────────────────────────────────────
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs
+        run: pnpm docs
+        continue-on-error: true
+
+      - name: Archive docs
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs/
+          retention-days: 60
+
+  # ───────────────────────────────────────────────────────────────
+  # Dependency Check: Outdated packages & lock file integrity
+  # ───────────────────────────────────────────────────────────────
+  dependency-check:
+    name: Dependency Integrity Check
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Verify pnpm-lock.yaml integrity
+        run: pnpm install --frozen-lockfile --dry-run
+
+      - name: Check for duplicate dependencies
+        run: pnpm dedupe --check
+        continue-on-error: true
+
+      - name: List outdated packages
+        run: pnpm outdated
+        continue-on-error: true
+
+  # ───────────────────────────────────────────────────────────────
+  # All Status Check: Comprehensive pass/fail gate
+  # ───────────────────────────────────────────────────────────────
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [build, test, lint, typecheck, security-audit, policy-engine-e2e]
+    if: always()
+    steps:
+      - name: Check all required jobs passed
+        run: |
+          if [[ "${{ needs.build.result }}" != "success" || 
+                "${{ needs.test.result }}" != "success" || 
+                "${{ needs.lint.result }}" != "success" || 
+                "${{ needs.typecheck.result }}" != "success" || 
+                "${{ needs.security-audit.result }}" != "success" || 
+                "${{ needs.policy-engine-e2e.result }}" != "success" ]]; then
+            echo "❌ One or more checks failed"
+            exit 1
+          fi
+          echo "✅ All checks passed successfully!"
+
+  # ───────────────────────────────────────────────────────────────
+  # Notify on Failure: Slack/GitHub notification
+  # ───────────────────────────────────────────────────────────────
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [all-checks]
+    if: failure()
+    steps:
+      - name: Post failure comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ CI workflow failed. Please review the logs and fix errors.\n\n[View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+            })
+
+      - name: Create failure badge
+        run: |
+          echo "Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
