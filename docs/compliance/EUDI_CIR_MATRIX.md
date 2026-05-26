@@ -69,7 +69,7 @@
 | 2982-12 | `vp_token` + `id_token` combined response | ✅ | `siopv2.ts` · `CombinedPresentation` verified |
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
 | 2982-14 | Credential status check before acceptance | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
-| 2982-15 | Trust anchor registry / trusted issuer list | ✅ | `EUDITrustListResolver` (`shared-crypto`) · `TRUST_ANCHOR_ARCHITECTURE.md` |
+| 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `EUDITrustListResolver` implemented with **mock/static** data; live eIDAS-node / official EU TSL integration pending |
 | 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
 | 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
 | 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@mitch/mdoc` + `ProximityView.tsx` |
@@ -81,9 +81,9 @@
 | # | Requirement | Status | Package / Test |
 |---|-------------|--------|----------------|
 | 2981-1 | Level of Assurance "High" (LoA High) | ✅ | Hardware-bound keys via WebAuthn (ADR-013) |
-| 2981-2 | Common Criteria (ISO/IEC 15408) conformance | ✅ | `SECURITY_TARGET_CC_READY.md` (Artefact representation) |
+| 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🟡 | Security Target **artefact prepared** (`SECURITY_TARGET_CC_READY.md`); formal evaluation by accredited CAB **pending** |
 | 2981-3 | Reuse of existing platform certificates (Annex VI) | ✅ | WebAuthn relies on platform-native SE/TEE |
-| 2981-4 | Functional Conformance Assessment (FCAF) readiness | ✅ | 100% functional coverage against CIRs |
+| 2981-4 | Functional Conformance Assessment (FCAF) readiness | ✅ | 96% functional coverage (51/53); artefacts ready for assessment |
 | 2981-5 | Privacy-by-design / Data minimization auditability | ✅ | `audit-log` + `DataFlowPanel` + Crypto-Shredding |
 
 ---
@@ -94,12 +94,13 @@
 |-----|-------|----|----|----|
 | 2024/2977 PID & EAA | 15 | 15 | 0 | 0 |
 | 2024/2979 Integrity & Core | 15 | 15 | 0 | 0 |
-| 2024/2982 Protocols & Interfaces | 18 | 18 | 0 | 0 |
-| 2024/2981 Certification | 5 | 5 | 0 | 0 |
-| **Total** | **53** | **53 (100%)** | **0 (0%)** | **0 (0%)** |
+| 2024/2982 Protocols & Interfaces | 18 | 17 | 1 | 0 |
+| 2024/2981 Certification | 5 | 4 | 1 | 0 |
+| **Total** | **53** | **51 (96%)** | **2 (4%)** | **0 (0%)** |
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| None | - | All 53 CIR technical requirements satisfied. |
+| Live TSL integration (2982-15) | P1 | `EUDITrustListResolver` runs on mock/static data; live eIDAS-node / official EU Trust List integration required before a production pilot. |
+| Formal CC certification (2981-2) | P2 | Security Target prepared; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
