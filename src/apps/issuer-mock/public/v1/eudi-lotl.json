@@ -1,0 +1,15 @@
+{
+  "id": "mitch-trust-list-v1",
+  "version": "1.0.0",
+  "validUntil": "2027-01-01T00:00:00Z",
+  "issuers": [
+    "did:web:localhost%3A3005",
+    "did:web:issuer.mitch.demo",
+    "did:example:gov-issuer"
+  ],
+  "verifiers": [
+    "did:mitch:verifier-liquor-store",
+    "did:web:verifier.mitch.demo",
+    "did:mitch:verifier-health-er"
+  ]
+}

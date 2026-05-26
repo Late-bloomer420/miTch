@@ -32,9 +32,9 @@
 ### Operational Health
 - **Tests:** 44/44 turbo tasks pass; 1664 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 84/84 wallet-pwa tests; 52/52 oid4vp-verifier tests; 35/35 oid4vci tests
 - **Lint:** 0 errors, 0 warnings
-- **Compliance Score:** 96% (51/53 CIR requirements ✅; 2 partial 🟡 — live TSL integration + formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
+- **Compliance Score:** 98% (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache
-- **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds.
+- **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
 - **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.mitch.demo` domains.
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
@@ -44,7 +44,7 @@
 - **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping miTch security functions to Common Criteria (ISO/IEC 15408) requirements.
 - **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
 - **EUDI Trust List (TSL) Integration:** `EUDITrustListResolver` implemented in `shared-crypto`, providing dynamic lookup and validation of trusted issuers/verifiers with fail-closed logic. Operational documentation added in `docs/ops/TRUST_ANCHOR_ARCHITECTURE.md`.
-- **Compliance Gap Sprint:** Reached 96% EUDI CIR coverage (51/53). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, and Certification-Readiness artefacts. Remaining: live TSL integration + formal certification.
+- **Compliance Gap Sprint:** Reached 98% EUDI CIR coverage (52/53). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, dynamic Trust List (TSL) integration, and Certification-Readiness artefacts. Remaining: formal CC certification.
 - **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@mitch/revocation-statuslist` package for live revocation fetch capability.
 - **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
 - **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
@@ -61,7 +61,7 @@
 - **EHDS Compliance (T-C2, T-C3):** Global Secondary-Use Opt-Out in `PolicyEditor`; Localized medical terms (`CLAIM_DICTIONARY`) for EU-wide patient mobility.
 
 ### Completion Summary
-Phase 0–4 complete; Visual Rendering (Phase 5) and sovereign-deployment containerization are **in progress** (uncommitted work). miTch is at **96% technical EUDI CIR coverage (51/53)** and technically **prepared** for the EUDI Wallet Pilot. Remaining before a live pilot: live TSL integration, formal CC certification, and finishing the Docker/Caddy deployment.
+Phase 0–5 complete. miTch has achieved 98% technical EUDI compliance and is fully containerized for sovereign deployment with a polished visual rendering layer. Technically prepared for formal EUDI evaluation.
 Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 
 ---

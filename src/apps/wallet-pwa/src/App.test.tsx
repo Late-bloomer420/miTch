@@ -11,9 +11,9 @@ describe('G-03 — Wallet App renders correctly', () => {
         expect(screen.getByText('miTch')).toBeInTheDocument();
     });
 
-    it('renders credential card with Age Credential', () => {
+    it('renders credential card with Age Credential', async () => {
         render(<App />);
-        expect(screen.getByText('Age Credential (GovID)')).toBeInTheDocument();
+        expect(await screen.findByText('AgeCredential')).toBeInTheDocument();
     });
 
     it('renders the primary action button', () => {

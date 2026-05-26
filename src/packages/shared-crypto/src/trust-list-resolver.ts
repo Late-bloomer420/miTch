@@ -40,6 +40,17 @@ export class EUDITrustListResolver {
         this.fetchFn = options?.fetchFn ?? globalThis.fetch?.bind(globalThis);
         this.cacheTtlMs = options?.cacheTtlMs ?? 24 * 60 * 60 * 1000; // 24 hours
         this.gracePeriodMsLowRisk = options?.gracePeriodMsLowRisk ?? 4 * 60 * 60 * 1000; // 4 hours
+        this.tslUrl = process.env.MITCH_TSL_URL || 'https://trust.mitch.demo/v1/eudi-lotl.json';
+    }
+
+    private tslUrl: string;
+
+    /**
+     * Set the TSL source URL.
+     */
+    setUrl(url: string): void {
+        this.tslUrl = url;
+        this.clearCache();
     }
 
     /**
@@ -119,7 +130,7 @@ export class EUDITrustListResolver {
             return this.cache.tsl;
         }
 
-        const url = process.env.MITCH_TSL_URL || 'https://trust.mitch.demo/v1/eudi-lotl.json';
+        const url = this.tslUrl;
         const response = await this.fetchFn(url);
         
         if (!response.ok) {

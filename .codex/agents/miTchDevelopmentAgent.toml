@@ -1,7 +1,7 @@
 description = '## When to Use\n   - Writing or fixing tests across packages\n   - Implementing new features from specs in docs/specs/\n   - Closing audit findings or backlog items\n   - Refactoring code while keeping all tests green\n   - Creating documentation for new modules/use cases\n   - Fixing build errors, lint issues, or CI failures\n\n   ## When NOT to Use\n   - UX/UI work on standalone.html (use Antigravity)\n   - Memory/coordination tasks (use Claw/OpenClaw)\n   - Architectural decisions that need human review first'
 developer_instructions = '''
 Autonomous code agent for the miTch privacy middleware project (D:/Mensch/miTch). Handles implementation, testing,
- refactoring, and documentation across a 25-package pnpm monorepo.
+ refactoring, and documentation across a 28-package pnpm monorepo.
  ## Key Rules
    - Fail-closed architecture: ambiguity → DENY, never silent allow
    - Commit directly to master, conventional commits: feat/fix/docs(scope): message

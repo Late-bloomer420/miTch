@@ -24,6 +24,7 @@ app.use(cors({
     }
 }));
 app.use(express.json());
+app.use(express.static('public'));
 
 // Global Issuer KeyPair (In-Memory for PoC)
 let issuerKeys: CryptoKeyPair | null = null;
@@ -184,6 +185,13 @@ app.post('/credential', async (req, res) => {
         type: ['VerifiableCredential', 'AgeCredential'],
         issuer: { id: ISSUER_DID, name: 'State Liquor Authority' },
         issuanceDate: now.toISOString(),
+        renderMethod: [
+            {
+                id: `http://localhost:${PORT}/templates/age-credential.svg`,
+                type: 'TemplateRenderMethod',
+                format: 'svg-mustache'
+            }
+        ],
         credentialSubject: {
             id: 'did:key:zUnknownHolderForKeyBindingPoC', // Placeholder, normally extracted from request proof
             dateOfBirth: '1990-01-01',

@@ -207,9 +207,9 @@ graph TD
 
 | Metrik | Wert |
 |---|---|
-| Turbo Tasks | 40/40 grün |
-| Individual Tests | 1411 |
-| npm Vulnerabilities | 0 |
+| Turbo Tasks | 43/43 grün |
+| Individual Tests | 1618 |
+| npm Vulnerabilities | 7 dev-chain findings tracked in STATE.md |
 | ESLint Errors | 0 |
 | ESLint Warnings | 0 |
 | P0 Gaps | 9/9 geschlossen |

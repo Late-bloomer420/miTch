@@ -158,6 +158,13 @@ const SEED_CREDENTIAL = {
     type: ['VerifiableCredential', 'AgeCredential'],
     issuedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     claims: ['birthDate', 'age'],
+    renderMethod: [
+        {
+            id: 'http://localhost:3005/templates/age-credential.svg',
+            type: 'TemplateRenderMethod',
+            format: 'svg-mustache'
+        }
+    ],
     payload: {
         birthDate: '2000-01-01',
         age: 24 // Raw PII in Secure Storage (demo only)
@@ -1128,7 +1135,8 @@ export class WalletService {
     async addIssuedCredential(
         id: string,
         subject: Record<string, unknown>,
-        issuerDid: string
+        issuerDid: string,
+        renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
     ): Promise<void> {
         await this.ensureSeeded();
         if (!this.storage) throw new Error('Wallet locked');
@@ -1138,6 +1146,7 @@ export class WalletService {
             type: ['VerifiableCredential', 'AgeCredential'],
             issuedAt: new Date().toISOString(),
             claims: Object.keys(subject),
+            renderMethod
         };
         await this.storage.save(id, subject, meta);
         await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });

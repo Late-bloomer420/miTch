@@ -69,7 +69,7 @@
 | 2982-12 | `vp_token` + `id_token` combined response | ✅ | `siopv2.ts` · `CombinedPresentation` verified |
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
 | 2982-14 | Credential status check before acceptance | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
-| 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `EUDITrustListResolver` implemented with **mock/static** data; live eIDAS-node / official EU TSL integration pending |
+| 2982-15 | Trust anchor registry / trusted issuer list | ✅ | `EUDITrustListResolver` with dynamic JSON LOTL fetching · `trust-list-plan.md` |
 | 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
 | 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
 | 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@mitch/mdoc` + `ProximityView.tsx` |
@@ -94,13 +94,12 @@
 |-----|-------|----|----|----|
 | 2024/2977 PID & EAA | 15 | 15 | 0 | 0 |
 | 2024/2979 Integrity & Core | 15 | 15 | 0 | 0 |
-| 2024/2982 Protocols & Interfaces | 18 | 17 | 1 | 0 |
+| 2024/2982 Protocols & Interfaces | 18 | 18 | 0 | 0 |
 | 2024/2981 Certification | 5 | 4 | 1 | 0 |
-| **Total** | **53** | **51 (96%)** | **2 (4%)** | **0 (0%)** |
+| **Total** | **53** | **52 (98%)** | **1 (2%)** | **0 (0%)** |
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| Live TSL integration (2982-15) | P1 | `EUDITrustListResolver` runs on mock/static data; live eIDAS-node / official EU Trust List integration required before a production pilot. |
 | Formal CC certification (2981-2) | P2 | Security Target prepared; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
