@@ -1,8 +1,8 @@
 /**
  * @module @mitch/shared-types/policy
- * 
+ *
  * Policy Engine Type Definitions
- * 
+ *
  * Defines the data structures for policy rules, verifier requests,
  * decision capsules, and evaluation results used throughout the miTch system.
  */
@@ -201,7 +201,7 @@ export interface VerifierRequest {
     /** Optional callback URL if different from origin */
     serviceEndpoint?: string;
 
-    /** 
+    /**
      * CIR 2024/2982 (I9): Endpoint for Data Erasure Requests.
      * If provided, the wallet can use this to initiate a deletion request.
      */
@@ -385,4 +385,11 @@ export interface StoredCredentialMetadata {
     status?: 'active' | 'dispensed' | 'revoked' | 'expired';
     /** Credential encoding format (default: 'sd-jwt') */
     format?: CredentialFormat;
+    /** Visual Rendering Methods (§3.1 W3C VC-Render) */
+    renderMethod?: Array<{
+        id: string;
+        type: string;
+        format?: string;
+        digestMultibase?: string;
+    }>;
 }

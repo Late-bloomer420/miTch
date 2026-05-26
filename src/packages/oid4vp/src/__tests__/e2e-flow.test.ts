@@ -1,4 +1,4 @@
- 
+
 /**
  * T-01: OID4VP End-to-End Protocol Flow Tests
  *
@@ -7,7 +7,7 @@
  *
  * All crypto operations are real (no mocks).
  */
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import {
     buildOID4VPRequest,
     buildSDJWTPresentation,
@@ -16,6 +16,7 @@ import {
     SCENARIO_PRESENTATION_DEFINITIONS,
     SCENARIO_VCT,
 } from '../demo-flow';
+import { statusResolver } from '@mitch/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -160,6 +161,32 @@ describe('T-01: OID4VP E2E — Revoked Credential', () => {
     });
 
     it('W-04: verifier rejects revoked credential', async () => {
+        // Mock bitstring for index 42 revoked
+        const bitstring = new Uint8Array(64);
+        bitstring[5] = 0b00100000; // Bit 42 set
+
+        const mockSL = {
+            '@context': ['https://www.w3.org/2018/credentials/v1'],
+            id: 'https://example.com/status-list/1',
+            type: ['VerifiableCredential', 'StatusList2021Credential'],
+            issuer: 'did:web:issuer.example.com',
+            issuanceDate: new Date().toISOString(),
+            credentialSubject: {
+                id: 'https://example.com/status-list/1#list',
+                type: 'StatusList2021',
+                statusPurpose: 'revocation',
+                encodedList: Buffer.from(bitstring).toString('base64'),
+            },
+        };
+
+        const fetchFn = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => mockSL,
+        });
+
+        vi.stubGlobal('fetch', fetchFn);
+        statusResolver.setFetch(fetchFn as any);
+
         const { request } = buildOID4VPRequest({
             verifierClientId: VERIFIER_CLIENT_ID,
             redirectUri: REDIRECT_URI,
@@ -173,7 +200,7 @@ describe('T-01: OID4VP E2E — Revoked Credential', () => {
             claims: { age: 24 },
             vct: SCENARIO_VCT['revoked'],
             issuerDid: ISSUER_DID,
-            revoked: true, // embed status claim
+            revoked: true, // embed status claim (idx 42)
         });
 
         const validation = await validateSDJWTPresentation({
@@ -185,7 +212,9 @@ describe('T-01: OID4VP E2E — Revoked Credential', () => {
         });
 
         expect(validation.ok).toBe(false);
-        expect(validation.errors[0]).toMatch(/revoked/);
+        expect(validation.errors[0]).toMatch(/revoked|DENY_CREDENTIAL_REVOKED/i);
+
+        vi.unstubAllGlobals();
     });
 });
 

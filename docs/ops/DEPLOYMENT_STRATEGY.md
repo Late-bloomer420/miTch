@@ -41,6 +41,7 @@ MITCH_API_SITE=https://api.example.eu \
 MITCH_ISSUER_URL=https://api.example.eu/issuer \
 MITCH_ISSUER_CREDENTIAL_URL=https://api.example.eu/issuer/credential \
 MITCH_ISSUER_SITE=https://issuer.example.eu \
+MITCH_TSL_PUBLIC_URL=https://api.example.eu/issuer/v1/eudi-lotl.json \
 docker-compose up --build
 ```
 

@@ -11,9 +11,11 @@ COPY src/apps/wallet-pwa ./src/apps/wallet-pwa
 ARG VITE_VERIFIER_URL=http://api.localhost/verifier/present
 ARG VITE_ISSUER_URL=http://api.localhost/issuer/credential
 ARG VITE_ISSUER_DID=did:web:issuer.localhost
+ARG VITE_TSL_URL=http://api.localhost/issuer/v1/eudi-lotl.json
 ENV VITE_VERIFIER_URL=$VITE_VERIFIER_URL
 ENV VITE_ISSUER_URL=$VITE_ISSUER_URL
 ENV VITE_ISSUER_DID=$VITE_ISSUER_DID
+ENV VITE_TSL_URL=$VITE_TSL_URL
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @mitch/wallet-pwa... build

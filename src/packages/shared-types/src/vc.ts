@@ -1,7 +1,7 @@
 /**
  * W3C Verifiable Credentials Data Model
  * https://www.w3.org/TR/vc-data-model/
- * 
+ *
  * This module defines TypeScript types for Verifiable Credentials (VC)
  * and Verifiable Presentations (VP) aligned with W3C standards.
  */
@@ -117,6 +117,16 @@ export interface VerifiableCredential<T = Record<string, unknown>> {
         id: URI;
         type: string;
     };
+
+    /**
+     * Visual Rendering Methods (§3.1 W3C VC-Render)
+     */
+    renderMethod?: Array<{
+        id: URI;
+        type: string;
+        format?: string;
+        digestMultibase?: string;
+    }>;
 }
 
 /**

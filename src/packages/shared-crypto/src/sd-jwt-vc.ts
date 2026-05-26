@@ -50,12 +50,28 @@ export interface SDJWTVCPayload {
     cnf?: CNFClaim;
     /** Status — StatusList2021 reference */
     status?: StatusClaim;
+    /**
+     * Visual Rendering Methods (§3.1 W3C VC-Render)
+     * Hints for how to display the credential.
+     */
+    renderMethod?: RenderMethod[];
     /** Selectively disclosable claims hashes */
     _sd?: string[];
     /** SD-JWT algorithm */
     _sd_alg?: string;
     /** Additional claims */
     [key: string]: unknown;
+}
+
+export interface RenderMethod {
+    /** URI of the rendering resource/template */
+    id: string;
+    /** Rendering type, e.g., "TemplateRenderMethod" */
+    type: string;
+    /** Specific format, e.g., "svg-mustache" or "html" */
+    format?: string;
+    /** Integrity hash of the rendering resource */
+    digestMultibase?: string;
 }
 
 /** Key Binding JWT payload (typ: kb+jwt) */

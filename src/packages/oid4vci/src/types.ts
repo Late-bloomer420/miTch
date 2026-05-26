@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 /**
  * A verifiable credential request.
- * 
+ *
  * PRIVACY CHECK:
  * - Data Minimization: Only strictly necessary fields.
  * - Purpose Limitation: Bound to 'credential_issuance'.
@@ -39,7 +39,7 @@ export type CredentialRequest = z.infer<typeof CredentialRequestSchema>;
 
 /**
  * The response containing the crypto-bound credential.
- * 
+ *
  * SECURITY CHECK:
  * - Structural Non-Existence: No user data in response body (only in VC)
  */
@@ -52,3 +52,23 @@ export const CredentialResponseSchema = z.object({
 });
 
 export type CredentialResponse = z.infer<typeof CredentialResponseSchema>;
+
+/**
+ * OID4VCI Batch Credential Request Schema (§7)
+ */
+export const BatchCredentialRequestSchema = z.object({
+    credential_requests: z.array(CredentialRequestSchema).min(1),
+});
+
+export type BatchCredentialRequest = z.infer<typeof BatchCredentialRequestSchema>;
+
+/**
+ * OID4VCI Batch Credential Response Schema (§7)
+ */
+export const BatchCredentialResponseSchema = z.object({
+    credential_responses: z.array(CredentialResponseSchema),
+    c_nonce: z.string().optional(),
+    c_nonce_expires_in: z.number().optional()
+});
+
+export type BatchCredentialResponse = z.infer<typeof BatchCredentialResponseSchema>;

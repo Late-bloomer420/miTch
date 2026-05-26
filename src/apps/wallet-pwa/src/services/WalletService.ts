@@ -158,6 +158,13 @@ const SEED_CREDENTIAL = {
     type: ['VerifiableCredential', 'AgeCredential'],
     issuedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     claims: ['birthDate', 'age'],
+    renderMethod: [
+        {
+            id: 'http://localhost:3005/templates/age-credential.svg',
+            type: 'TemplateRenderMethod',
+            format: 'svg-mustache'
+        }
+    ],
     payload: {
         birthDate: '2000-01-01',
         age: 24 // Raw PII in Secure Storage (demo only)
@@ -410,7 +417,7 @@ export class WalletService {
 
                     // Check if a hardware identity key is already registered
                     const hasHardwareIdentity = await WebAuthnService.isIdentityRegistered();
-                    
+
                     if (hasHardwareIdentity) {
                         console.log('🛡️ Hardware-bound Identity Key detected (LoA High)');
                         this.policyPublicKey = null; // We use the HW key for signing
@@ -1128,7 +1135,8 @@ export class WalletService {
     async addIssuedCredential(
         id: string,
         subject: Record<string, unknown>,
-        issuerDid: string
+        issuerDid: string,
+        renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
     ): Promise<void> {
         await this.ensureSeeded();
         if (!this.storage) throw new Error('Wallet locked');
@@ -1138,6 +1146,7 @@ export class WalletService {
             type: ['VerifiableCredential', 'AgeCredential'],
             issuedAt: new Date().toISOString(),
             claims: Object.keys(subject),
+            renderMethod
         };
         await this.storage.save(id, subject, meta);
         await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
@@ -1326,9 +1335,9 @@ export class WalletService {
         // 1. Find the transaction in the audit log
         const entries = this.auditLog.getRecentEntries(100);
         const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
-        
+
         if (!vpSent) throw new Error('Transaction not found in audit log');
-        
+
         const verifierId = vpSent.verifierId;
         const erasureEndpoint = vpSent.metadata?.erasure_endpoint as string | undefined;
 
@@ -1362,7 +1371,7 @@ export class WalletService {
         });
 
         console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
-        
+
         // 3. Simulate POST to the verifier's erasure endpoint
         // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
 
@@ -1372,9 +1381,9 @@ export class WalletService {
             status: 'SENT'
         });
 
-        return { 
-            success: true, 
-            message: `Erasure request for ${verifierId} has been sent successfully.` 
+        return {
+            success: true,
+            message: `Erasure request for ${verifierId} has been sent successfully.`
         };
     }
 
@@ -1384,7 +1393,7 @@ export class WalletService {
     async reportRelyingParty(decisionId: string, reason: string): Promise<{ success: boolean; message: string }> {
         const entries = this.auditLog.getRecentEntries(100);
         const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
-        
+
         const verifierId = vpSent?.verifierId || 'unknown';
         const reportEndpoint = vpSent?.metadata?.report_endpoint as string | undefined || 'https://authority.eudi.eu/report';
 
@@ -1416,9 +1425,9 @@ export class WalletService {
             endpoint: reportEndpoint
         });
 
-        return { 
-            success: true, 
-            message: `Report for ${verifierId} has been submitted to the authorities.` 
+        return {
+            success: true,
+            message: `Report for ${verifierId} has been submitted to the authorities.`
         };
     }
 
@@ -1546,7 +1555,7 @@ export class WalletService {
     /**
      * Sign arbitrary data (e.g., document hashes) using the persistent Identity Key.
      * This differs from ephemeral VP signing - these signatures are meant to persist.
-     * 
+     *
      * NOTE: This returns a "Compact-like proof token" (not RFC7515 JWS).
      * For production, implement proper ES256 JWS with base64url encoding.
      */

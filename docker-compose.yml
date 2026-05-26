@@ -39,6 +39,7 @@ services:
         VITE_VERIFIER_URL: "${MITCH_VERIFIER_PRESENT_URL:-http://api.localhost/verifier/present}"
         VITE_ISSUER_URL: "${MITCH_ISSUER_CREDENTIAL_URL:-http://api.localhost/issuer/credential}"
         VITE_ISSUER_DID: "${MITCH_ISSUER_DID:-did:web:issuer.localhost}"
+        VITE_TSL_URL: "${MITCH_TSL_PUBLIC_URL:-http://api.localhost/issuer/v1/eudi-lotl.json}"
     ports:
       - "${MITCH_WALLET_PORT:-5174}:8080"
     networks:

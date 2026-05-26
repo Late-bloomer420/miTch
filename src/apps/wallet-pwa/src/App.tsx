@@ -7,12 +7,13 @@ import {
 } from '@mitch/policy-engine';
 import type { VerifierRequest, PolicyEvaluationResult, PolicyManifest } from '@mitch/shared-types';
 import { WalletService } from './services/WalletService';
+import { CredentialCard } from './components/CredentialCard';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
-import { WebAuthnService } from '@mitch/shared-crypto';
+import { ConsentModal } from './components/ConsentModal';
+import { WebAuthnService, trustListResolver } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
-import { ConsentModal } from './components/ConsentModal';
 import { CONFIG } from './config';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
@@ -82,6 +83,7 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
 ];
 
 export default function App() {
+    const [credentials, setCredentials] = useState<any[]>([]);
     const [status, setStatus] = useState<string>('LOCKED');
     const [logs, setLogs] = useState<string[]>([]);
     const [evaluationResult, setEvaluationResult] = useState<PolicyEvaluationResult | null>(null);
@@ -131,10 +133,14 @@ export default function App() {
     useEffect(() => {
         const init = async () => {
             addLog('🔐 Initializing Wallet Service...', 'info');
+            trustListResolver.setUrl(CONFIG.TSL_URL);
             try {
                 await walletRef.current.initialize("123456");
                 addLog('🔓 Wallet Decrypted & Ready', 'success');
                 setCurrentPolicy(walletRef.current.getPolicy());
+
+                const fetched = await walletRef.current.getCredentials();
+                setCredentials(fetched);
 
                 try {
                     const isAvailable = await WebAuthnService.isAvailable();
@@ -247,7 +253,7 @@ export default function App() {
 
                 if (response.ok) {
                     addLog('✅ Verifier acknowledged receipt', 'success');
-                    
+
                     // Log the actual transmission with endpoints for later transparency
                     await walletRef.current.logVpSent(result.decisionCapsule!.decision_id, {
                         verifier_id: result.decisionCapsule!.verifier_did,
@@ -705,11 +711,17 @@ export default function App() {
             if (parts.length < 2) throw new Error('Invalid JWT format');
             const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
             const payload = JSON.parse(payloadJson) as Record<string, unknown>;
-            const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
+            const vcPayload = (payload['vc'] as Record<string, unknown> | undefined) || payload;
             const subject = (vcPayload?.credentialSubject ?? payload['credentialSubject'] ?? {}) as Record<string, unknown>;
+            const renderMethod = vcPayload?.renderMethod as
+                | Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
+                | undefined;
 
             const credId = `vc-issuer-${Date.now()}`;
-            await walletRef.current.addIssuedCredential(credId, subject, CONFIG.ISSUER_DID);
+            await walletRef.current.addIssuedCredential(credId, subject, CONFIG.ISSUER_DID, renderMethod);
+
+            const fetched = await walletRef.current.getCredentials();
+            setCredentials(fetched);
 
             setCredentialStatus('done');
             addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
@@ -823,25 +835,24 @@ export default function App() {
                     <span className="credential-trust-badge">✓ Trusted</span>
                 </div>
 
-                <div className="credential-item">
-                    <span className="credential-icon">🪪</span>
-                    <div>
-                        <div className="credential-name">Age Credential (GovID)</div>
-                        <div className="credential-issuer">did:example:gov-issuer</div>
+                {credentials.length === 0 && (
+                    <div style={{ color: '#94a3b8', fontSize: 12, textAlign: 'center', padding: '10px 0' }}>
+                        No credentials in storage.
                     </div>
-                </div>
+                )}
 
-                <div className="credential-divider" />
-
-                <div className="credential-item">
-                    <span className="credential-icon">🏥</span>
-                    <div>
-                        <div className="credential-name">Hospital ID</div>
-                        <div className="credential-issuer">did:example:st-mary-hospital</div>
+                {credentials.map((cred, idx) => (
+                    <div key={cred.id}>
+                        <CredentialCard
+                            id={cred.id}
+                            name={cred.type[cred.type.length - 1].replace('VerifiableCredential', 'Credential')}
+                            issuer={cred.issuer}
+                            claims={cred.claims.reduce((acc: any, c: string) => ({ ...acc, [c]: '...' }), {})}
+                            renderMethod={cred.renderMethod}
+                        />
+                        {idx < credentials.length - 1 && <div className="credential-divider" />}
                     </div>
-                </div>
-
-                <div className="credential-divider" />
+                ))}
 
                 {/* OID4VCI: fetch credential from issuer-mock */}
                 <button
@@ -868,7 +879,7 @@ export default function App() {
                     capsule={evaluationResult.decisionCapsule}
                     reasonCodes={evaluationResult.reasonCodes}
                     timeoutMinutes={currentPolicy?.globalSettings?.requireConsentTimeoutMinutes}
-                    onApprove={(_presenceProof) => {
+                    onApprove={(_presenceProof?: string) => {
                         setShowConsent(false);
                         const pendingAuth = (window as unknown as Record<string, unknown>)._pendingAuthRequest as AuthorizationRequest | undefined;
                         const pendingScenario = (window as unknown as Record<string, unknown>)._pendingScenario as string | undefined;
@@ -1029,8 +1040,8 @@ export default function App() {
                     {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
                 </button>
                 {showDataFlow && (
-                    <DataFlowPanel 
-                        entries={walletRef.current.getRecentAuditLogs(200)} 
+                    <DataFlowPanel
+                        entries={walletRef.current.getRecentAuditLogs(200)}
                         onAction={async (type, decisionId) => {
                             if (type === 'erasure') {
                                 const res = await walletRef.current.requestDataErasure(decisionId);
@@ -1147,7 +1158,7 @@ export default function App() {
             </div>
 
             {showProximity && (
-                <ProximityView 
+                <ProximityView
                     wallet={walletRef.current}
                     onComplete={() => {
                         setShowProximity(false);

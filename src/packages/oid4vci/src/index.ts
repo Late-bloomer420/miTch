@@ -1,9 +1,15 @@
-import { CredentialRequest, CredentialRequestSchema, CredentialResponse } from './types';
+import {
+    CredentialRequest,
+    CredentialRequestSchema,
+    CredentialResponse,
+    BatchCredentialRequestSchema,
+    BatchCredentialResponse
+} from './types';
 
 
 /**
  * OID4VCIIssuer Service
- * 
+ *
  * ARCHITECTURE NOTE:
  * This service is designed to be EPHEMERAL. It does not hold state between requests.
  * It strictly enforces the "Fail-Closed" axiom.
@@ -37,7 +43,7 @@ export class OID4VCIIssuer {
 
     /**
      * Processes a credential request.
-     * 
+     *
      * PRIVACY AUDIT:
      * - Input: Encrypted JWE (Simulated here via types)
      * - Processing: In-memory only
@@ -96,6 +102,39 @@ export class OID4VCIIssuer {
         };
     }
 
+    /**
+     * Processes a batch of credential requests (§7).
+     *
+     * PRIVACY & SECURITY:
+     * - Atomic: All requests in the batch must pass validation.
+     * - Fail-Closed: One invalid request rejects the entire batch.
+     */
+    async issueBatchCredential(rawRequest: unknown): Promise<BatchCredentialResponse> {
+        // 1. INPUT VALIDATION (Fail-Closed)
+        const parseResult = BatchCredentialRequestSchema.safeParse(rawRequest);
+        if (!parseResult.success) {
+            throw new Error(`FAIL_INPUT_ARBITRATION: Invalid batch request format. ${parseResult.error.message}`);
+        }
+        const batchRequest = parseResult.data;
+
+        // 2. ATOMIC PROCESSING
+        // Process all requests. If one fails, the whole call throws (Fail-Closed).
+        const responses = await Promise.all(
+            batchRequest.credential_requests.map(req => this.issueCredential(req))
+        );
+
+        this.emitAudit('BATCH_ISSUANCE_ATTEMPT', 'SUCCESS', {
+            subject: batchRequest.credential_requests[0].subject_did, // Primary subject
+            batch_size: batchRequest.credential_requests.length
+        });
+
+        return {
+            credential_responses: responses.map(r => ({ credential: r.credential })),
+            c_nonce: crypto.randomUUID(),
+            c_nonce_expires_in: 300
+        };
+    }
+
 
     /**
      * Emits a structured audit log entry.
@@ -130,7 +169,7 @@ export class OID4VCIIssuer {
      * Enforces strict rules on what can be issued.
      */
     private validateIssuancePolicy(request: CredentialRequest) {
-        // Axiom: We do not issue credentials to unknown DIDs in this strict mode? 
+        // Axiom: We do not issue credentials to unknown DIDs in this strict mode?
         // Or we just check that the claims are reasonable.
         // Zod checked the type.
         // Here we could check a deny-list.

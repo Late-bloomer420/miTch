@@ -1,21 +1,30 @@
- 
+
 /**
  * B-02: OID4VP Direct Post Endpoint Tests
  *
  * Tests the /oid4vp-present endpoint that receives SD-JWT VP Token
  * from the wallet via direct_post and validates it.
  */
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { app } from '../app';
 import {
     buildSDJWTPresentation,
     SCENARIO_VCT,
 } from '@mitch/oid4vp';
+import { statusResolver, trustListResolver } from '@mitch/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const AGE_CLAIMS = { age: 24, birthDate: '2000-01-01', name: 'Max Mustermann', address: 'Zirl, AT', nationalId: 'AT-123456' };
+
+const MOCK_TSL = {
+    id: 'test-tsl',
+    version: '1.0.0',
+    validUntil: '2030-01-01T00:00:00Z',
+    issuers: ['https://issuer.mitch.demo'],
+    verifiers: ['did:mitch:verifier-liquor-store']
+};
 
 async function generateKeyPair(): Promise<CryptoKeyPair> {
     return globalThis.crypto.subtle.generateKey(
@@ -36,6 +45,14 @@ describe('/oid4vp-present endpoint', () => {
         process.env.MITCH_TEST_MODE = '1';
         issuerKeys = await generateKeyPair();
         holderKeys = await generateKeyPair();
+
+        // Mock TSL fetch
+        const fetchFn = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => MOCK_TSL,
+        });
+        trustListResolver.setFetch(fetchFn as any);
+        trustListResolver.clearCache();
     });
 
     beforeEach(async () => {
@@ -116,6 +133,32 @@ describe('/oid4vp-present endpoint', () => {
     });
 
     it('should reject a revoked credential', async () => {
+        // Mock bitstring for index 42 revoked
+        const bitstring = new Uint8Array(64);
+        bitstring[5] = 0b00100000; // Bit 42 set
+
+        const mockSL = {
+            '@context': ['https://www.w3.org/2018/credentials/v1'],
+            id: 'https://example.com/status-list/1',
+            type: ['VerifiableCredential', 'StatusList2021Credential'],
+            issuer: 'did:web:issuer.example.com',
+            issuanceDate: new Date().toISOString(),
+            credentialSubject: {
+                id: 'https://example.com/status-list/1#list',
+                type: 'StatusList2021',
+                statusPurpose: 'revocation',
+                encodedList: Buffer.from(bitstring).toString('base64'),
+            },
+        };
+
+        const fetchFn = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => mockSL,
+        });
+
+        vi.stubGlobal('fetch', fetchFn);
+        statusResolver.setFetch(fetchFn as any);
+
         const authRes = await request(app)
             .get('/authorize?scenario=revoked');
         expect(authRes.status).toBe(200);
@@ -146,6 +189,8 @@ describe('/oid4vp-present endpoint', () => {
         expect(res.body.ok).toBe(false);
         expect(res.body.errors).toBeDefined();
         expect(res.body.errors.some((e: string) => e.toLowerCase().includes('revok'))).toBe(true);
+
+        vi.unstubAllGlobals();
     });
 
     it('should verify doctor-login scenario with selective disclosure', async () => {

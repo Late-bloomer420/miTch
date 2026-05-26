@@ -18,6 +18,8 @@ import {
     createKeyBindingJWT,
     validateKeyBindingJWT,
     buildCNFClaim,
+    statusResolver,
+    trustListResolver,
     type SDJWTVCPayload,
 } from '@mitch/shared-crypto';
 import type { JWK } from 'jose';
@@ -304,6 +306,8 @@ export interface ValidatePresentationOpts {
     issuerPublicKey: CryptoKey;
     /** Reject credentials with a status claim (simulates revocation check) */
     checkRevocation?: boolean;
+    /** Check if the issuer is in the EUDI Trust List (TSL) */
+    checkTrust?: boolean;
 }
 
 export interface ValidatePresentationResult {
@@ -324,7 +328,13 @@ export interface ValidatePresentationResult {
 export async function validateSDJWTPresentation(
     opts: ValidatePresentationOpts
 ): Promise<ValidatePresentationResult> {
-    const { vpTokenString, request, issuerPublicKey, checkRevocation = true } = opts;
+    const {
+        vpTokenString,
+        request,
+        issuerPublicKey,
+        checkRevocation = true,
+        checkTrust = false,
+    } = opts;
 
     // Split VP token: last segment after final ~ is KB-JWT
     const parts = vpTokenString.split('~');
@@ -343,12 +353,30 @@ export async function validateSDJWTPresentation(
     }
     const payload = vcResult.payload!;
 
-    // Step 2: Revocation check (status claim = revoked in demo)
+    // Step 2a: Trust List (TSL) check
+    if (checkTrust) {
+        const trustResult = await trustListResolver.isIssuerTrusted(payload.iss, 'high');
+        if (!trustResult.isTrusted) {
+            return {
+                ok: false,
+                errors: [trustResult.reason || `Issuer untrusted (not in EUDI TSL): ${payload.iss}`],
+            };
+        }
+    }
+
+    // Step 2b: Revocation check (live StatusList check)
     if (checkRevocation && payload.status) {
-        return {
-            ok: false,
-            errors: [`Credential revoked (status_list idx: ${payload.status.status_list.idx})`],
-        };
+        const result = await statusResolver.checkStatus(payload.status, 'high');
+        if (result.decision === 'DENY') {
+            return {
+                ok: false,
+                errors: [
+                    result.reason ||
+                        result.denyCode ||
+                        `Credential revoked (status_list idx: ${payload.status.status_list.idx})`,
+                ],
+            };
+        }
     }
 
     // Step 3: Extract holder JWK from cnf — pass JWK directly to avoid

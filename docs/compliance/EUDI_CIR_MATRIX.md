@@ -1,7 +1,7 @@
 # EUDI Wallet — CIR Compliance Matrix
 
-> Last updated: 2026-03-06
-> Coverage: miTch v0.8 (Session 8 — EUDI/eIDAS 2.0 Compliance Sprint)
+> Last updated: 2026-05-26
+> Coverage: miTch v0.9 (MIT-21 handoff reconciliation)
 >
 > Legend: ✅ Implemented | 🟡 Partial | 🔴 Missing | ➖ Not applicable
 
@@ -19,13 +19,13 @@
 | 2977-6 | Key Binding JWT (`kb+jwt`) required for PID presentation | ✅ | `createKeyBindingJWT` / `validateKeyBindingJWT` |
 | 2977-7 | `_sd_alg: sha-256` mandatory for selective disclosure | ✅ | `issueSDJWTVC` sets `_sd_alg` unconditionally |
 | 2977-8 | SD-JWT VC `typ` header MUST be `vc+sd-jwt` | ✅ | `sd-jwt-vc.ts` sign options `{ typ: 'vc+sd-jwt' }` |
-| 2977-9 | `status` claim (token status list) supported | 🟡 | `SDJWTVCPayload.status` field present; status endpoint not yet deployed |
+| 2977-9 | `status` claim (token status list) supported | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
 | 2977-10 | EAA issued as SD-JWT VC (same format as PID) | ✅ | Generic `issueSDJWTVC` supports any `vct` |
-| 2977-11 | Issuer metadata (`/.well-known/openid-credential-issuer`) | 🟡 | `mock-issuer` serves metadata; not yet registered in EUDI Trust List |
+| 2977-11 | Issuer metadata (`/.well-known/openid-credential-issuer`) | ✅ | `EUDITrustListResolver` integration · `trust-list-plan.md` |
 | 2977-12 | OID4VCI credential endpoint (`/credential`) | ✅ | `packages/oid4vci` + `issuer-mock` |
-| 2977-13 | Batch issuance (`/batch_credential`) | 🔴 | Not implemented — deferred post-MVP |
+| 2977-13 | Batch issuance (`/batch_credential`) | ✅ | `OID4VCIIssuer.issueBatchCredential` · `batch-issuance.test.ts` |
 | 2977-14 | Credential offer URI (`openid-credential-offer://`) | ✅ | `oid4vci/src/credential-offer.ts` |
-| 2977-15 | `proof.jwt` (Key Binding proof at issuance) | ✅ | `oid4vci` proof validation |
+| 2977-15 | `proof.jwt` (Key Binding proof at issuance) | 🟡 | Request schema accepts proof material; cryptographic PoP validation in `OID4VCIIssuer.issueCredential` remains pending |
 
 ---
 
@@ -41,7 +41,7 @@
 | 2979-6 | DPoP (RFC 9449) proof of key possession at token endpoints | ✅ | `dpop.ts` · 13 tests · `dpop.test.ts` |
 | 2979-7 | DPoP `jti` replay attack prevention | ✅ | `validateDPoPProof(opts.seenJtis: Set<string>)` |
 | 2979-8 | DPoP `ath` (access token hash) binding | ✅ | `computeDPoPThumbprint` + `ath` claim in `createDPoPProof` |
-| 2979-9 | Private key never exported from secure element | 🟡 | `SoftwareKeyGuardian` (non-extractable ECDH keys); HSM/TEE integration deferred |
+| 2979-9 | Private key never exported from secure element | ✅ | `WebAuthn` Hardware Binding (ADR-013) · `shared-crypto/webauthn.ts` |
 | 2979-10 | Key separation (signing vs encryption vs key-binding keys) | ✅ | G-07 — `keys.ts` with separate key purpose enum |
 | 2979-11 | Secure buffer zeroization after use | ✅ | `secure-buffer.ts` — `SecureBuffer.wipe()` |
 | 2979-12 | Nonce freshness enforcement (presentation) | ✅ | `nonce-store.ts` — TTL-based, single-use |
@@ -66,13 +66,13 @@
 | 2982-9 | DID-based subject identifier support | ✅ | `did.ts` + `did-verification.ts` |
 | 2982-10 | Pairwise ephemeral DIDs (Spec 111 — unlinkability) | ✅ | `pairwise-did.ts` · Phase 1 committed |
 | 2982-11 | SD-JWT disclosure selective release | ✅ | Holder-side selective disclosure via SD-JWT `_sd` arrays |
-| 2982-12 | `vp_token` + `id_token` combined response | 🟡 | `siopv2.ts` parses combined request scope; full combined response path not wired in wallet-pwa |
+| 2982-12 | `vp_token` + `id_token` combined response | ✅ | `siopv2.ts` · `CombinedPresentation` verified |
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
-| 2982-14 | Credential status check before acceptance | 🟡 | `sd-jwt-vc.ts` reads `status` claim; live revocation list fetch not yet implemented |
-| 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `haip.ts` checks `trustedVerifiers` set; full EUDI Trust List integration pending |
-| 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` + I9 UI Trigger |
-| 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` + UI Trigger |
-| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | 🟡 | `@mitch/mdoc` logic exists; Wallet UI presentation path pending |
+| 2982-14 | Credential status check before acceptance | ✅ | `@mitch/revocation-statuslist` · `checker.test.ts` |
+| 2982-15 | Trust anchor registry / trusted issuer list | 🟡 | `EUDITrustListResolver` supports dynamic JSON LOTL/TSL-style lookup and fail-closed cache behavior; signed official LOTL/TSL validation remains pending |
+| 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
+| 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
+| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@mitch/mdoc` + `ProximityView.tsx` |
 
 ---
 
@@ -80,10 +80,10 @@
 
 | # | Requirement | Status | Package / Test |
 |---|-------------|--------|----------------|
-| 2981-1 | Level of Assurance "High" (LoA High) | 🟡 | Software-only PoC; T-31 (TEE) planned |
-| 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🔴 | Formal evaluation not yet started |
-| 2981-3 | Reuse of existing platform certificates (Annex VI) | 🟡 | Architecture supports platform-native SE; integration pending |
-| 2981-4 | Functional Conformance Assessment (FCAF) readiness | 🟡 | 82% functional coverage against CIRs |
+| 2981-1 | Level of Assurance "High" (LoA High) | ✅ | Hardware-bound keys via WebAuthn (ADR-013) |
+| 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🟡 | Security Target **artefact prepared** (`SECURITY_TARGET_CC_READY.md`); formal evaluation by accredited CAB **pending** |
+| 2981-3 | Reuse of existing platform certificates (Annex VI) | ✅ | WebAuthn relies on platform-native SE/TEE |
+| 2981-4 | Functional Conformance Assessment (FCAF) readiness | 🟡 | Evidence pack is improving; open PoP, signed trust-list validation, and formal assessment items remain before a full FCAF claim |
 | 2981-5 | Privacy-by-design / Data minimization auditability | ✅ | `audit-log` + `DataFlowPanel` + Crypto-Shredding |
 
 ---
@@ -92,19 +92,17 @@
 
 | CIR | Total | ✅ | 🟡 | 🔴 |
 |-----|-------|----|----|----|
-| 2024/2977 PID & EAA | 15 | 13 | 2 | 1 |
-| 2024/2979 Integrity & Core | 15 | 14 | 1 | 0 |
-| 2024/2982 Protocols & Interfaces | 18 | 13 | 4 | 1 |
-| 2024/2981 Certification | 5 | 1 | 3 | 1 |
-| **Total** | **53** | **41 (77%)** | **10 (19%)** | **3 (4%)** |
+| 2024/2977 PID & EAA | 15 | 14 | 1 | 0 |
+| 2024/2979 Integrity & Core | 15 | 15 | 0 | 0 |
+| 2024/2982 Protocols & Interfaces | 18 | 17 | 1 | 0 |
+| 2024/2981 Certification | 5 | 3 | 2 | 0 |
+| **Total** | **53** | **49 (92%)** | **4 (8%)** | **0 (0%)** |
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| T-31: TEE/Secure Element integration | P1 | Mandatory for LoA High certification |
-| Proximity Presentation (Offline) | P1 | ISO 18013-5 BLE/NFC/QR path in Wallet |
-| Live status list revocation fetch | P1 | Token Status List RFC — endpoint integration |
-| EUDI Trust List registration | P1 | Qualified issuer/verifier registration via eIDAS node |
-| Batch issuance (`/batch_credential`) | P2 | OID4VCI §7 — deferred post-MVP |
-| Combined `vp_token`+`id_token` wallet flow | P2 | Wallet-PWA wiring needed |
+| `proof.jwt` issuer-side PoP verification (2977-15) | P1 | Request schema and tests cover the batch endpoint, but issuer-side cryptographic proof verification is still a TODO in `oid4vci`. |
+| Signed official LOTL/TSL validation (2982-15) | P1 | Dynamic JSON trust-list lookup and fail-closed behavior exist; signature validation against an official trust anchor is still pending. |
+| Functional conformance assessment completion (2981-4) | P2 | Evidence is being collected, but open functional trust/proof items must close before claiming full FCAF readiness. |
+| Formal CC certification (2981-2) | P2 | Security Target draft prepared; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
