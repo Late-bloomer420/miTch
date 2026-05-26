@@ -32,6 +32,7 @@ app.use(cors({
     }
 }));
 app.use(express.json());
+app.use(express.static('public'));
 
 // Global Issuer KeyPair (In-Memory for PoC)
 let issuerKeys: CryptoKeyPair | null = null;

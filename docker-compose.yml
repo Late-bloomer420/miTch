@@ -7,7 +7,7 @@ services:
       NODE_ENV: production
       PORT: "3004"
       MITCH_TRUST_MODE: "${MITCH_TRUST_MODE:-live}"
-      MITCH_TSL_URL: "${MITCH_TSL_URL:-https://trust.mitch.demo/v1/eudi-lotl.json}"
+      MITCH_TSL_URL: "${MITCH_TSL_URL:-http://issuer-mock:3005/v1/eudi-lotl.json}"
       VERIFIER_BASE_URL: "${MITCH_VERIFIER_API_URL:-http://api.localhost/verifier}"
     ports:
       - "${MITCH_VERIFIER_BACKEND_PORT:-3004}:3004"

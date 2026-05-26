@@ -1,0 +1,15 @@
+{
+  "id": "mitch-pilot-trust-list-v1",
+  "version": "1.0.0",
+  "validUntil": "2027-01-01T00:00:00Z",
+  "issuers": [
+    "did:web:localhost%3A3005",
+    "did:web:issuer.localhost",
+    "did:web:issuer.mitch.demo"
+  ],
+  "verifiers": [
+    "did:mitch:verifier-liquor-store",
+    "did:web:verifier.localhost",
+    "did:web:verifier.mitch.demo"
+  ]
+}

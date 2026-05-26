@@ -19,6 +19,7 @@ miTch targets privacy-preserving verification with fail-closed policy decisions.
 - `wallet-pwa`: wallet UI served as static assets.
 - `verifier-frontend`: verifier demo UI served as static assets.
 - `proxy`: Caddy reverse proxy for local hostnames and future TLS termination.
+- `issuer-mock/public/v1/eudi-lotl.json`: local pilot trust-list fixture used by the verifier default `MITCH_TSL_URL`.
 
 Default local site addresses are `http://wallet.localhost`, `http://verifier.localhost`, `http://issuer.localhost`, and `http://api.localhost`. Override them with `MITCH_WALLET_SITE`, `MITCH_VERIFIER_SITE`, `MITCH_ISSUER_SITE`, and `MITCH_API_SITE` when enabling real TLS hostnames.
 
@@ -41,6 +42,18 @@ MITCH_ISSUER_URL=https://api.example.eu/issuer \
 MITCH_ISSUER_CREDENTIAL_URL=https://api.example.eu/issuer/credential \
 MITCH_ISSUER_SITE=https://issuer.example.eu \
 docker-compose up --build
+```
+
+For a local smoke test with cleanup:
+
+```bash
+./scripts/verify-deployment.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+.\scripts\verify-deployment.ps1
 ```
 
 ## Production Hardening Still Required
