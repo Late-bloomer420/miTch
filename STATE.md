@@ -30,7 +30,7 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 44/44 turbo tasks pass; 1664 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 84/84 wallet-pwa tests; 52/52 oid4vp-verifier tests; 35/35 oid4vci tests
+- **Tests:** 44/44 turbo tasks pass; 1664 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 84/84 wallet-pwa tests; 52/52 oid4vp-verifier tests; 35/35 oid4vci tests. **Suite is verified 100% green.**
 - **Lint:** 0 errors, 0 warnings
 - **Compliance Score:** 98% (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache

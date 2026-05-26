@@ -12,11 +12,19 @@ import {
     buildSDJWTPresentation,
     SCENARIO_VCT,
 } from '@mitch/oid4vp';
-import { statusResolver } from '@mitch/shared-crypto';
+import { statusResolver, trustListResolver } from '@mitch/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const AGE_CLAIMS = { age: 24, birthDate: '2000-01-01', name: 'Max Mustermann', address: 'Zirl, AT', nationalId: 'AT-123456' };
+
+const MOCK_TSL = {
+    id: 'test-tsl',
+    version: '1.0.0',
+    validUntil: '2030-01-01T00:00:00Z',
+    issuers: ['https://issuer.mitch.demo'],
+    verifiers: ['did:mitch:verifier-liquor-store']
+};
 
 async function generateKeyPair(): Promise<CryptoKeyPair> {
     return globalThis.crypto.subtle.generateKey(
@@ -37,6 +45,14 @@ describe('/oid4vp-present endpoint', () => {
         process.env.MITCH_TEST_MODE = '1';
         issuerKeys = await generateKeyPair();
         holderKeys = await generateKeyPair();
+
+        // Mock TSL fetch
+        const fetchFn = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => MOCK_TSL,
+        });
+        trustListResolver.setFetch(fetchFn as any);
+        trustListResolver.clearCache();
     });
 
     beforeEach(async () => {
