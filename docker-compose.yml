@@ -20,7 +20,7 @@ services:
   issuer-mock:
     build:
       context: .
-      dockerfile: src/packages/mock-issuer/Dockerfile # (I will create this next)
+      dockerfile: src/apps/issuer-mock/Dockerfile
     environment:
       - PORT=4000
       - ISSUER_DID=did:web:issuer.mitch.demo
@@ -32,7 +32,7 @@ services:
   wallet-pwa:
     build:
       context: .
-      dockerfile: src/apps/wallet-pwa/Dockerfile # (I will create this next)
+      dockerfile: src/apps/wallet-pwa/Dockerfile
     networks:
       - mitch-network
     restart: always
