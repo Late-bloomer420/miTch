@@ -8,6 +8,7 @@ import {
 import type { VerifierRequest, PolicyEvaluationResult, PolicyManifest } from '@mitch/shared-types';
 import { WalletService } from './services/WalletService';
 import { CredentialCard } from './components/CredentialCard';
+import { ConsentModal } from './components/ConsentModal';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
 import { WebAuthnService, trustListResolver } from '@mitch/shared-crypto';
