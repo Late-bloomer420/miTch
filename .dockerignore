@@ -1,0 +1,16 @@
+.git
+.turbo
+node_modules
+**/node_modules
+**/dist
+**/build
+coverage
+**/coverage
+.env
+.env.*
+!.env.example
+paperclip-home
+verifier-key.json
+nonce-cache.json
+*.log
+_tmp_*
