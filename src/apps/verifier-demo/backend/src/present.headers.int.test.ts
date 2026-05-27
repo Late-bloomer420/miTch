@@ -27,8 +27,10 @@ describe('POST /present rate-limit headers', () => {
         const { app } = await import('./app');
         const agent = request(app);
 
+        // Fail-closed: these carry only a legacy boolean (no ZK proof), so each is 403 —
+        // but still counts toward the rate limit, so the 11th is rate-limited.
         for (let i = 0; i < 10; i++) {
-            await agent.post('/present').send({}).expect(200);
+            await agent.post('/present').send({}).expect(403);
         }
 
         const res = await agent.post('/present').send({}).expect(429);
@@ -43,5 +45,12 @@ describe('POST /present rate-limit headers', () => {
         const nowEpoch = Math.floor(Date.now() / 1000);
         expect(resetEpoch).toBeGreaterThanOrEqual(nowEpoch);
         expect(resetEpoch).toBeLessThanOrEqual(nowEpoch + resetAfter + 1);
+    });
+
+    it('fails closed: rejects a legacy boolean proven_claims without a ZK proof', async () => {
+        const { app } = await import('./app');
+        const res = await request(app).post('/present').send({}).expect(403);
+        expect(res.body.ok).toBe(false);
+        expect(res.body.error).toBe('AGE_NOT_VERIFIED');
     });
 });

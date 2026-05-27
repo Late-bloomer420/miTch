@@ -528,9 +528,10 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
                 console.error('? ZKP Verification Exception:', err);
             }
         } else {
-            // Fallback to legacy trusted boolean (during migration)
-            console.log('?? No ZKP Proof found, checking legacy claim...');
-            isVerified = (firstPres?.proven_claims as Record<string, unknown> | undefined)?.[agePredicateId] === true;
+            // Fail closed: a protected age predicate REQUIRES a verified ZK proof.
+            // No legacy/self-asserted-claim fallback — never trust an unverified boolean (privacy-first, #27).
+            isVerified = false;
+            console.warn('Missing required ZKP proof for protected age predicate — denying (fail-closed)');
         }
 
         if (isVerified) {
