@@ -1,4 +1,4 @@
-# Verifier Backend Dockerfile
+# Mock Issuer Dockerfile
 # Based on miTch 100% Compliance Architecture
 
 FROM node:20-alpine AS builder
@@ -11,28 +11,27 @@ RUN npm install -g pnpm
 # Copy root monorepo config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
 
-# Copy required packages first (for turbo pruning/build)
+# Copy required packages and the app
 COPY src/packages ./src/packages
-COPY src/apps/verifier-demo/backend ./src/apps/verifier-demo/backend
+COPY src/apps/issuer-mock ./src/apps/issuer-mock
 
 # Prune and Build
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter verifier-backend build
+RUN pnpm --filter "@mitch/issuer-mock" build
 
 # Production Image
 FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/src/apps/verifier-demo/backend/dist ./dist
-COPY --from=builder /app/src/apps/verifier-demo/backend/package.json ./
+COPY --from=builder /app/src/apps/issuer-mock/dist ./dist
+COPY --from=builder /app/src/apps/issuer-mock/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 
 # Default Environment
 ENV NODE_ENV=production
-ENV PORT=3000
-ENV MITCH_TRUST_MODE=live
+ENV PORT=4000
 
-EXPOSE 3000
+EXPOSE 4000
 
 CMD ["node", "dist/index.js"]

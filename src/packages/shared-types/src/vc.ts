@@ -117,6 +117,16 @@ export interface VerifiableCredential<T = Record<string, unknown>> {
         id: URI;
         type: string;
     };
+
+    /**
+     * Visual Rendering Methods (§3.1 W3C VC-Render)
+     */
+    renderMethod?: Array<{
+        id: URI;
+        type: string;
+        format?: string;
+        digestMultibase?: string;
+    }>;
 }
 
 /**

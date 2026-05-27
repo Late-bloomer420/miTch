@@ -72,3 +72,12 @@ paperclip-mitch-company-home/
 
 .gemini/
 gha-creds-*.json
+
+# Paperclip runtime and local company context.
+# These may contain live databases, secrets, logs, or nested repos.
+paperclip-home/
+paperclip-mitch-company-home/
+paperclip-orchestrator/
+docs/company/
+PAPERCLIP.md
+MITCH_COMPANY.md

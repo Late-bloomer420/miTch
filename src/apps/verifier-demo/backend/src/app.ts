@@ -21,11 +21,16 @@ import {
     SCENARIO_VCT,
     SCENARIO_LABELS,
 } from '@mitch/oid4vp';
+import { trustListResolver } from '@mitch/shared-crypto';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
 
 export const app: Express = express();
+
+// Initialize Trust List Resolver
+const MITCH_TSL_URL = process.env.MITCH_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json';
+trustListResolver.setUrl(MITCH_TSL_URL);
 
 const isTestMode = process.env.MITCH_TEST_MODE === '1';
 /**
@@ -253,6 +258,7 @@ app.post('/wallet-present', async (req, res) => {
             request,
             issuerPublicKey: issuerKeys.publicKey,
             checkRevocation: true,
+            checkTrust: true,
         });
 
         // W-05: Cleanup (ephemeral keys go out of scope here — GC'd)
@@ -344,6 +350,7 @@ app.post('/oid4vp-present', async (req, res) => {
             request: reconstructedRequest,
             issuerPublicKey,
             checkRevocation: true,
+            checkTrust: true,
         });
 
         // W-05: Session cleanup

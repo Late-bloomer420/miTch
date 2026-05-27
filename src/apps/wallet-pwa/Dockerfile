@@ -1,34 +1,33 @@
-# Build Stage
+# Wallet PWA Dockerfile
+# Based on miTch 100% Compliance Architecture
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-COPY package.json turbo.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install pnpm
+# Install dependencies (pnpm is used in monorepo)
 RUN npm install -g pnpm
 
-# Copy source code
-COPY apps/wallet-pwa ./apps/wallet-pwa
-COPY packages ./packages
+# Copy root monorepo config
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
 
-# Install dependencies (frozen-lockfile for consistency)
+# Copy required packages and the app
+COPY src/packages ./src/packages
+COPY src/apps/wallet-pwa ./src/apps/wallet-pwa
+
+# Prune and Build
 RUN pnpm install --frozen-lockfile
+RUN pnpm --filter "@mitch/wallet-pwa" build
 
-# Build the app
-RUN pnpm filter "@mitch/wallet-pwa" build
+# Production Image: Serve static files via Nginx for high performance/sovereignty
+FROM nginx:alpine
 
-# Serve Stage
-FROM node:20-alpine AS runner
+# Copy built assets to nginx public folder
+COPY --from=builder /app/src/apps/wallet-pwa/dist /usr/share/nginx/html
 
-WORKDIR /app
+# Optional: Copy custom nginx config for SPA routing
+# COPY src/apps/wallet-pwa/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN npm install -g serve
+EXPOSE 80
 
-# Copy built assets from builder
-COPY --from=builder /app/apps/wallet-pwa/dist ./dist
-
-# Expose port (default Vite/Serve)
-EXPOSE 5173
-
-# Start static file server
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["nginx", "-g", "daemon off;"]

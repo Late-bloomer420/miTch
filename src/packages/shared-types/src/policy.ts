@@ -385,4 +385,11 @@ export interface StoredCredentialMetadata {
     status?: 'active' | 'dispensed' | 'revoked' | 'expired';
     /** Credential encoding format (default: 'sd-jwt') */
     format?: CredentialFormat;
+    /** Visual Rendering Methods (§3.1 W3C VC-Render) */
+    renderMethod?: Array<{
+        id: string;
+        type: string;
+        format?: string;
+        digestMultibase?: string;
+    }>;
 }

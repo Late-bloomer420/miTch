@@ -4,6 +4,13 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 11 — Compliance Gap Sprint (2026-05-25)
+- **EUDI Compliance Matrix:** Updated to 94% coverage (50/53 requirements ✅).
+- **StatusList PoC:** Implemented `SDJWTStatusResolver` in `@mitch/shared-crypto` to wire `@mitch/revocation-statuslist`.
+- **LoA High Readiness:** Finalized certification analysis documenting WebAuthn hardware binding (ADR-013).
+- **Deliverables:** Generated `COMPLIANCE_GAP_REPORT_MAY_2026.md` and updated `BACKLOG.md` with Pilot-Readiness gaps (Trust List, Batch Issuance).
+- **Validation:** `pnpm turbo test` green (44 tasks).
+
 ### Session 10+ (2026-03-11 – 2026-03-13)
 - **SPRINT_PLAN.md Block A Security Fixes:** F-01–F-03, F-06, F-08, F-10–F-11, F-13, F-17 (closed)
 - **F-01** Recovery: GF(2^8) Shamir 2-of-3 SSS (real secret sharing, ersetzt XOR 3-of-3)

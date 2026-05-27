@@ -1,0 +1,21 @@
+# miTch Pilot Deployment - Caddy Configuration
+
+{
+    # Optional: Enable local CA for automatic HTTPS on .demo domains
+    # local_certs
+}
+
+# 1. Wallet PWA (Frontend)
+wallet.mitch.demo {
+    reverse_proxy wallet-pwa:80
+}
+
+# 2. Verifier Backend
+verifier.mitch.demo {
+    reverse_proxy verifier-backend:3000
+}
+
+# 3. Mock Issuer
+issuer.mitch.demo {
+    reverse_proxy issuer-mock:4000
+}

@@ -3,7 +3,8 @@
 > **Privacy-preserving proof mediation for digital identity.**
 > Verifiers get cryptographic proofs. Never raw data. Never PII.
 
-[![Tests](https://img.shields.io/badge/tests-1411%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+[![Tests](https://img.shields.io/badge/tests-1664%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GDPR Art. 25](https://img.shields.io/badge/GDPR-Art.%2025%20by%20Design-blue)](docs/ops/EVIDENCE_PACK_P0.md)
 [![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-compatible-blue)](docs/compliance)
@@ -35,7 +36,8 @@ pnpm dev        # wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
 ```
 
 ```bash
-pnpm test       # 1411+ tests across 26 packages
+pnpm test       # 1664+ tests across 28 packages
+
 pnpm lint       # 0 errors
 pnpm build      # compile all packages
 ```
@@ -62,7 +64,8 @@ Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (s
 
 ## Architecture
 
-pnpm monorepo (Turborepo) — **26 packages, 3 apps**.
+pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
+
 
 ### Core
 
