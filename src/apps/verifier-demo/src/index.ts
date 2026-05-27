@@ -57,7 +57,8 @@ app.post('/present', presentLimiter, async (req, res) => {
         // The Magic: SDK handles unwrapping, AAD re-binding, and Decryption
         const presentation = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
 
-        console.log('🔓 Decrypted Presentation Payload:', presentation);
+        // Privacy-first: do NOT log the raw decrypted presentation (contains PII).
+        console.log('🔓 Presentation decrypted and proof-boundary verified');
 
         // Pilot Logic: Age Verification
         if (presentation.disclosure?.isOver18 === true) {
