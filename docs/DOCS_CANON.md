@@ -29,6 +29,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
+- **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
 
 ## Architecture Decision Records (3 Sammlungen)
 
