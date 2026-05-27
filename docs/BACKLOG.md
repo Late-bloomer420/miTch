@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-05-25 (Session 11: Compliance Gap Sprint complete — 94% CIR coverage)
+**Stand:** 2026-05-28 (Session 12: Branch/PR-Consolidation — alle offenen PRs auf `master`, Sprawl 22→3 Branches; 98% CIR coverage)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -135,8 +135,9 @@ Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 
 ## 5. Compliance Status (CIR 2024/2981 & 2982)
 - **Total requirements:** 53
-- **Implemented:** 53
-- **Compliance Score:** 100%
+- **Implemented:** 52 ✅
+- **Partial:** 1 🟡 — formal Common Criteria certification (CC conformance, E-42; external evaluation pending)
+- **Compliance Score:** 98% (52/53) — consistent with [`../STATE.md`](../STATE.md) and [`compliance/EUDI_CIR_MATRIX.md`](compliance/EUDI_CIR_MATRIX.md)
 
 ---
 
@@ -178,14 +179,15 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-03 | 🟢 | `miTch---Policy-Enforcement-Layer` Repo löschen |
 | H-04 | ✅ | GitHub `main` Branch löschen (nur `master` behalten) — war bereits gelöscht |
 | H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
-| H-06 | ✅ | Demo E2E Flow testen (5 Szenarien) — 1664 Tests pass |
+| H-06 | ✅ | Demo E2E Flow testen (5 Szenarien) — 1787 Tests pass |
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
+| H-08 | ✅ | Branch/PR-Consolidation (2026-05-27): alle 10 offenen PRs auf `master` aufgelöst, Branch-Sprawl 22→3. Nur net-new value gesalvaged (Trust Kit #35, B2B-Use-Cases + Agent-Skills + ADR-010 #37, MCP-Freeze-Decisions #38, Verifier fail-closed + no-PII-log #34, PII-Substring-Testfix #36, `_tmp_*` gitignore #39); stale-base PRs ohne Wert mit Begründung geschlossen (#14/#16/#17/#18/#24/#26/#27/#30). **Kein Paperclip auf master** (Pflicht erfüllt); Suite 100% grün (44/44 Tasks, 1787 Tests) |
 
 ---
 
 ## Architecture Decision Records (ADR-001–012)
 
-Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich: `docs/compliance/ADR/ADR-009.md` (WebAuthn Native Verifier — anderes Thema als ADR-009 Threat Model).
+Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance/ADR/`: `ADR-009.md` (WebAuthn Native Verifier — anderes Thema als ADR-009 Threat Model) und `ADR-010.md` (Regulatory-Positioning Boundary for Age Verification — gesalvaged via #37, renumbered von 013).
 
 | ADR | Titel | Status | Bezug |
 |-----|-------|--------|-------|
