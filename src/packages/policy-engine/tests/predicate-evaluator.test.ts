@@ -92,9 +92,19 @@ describe('PredicateEvaluator (Adapter)', () => {
             );
             const proofString = JSON.stringify(proof);
 
+            // Distinctive PII values must never appear anywhere in the proof — these
+            // are long/structured enough that a coincidental match is impossible.
             expect(proofString).not.toContain('1995-06-15');
-            expect(proofString).not.toContain('720');
             expect(proofString).not.toContain('premium');
+
+            // The raw numeric credit score must not leak as cleartext. Exclude the
+            // opaque machine/crypto fields (epoch timestamp, hash, nonce, decisionId)
+            // before checking: a 3-digit substring can appear in a hash/timestamp by
+            // chance, which is not a PII disclosure. A regression that echoed the raw
+            // score into a semantic field would still surface in the remainder.
+            const { commitment: _c, decisionId: _d, timestamp: _t, ...semantic } = proof;
+            expect(JSON.stringify(semantic)).not.toContain('720');
+
             expect(proof).toHaveProperty('success');
             expect(proof).toHaveProperty('decisionId');
             expect(proof).toHaveProperty('commitment');

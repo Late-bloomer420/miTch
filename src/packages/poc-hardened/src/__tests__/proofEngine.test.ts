@@ -30,7 +30,12 @@ describe('ProofEngine.generateProof()', () => {
 
     it('never exposes raw age value in the proof', () => {
         const proof = engine.generateProof(makeDecision(), 'user_001', 'age');
-        const serialized = JSON.stringify(proof);
+        // Exclude machine timestamps (generatedAt/expiresAt): they carry no PII, but
+        // an epoch value can coincidentally contain the digits of the raw age (e.g. on
+        // the 27th), causing a false positive. The abstract claim payload is what must
+        // never carry the raw value.
+        const { generatedAt: _g, expiresAt: _e, ...payload } = proof;
+        const serialized = JSON.stringify(payload);
         expect(serialized).not.toContain('27');
     });
 
