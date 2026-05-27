@@ -3,7 +3,7 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-05-26
+**Date:** 2026-05-27
 **Branch:** `master` (default)
 **Release tag:** `eudi-pilot-certified-ready`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -30,7 +30,7 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 44/44 turbo tasks pass; 1664 individual tests (28 packages); 169/169 mdoc tests; 226/226 shared-crypto tests; 84/84 wallet-pwa tests; 52/52 oid4vp-verifier tests; 35/35 oid4vci tests. **Suite is verified 100% green.**
+- **Tests:** 44/44 turbo tasks pass; **1787 individual tests, 0 failures** (policy-engine 296, shared-crypto 237, mdoc 179, poc-hardened 132, wallet-pwa 84, oid4vp-verifier 52, oid4vci 35, …). **Suite re-verified 100% green** on the consolidated master `b07cd38` (2026-05-27; build 29/29, lint 0/0).
 - **Lint:** 0 errors, 0 warnings
 - **Compliance Score:** 98% (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache
@@ -40,6 +40,7 @@
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 
 ### Recent additions (since Session 11)
+- **Branch/PR Consolidation (2026-05-27):** all 10 open PRs resolved onto `master` and the branch/worktree sprawl cleared (22 → 3 remote branches; only `master`, the active `feat/mitch-ai-guardian`, and audit-retained `claude/relaxed-pike` remain). Stale-base PRs were never merged directly (they would have re-introduced paperclip / reverted recent work) — only their genuine net-new value was salvaged onto clean master: verifier **fail-closed** + no-PII-logging (#34), **Commercial Trust Kit** docs (#35), **B2B use-case modules** + repo-local **agent skills** + **ADR-010** Regulatory-Positioning Boundary (#37), **MCP-server freeze decisions** (#38), a date-coupled **PII-substring test fix** (#36), and the `_tmp_*` ignore rule (#39). Superseded/no-value PRs closed with rationale (#14/#16/#17/#18/#24/#26/#27/#30). Full suite re-verified green on the consolidated master.
 - **Repo Hardening & Hygiene:** `master` branch protection live (PR-only + required CI checks + **verified/signed commits** + no force-push/deletion); SSH commit signing configured and verified end-to-end (`verified: true`); **all 17 Dependabot alerts cleared → 0 open**; paperclip orchestrator runtime (a committed 1,895-file PostgreSQL data dir + phantom submodule) purged from `master` tracking and gitignored — docs `PAPERCLIP.md`/`MITCH_COMPANY.md` retained; pnpm temp stubs (`_tmp_*`) ignored.
 - **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping miTch security functions to Common Criteria (ISO/IEC 15408) requirements.
 - **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
