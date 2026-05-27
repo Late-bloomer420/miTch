@@ -81,3 +81,6 @@ paperclip-orchestrator/
 docs/company/
 PAPERCLIP.md
 MITCH_COMPANY.md
+
+# pnpm atomic-write Temp-Stubs (Reste abgebrochener Installs, z.B. _tmp_3_<hash>)
+_tmp_*
