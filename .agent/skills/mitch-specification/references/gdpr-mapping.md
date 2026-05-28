@@ -2,15 +2,15 @@
 
 Use this as a spec drafting aid. Confirm details against current repo docs and implementation before making legal or compliance claims.
 
-| GDPR principle | miTch architectural control |
-| --- | --- |
-| Lawfulness, fairness, transparency | PolicyManifest purpose, signed decision artifacts, user-facing consent/prompt surfaces. |
-| Purpose limitation | Predicate requests and policy rules must carry explicit purpose and audience. |
-| Data minimization | Prefer zero-knowledge proofs, predicates, selective disclosure, pairwise DIDs, and ephemeral processing. |
-| Accuracy | Issuer signatures, credential validity checks, revocation/status checks, and trusted schema validation. |
-| Storage limitation | Wallet custody, verifier non-retention, TTLs, crypto-shredding, secure storage deletion semantics. |
-| Integrity and confidentiality | AES-GCM/JWE, signature verification, WebAuthn/step-up auth, nonce and presentation binding. |
-| Accountability | Audit logs, evidence packs, deny reason codes, DecisionCapsule `policy_hash`, reproducible tests. |
+| GDPR principle                     | miTch architectural control                                                                              |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Lawfulness, fairness, transparency | PolicyManifest purpose, signed decision artifacts, user-facing consent/prompt surfaces.                  |
+| Purpose limitation                 | Predicate requests and policy rules must carry explicit purpose and audience.                            |
+| Data minimization                  | Prefer zero-knowledge proofs, predicates, selective disclosure, pairwise DIDs, and ephemeral processing. |
+| Accuracy                           | Issuer signatures, credential validity checks, revocation/status checks, and trusted schema validation.  |
+| Storage limitation                 | Wallet custody, verifier non-retention, TTLs, crypto-shredding, secure storage deletion semantics.       |
+| Integrity and confidentiality      | AES-GCM/JWE, signature verification, WebAuthn/step-up auth, nonce and presentation binding.              |
+| Accountability                     | Audit logs, evidence packs, deny reason codes, DecisionCapsule `policy_hash`, reproducible tests.        |
 
 ## Article 25 Checks
 
