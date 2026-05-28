@@ -35,7 +35,7 @@ pnpm format
 
 ## Architecture
 
-**Monorepo layout:** `src/packages/` (26 packages) + `src/apps/` (3 apps)
+**Monorepo layout:** `src/packages/` (27 packages) + `src/apps/` (3 apps)
 
 ### Core packages
 
@@ -51,6 +51,7 @@ pnpm format
 - **oid4vp-verifier** — OID4VP verifier-side (request-builder, response-verifier)
 - **mdoc** — ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1, mdoc types
 - **verifier-sdk** / **verifier-browser** — Verifier integration libraries
+- **consent-ui** — Embeddable consent surface (`<mitch-consent>` Web Component, zero deps, Shadow DOM, fail-closed). Adapter consumes policy-engine `DisclosureRequest`/`Decision`. Renders requested/allowed/withheld three-state surface, emits hash-linked `ConsentReceipt`. Tests under jsdom.
 
 ### Infrastructure packages
 

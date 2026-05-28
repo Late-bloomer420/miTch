@@ -4,6 +4,7 @@
 
 | Use Case | Status | Key Packages | Docs |
 |---|---|---|---|
+| Verifier Consent Interface | ✅ Embeddable Web Component + Demo | consent-ui, policy-engine | src/packages/consent-ui/README.md |
 | Age Verification (18+) | ✅ Demo + Tests | policy-engine, predicates, shared-crypto, demo-liquor-store | docs/DEMO_SCRIPT.md |
 | Student Discount (Innsbruck) | ✅ Demo | predicates, policy-engine | docs/modules/student-discount-ibk.md |
 | Ad-Tech Blind Provider | ✅ Types + Nullifier + SDK | predicates, verifier-sdk, wallet-core, shared-types | memory: mitch-adtech-*.md |
@@ -23,6 +24,7 @@
 | Package | Use Cases Served |
 |---|---|
 | policy-engine | ALL (core) |
+| consent-ui | Verifier Consent Interface (embeddable surface for PROMPT verdicts) |
 | shared-crypto | ALL (core) |
 | predicates | Age, Student, Ad-Tech, Social Login |
 | oid4vp / oid4vci | E2E Flow |
