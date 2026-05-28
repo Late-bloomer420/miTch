@@ -3,7 +3,12 @@ import './App.css';
 import './wallet.css';
 
 import { type EvaluationContext } from '@mitch/policy-engine';
-import type { VerifierRequest, PolicyEvaluationResult, PolicyManifest } from '@mitch/shared-types';
+import type {
+  VerifierRequest,
+  PolicyEvaluationResult,
+  PolicyManifest,
+  StoredCredentialMetadata,
+} from '@mitch/shared-types';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
@@ -107,6 +112,16 @@ export default function App() {
   const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>(
     'idle'
   );
+  const [credentials, setCredentials] = useState<StoredCredentialMetadata[]>([]);
+
+  const loadWalletCredentials = async () => {
+    try {
+      const creds = await walletRef.current.getCredentials();
+      setCredentials(creds);
+    } catch (e) {
+      console.warn('Failed loading credentials', e);
+    }
+  };
 
   // Parse OID4VP deep-link params on load (verifier-demo → wallet-pwa)
   const [incomingOID4VP] = useState<{
@@ -169,6 +184,7 @@ export default function App() {
           );
         }
 
+        await loadWalletCredentials();
         setStatus('IDLE');
       } catch (e) {
         console.error(e);
@@ -770,6 +786,7 @@ export default function App() {
 
       const credId = `vc-issuer-${Date.now()}`;
       await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
+      await loadWalletCredentials();
 
       setCredentialStatus('done');
       addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
@@ -864,59 +881,125 @@ export default function App() {
         </div>
       )}
 
-      {/* UX-03: Credential Card */}
-      <div className="credential-card">
-        <div className="credential-card-header">
-          <span className="credential-card-label">Active Credentials</span>
-          <span className="credential-trust-badge">✓ Trusted</span>
-        </div>
+      {/* UX-03: Dynamic Premium Credential Cards */}
+      {status !== 'LOCKED' ? (
+        <>
+          <div className="credential-card-list">
+            {credentials.map((cred) => {
+              let cardClass = 'credential-card--generic';
+              let displayName = 'Verifiable Credential';
+              let icon = '✨';
+              let subText = 'Imported Credential';
 
-        <div className="credential-item">
-          <span className="credential-icon">🪪</span>
-          <div>
-            <div className="credential-name">Age Credential (GovID)</div>
-            <div className="credential-issuer">did:example:gov-issuer</div>
+              const types = cred.type || [];
+
+              if (types.includes('AgeCredential')) {
+                cardClass = 'credential-card--govid';
+                displayName = 'Age Credential (GovID)';
+                icon = '🪪';
+                subText = 'Government Issued ID';
+              } else if (types.includes('EmploymentCredential')) {
+                cardClass = 'credential-card--employment';
+                displayName = 'Hospital Practitioner ID';
+                icon = '🏥';
+                subText = 'St. Mary Hospital Professional';
+              } else if (types.includes('PatientSummary')) {
+                cardClass = 'credential-card--summary';
+                displayName = 'EHDS Patient Health Summary';
+                icon = '📋';
+                subText = 'Clinical Diagnostic Record';
+              } else if (types.includes('Prescription')) {
+                cardClass = 'credential-card--prescription';
+                displayName = 'ePrescription Record';
+                icon = '💊';
+                subText = 'Authorized Medical Rx';
+              } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
+                cardClass = 'credential-card--mdl';
+                displayName = 'Mobile Driver License (mDL)';
+                icon = '🚗';
+                subText = 'ISO 18013-5 Compliant';
+              }
+
+              return (
+                <div key={cred.id} className={`credential-card ${cardClass}`}>
+                  <div className="credential-card-header">
+                    <span className="credential-card-label">{subText}</span>
+                    <span className="credential-trust-badge">✓ Trusted</span>
+                  </div>
+
+                  <div
+                    className="credential-item"
+                    style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}
+                  >
+                    <span className="credential-icon" style={{ fontSize: 24, marginRight: 12 }}>
+                      {icon}
+                    </span>
+                    <div>
+                      <div
+                        className="credential-name"
+                        style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}
+                      >
+                        {displayName}
+                      </div>
+                      <div
+                        className="credential-issuer"
+                        style={{
+                          fontSize: 11,
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        {cred.issuer}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="credential-card-chip" />
+
+                  <div className="credential-card-claims">
+                    {(cred.claims || []).map((claim) => (
+                      <span key={claim} className="credential-card-claim-badge">
+                        • {claim}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
 
-        <div className="credential-divider" />
-
-        <div className="credential-item">
-          <span className="credential-icon">🏥</span>
-          <div>
-            <div className="credential-name">Hospital ID</div>
-            <div className="credential-issuer">did:example:st-mary-hospital</div>
-          </div>
-        </div>
-
-        <div className="credential-divider" />
-
-        {/* OID4VCI: fetch credential from issuer-mock */}
-        <button
-          onClick={handleFetchCredential}
-          disabled={credentialStatus === 'fetching' || status === 'LOCKED'}
-          style={{
-            width: '100%',
-            padding: '8px 0',
-            marginTop: 4,
-            background: credentialStatus === 'done' ? '#14532d' : '#0f172a',
-            border: `1px solid ${credentialStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
-            borderRadius: 6,
-            color: credentialStatus === 'done' ? '#86efac' : '#7dd3fc',
-            fontSize: 12,
-            cursor: 'pointer',
-            fontFamily: 'monospace',
-          }}
-        >
-          {credentialStatus === 'fetching'
-            ? '⏳ Fetching…'
-            : credentialStatus === 'done'
-              ? '✅ AgeCredential from issuer-mock'
-              : credentialStatus === 'error'
-                ? '❌ Retry — Get Test Credential'
-                : '🎫 Get Test Credential (OID4VCI)'}
-        </button>
-      </div>
+          {/* OID4VCI: fetch credential from issuer-mock */}
+          <button
+            onClick={handleFetchCredential}
+            disabled={credentialStatus === 'fetching'}
+            style={{
+              width: '100%',
+              maxWidth: 400,
+              padding: '10px 0',
+              marginBottom: 24,
+              background: credentialStatus === 'done' ? '#14532d' : '#0f172a',
+              border: `1px solid ${credentialStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
+              borderRadius: 8,
+              color: credentialStatus === 'done' ? '#86efac' : '#7dd3fc',
+              fontSize: 13,
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            {credentialStatus === 'fetching'
+              ? '⏳ Fetching from Issuer (OID4VCI)…'
+              : credentialStatus === 'done'
+                ? '✅ AgeCredential from issuer-mock'
+                : credentialStatus === 'error'
+                  ? '❌ Retry — Get Test Credential'
+                  : '🎫 Get Test Credential (OID4VCI)'}
+          </button>
+        </>
+      ) : null}
 
       {/* ConsentModal */}
       {showConsent && evaluationResult?.decisionCapsule && (

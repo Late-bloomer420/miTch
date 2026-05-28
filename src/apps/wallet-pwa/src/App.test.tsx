@@ -11,6 +11,15 @@ const walletServiceMockState = vi.hoisted(() => ({
   getPolicy: vi
     .fn()
     .mockReturnValue({ version: 'test', rules: [], trustedIssuers: [], globalSettings: {} }),
+  getCredentials: vi.fn().mockResolvedValue([
+    {
+      id: 'vc-age-789',
+      issuer: 'did:example:gov-issuer',
+      type: ['VerifiableCredential', 'AgeCredential'],
+      issuedAt: new Date().toISOString(),
+      claims: ['birthDate', 'age'],
+    },
+  ]),
   evaluateRequest: vi.fn(),
   generatePresentation: vi.fn(),
   recordIdentityFirewallEvents: vi.fn().mockResolvedValue([]),
@@ -172,9 +181,9 @@ describe('G-03 — Wallet App', () => {
     expect(screen.getByText('miTch')).toBeInTheDocument();
   });
 
-  it('renders credential card with Age Credential', () => {
+  it('renders credential card with Age Credential', async () => {
     render(<App />);
-    expect(screen.getByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
   });
 
   it('renders the primary action button', () => {
