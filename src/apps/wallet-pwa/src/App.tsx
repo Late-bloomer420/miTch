@@ -29,7 +29,7 @@ import {
   SCENARIO_VCT,
   type AuthorizationRequest,
 } from '@mitch/oid4vp';
-import type { ConsentReceipt } from './consent-manager/types';
+import type { ConsentReceipt } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 
@@ -672,7 +672,13 @@ export default function App() {
         decisionId,
       });
       setLastConsentReceipt(consentReceipt);
-      setConsentReceiptHistory(appendConsentReceiptHistory(consentReceipt));
+      setConsentReceiptHistory(
+        appendConsentReceiptHistory({
+          receipt: consentReceipt,
+          outcome: result.ok ? 'SUCCESS' : 'DENIED',
+          decisionId,
+        })
+      );
       addLog(`📝 Audit: ${auditEntry.outcome} — receipt ${consentReceipt.id}`, 'info');
 
       setLogs((prev) => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
@@ -1040,7 +1046,13 @@ export default function App() {
                 decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
               });
               setLastConsentReceipt(consentReceipt);
-              setConsentReceiptHistory(appendConsentReceiptHistory(consentReceipt));
+              setConsentReceiptHistory(
+                appendConsentReceiptHistory({
+                  receipt: consentReceipt,
+                  outcome: 'DENIED',
+                  decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
+                })
+              );
             }
             setShowConsent(false);
           }}
