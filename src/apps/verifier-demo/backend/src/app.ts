@@ -30,7 +30,11 @@ export const app: Express = express();
 
 // Initialize Trust List Resolver
 const MITCH_TSL_URL = process.env.MITCH_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json';
-trustListResolver.setUrl(MITCH_TSL_URL);
+if (trustListResolver && typeof trustListResolver.setUrl === 'function') {
+    trustListResolver.setUrl(MITCH_TSL_URL);
+} else {
+    console.warn('[verifier-backend] trustListResolver unavailable; skipping TSL URL initialization');
+}
 
 const isTestMode = process.env.MITCH_TEST_MODE === '1';
 /**
