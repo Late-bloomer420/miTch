@@ -419,6 +419,13 @@ export interface ConsentReceipt {
     purpose: string;
     claimsShared: string[];
     timestamp: string;
+    /**
+     * DecisionCapsule.decision_id from the fail-closed policy evaluation that
+     * produced this presentation outcome. Binds the user-visible consent
+     * receipt to the authoritative policy decision (audit/forensic linkage).
+     * `null` only when no policy evaluation ran (e.g. ERROR before evaluate()).
+     */
+    decisionId?: string | null;
 }
 
 export interface SessionCleanupResult {
@@ -429,6 +436,9 @@ export interface SessionCleanupResult {
         timestamp: string;
         claimsShared: string[];
         outcome: 'SUCCESS' | 'DENIED' | 'ERROR';
+        /** DecisionCapsule.decision_id — mirrors `consentReceipt.decisionId`
+         *  in the forensic audit entry. See ConsentReceipt.decisionId. */
+        decisionId?: string | null;
     };
 }
 
@@ -442,8 +452,16 @@ export function buildSessionCleanup(opts: {
     request: AuthorizationRequest;
     disclosedClaims: Record<string, unknown>;
     outcome: 'SUCCESS' | 'DENIED' | 'ERROR';
+    /**
+     * DecisionCapsule.decision_id from the policy evaluation that drove this
+     * outcome. Recorded in both `consentReceipt` and `auditEntry` to bind the
+     * receipt to the fail-closed decision. Pass `null` when no evaluation
+     * ran; the field is preserved (not dropped) so downstream audit logs can
+     * distinguish "no decision" from "missing field".
+     */
+    decisionId?: string | null;
 }): SessionCleanupResult {
-    const { request, disclosedClaims, outcome } = opts;
+    const { request, disclosedClaims, outcome, decisionId = null } = opts;
     const timestamp = new Date().toISOString();
     const presentationId = randomHex(8);
     const claimsShared = Object.keys(disclosedClaims);
@@ -455,6 +473,7 @@ export function buildSessionCleanup(opts: {
             purpose: request.presentation_definition.purpose ?? 'Verification',
             claimsShared,
             timestamp,
+            decisionId,
         },
         auditEntry: {
             presentationId,
@@ -462,6 +481,7 @@ export function buildSessionCleanup(opts: {
             timestamp,
             claimsShared,
             outcome,
+            decisionId,
         },
     };
 }
