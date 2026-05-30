@@ -19,6 +19,10 @@ defaults:
 jobs:
   review:
     runs-on: 'ubuntu-latest'
+    env:
+      # Headless CI no longer auto-trusts the workspace; without this the
+      # code-review extension install blocks on the trust prompt and times out.
+      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     timeout-minutes: 7
     permissions:
       contents: 'read'

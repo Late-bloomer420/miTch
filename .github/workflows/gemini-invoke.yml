@@ -19,6 +19,10 @@ defaults:
 jobs:
   invoke:
     runs-on: 'ubuntu-latest'
+    env:
+      # Headless CI no longer auto-trusts the workspace; trust it so the
+      # Gemini CLI can load settings / install extensions without prompting.
+      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     permissions:
       contents: 'read'
       id-token: 'write'

@@ -20,6 +20,10 @@ jobs:
   triage:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
+    env:
+      # Headless CI no longer auto-trusts the workspace; trust it so the
+      # Gemini CLI can load settings / install extensions without prompting.
+      GEMINI_CLI_TRUST_WORKSPACE: 'true'
     outputs:
       available_labels: '${{ steps.get_labels.outputs.available_labels }}'
       selected_labels: '${{ env.SELECTED_LABELS }}'
