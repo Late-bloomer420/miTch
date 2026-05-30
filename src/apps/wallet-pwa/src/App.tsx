@@ -32,6 +32,7 @@ import {
 import type { ConsentReceipt } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
+import { LandingPage } from './LandingPage';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -89,7 +90,11 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   },
 ];
 
-export default function App() {
+function WalletApp() {
+  useEffect(() => {
+    document.title = 'miTch Wallet';
+  }, []);
+
   const [status, setStatus] = useState<string>('LOCKED');
   const [logs, setLogs] = useState<string[]>([]);
   const [evaluationResult, setEvaluationResult] = useState<PolicyEvaluationResult | null>(null);
@@ -1346,5 +1351,23 @@ export default function App() {
         }))}
       />
     </div>
+  );
+}
+
+export default function App() {
+  const showWalletDemo =
+    import.meta.env.MODE === 'test' ||
+    new URLSearchParams(window.location.search).get('demo') === 'wallet';
+
+  if (showWalletDemo) {
+    return <WalletApp />;
+  }
+
+  return (
+    <LandingPage
+      onLaunchDemo={() => {
+        window.location.href = `${window.location.pathname}?demo=wallet`;
+      }}
+    />
   );
 }
