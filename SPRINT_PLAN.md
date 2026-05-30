@@ -428,6 +428,67 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 
 ---
 
+## Sprint Plan — Video Gap Closure (2026-05-31)
+
+Ziel: Die in den Referenzvideos sichtbaren Produktfähigkeiten (QR-Handoff, Auth Popup, wiederverwendbare Sign-in-Flows, MCP-Readiness) mit miTch stabil und reproduzierbar liefern.
+
+### Sprint V1 (1 Woche) — Stabilisierung & Contract-Fix (P0)
+
+**Scope**
+- G-100.1 Root-Cause Fix `AGE_NOT_VERIFIED` + ZKP undefined path
+- G-100.2 Claim/Predicate Contract (versioniert)
+- G-100.3 CI E2E Matrix (5 Szenarien)
+- `dev:demo` deterministic startup + health checks
+
+**DoD**
+- 5/5 Szenarien in CI grün
+- 10/10 Wiederholung Liquor ohne Flake
+- Fehlerpfade liefern verständliche deny reasons
+
+### Sprint V2 (1 Woche) — UX Parity Core (P0/P1)
+
+**Scope**
+- G-110.1 QR + Open-in-wallet dual handoff
+- G-120.1 Auth popup flow (open/auth/callback/close)
+- G-130.1 Passkey-first unlock in presentation flow
+
+**DoD**
+- Endnutzer kann von Verifier aus per QR oder Link starten
+- Popup flow funktioniert inkl. timeout/fallback
+- Passkey unlock als default in Demo-Flows
+
+### Sprint V3 (1 Woche) — Productization (P1)
+
+**Scope**
+- G-140.1/2 Consent & disclosure UX polish
+- G-150.1/2 “Sign in with miTch” integration kit
+- G-160.1 partner verifier onboarding baseline
+
+**DoD**
+- Integrator kann in <30min eine relying-party anbinden
+- Nutzer sieht disclosure transparent vor submit
+- Return-to-verifier UX konsistent bei success/failure
+
+### Sprint V4 (1 Woche) — Scale & AI Surface (P2)
+
+**Scope**
+- G-170.1 MCP identity tools surface
+- G-170.2 delegated authority guardrails
+- G-160.2 reusable policy packs
+
+**DoD**
+- Agent-initiierter Identity-Flow mit Audit Trail
+- Policy-Grenzen technisch erzwungen
+
+### Cross-Sprint Quality Gates (mandatory)
+
+1. 5-szenario matrix muss in CI bestehen (no waiver)
+2. Fail-closed behaviour darf nicht regressieren
+3. Kein PII in logs / verifier payloads außerhalb erlaubter claims
+4. Jede neue UX-Funktion braucht mindestens 1 E2E Test
+
+---
+
 ## Reihenfolge-Zusammenfassung
 
 ```
