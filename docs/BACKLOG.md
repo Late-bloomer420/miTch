@@ -16,6 +16,75 @@
 
 ---
 
+## Video Gap Analysis → Delivery Backlog (2026-05-31)
+
+Quelle für diese Sektion: Analyse der drei Referenz-Demos (Web Wallet, Unified Identity, MCP Agent Identity).
+Ziel: miTch auf **produktreife, wiederverwendbare Identity-Flows** heben (nicht nur Tech-Demo).
+
+### EPIC G-100 — E2E Reliability & Predicate Contract Hardening
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-100.1 | 🔴 P0 | ⏳ | Root-Cause `AGE_NOT_VERIFIED` + `ZKP Verification Exception` beheben (Verifier-Pipeline) | Liquor-Szenario ist deterministisch grün (10/10 Läufe) |
+| G-100.2 | 🔴 P0 | ⏳ | Claim/Predicate Contract festziehen (`age`, `age_over_18`, `birthDate` Mapping) | Versioniertes JSON-Schema + Contract Tests vorhanden |
+| G-100.3 | 🔴 P0 | ⏳ | 5-Szenarien E2E-Matrix in CI (Liquor, Doctor, EHDS, Pharmacy, Revoked) | CI bricht bei 1 Szenario-Regression |
+| G-100.4 | 🟡 P1 | ⏳ | Correlation IDs über Wallet/Verifier/Issuer | Jede Demo-Transaktion end-to-end tracebar |
+
+### EPIC G-110 — QR + Deep-Link Handoff
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-110.1 | 🔴 P0 | ⏳ | Verifier zeigt immer QR + „Open in Wallet“ Link | Dual Path (Scan/Click) in allen 5 Szenarien |
+| G-110.2 | 🟡 P1 | ⏳ | Handoff-State-Machine (created/scanned/opened/completed/expired) | UX zeigt klaren Zustand + Retry |
+| G-110.3 | 🟡 P1 | ⏳ | Ablauf-/TTL-Handling für Requests | Abgelaufene Requests werden fail-closed und verständlich kommuniziert |
+
+### EPIC G-120 — Auth Window / Popup Credential Presentation
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-120.1 | 🔴 P0 | ⏳ | Branded Auth-Popup (`window.open`) inkl. Callback/Close | Verifier erhält garantiert Callback oder Timeout |
+| G-120.2 | 🟡 P1 | ⏳ | Popup Blocker Fallback (same-tab flow) | Flow funktioniert auch ohne Popup-Rechte |
+| G-120.3 | 🟡 P1 | ⏳ | Session-Binding zwischen opener und wallet | Kein Cross-Tab/Cross-Origin Confusion möglich |
+
+### EPIC G-130 — Passkey-first Wallet Unlock
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-130.1 | 🔴 P0 | ⏳ | Passkey als Default Unlock im Presentation-Flow | 1-Klick Unlock in Demo-Flow |
+| G-130.2 | 🟡 P1 | ⏳ | Recovery/Fallback UX (device unavailable) | Klarer Fallback ohne Dead-End |
+
+### EPIC G-140 — Consent & Disclosure UX
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-140.1 | 🟡 P1 | ⏳ | Vor Abgabe klare Anzeige: requested/allowed/withheld | Nutzer sieht exakt was geteilt wird |
+| G-140.2 | 🟡 P1 | ⏳ | Ergebnis-Screen + Return-to-verifier UX | Erfolgs-/Fehler-Rückgabe konsistent |
+
+### EPIC G-150 — “Sign in with miTch” Integration Kit
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-150.1 | 🟡 P1 | ⏳ | OIDC-style Adapter + Button SDK | Referenzintegration läuft in Demo-App |
+| G-150.2 | 🟡 P1 | ⏳ | Server Middleware (Node) für Verifier | Minimal-Setup < 30min dokumentiert |
+
+### EPIC G-160 — Partner Reuse & Trust Onboarding
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-160.1 | 🟡 P1 | ⏳ | Partner-/Verifier-Registry + trust onboarding | Neuer Partner kann ohne Code-Änderung onboardet werden |
+| G-160.2 | 🟢 P2 | ⏳ | Reusable policy packs (internal/external partners) | Standard-Packs versioniert verfügbar |
+
+### EPIC G-170 — MCP / Agent Identity Surface
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| G-170.1 | 🟢 P2 | ⏳ | MCP tools: issue / request-proof / verify / did ops | Agent-Flow funktioniert mit Audit-Trail |
+| G-170.2 | 🟢 P2 | ⏳ | Delegated-authority guardrails | Agent darf nur policy-konforme Aktionen |
+
+---
+
+---
+
 ## Phase 0 — Foundation (DONE ✅)
 
 Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
