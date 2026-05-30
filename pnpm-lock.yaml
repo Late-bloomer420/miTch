@@ -329,6 +329,25 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  src/packages/consent-ui:
+    dependencies:
+      '@mitch/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+    devDependencies:
+      jsdom:
+        specifier: ^28.1.0
+        version: 28.1.0(@noble/hashes@2.0.1)
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@25.3.5)(jsdom@28.1.0(@noble/hashes@2.0.1))(tsx@4.21.0)
+
   src/packages/data-flow:
     dependencies:
       '@mitch/shared-types':
@@ -1553,7 +1572,6 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
-    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-musl@4.59.0':

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+        <title>miTch consent surface — demo</title>
+        <style>
+            html, body { margin: 0; background: #07090d; color: #cfd2d8; font-family: system-ui, sans-serif; }
+            main { max-width: 720px; margin: 0 auto; padding: 40px 16px; }
+            h1 { font-size: 18px; margin: 0 0 4px 0; }
+            p.lead { color: #7a8090; font-size: 13px; margin: 0 0 24px 0; }
+            pre { background: #11141b; border: 1px solid #1f2430; border-radius: 8px; padding: 12px; font-size: 12px; color: #cfd2d8; overflow: auto; max-height: 240px; }
+            .row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; align-items: start; }
+            @media (max-width: 720px) { .row { grid-template-columns: 1fr; } }
+            label { font-size: 11px; color: #7a8090; text-transform: uppercase; letter-spacing: 0.08em; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>miTch consent surface</h1>
+            <p class="lead">
+                Embeddable. Framework-agnostic. Three states — requested · allowed · withheld.
+                Listen for <code>mitch-consent</code> and <code>mitch-consent-cancel</code>.
+            </p>
+
+            <div class="row">
+                <section>
+                    <label>Live component</label>
+                    <mitch-consent id="consent"></mitch-consent>
+                </section>
+                <section>
+                    <label>Last event</label>
+                    <pre id="out">(waiting for user)</pre>
+                </section>
+            </div>
+        </main>
+
+        <script type="module">
+            import { defineConsentElement, fromPolicyDecision } from '../dist/index.js';
+
+            defineConsentElement();
+
+            // A typical DisclosureRequest from @mitch/policy-engine.
+            const request = {
+                requestId: 'demo-req-1',
+                verifierDid: 'did:mitch:verifier-liquor-store',
+                purpose: 'Age verification (18+)',
+                requestedClaims: ['age', 'name', 'address'],
+                requestedPredicates: [
+                    { claim: 'age', operation: 'gte', value: 18 },
+                ],
+            };
+
+            // Pretend the policy engine produced a PROMPT verdict, allowing the
+            // age predicate and denying the address claim.
+            const decision = {
+                verdict: 'PROMPT',
+                responseMode: 'PREDICATE_PROOF',
+                policyId: 'demo-policy',
+                requestId: 'demo-req-1',
+                allowedDisclosure: { type: 'predicate', claim: 'age', operation: 'gte', value: 18 },
+                deniedClaims: ['address'],
+                reasonCodes: [],
+                rawClaimsDisclosed: false,
+            };
+
+            const consentRequest = fromPolicyDecision({
+                request,
+                decision,
+                policy: { id: 'demo-policy', version: '1.0.0', hash: 'sha256:demo' },
+                verifierDisplayName: "Joe's Liquor Store",
+                labels: { age: 'Age', name: 'Full name', address: 'Home address' },
+            });
+
+            const el = document.getElementById('consent');
+            el.request = consentRequest;
+
+            const out = document.getElementById('out');
+            el.addEventListener('mitch-consent', (e) => {
+                out.textContent = JSON.stringify(e.detail, null, 2);
+            });
+            el.addEventListener('mitch-consent-cancel', (e) => {
+                out.textContent = JSON.stringify(e.detail, null, 2);
+            });
+        </script>
+    </body>
+</html>
