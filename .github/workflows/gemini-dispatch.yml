@@ -68,7 +68,22 @@ jobs:
       request: '${{ steps.extract_command.outputs.request }}'
       additional_context: '${{ steps.extract_command.outputs.additional_context }}'
       issue_number: '${{ github.event.pull_request.number || github.event.issue.number }}'
+      auth_configured: '${{ steps.check_auth.outputs.configured }}'
     steps:
+      - name: 'Check Gemini auth configured'
+        id: 'check_auth'
+        env:
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
+          GCP_WIF_PROVIDER: '${{ vars.GCP_WIF_PROVIDER }}'
+        run: |-
+          if [[ -n "${GEMINI_API_KEY}" || -n "${GOOGLE_API_KEY}" || -n "${GCP_WIF_PROVIDER}" ]]; then
+            echo 'configured=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'configured=false' >> "${GITHUB_OUTPUT}"
+            echo '::notice::Gemini auth not configured (no GEMINI_API_KEY / GOOGLE_API_KEY / GCP_WIF_PROVIDER). Skipping Gemini jobs — add a GEMINI_API_KEY secret to enable.'
+          fi
+
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         if: |-
@@ -114,6 +129,8 @@ jobs:
             }
 
       - name: 'Acknowledge request'
+        if: |-
+          ${{ steps.check_auth.outputs.configured == 'true' }}
         env:
           GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
           ISSUE_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
@@ -128,7 +145,7 @@ jobs:
   review:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'review' }}
+      ${{ needs.dispatch.outputs.command == 'review' && needs.dispatch.outputs.auth_configured == 'true' }}
     uses: './.github/workflows/gemini-review.yml'
     permissions:
       contents: 'read'
@@ -142,7 +159,7 @@ jobs:
   triage:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'triage' }}
+      ${{ needs.dispatch.outputs.command == 'triage' && needs.dispatch.outputs.auth_configured == 'true' }}
     uses: './.github/workflows/gemini-triage.yml'
     permissions:
       contents: 'read'
@@ -156,7 +173,7 @@ jobs:
   invoke:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'invoke' }}
+      ${{ needs.dispatch.outputs.command == 'invoke' && needs.dispatch.outputs.auth_configured == 'true' }}
     uses: './.github/workflows/gemini-invoke.yml'
     permissions:
       contents: 'read'
@@ -170,7 +187,7 @@ jobs:
   plan-execute:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'approve' }}
+      ${{ needs.dispatch.outputs.command == 'approve' && needs.dispatch.outputs.auth_configured == 'true' }}
     uses: './.github/workflows/gemini-plan-execute.yml'
     permissions:
       contents: 'write'
