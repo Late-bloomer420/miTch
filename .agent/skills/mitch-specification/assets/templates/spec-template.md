@@ -13,11 +13,11 @@
 ## Actors And Boundaries
 
 | Actor/package | Responsibility | Data/proof handled | Retention |
-| --- | --- | --- | --- |
-| Wallet |  |  |  |
-| Issuer |  |  |  |
-| Verifier |  |  |  |
-| Policy engine |  |  |  |
+| ------------- | -------------- | ------------------ | --------- |
+| Wallet        |                |                    |           |
+| Issuer        |                |                    |           |
+| Verifier      |                |                    |           |
+| Policy engine |                |                    |           |
 
 ## Data Minimization
 
@@ -28,8 +28,8 @@
 ## Legal And Privacy Basis
 
 | Data/proof | Purpose | Basis/rationale | Protection | Retention |
-| --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+| ---------- | ------- | --------------- | ---------- | --------- |
+|            |         |                 |            |           |
 
 ## Architecture
 

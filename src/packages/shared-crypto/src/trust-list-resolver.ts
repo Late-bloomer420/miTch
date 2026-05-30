@@ -40,10 +40,24 @@ export class EUDITrustListResolver {
         this.fetchFn = options?.fetchFn ?? globalThis.fetch?.bind(globalThis);
         this.cacheTtlMs = options?.cacheTtlMs ?? 24 * 60 * 60 * 1000; // 24 hours
         this.gracePeriodMsLowRisk = options?.gracePeriodMsLowRisk ?? 4 * 60 * 60 * 1000; // 4 hours
-        this.tslUrl = process.env.MITCH_TSL_URL || 'https://trust.mitch.demo/v1/eudi-lotl.json';
+        const envUrl = this.readEnvTslUrl();
+        this.tslUrl = envUrl || 'https://trust.mitch.demo/v1/eudi-lotl.json';
     }
 
     private tslUrl: string;
+
+    private readEnvTslUrl(): string | undefined {
+        // Vite/browser-safe env access
+        const viaImportMeta = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.MITCH_TSL_URL;
+        if (viaImportMeta && viaImportMeta.trim()) return viaImportMeta.trim();
+
+        // Node-safe fallback (without crashing browser where `process` is undefined)
+        const maybeProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+        const viaProcess = maybeProcess?.env?.MITCH_TSL_URL;
+        if (viaProcess && viaProcess.trim()) return viaProcess.trim();
+
+        return undefined;
+    }
 
     /**
      * Set the TSL source URL.
