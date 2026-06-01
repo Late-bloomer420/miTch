@@ -39,7 +39,7 @@ export const CommonPredicates = {
                 logic: 'and' as const,
                 clauses: [
                     {
-                        path: 'credentialSubject.birthDate',
+                        path: 'credentialSubject.dateOfBirth',
                         op: 'gte' as const,
                         type: 'age_years' as const,
                         value: years

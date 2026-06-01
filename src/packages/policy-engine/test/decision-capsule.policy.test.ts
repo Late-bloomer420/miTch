@@ -22,7 +22,7 @@ const policyFixture: Policy = {
   allowedPredicates: [
     {
       id: 'predicate.age.gte.18',
-      claim: 'birthdate',
+      claim: 'dateOfBirth',
       operation: 'ageAtLeast',
       value: 18,
       responseMode: 'PREDICATE_PROOF',
@@ -30,7 +30,7 @@ const policyFixture: Policy = {
   ],
   deniedClaims: [
     {
-      claim: 'birthdate',
+      claim: 'dateOfBirth',
       reason: REASON_CODES.RAW_ATTRIBUTE_NOT_PROPORTIONAL,
     },
   ],
@@ -46,8 +46,8 @@ const requestFixture: DisclosureRequest = {
   requestId: 'req_age_001',
   verifierDid: 'did:web:shop.trusted-age-verifier.example',
   purpose: 'age_verification',
-  requestedClaims: ['birthdate'],
-  requestedPredicates: [{ claim: 'birthdate', operation: 'ageAtLeast', value: 18 }],
+  requestedClaims: ['dateOfBirth'],
+  requestedPredicates: [{ claim: 'dateOfBirth', operation: 'ageAtLeast', value: 18 }],
   nonce: 'test_nonce_not_secret',
   audience: 'did:web:shop.trusted-age-verifier.example',
   timestamp: '2026-05-08T00:00:00.000Z',
@@ -65,7 +65,7 @@ describe('decision capsule policy evidence', () => {
 
     expect(capsule.verdict).toBe('PROMPT');
     expect(capsule.responseMode).toBe('PREDICATE_PROOF');
-    expect(capsule.deniedClaims).toContain('birthdate');
+    expect(capsule.deniedClaims).toContain('dateOfBirth');
     expect(capsule.allowedDisclosureType).toBe('predicate');
     expect(capsule.allowedPredicateId).toBe('predicate.age.gte.18');
     expect(capsule.rawClaimsStored).toBe(false);

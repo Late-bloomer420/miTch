@@ -138,7 +138,7 @@ export const AUDIT_EXPORT_BUNDLE_JSON_SCHEMA = {
 export const FORBIDDEN_EXPORT_FIELDS = [
   'subjectDid',
   'name',
-  'birthDate',
+  'dateOfBirth',
   'email',
   'rawVerifierId',
   'verifierId',

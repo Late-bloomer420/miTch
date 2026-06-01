@@ -14,7 +14,7 @@ import {
 describe('PredicateEvaluator (Adapter)', () => {
 
     const mockUserData = {
-        birthDate: '1995-06-15',
+        dateOfBirth: '1995-06-15',
         residency: 'DE',
         professionalLicense: 'B',
         creditScore: 720,
@@ -26,7 +26,7 @@ describe('PredicateEvaluator (Adapter)', () => {
         nonce: 'unique-nonce-12345',
         purpose: 'Age verification for purchase',
         constraints: [
-            { attribute: 'birthDate', operator: 'gte', value: 18 }
+            { attribute: 'dateOfBirth', operator: 'gte', value: 18 }
         ],
         ...overrides
     } as PredicateRequest);
@@ -50,7 +50,7 @@ describe('PredicateEvaluator (Adapter)', () => {
         it('returns success=false when user does not meet age requirement', async () => {
             const request = createMockRequest({
                 constraints: [
-                    { attribute: 'birthDate', operator: 'gte', value: 40 }
+                    { attribute: 'dateOfBirth', operator: 'gte', value: 40 }
                 ]
             });
             const proof = await PredicateEvaluator.evaluate(
@@ -70,7 +70,7 @@ describe('PredicateEvaluator (Adapter)', () => {
                 ]
             });
             // Partial user data simulating missing field
-            const incompleteUserData = { birthDate: '1995-06-15' };
+            const incompleteUserData = { dateOfBirth: '1995-06-15' };
 
             const proof = await PredicateEvaluator.evaluate(
                 incompleteUserData,
@@ -182,7 +182,7 @@ describe('PredicateEvaluator (Adapter)', () => {
 
             const tamperedRequest = createMockRequest({
                 constraints: [
-                    { attribute: 'birthDate', operator: 'gte', value: 21 }
+                    { attribute: 'dateOfBirth', operator: 'gte', value: 21 }
                 ]
             });
 

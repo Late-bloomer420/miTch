@@ -26,7 +26,7 @@ describe('MockGovernmentIssuer', () => {
     expect(credential.jwt.split('.')).toHaveLength(3); // JWT has 3 parts
     expect(credential.issuerPublicKey).toBeDefined();
     expect(credential.claims.sub).toBe(userDID);
-    expect(credential.claims.birthdate).toBe('1990-05-15');
+    expect(credential.claims.dateOfBirth).toBe('1990-05-15');
     expect(credential.claims.type).toBe('AgeCredential');
   });
 
@@ -93,7 +93,7 @@ describe('MockGovernmentIssuer', () => {
     const verifiedClaims = await issuer.verifyCredential(credential.jwt);
 
     expect(verifiedClaims.sub).toBe(userDID);
-    expect(verifiedClaims.birthdate).toBe('1995-03-20');
+    expect(verifiedClaims.dateOfBirth).toBe('1995-03-20');
     expect(verifiedClaims.iss).toBe(issuer.getDID());
   });
 
@@ -121,9 +121,9 @@ describe('MockGovernmentIssuer', () => {
     expect(presentation.sub).toBe(userDID);
     expect(presentation.jwt).toBe(credential.jwt);
 
-    // Verify that birthdate is not directly exposed in presentation
+    // Verify that dateOfBirth is not directly exposed in presentation
     // (only isOverAge boolean is revealed)
-    expect(presentation).not.toHaveProperty('birthdate');
+    expect(presentation).not.toHaveProperty('dateOfBirth');
   });
 
   it('should fail to verify credential with wrong issuer key', async () => {

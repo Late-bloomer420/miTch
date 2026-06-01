@@ -36,7 +36,7 @@ const EHDS_POLICY: PolicyManifest = {
       verifierPattern: 'did:mitch:verifier-liquor-store',
       allowedClaims: [],
       provenClaims: ['age >= 18'],
-      deniedClaims: ['birthDate'],
+      deniedClaims: ['dateOfBirth'],
       requiresUserConsent: false,
       priority: 50,
     },
@@ -56,7 +56,7 @@ const AGE_CREDENTIAL: StoredCredentialMetadata = {
   issuer: 'did:example:gov-issuer',
   type: ['VerifiableCredential', 'AgeCredential'],
   issuedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-  claims: ['birthDate', 'age'],
+  claims: ['dateOfBirth', 'age'],
 };
 
 describe('EHDS Emergency: requiresPresence flow', () => {

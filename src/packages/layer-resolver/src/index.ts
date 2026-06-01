@@ -184,7 +184,7 @@ export function getMinimumLayerForData(dataType: string): ProtectionLayer {
 
     // Layer 1 (GRUNDVERSORGUNG) - Children + Basic
     age: ProtectionLayer.GRUNDVERSORGUNG,
-    birthDate: ProtectionLayer.GRUNDVERSORGUNG,
+    dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
     education: ProtectionLayer.GRUNDVERSORGUNG,
 
     // Layer 2 (VULNERABLE) - Sensitive Adult Data

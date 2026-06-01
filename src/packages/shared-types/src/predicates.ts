@@ -33,7 +33,7 @@ export type PredicateOp =
  * Supported value types for type-safe evaluation.
  * 
  * NOTE: 'age_years' is an explicit type for age verification.
- * Path should point to a birthDate (ISO 8601), value is years threshold.
+ * Path should point to a dateOfBirth (ISO 8601), value is years threshold.
  * This makes the semantic intent clear vs. ambiguous "date" comparisons.
  */
 export type PredicateValueType =
@@ -207,7 +207,7 @@ export type LegacyPredicateOperator = 'gte' | 'lte' | 'eq' | 'neq' | 'in_set' | 
 /**
  * @deprecated Use Predicate DSL instead
  */
-export type LegacyAttributeKey = 'birthDate' | 'residency' | 'professionalLicense' | 'creditScore' | 'membership';
+export type LegacyAttributeKey = 'dateOfBirth' | 'residency' | 'professionalLicense' | 'creditScore' | 'membership';
 
 /**
  * @deprecated Use Predicate DSL instead
@@ -339,7 +339,7 @@ function mapLegacyOp(op: LegacyPredicateOperator): PredicateOp {
  */
 function constraintToClause(c: LegacyPredicateConstraint): PredicateClause {
     const allowedAttributes: LegacyAttributeKey[] = [
-        'birthDate',
+        'dateOfBirth',
         'residency',
         'professionalLicense',
         'creditScore',
@@ -350,8 +350,8 @@ function constraintToClause(c: LegacyPredicateConstraint): PredicateClause {
         throw new Error(`UNSUPPORTED_LEGACY_ATTRIBUTE: ${c.attribute}`);
     }
 
-    // birthDate uses age_years type for semantic clarity
-    const type: PredicateValueType = c.attribute === 'birthDate'
+    // dateOfBirth uses age_years type for semantic clarity
+    const type: PredicateValueType = c.attribute === 'dateOfBirth'
         ? 'age_years'
         : Array.isArray(c.value)
             ? 'string[]'

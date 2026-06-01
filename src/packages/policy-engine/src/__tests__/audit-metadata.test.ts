@@ -15,7 +15,7 @@ describe('Metadata budget enforcement', () => {
 
     const serialized = JSON.stringify(record);
     expect(serialized).not.toContain('did:web:bar.example');
-    expect(serialized).not.toContain('birthDate');
+    expect(serialized).not.toContain('dateOfBirth');
     expect(serialized).not.toContain('name');
   });
 

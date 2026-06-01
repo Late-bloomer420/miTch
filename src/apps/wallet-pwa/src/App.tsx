@@ -707,6 +707,9 @@ function WalletApp() {
     if (!incomingOID4VP) return;
     const { scenario, endpoint, verifier } = incomingOID4VP;
 
+    // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
+    fetch(`${endpoint}/notify-scan`, { method: 'POST' }).catch(() => {});
+
     setStatus('EVALUATING');
     setLogs([]);
     setEvaluationResult(null);

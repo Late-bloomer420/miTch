@@ -79,7 +79,7 @@ describe('getMinimumLayerForData', () => {
 
     it('age/education data requires GRUNDVERSORGUNG', () => {
         expect(getMinimumLayerForData('age')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
-        expect(getMinimumLayerForData('birthDate')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
+        expect(getMinimumLayerForData('dateOfBirth')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
         expect(getMinimumLayerForData('education')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
     });
 

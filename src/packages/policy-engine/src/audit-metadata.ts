@@ -36,7 +36,7 @@ export interface AuditRecord {
   reasonCode?: DenyReasonCode;
 }
 
-export const FORBIDDEN_LOG_FIELDS = ['subjectDid', 'name', 'birthDate', 'email', 'rawVerifierId'] as const;
+export const FORBIDDEN_LOG_FIELDS = ['subjectDid', 'name', 'dateOfBirth', 'email', 'rawVerifierId'] as const;
 
 const BUCKET_MS = 5 * 60 * 1000;
 

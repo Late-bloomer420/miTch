@@ -35,9 +35,9 @@ describe('S-03: normalizeClaimName', () => {
 
 describe('S-03: validateClaimNames — whitelist', () => {
     it('accepts valid simple claim names', () => {
-        const r = validateClaimNames(['age', 'birthdate', 'isOver18']);
+        const r = validateClaimNames(['age', 'dateOfBirth', 'isOver18']);
         expect(r.valid).toBe(true);
-        expect(r.normalized).toEqual(['age', 'birthdate', 'isover18']);
+        expect(r.normalized).toEqual(['age', 'dateofbirth', 'isover18']);
     });
 
     it('accepts names with underscore and hyphen', () => {
@@ -95,8 +95,8 @@ describe('S-03: validateClaimNames — whitelist', () => {
     });
 
     it('returns mixed: valid normalized + rejected', () => {
-        const r = validateClaimNames(['age', '../etc/passwd', 'birthdate']);
-        expect(r.normalized).toEqual(['age', 'birthdate']);
+        const r = validateClaimNames(['age', '../etc/passwd', 'dateOfBirth']);
+        expect(r.normalized).toEqual(['age', 'dateofbirth']);
         expect(r.rejected).toHaveLength(1);
         expect(r.valid).toBe(false);
     });
@@ -154,8 +154,8 @@ describe('S-03: validateVerifierPattern', () => {
 
 describe('S-03: sanitizeRequestedClaims', () => {
     it('returns only valid normalized claims, drops malformed ones', () => {
-        const result = sanitizeRequestedClaims(['age', '../attack', 'birthdate', 42]);
-        expect(result).toEqual(['age', 'birthdate']);
+        const result = sanitizeRequestedClaims(['age', '../attack', 'dateOfBirth', 42]);
+        expect(result).toEqual(['age', 'dateofbirth']);
     });
 
     it('returns [] for non-array input', () => {
