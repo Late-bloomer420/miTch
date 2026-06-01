@@ -12,13 +12,12 @@
 import { EphemeralKey } from './ephemeral-key';
 import { crypto } from './platform';
 import type { DIDDocument } from '@mitch/shared-types';
+import { base58Encode, base58Decode } from './multibase';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 /** Multicodec varint prefix for P-256 compressed public key (0x1200) */
 const MULTICODEC_P256_PREFIX = new Uint8Array([0x80, 0x24]);
-
-const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 // P-256 (secp256r1) curve parameters
 const P256_P = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn;
@@ -219,44 +218,6 @@ function decompressP256PublicKey(compressed: Uint8Array): Uint8Array {
   uncompressed.set(bigIntToBytes32(x), 1);
   uncompressed.set(bigIntToBytes32(y), 33);
   return uncompressed;
-}
-
-// ─── Base58btc helpers ────────────────────────────────────────────────────────
-
-function base58Encode(bytes: Uint8Array): string {
-  let n = bytesToBigInt(bytes);
-  let result = '';
-  while (n > 0n) {
-    result = BASE58_ALPHABET[Number(n % 58n)] + result;
-    n /= 58n;
-  }
-  for (const b of bytes) {
-    if (b !== 0) break;
-    result = '1' + result;
-  }
-  return result;
-}
-
-function base58Decode(str: string): Uint8Array {
-  let n = 0n;
-  for (const c of str) {
-    const idx = BASE58_ALPHABET.indexOf(c);
-    if (idx === -1) throw new Error(`Invalid base58 char: ${c}`);
-    n = n * 58n + BigInt(idx);
-  }
-  let leadingZeros = 0;
-  for (const c of str) {
-    if (c !== '1') break;
-    leadingZeros++;
-  }
-  const bytes: number[] = [];
-  while (n > 0n) {
-    bytes.unshift(Number(n & 0xffn));
-    n >>= 8n;
-  }
-  const result = new Uint8Array(leadingZeros + bytes.length);
-  result.set(bytes, leadingZeros);
-  return result;
 }
 
 // ─── BigInt utilities ─────────────────────────────────────────────────────────

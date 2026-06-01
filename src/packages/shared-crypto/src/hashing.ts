@@ -12,6 +12,7 @@
  */
 
 import { crypto } from './platform';
+import { decodeBase58btc, unwrapSha256Multihash } from './multibase';
 
 /**
  * SHA-256 hash of a UTF-8 string, returned as hex.
@@ -21,6 +22,43 @@ export async function sha256(message: string): Promise<string> {
     const data = enc.encode(message);
     const hash = await crypto.subtle.digest('SHA-256', data);
     return toHex(new Uint8Array(hash));
+}
+
+/**
+ * SHA-256 hash of a UTF-8 string, returned as bytes.
+ */
+export async function sha256Bytes(message: string): Promise<Uint8Array> {
+    const enc = new TextEncoder();
+    const data = enc.encode(message);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return new Uint8Array(hash);
+}
+
+/**
+ * Verify a content string against a W3C-style digestMultibase (base58btc multihash).
+ * Currently supports SHA-256 multihash (prefix 'z' + 0x12 0x20).
+ * 
+ * @throws Error if the digest format is unsupported or the verification fails.
+ */
+export async function verifyDigestMultibase(content: string, digestMultibase: string): Promise<void> {
+    const decoded = decodeBase58btc(digestMultibase);
+    const expectedHash = unwrapSha256Multihash(decoded);
+    const actualHash = await sha256Bytes(content);
+
+    // Constant-time comparison not strictly needed for non-secret template hashes, 
+    // but good practice.
+    if (expectedHash.length !== actualHash.length) {
+        throw new Error('DIGEST_VERIFICATION_FAILED: hash length mismatch');
+    }
+
+    let result = 0;
+    for (let i = 0; i < expectedHash.length; i++) {
+        result |= expectedHash[i] ^ actualHash[i];
+    }
+    
+    if (result !== 0) {
+        throw new Error('DIGEST_VERIFICATION_FAILED: hash content mismatch');
+    }
 }
 
 /**

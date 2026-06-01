@@ -1,6 +1,7 @@
 export * from './platform';
 export * from './keys';
 export * from './hashing';
+export * from './multibase';
 export * from './encryption';
 export * from './signing';
 export * from './ephemeral';

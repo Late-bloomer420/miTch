@@ -64,7 +64,7 @@ Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (s
 
 ## Architecture
 
-pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
+pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 
 
 ### Core
@@ -75,6 +75,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
 | `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
 | `@mitch/shared-types` | Shared TypeScript types across all packages |
+| `@mitch/data-flow` | Transaction transparency · grouped audit views |
 
 ### Protocol
 
@@ -86,6 +87,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
 | `@mitch/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
 | `@mitch/verifier-browser` | Browser-side verifier integration |
+| `@mitch/mcp-server` | MCP interface for LLM agents (Claude Desktop) |
 
 ### Storage & Security
 
@@ -117,6 +119,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/integration-tests` | Cross-package integration tests |
 | `@mitch/mock-issuer` | Mock credential issuer for testing |
 | `@mitch/secure-ui-test` | UI security testing |
+| `@mitch/consent-ui` | Reusable consent components and flows |
 
 **Apps:** `wallet-pwa` (React PWA) · `verifier-demo` (Express + frontend) · `issuer-mock` (OID4VCI server)
 

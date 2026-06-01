@@ -44,8 +44,10 @@ export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
                     if (!res.ok) throw new Error(`Template fetch failed: ${res.status}`);
                     return res.text();
                 })
-                .then(template => {
-                    // TODO: Verify digestMultibase here for V-04
+                .then(async template => {
+                    if (svgTemplateMethod.digestMultibase) {
+                        await verifyDigestMultibase(template, svgTemplateMethod.digestMultibase);
+                    }
                     const rendered = Mustache.render(template, claims);
                     setSvgContent(rendered);
                 })
