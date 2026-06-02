@@ -21,7 +21,7 @@ const policyFixture: Policy = {
   allowedPredicates: [
     {
       id: 'predicate.age.gte.18',
-      claim: 'birthdate',
+      claim: 'dateOfBirth',
       operation: 'ageAtLeast',
       value: 18,
       responseMode: 'PREDICATE_PROOF',
@@ -29,7 +29,7 @@ const policyFixture: Policy = {
   ],
   deniedClaims: [
     {
-      claim: 'birthdate',
+      claim: 'dateOfBirth',
       reason: REASON_CODES.RAW_ATTRIBUTE_NOT_PROPORTIONAL,
     },
   ],
@@ -45,23 +45,23 @@ const requestFixture: DisclosureRequest = {
   requestId: 'req_age_001',
   verifierDid: 'did:web:shop.trusted-age-verifier.example',
   purpose: 'age_verification',
-  requestedClaims: ['birthdate'],
-  requestedPredicates: [{ claim: 'birthdate', operation: 'ageAtLeast', value: 18 }],
+  requestedClaims: ['dateOfBirth'],
+  requestedPredicates: [{ claim: 'dateOfBirth', operation: 'ageAtLeast', value: 18 }],
   nonce: 'test_nonce_not_secret',
   audience: 'did:web:shop.trusted-age-verifier.example',
   timestamp: '2026-05-08T00:00:00.000Z',
 };
 
 describe('age verification disclosure policy', () => {
-  it('denies raw birthdate but offers ageAtLeast(18) predicate proof for age_verification', () => {
+  it('denies raw dateOfBirth but offers ageAtLeast(18) predicate proof for age_verification', () => {
     const decision = evaluateDisclosureRequest(requestFixture, policyFixture);
 
     expect(decision.verdict).toBe('PROMPT');
     expect(decision.responseMode).toBe('PREDICATE_PROOF');
-    expect(decision.deniedClaims).toContain('birthdate');
+    expect(decision.deniedClaims).toContain('dateOfBirth');
     expect(decision.allowedDisclosure).toEqual({
       type: 'predicate',
-      claim: 'birthdate',
+      claim: 'dateOfBirth',
       operation: 'ageAtLeast',
       value: 18,
     });

@@ -35,14 +35,15 @@ pnpm format
 
 ## Architecture
 
-**Monorepo layout:** `src/packages/` (26 packages) + `src/apps/` (3 apps)
+**Monorepo layout:** `src/packages/` (29 packages) + `src/apps/` (3 apps)
 
 ### Core packages
 
 - **policy-engine** — The central "Privacy Firewall" / ZKQF. Evaluates disclosure requests → ALLOW/DENY/PROMPT verdicts. Contains: engine.ts (main evaluator), kpi.ts, rate-limiter.ts, proof-fatigue.ts, jurisdiction.ts, config-profiles.ts, allow-assertion.ts
-- **shared-crypto** — All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution
+- **shared-crypto** — All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
 - **shared-types** — Central type definitions shared across all packages
 - **layer-resolver** — Resolves trust layers and credential schemas
+- **data-flow** — Transaction transparency and audit grouping
 
 ### Protocol packages
 
@@ -51,6 +52,7 @@ pnpm format
 - **oid4vp-verifier** — OID4VP verifier-side (request-builder, response-verifier)
 - **mdoc** — ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1, mdoc types
 - **verifier-sdk** / **verifier-browser** — Verifier integration libraries
+- **mcp-server** — MCP interface for agents (Claude Desktop)
 
 ### Infrastructure packages
 

@@ -4,6 +4,8 @@
  */
 
 import { RiskTier } from '@mitch/revocation-statuslist/src/types';
+import { verifyData } from './signing';
+import { canonicalStringify } from './hashing';
 
 export interface TrustList {
     id: string;
@@ -11,6 +13,7 @@ export interface TrustList {
     validUntil: string;
     issuers: string[];   // DIDs of trusted Issuers
     verifiers: string[]; // DIDs of trusted Verifiers
+    signature?: string;  // Hex-encoded ECDSA signature
 }
 
 export interface TrustCheckResult {
@@ -31,6 +34,8 @@ export class EUDITrustListResolver {
     private fetchFn: typeof fetch;
     private readonly cacheTtlMs: number;
     private readonly gracePeriodMsLowRisk: number;
+    private tslUrl: string;
+    private anchorPublicKey: CryptoKey | null = null;
 
     constructor(options?: { 
         fetchFn?: typeof fetch;
@@ -43,8 +48,6 @@ export class EUDITrustListResolver {
         const envUrl = this.readEnvTslUrl();
         this.tslUrl = envUrl || 'https://trust.mitch.demo/v1/eudi-lotl.json';
     }
-
-    private tslUrl: string;
 
     private readEnvTslUrl(): string | undefined {
         // Vite/browser-safe env access
@@ -65,6 +68,19 @@ export class EUDITrustListResolver {
     setUrl(url: string): void {
         this.tslUrl = url;
         this.clearCache();
+    }
+
+    /**
+     * Set the trusted anchor public key for TSL signature verification.
+     */
+    async setAnchorKey(jwk: JsonWebKey): Promise<void> {
+        this.anchorPublicKey = await globalThis.crypto.subtle.importKey(
+            'jwk',
+            jwk,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['verify']
+        );
     }
 
     /**
@@ -138,6 +154,27 @@ export class EUDITrustListResolver {
         };
     }
 
+    private async verifyTslSignature(tsl: TrustList): Promise<void> {
+        if (!this.anchorPublicKey) {
+            console.warn('[TrustList] ⚠️ No anchor key configured. Skipping signature check (PoC Mode).');
+            return;
+        }
+
+        if (!tsl.signature) {
+            throw new Error('TSL_SIGNATURE_MISSING: The trust list must be signed in production.');
+        }
+
+        const { signature, ...data } = tsl;
+        const payload = canonicalStringify(data);
+        
+        const isValid = await verifyData(payload, signature, this.anchorPublicKey);
+        if (!isValid) {
+            throw new Error('TSL_SIGNATURE_INVALID: The trust list signature verification failed.');
+        }
+        
+        console.log(`[TrustList] ✅ TSL Signature Verified (v${tsl.version})`);
+    }
+
     private async getTSL(): Promise<TrustList> {
         const now = Date.now();
         if (this.cache && now < this.cache.expiresAt) {
@@ -153,8 +190,8 @@ export class EUDITrustListResolver {
 
         const tsl = await response.json() as TrustList;
 
-        // In a real implementation, we would verify the TSL signature here
-        // if (tsl.signature) { await verifySignature(tsl); }
+        // E-42: Verify TSL integrity before caching
+        await this.verifyTslSignature(tsl);
 
         this.cache = {
             tsl,

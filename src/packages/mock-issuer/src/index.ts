@@ -22,7 +22,7 @@ export interface AgeCredentialClaims {
   /** Expiry (Unix timestamp) */
   exp: number;
   /** Birth date in ISO format (YYYY-MM-DD) - selectively disclosable */
-  birthdate: string;
+  dateOfBirth: string;
   /** Credential type */
   type: string;
 }
@@ -83,7 +83,7 @@ export class MockGovernmentIssuer {
       sub: userDID,
       iat: now,
       exp: now + (365 * 24 * 60 * 60), // Valid 1 year
-      birthdate: birthdate.toISOString().split('T')[0], // YYYY-MM-DD
+      dateOfBirth: birthdate.toISOString().split('T')[0], // YYYY-MM-DD
       type: 'AgeCredential',
     };
 
@@ -136,7 +136,7 @@ export class MockGovernmentIssuer {
     });
 
     // Validate that payload contains required fields
-    if (!payload.birthdate || !payload.type) {
+    if (!payload.dateOfBirth || !payload.type) {
       throw new Error('Invalid credential: missing required fields');
     }
 
@@ -179,7 +179,7 @@ export function computeAgeProof(birthdate: Date, requiredAge: number): boolean {
  * @returns Birthdate as Date object
  */
 export function extractBirthdate(claims: AgeCredentialClaims): Date {
-  return new Date(claims.birthdate);
+  return new Date(claims.dateOfBirth);
 }
 
 /**

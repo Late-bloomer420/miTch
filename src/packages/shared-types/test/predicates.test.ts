@@ -19,7 +19,7 @@ describe('shared-types/predicates canonicalization', () => {
             expression: {
                 logic: 'and',
                 clauses: [
-                    { path: 'credentialSubject.birthDate', op: 'gte', value: 18, type: 'age_years' }
+                    { path: 'credentialSubject.dateOfBirth', op: 'gte', value: 18, type: 'age_years' }
                 ]
             }
         };
@@ -31,7 +31,7 @@ describe('shared-types/predicates canonicalization', () => {
             expression: {
                 logic: 'and',
                 clauses: [
-                    { op: 'gte', path: 'credentialSubject.birthDate', type: 'age_years', value: 18 }
+                    { op: 'gte', path: 'credentialSubject.dateOfBirth', type: 'age_years', value: 18 }
                 ]
             }
         };
@@ -63,7 +63,7 @@ describe('shared-types/predicates legacy adapter', () => {
             verifierDid: 'did:web:shop.example',
             nonce: 'n-123',
             purpose: 'Age gate',
-            constraints: [{ attribute: 'birthDate', operator: 'gte', value: 18 }]
+            constraints: [{ attribute: 'dateOfBirth', operator: 'gte', value: 18 }]
         };
 
         const request = legacyToDSL(legacy);
@@ -75,7 +75,7 @@ describe('shared-types/predicates legacy adapter', () => {
         }
 
         expect(clause.type).toBe('age_years');
-        expect(clause.path).toBe('birthDate');
+        expect(clause.path).toBe('dateOfBirth');
     });
 
     it('fails closed for unsupported legacy operators', () => {
@@ -83,7 +83,7 @@ describe('shared-types/predicates legacy adapter', () => {
             verifierDid: 'did:web:shop.example',
             nonce: 'n-123',
             purpose: '???',
-            constraints: [{ attribute: 'birthDate', operator: 'regex' as any, value: '.*' }]
+            constraints: [{ attribute: 'dateOfBirth', operator: 'regex' as any, value: '.*' }]
         };
 
         expect(() => legacyToDSL(legacy)).toThrow('UNSUPPORTED_LEGACY_OPERATOR');

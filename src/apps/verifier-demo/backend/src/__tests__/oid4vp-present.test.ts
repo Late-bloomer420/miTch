@@ -16,7 +16,7 @@ import { statusResolver, trustListResolver } from '@mitch/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-const AGE_CLAIMS = { age: 24, birthDate: '2000-01-01', name: 'Max Mustermann', address: 'Zirl, AT', nationalId: 'AT-123456' };
+const AGE_CLAIMS = { age: 24, dateOfBirth: '2000-01-01', name: 'Max Mustermann', address: 'Zirl, AT', nationalId: 'AT-123456' };
 
 const MOCK_TSL = {
     id: 'test-tsl',
@@ -67,7 +67,7 @@ describe('/oid4vp-present endpoint', () => {
 
         expect(res.status).toBe(400);
         expect(res.body.ok).toBe(false);
-        expect(res.body.error).toContain('Missing vp_token');
+        expect(res.body.error).toBe('Missing vp_token');
     });
 
     it('should return 400 when presentation_submission is missing', async () => {
@@ -77,7 +77,7 @@ describe('/oid4vp-present endpoint', () => {
 
         expect(res.status).toBe(400);
         expect(res.body.ok).toBe(false);
-        expect(res.body.error).toContain('Missing vp_token or presentation_submission');
+        expect(res.body.error).toBe('Missing presentation_submission');
     });
 
     it('should return 400 when issuer_jwk is missing', async () => {
@@ -87,7 +87,7 @@ describe('/oid4vp-present endpoint', () => {
 
         expect(res.status).toBe(400);
         expect(res.body.ok).toBe(false);
-        expect(res.body.error).toContain('Missing issuer_jwk');
+        expect(res.body.error).toBe('Missing issuer_jwk');
     });
 
     it('should verify a valid SD-JWT VP (happy path)', async () => {

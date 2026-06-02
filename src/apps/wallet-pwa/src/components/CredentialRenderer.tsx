@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import Mustache from 'mustache';
+import { verifyDigestMultibase } from '@mitch/shared-crypto';
 
 export interface RenderMethod {
     id: string;
@@ -44,8 +45,10 @@ export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
                     if (!res.ok) throw new Error(`Template fetch failed: ${res.status}`);
                     return res.text();
                 })
-                .then(template => {
-                    // TODO: Verify digestMultibase here for V-04
+                .then(async template => {
+                    if (svgTemplateMethod.digestMultibase) {
+                        await verifyDigestMultibase(template, svgTemplateMethod.digestMultibase);
+                    }
                     const rendered = Mustache.render(template, claims);
                     setSvgContent(rendered);
                 })
@@ -58,17 +61,20 @@ export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
 
     if (svgContent) {
         return (
-            <div 
-                className="mitch-credential-svg"
-                dangerouslySetInnerHTML={{ __html: svgContent }}
-                style={{ width: '100%', height: 'auto', borderRadius: '8px', overflow: 'hidden' }}
-            />
+            <SecureIframeRenderer content={svgContent} />
         );
     }
-
     return (
         <div className="credential-item">
             <span className="credential-icon">🪪</span>
+            <div>
+                <div className="credential-name">{fallbackName}</div>
+                <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>
+            </div>
+        </div>
+    );
+};
+🪪</span>
             <div>
                 <div className="credential-name">{fallbackName}</div>
                 <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>

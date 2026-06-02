@@ -35,7 +35,7 @@ describe('Predicate E2E: Wallet → Verifier', () => {
     const mockCredential = {
         credentialSubject: {
             id: 'did:key:user-alice',
-            birthDate: '1995-06-15',  // ~30 years old
+            dateOfBirth: '1995-06-15',  // ~30 years old
             residency: 'DE',
             name: 'Alice Smith',      // Should NOT leak
             ssn: '123-45-6789'        // Should DEFINITELY NOT leak

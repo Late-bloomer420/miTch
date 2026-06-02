@@ -6,7 +6,7 @@
  *
  * Demonstrates:
  * - Layer 1 (GRUNDVERSORGUNG) protection for age data
- * - ZK-Predicate: isOver18 without revealing exact birthdate
+ * - ZK-Predicate: isOver18 without revealing exact dateOfBirth
  * - Layer violation detection (store tries to access Layer 2 data)
  */
 
@@ -35,9 +35,9 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
 
   it('✅ ALLOW: Store requests age, user is over 18', async () => {
     // 1. Mock Issuer stellt Credential aus
-    const birthdate = new Date('1990-01-01');
+    const dateOfBirth = new Date('1990-01-01');
     const userDID = 'did:example:user123';
-    const credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const credential = await mockIssuer.issueAgeCredential(dateOfBirth, userDID);
 
     // 2. User erstellt ZK-Proof (isOver18 = true)
     const presentation = createAgeProofPresentation(credential, 18);
@@ -97,7 +97,7 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
         issuer: mockIssuer.getDID(),
         issuedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        claims: ['age', 'birthdate', 'isOver18'],
+        claims: ['age', 'dateOfBirth', 'isOver18'],
       },
     ];
 
@@ -118,9 +118,9 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   });
 
   it('❌ DENY: Store tries to request health data (Layer 2 violation)', async () => {
-    const birthdate = new Date('1990-01-01');
+    const dateOfBirth = new Date('1990-01-01');
     const userDID = 'did:example:user123';
-    const _credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const _credential = await mockIssuer.issueAgeCredential(dateOfBirth, userDID);
 
     // Malicious store tries to request health data (Layer 2)
     const policy: PolicyManifest = {
@@ -184,9 +184,9 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   });
 
   it('❌ DENY: User is under 18', async () => {
-    const birthdate = new Date('2010-01-01'); // Under 18
+    const dateOfBirth = new Date('2010-01-01'); // Under 18
     const userDID = 'did:example:minor123';
-    const credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const credential = await mockIssuer.issueAgeCredential(dateOfBirth, userDID);
 
     // Compute age proof
     const presentation = createAgeProofPresentation(credential, 18);
@@ -225,9 +225,9 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   });
 
   it('✅ ALLOW: Multiple age thresholds (21+ for US liquor stores)', async () => {
-    const birthdate = new Date('1995-06-15');
+    const dateOfBirth = new Date('1995-06-15');
     const userDID = 'did:example:user456';
-    const credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const credential = await mockIssuer.issueAgeCredential(dateOfBirth, userDID);
 
     // Test different age thresholds
     const over18 = createAgeProofPresentation(credential, 18);
@@ -238,9 +238,9 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   });
 
   it('❌ DENY: Age threshold not met for 21+ requirement', async () => {
-    const birthdate = new Date('2007-01-01'); // 19 years old
+    const dateOfBirth = new Date('2007-01-01'); // 19 years old
     const userDID = 'did:example:young-user';
-    const credential = await mockIssuer.issueAgeCredential(birthdate, userDID);
+    const credential = await mockIssuer.issueAgeCredential(dateOfBirth, userDID);
 
     const over18 = createAgeProofPresentation(credential, 18);
     const over21 = createAgeProofPresentation(credential, 21);
@@ -253,7 +253,7 @@ describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
 describe('Layer Resolution Integration', () => {
   it('should correctly classify data by layer', () => {
     expect(getMinimumLayerForData('age')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
-    expect(getMinimumLayerForData('birthDate')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
+    expect(getMinimumLayerForData('dateOfBirth')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
     expect(getMinimumLayerForData('education')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
 
     expect(getMinimumLayerForData('healthRecord')).toBe(ProtectionLayer.VULNERABLE);

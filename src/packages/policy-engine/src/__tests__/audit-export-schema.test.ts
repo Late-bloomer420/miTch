@@ -94,7 +94,7 @@ describe('PII exclusion', () => {
     const dirty = {
       ...makeRecord(),
       subjectDid: 'did:example:123',
-      birthDate: '1990-01-01',
+      dateOfBirth: '1990-01-01',
     } as Record<string, unknown>;
     const violations = validateNoPii(dirty);
     expect(violations.length).toBe(2);

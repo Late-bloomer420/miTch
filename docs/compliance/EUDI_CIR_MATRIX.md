@@ -1,7 +1,7 @@
 # EUDI Wallet — CIR Compliance Matrix
 
-> Last updated: 2026-05-25
-> Coverage: miTch v0.9 (Session 11 — Compliance Gap Sprint)
+> Last updated: 2026-06-02
+> Coverage: miTch v1.0-RC (Session 11 — Pilot Readiness)
 >
 > Legend: ✅ Implemented | 🟡 Partial | 🔴 Missing | ➖ Not applicable
 
@@ -103,3 +103,4 @@
 | Gap | Priority | Notes |
 |-----|----------|-------|
 | Formal CC certification (2981-2) | P2 | Security Target prepared; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
+. |
