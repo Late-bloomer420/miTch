@@ -997,8 +997,6 @@ function WalletApp() {
                 displayName = 'ePrescription Record';
                 icon = '💊';
                 subText = 'Authorized Medical Rx';
-              } else if (types.includes('org.iso.18013.5.1.mDL') || cred.for     icon = '💊';
-                subText = 'Authorized Medical Rx';
               } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
                 cardClass = 'credential-card--mdl';
                 displayName = 'Mobile Driver License (mDL)';
@@ -1156,8 +1154,8 @@ function WalletApp() {
               <h2 style={{ fontSize: 20, margin: 0 }}>{evaluationResult.denialResolution.title}</h2>
             </div>
 
-            <p style={{ color: '#ccc', fontSize: 16, lineHeight: 1.5, marginBotcolumn', gap: 10 }}>
-              {evaluationResult.denialResolsage}
+            <p style={{ color: '#ccc', fontSize: 16, lineHeight: 1.5, marginBottom: 20 }}>
+              {evaluationResult.denialResolution.message}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1186,7 +1184,9 @@ function WalletApp() {
                             userDID: 'did:example:wallet-user',
                             overrideGranted: true,
                           }
-    ;
+                        );
+                        if (overrideResult.verdict === 'PROMPT') {
+                          setEvaluationResult(overrideResult);
                           setShowConsent(true);
                         } else {
                           addLog(
@@ -1439,19 +1439,6 @@ export default function App() {
     <LandingPage
       onLaunchDemo={() => {
         window.location.href = `${window.location.pathname}?demo=wallet`;
-      }}
-    />
-  );
-}
-rn (
-    <LandingPage
-      onLaunchDemo={() => {
-        window.location.href = `${window.location.pathname}?demo=wallet`;
-      }}
-    />
-  );
-}
-ndow.location.href = `${window.location.pathname}?demo=wallet`;
       }}
     />
   );
