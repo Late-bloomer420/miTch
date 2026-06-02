@@ -60,3 +60,13 @@ export const UNIFORM_HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
 };
+
+/**
+ * U-23: Network Timing Jitter
+ * Adds a random delay (e.g. 20-100ms) to network requests to prevent 
+ * timing side-channel attacks that might reveal credential complexity.
+ */
+export async function applyJitter(minMs: number = 20, maxMs: number = 100): Promise<void> {
+    const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+    return new Promise(resolve => setTimeout(resolve, delay));
+}
