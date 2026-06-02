@@ -8,7 +8,7 @@ Use this as a spec drafting aid. Confirm details against current repo docs and i
 | Purpose limitation                 | Predicate requests and policy rules must carry explicit purpose and audience.                            |
 | Data minimization                  | Prefer zero-knowledge proofs, predicates, selective disclosure, pairwise DIDs, and ephemeral processing. |
 | Accuracy                           | Issuer signatures, credential validity checks, revocation/status checks, and trusted schema validation.  |
-| Storage limitation                 | Wallet custody, verifier non-retention, TTLs, crypto-shredding, secure storage deletion semantics.       |
+| Storage limitation                 | Wallet custody, minimized disclosure to the verifier (less data exists to retain), TTLs, crypto-shredding, secure storage deletion semantics. miTch cannot enforce what a verifier does out-of-band; it minimizes what the verifier receives. |
 | Integrity and confidentiality      | AES-GCM/JWE, signature verification, WebAuthn/step-up auth, nonce and presentation binding.              |
 | Accountability                     | Audit logs, evidence packs, deny reason codes, DecisionCapsule `policy_hash`, reproducible tests.        |
 

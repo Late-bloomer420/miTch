@@ -5,6 +5,8 @@ The **miTch AI-Guardian** is a high-assurance gateway that enables **Verifiable 
 
 While typical AI pipelines ingest data and "promise" to delete it or protect PII, AI-Guardian uses the miTch technical primitives to **enforce** privacy through mathematics and hardware-bound keys.
 
+> **Scope of the proof (honest boundary).** miTch cryptographically proves two things: (1) what was disclosed was *minimized* to the policy-bound minimum, and (2) the decryption keys held on the miTch side were destroyed after use. It does **not** — and cannot — prove what a relying party does out-of-band with data it legitimately received. The guarantee is "less data exists to misuse, and our side is provably forgotten," not "proof of non-retention by the counterparty."
+
 ## 2. Technical Primitives (The "Code Reality")
 Based on the current miTch implementation, the following primitives form the backbone of AI-Guardian:
 

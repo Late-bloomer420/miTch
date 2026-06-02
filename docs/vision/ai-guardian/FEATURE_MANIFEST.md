@@ -43,7 +43,7 @@ The miTch AI-Guardian is the world's first **High-Assurance Privacy Gateway** th
 ## 4. The "Liability Shift" (B2B Value)
 miTch enables a fundamental shift in corporate risk management:
 *   **From:** "We are liable if the AI leaks customer data."
-*   **To:** "We have cryptographic proof that the data never left the miTch secure zone and was destroyed after use."
+*   **To:** "We have cryptographic proof that data processed inside the miTch secure zone was minimized and that the decryption keys were destroyed after use."
 **Result:** Lower legal costs, faster procurement cycles for AI, and reduced insurance premiums.
 
 ---
