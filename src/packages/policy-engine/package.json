@@ -21,16 +21,16 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*",
-        "@mitch/predicates": "workspace:*",
         "@mitch/layer-resolver": "workspace:*",
-        "@mitch/shared-crypto": "workspace:*"
+        "@mitch/predicates": "workspace:*",
+        "@mitch/shared-crypto": "workspace:*",
+        "@mitch/shared-types": "workspace:*"
     },
     "devDependencies": {
-        "typescript": "^5.0.0",
-        "rimraf": "^5.0.0",
-        "vitest": "^2.1.9",
+        "@mitch/mock-issuer": "workspace:*",
         "@types/node": "^20.0.0",
-        "@mitch/mock-issuer": "workspace:*"
+        "rimraf": "^5.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^4.1.8"
     }
 }
