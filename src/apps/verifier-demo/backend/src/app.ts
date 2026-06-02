@@ -204,7 +204,9 @@ app.post('/wallet-present', async (req, res) => {
 app.post('/oid4vp-present', async (req, res) => {
     try {
         const body = req.body as { vp_token?: string; presentation_submission?: unknown; state?: string; issuer_jwk?: JsonWebKey };
-        if (!body.vp_token || !body.presentation_submission || !body.issuer_jwk) return res.status(400).json({ ok: false, error: 'Missing fields' });
+        if (!body.vp_token) return res.status(400).json({ ok: false, error: 'Missing vp_token' });
+        if (!body.presentation_submission) return res.status(400).json({ ok: false, error: 'Missing presentation_submission' });
+        if (!body.issuer_jwk) return res.status(400).json({ ok: false, error: 'Missing issuer_jwk' });
         const issuerPublicKey = await globalThis.crypto.subtle.importKey('jwk', body.issuer_jwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);
         const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
         const reconstructedRequest = { response_type: 'vp_token' as const, client_id: 'did:mitch:verifier-liquor-store', redirect_uri: `${baseUrl}/oid4vp-present`, nonce: '', presentation_definition: { id: 'reconstructed', input_descriptors: [] }, response_mode: 'direct_post' as const, state: body.state };
