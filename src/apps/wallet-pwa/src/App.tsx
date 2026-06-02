@@ -226,6 +226,22 @@ function WalletApp() {
     init();
   }, []);
 
+  const handlePasskeyUnlock = async () => {
+    try {
+      setStatus('UNLOCKING');
+      addLog('👤 Requesting Biometric Verification...', 'info');
+      await WebAuthnService.provePresence('mitch-wallet-unlock');
+      await walletRef.current.initialize('123456');
+      addLog('🔓 Passkey Verified. Wallet Ready.', 'success');
+      setCurrentPolicy(walletRef.current.getPolicy());
+      await loadWalletCredentials();
+      setStatus('IDLE');
+    } catch (e) {
+      addLog(`❌ Unlock Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('LOCKED_PASSKEY');
+    }
+  };
+
   const handleProveAge = async () => {
     setStatus('EVALUATING');
     setLogs([]);
@@ -729,9 +745,14 @@ function WalletApp() {
   };
 
   // OID4VP: handle incoming request from verifier-demo deep link
-  const handleIncomingOID4VP = async () => {
-    if (!incomingOID4VP) return;
-    const { scenario, endpoint, verifier } = incomingOID4VP;
+  const handleIncomingOID4VP = async (params?: {
+    scenario: string;
+    endpoint: string;
+    verifier: string;
+  }) => {
+    const data = params || incomingOID4VP;
+    if (!data) return;
+    const { scenario, endpoint, verifier } = data;
 
     // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
     fetch(`${endpoint}/notify-scan`, { method: 'POST' }).catch(() => {});
@@ -902,7 +923,7 @@ function WalletApp() {
             {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>age ≥ 18</code>
           </div>
           <button
-            onClick={handleIncomingOID4VP}
+            onClick={() => handleIncomingOID4VP()}
             disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
             style={{
               background: '#0891b2',
