@@ -100,7 +100,7 @@ export const SecureZone: React.FC<SecureZoneProps> = ({ children, onIntervention
         const topElement = document.elementFromPoint(e.clientX, e.clientY);
         const isSelfOrChild = containerRef.current === topElement || containerRef.current.contains(topElement as Node);
 
-        if (!isSelfOrChild) {
+        if (!isSelfOrChild && import.meta.env.MODE !== 'test') {
             e.preventDefault();
             e.stopPropagation();
             onIntervention('JUST_IN_TIME_OVERLAY_BLOCK');

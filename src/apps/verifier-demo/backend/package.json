@@ -2,6 +2,7 @@
     "name": "verifier-backend",
     "version": "0.0.1",
     "scripts": {
+        "clean": "rimraf dist",
         "dev": "tsx watch --ignore verifier-key.json --ignore nonce-cache.json src/index.ts",
         "start": "node dist/index.js",
         "build": "tsc",

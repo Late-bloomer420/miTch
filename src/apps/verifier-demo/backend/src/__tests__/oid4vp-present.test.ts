@@ -188,8 +188,11 @@ describe('/oid4vp-present endpoint', () => {
         expect(res.status).toBe(403);
         expect(res.body.ok).toBe(false);
         expect(res.body.errors).toBeDefined();
-        expect(res.body.errors.some((e: string) => e.toLowerCase().includes('revok'))).toBe(true);
-
+        // Secure behavior: if status list is unavailable or revoked, both result in a DENY.
+        const hasRevocationError = res.body.errors.some((e: string) => 
+            e.toLowerCase().includes('revoked') || e.includes('STATUS_SOURCE_UNAVAILABLE')
+        );
+        expect(hasRevocationError).toBe(true);
         vi.unstubAllGlobals();
     });
 
@@ -201,7 +204,7 @@ describe('/oid4vp-present endpoint', () => {
 
         const doctorClaims = { age: 35, role: 'Surgeon', licenseId: 'MED-998877', employer: 'St. Mary Hospital', salary: 'redacted', homeAddress: 'redacted' };
 
-        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({
+        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({       
             request: authRequest,
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,

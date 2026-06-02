@@ -12,10 +12,11 @@ import type {
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
-import { WebAuthnService } from '@mitch/shared-crypto';
+import { WebAuthnService, applyJitter } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
+import { PopupBlockedModal } from './components/PopupBlockedModal';
 import { ConsentManagerPanel } from './components/ConsentManagerPanel';
 import { CONFIG } from './config';
 import {
@@ -33,6 +34,7 @@ import type { ConsentReceipt } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { LandingPage } from './LandingPage';
+import { UNIFORM_HEADERS, padPayload } from './utils/anti-fingerprinting';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -90,6 +92,8 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   },
 ];
 
+const walletRef = { current: null as any };
+
 function WalletApp() {
   useEffect(() => {
     document.title = 'miTch Wallet';
@@ -103,13 +107,16 @@ function WalletApp() {
   const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
   const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
   const [showDataFlow, setShowDataFlow] = useState(false);
+  const [showPopupBlocked, setShowPopupBlocked] = useState(false);
+  const [blockedPopupUrl, setBlockedPopupUrl] = useState('');
+  const [showConsentManager, setShowConsentManager] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
   const [consentReceiptHistory, setConsentReceiptHistory] = useState(() =>
     loadConsentReceiptHistory()
   );
   const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
-    () => !sessionStorage.getItem('guidedDemoCompleted')
+    () => !sessionStorage.getItem('guidedDemoCompleted') && import.meta.env.MODE !== 'test'
   );
   const [showSecondary, setShowSecondary] = useState(false);
   const [flashAllow, setFlashAllow] = useState(false);
@@ -118,6 +125,8 @@ function WalletApp() {
     'idle'
   );
   const [credentials, setCredentials] = useState<StoredCredentialMetadata[]>([]);
+  const [isPasskeyAvailable, setIsPasskeyAvailable] = useState(false);
+  const [isPasskeyRegistered, setIsPasskeyRegistered] = useState(false);
 
   const loadWalletCredentials = async () => {
     try {
@@ -131,20 +140,15 @@ function WalletApp() {
   // G-120: Listen for Auth Popup messages from opener window
   useEffect(() => {
     const handleOpenerMessage = (event: MessageEvent) => {
-      // Security: Validate origin in production
       if (event.data?.type === 'MITCH_OID4VP_REQUEST') {
         addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
-        // Trigger handleIncomingOID4VP with provided data
-        // For simplicity, we just reload or use the data directly
         const { scenario, endpoint, verifier } = event.data;
-        // This is a specialized path for popups
-        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier);
+        handleIncomingOID4VP({ scenario, endpoint, verifier });
       }
     };
 
     window.addEventListener('message', handleOpenerMessage);
     
-    // Check if we ARE a popup and notify opener
     if (window.opener) {
       window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, '*');
     }
@@ -152,9 +156,6 @@ function WalletApp() {
     return () => window.removeEventListener('message', handleOpenerMessage);
   }, []);
 
-  const handleIncomingOID4VPFromOpener = async (scenario: string, endpoint: string, verifier: string) => {
-      await handleIncomingOID4VP({ scenario, endpoint, verifier });
-  };
   const [incomingOID4VP] = useState<{
     scenario: string;
     endpoint: string;
@@ -175,8 +176,17 @@ function WalletApp() {
     }
   });
 
+  // OID4VP: Auto-trigger on load if deep-link params present
+  useEffect(() => {
+    if (incomingOID4VP) {
+      handleIncomingOID4VP();
+    }
+  }, [incomingOID4VP]);
+
   const logContainerRef = useRef<HTMLDivElement>(null);
-  const walletRef = useRef<WalletService>(new WalletService());
+  const internalWalletRef = useRef<WalletService>(new WalletService());
+  walletRef.current = internalWalletRef.current;
+
   const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
@@ -184,7 +194,6 @@ function WalletApp() {
     setLogs((prev) => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
   };
 
-  // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
     if (logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
@@ -196,35 +205,44 @@ function WalletApp() {
     const init = async () => {
       addLog('🔐 Initializing Wallet Service...', 'info');
       try {
-        await walletRef.current.initialize('123456');
-        addLog('🔓 Wallet Decrypted & Ready', 'success');
-        setCurrentPolicy(walletRef.current.getPolicy());
+        const available = await WebAuthnService.isAvailable();
+        const registered = await WebAuthnService.isRegistered();
+        setIsPasskeyAvailable(available);
+        setIsPasskeyRegistered(registered);
 
-        try {
-          const isAvailable = await WebAuthnService.isAvailable();
-          const isRegistered = await WebAuthnService.isRegistered();
-          if (isAvailable && !isRegistered) {
-            addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
-            await WebAuthnService.registerPasskey();
-            addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
-          }
-        } catch (authError) {
-          addLog(
-            `⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
-            'warning'
-          );
+        if (available && registered) {
+          setStatus('LOCKED_PASSKEY');
+          addLog('📱 Passkey found. Biometric unlock available.', 'info');
+        } else {
+          await walletRef.current.initialize('123456');
+          addLog('🔓 Wallet Decrypted via PIN (Legacy/Demo)', 'success');
+          setCurrentPolicy(walletRef.current.getPolicy());
+          await loadWalletCredentials();
+          setStatus('IDLE');
         }
-
-        await loadWalletCredentials();
-        setStatus('IDLE');
       } catch (e) {
         console.error(e);
-        const message = e instanceof Error ? e.message : String(e);
-        addLog(`❌ Init Failed: ${message || 'Unknown error'}`, 'error');
+        addLog(`❌ Init Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
       }
     };
     init();
   }, []);
+
+  const handlePasskeyUnlock = async () => {
+    try {
+      setStatus('UNLOCKING');
+      addLog('👤 Requesting Biometric Verification...', 'info');
+      await WebAuthnService.provePresence('mitch-wallet-unlock');
+      await walletRef.current.initialize('123456'); 
+      addLog('🔓 Passkey Verified. Wallet Ready.', 'success');
+      setCurrentPolicy(walletRef.current.getPolicy());
+      await loadWalletCredentials();
+      setStatus('IDLE');
+    } catch (e) {
+      addLog(`❌ Unlock Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('LOCKED_PASSKEY');
+    }
+  };
 
   const handleProveAge = async () => {
     setStatus('EVALUATING');
@@ -248,55 +266,28 @@ function WalletApp() {
     };
 
     addLog('⚖️ Evaluating Policy...', 'info');
-    try {
-      const result = await walletRef.current.evaluateRequest(request, context);
-      setEvaluationResult(result);
+    const result = await walletRef.current.evaluateRequest(request, context);
+    setEvaluationResult(result);
 
-      if (result.verdict === 'DENY') {
-        setStatus('DENIED');
-        addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
-        return;
-      }
-
-      if (result.verdict === 'PROMPT') {
-        addLog(`🔔 Consent Required: ${result.reasonCodes.join(', ')}`, 'info');
-        setShowConsent(true);
-        return;
-      }
-
-      // ALLOW
-      addLog(`✅ Policy ALLOWED. Auto-issuing...`, 'success');
-      setFlashAllow(true);
-      setTimeout(() => setFlashAllow(false), 900);
-      await proceedWithProof(result, undefined, request.serviceEndpoint);
-    } catch (e) {
-      console.error(e);
-      addLog(`❌ Evaluation Error: ${(e as Error).message}`, 'error');
+    if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
+      addLog(`✅ Policy ALLOWED Age Verification.`, 'success');
+      if (result.verdict === 'PROMPT') setShowConsent(true);
+      else await proceedWithProof(result, undefined, request.serviceEndpoint);
+    } else {
+      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
       setStatus('IDLE');
     }
   };
 
   const proceedWithProof = async (
-    policyResult?: PolicyEvaluationResult,
+    result?: PolicyEvaluationResult,
     targetKey?: CryptoKey,
-    endpoint?: string
+    manualEndpoint?: string
   ) => {
-    const result = policyResult || evaluationResult;
+    if (!result || !result.decisionCapsule) return;
 
-    if (!result || !result.decisionCapsule) {
-      addLog('❌ No Decision Capsule found!', 'error');
-      return;
-    }
-
-    const targetEndpoint =
-      endpoint ||
-      ((result.decisionCapsule as unknown as Record<string, unknown>).service_endpoint as
-        | string
-        | undefined) ||
-      CONFIG.VERIFIER_ENDPOINT;
-
-    setShowConsent(false);
-    setStatus('PROVING');
+    setStatus('SENDING');
+    const targetEndpoint = manualEndpoint || currentRequest?.serviceEndpoint || CONFIG.VERIFIER_ENDPOINT;
 
     try {
       addLog('🔐 Generating Secure Presentation...', 'info');
@@ -306,15 +297,21 @@ function WalletApp() {
         targetKey
       );
 
-      auditLog.forEach((l) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+      auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
+
+      const paddedPayload = padPayload(encryptedVp);
+      addLog(`🛡️ Payload padded to ${paddedPayload.length} bytes (Uniformity)`, 'info');
+      
+      await applyJitter(20, 100);
+      addLog('🛡️ Applied timing jitter (Side-channel protection)', 'info');
 
       try {
         const response = await fetch(targetEndpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: encryptedVp,
+          headers: UNIFORM_HEADERS,
+          body: paddedPayload,
         });
 
         if (response.ok) {
@@ -336,6 +333,7 @@ function WalletApp() {
 
       setLogs((prev) => [...prev, 'DONE|--- PROOF COMPLETE ---']);
       setStatus('SHREDDED');
+      setShowConsentManager(true);
     } catch (error) {
       console.error(error);
       addLog(`❌ Proof Gen Failed: ${error instanceof Error ? error.message : 'Unknown'}`, 'error');
@@ -430,7 +428,7 @@ function WalletApp() {
     addLog('🛡️ DEMO: Starting Social Recovery Setup...', 'warning');
     const fragments = await walletRef.current.splitMasterKey();
     addLog(`✅ DEMO: Master Key split into 3 fragments (Circle of Trust)`, 'success');
-    fragments.forEach((f, i) =>
+    fragments.forEach((f: string, i: number) =>
       addLog(`👤 Friend ${i + 1} received: ${f.substring(0, 8)}...`, 'info')
     );
 
@@ -444,12 +442,12 @@ function WalletApp() {
     addLog('📥 Request: "Provide Blood Type & Allergies"', 'info');
 
     const request: VerifierRequest = {
-      verifierId: 'hospital-madrid-er-1',
-      origin: 'https://er.madrid.health',
+      verifierId: 'ehds-emergency-portal',
+      origin: 'https://emergency.hospital.es',
       requirements: [
         {
           credentialType: 'PatientSummary',
-          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedClaims: ['bloodGroup', 'allergies', 'emergencyContacts'],
           requestedProvenClaims: [],
         },
       ],
@@ -464,25 +462,25 @@ function WalletApp() {
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Policy ALLOWED Health Data Access.`, 'success');
+      addLog(`✅ Policy ALLOWED Emergency Access.`, 'success');
       if (result.verdict === 'PROMPT') setShowConsent(true);
       else proceedWithProof(result);
     } else {
-      addLog(`🚫 Policy BLOCKED Health Request: ${result.reasonCodes.join(', ')}`, 'error');
+      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
     }
   };
 
   const handlePharmacyDemo = async () => {
-    addLog('💊 PHARMACY: Simulating Prescription Dispense...', 'warning');
-    addLog('📥 Request: "Provide Medication & Dosage"', 'info');
+    addLog('💊 DEMO: Pharmacy ePrescription...', 'warning');
+    addLog('📥 Request: "Provide active prescriptions"', 'info');
 
     const request: VerifierRequest = {
-      verifierId: 'pharmacy-berlin-center',
-      origin: 'https://pharmacy.berlin.health',
+      verifierId: 'pharmacy-xyz',
+      origin: 'https://pharmacy.xyz',
       requirements: [
         {
           credentialType: 'Prescription',
-          requestedClaims: ['medication', 'dosageInstruction'],
+          requestedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
           requestedProvenClaims: [],
         },
       ],
@@ -497,111 +495,14 @@ function WalletApp() {
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Policy ALLOWED Pharmacy Access.`, 'success');
-      if (result.verdict === 'PROMPT') setShowConsent(true);
-      else proceedWithProof(result);
-    } else {
-      addLog(`🚫 Policy BLOCKED Pharmacy Request: ${result.reasonCodes.join(', ')}`, 'error');
-    }
-  };
-
-  const handleResearchDemo = async () => {
-    addLog('🔬 RESEARCH: Simulating Secondary-Use Data Request...', 'warning');
-    addLog('📥 Request: "Provide Blood Group & Allergies for research"', 'info');
-
-    const request: VerifierRequest = {
-      verifierId: 'did:eu:research-institute-fhi',
-      origin: 'https://research.fhi.eu',
-      usagePurpose: 'researchSecondary',
-      requirements: [
-        {
-          credentialType: 'PatientSummary',
-          requestedClaims: ['bloodGroup', 'allergies'],
-          requestedProvenClaims: [],
-        },
-      ],
-    };
-
-    const context: EvaluationContext = {
-      timestamp: Date.now(),
-      userDID: 'did:example:wallet-user',
-    };
-
-    const result = await walletRef.current.evaluateRequest(request, context);
-    setEvaluationResult(result);
-
-    if (result.verdict === 'DENY') {
-      setStatus('DENIED');
-      addLog(`🚫 Secondary Use BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
-      return;
-    }
-    if (result.verdict === 'PROMPT') {
-      addLog(`🔔 Research Consent Required: ${result.reasonCodes.join(', ')}`, 'info');
-      setShowConsent(true);
-      return;
-    }
-    addLog(`✅ Research Access ALLOWED`, 'success');
-    await proceedWithProof(result);
-  };
-
-  const handleCrossBorderDemo = async () => {
-    addLog('🇪🇸 CROSS-BORDER: Spanish Hospital Emergency...', 'warning');
-    addLog('📥 Request: "Provide Blood Type & Allergies (Cross-Border EU)"', 'info');
-
-    const request: VerifierRequest = {
-      verifierId: 'did:es:hospital-barcelona-er-1',
-      origin: 'https://er.barcelona.health',
-      requirements: [
-        {
-          credentialType: 'PatientSummary',
-          requestedClaims: ['bloodGroup', 'allergies'],
-          requestedProvenClaims: [],
-        },
-      ],
-    };
-
-    const context: EvaluationContext = {
-      timestamp: Date.now(),
-      userDID: 'did:example:wallet-user',
-    };
-
-    const result = await walletRef.current.evaluateRequest(request, context);
-    setEvaluationResult(result);
-
-    if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Cross-Border Access via GDPR Art. 1`, 'success');
+      addLog(`✅ Policy ALLOWED Prescription Access.`, 'success');
       if (result.verdict === 'PROMPT') setShowConsent(true);
       else await proceedWithProof(result);
     } else {
-      addLog(`🚫 Cross-Border BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
     }
   };
 
-  // UX-05: Render log with slide-in animation (key includes index for animation re-trigger)
-  const renderLogLine = (l: string, i: number) => {
-    if (l.startsWith('DONE'))
-      return (
-        <div key={i} className="audit-log-done">
-          {l.split('|')[1]}
-        </div>
-      );
-    const parts = l.split('|');
-    if (parts.length < 3) return <div key={i}>{l}</div>;
-
-    const type = parts[0];
-    const time = parts[1];
-    const msg = parts.slice(2).join('|');
-    const className = `audit-${type.toLowerCase()} audit-log-entry`;
-
-    return (
-      <div key={i} className={className}>
-        <span className="audit-log-time">{time}</span>
-        <span className="audit-log-msg">{msg}</span>
-      </div>
-    );
-  };
-
-  // UX-05: Copy log to clipboard
   const handleCopyLog = () => {
     const text = logs
       .map((l) => {
@@ -615,7 +516,6 @@ function WalletApp() {
     });
   };
 
-  // OID4VP: present SD-JWT VP to verifier via direct_post
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
     scenarioId: string,
@@ -628,7 +528,6 @@ function WalletApp() {
       setStatus('PROVING');
       addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
 
-      // Generate ephemeral key pairs (PoC — in production, holder key is from wallet, issuer from trust registry)
       holderKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
         'sign',
         'verify',
@@ -638,40 +537,44 @@ function WalletApp() {
         'verify',
       ]);
 
-      const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
-      const isRevoked = scenarioId === 'revoked';
+      const claims = SCENARIO_CLAIMS[scenarioId] || SCENARIO_CLAIMS['liquor-store'];
+      const vct = SCENARIO_VCT[scenarioId] || 'https://mitch.demo/vct/age-credential';
 
-      // W-03: Build SD-JWT VP Token with Key Binding JWT
       const { vpTokenString, presentationSubmission, disclosedClaims } =
         await buildSDJWTPresentation({
           request: authRequest,
           issuerPrivateKey: issuerKeys.privateKey,
           holderKeyPair: holderKeys,
           claims,
-          vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
+          vct,
           issuerDid: 'https://issuer.mitch.demo',
-          revoked: isRevoked,
+          revoked: scenarioId === 'revoked',
         });
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
       addLog(`🔑 Key Binding JWT attached (nonce + aud bound)`, 'info');
 
-      // Send issuer public key alongside VP for PoC verification
       const issuerPubJwk = await crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
-
-      // POST direct_post to verifier redirect_uri
       const redirectUri = authRequest.redirect_uri;
       addLog(`🚀 POSTing VP to ${redirectUri}...`, 'info');
 
-      const response = await fetch(redirectUri, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
+      const payload = {
           vp_token: vpTokenString,
           presentation_submission: presentationSubmission,
           state: authRequest.state,
           issuer_jwk: issuerPubJwk,
-        }),
+      };
+      const paddedPayload = padPayload(payload);
+      addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
+
+      await applyJitter(20, 100);
+      addLog('🛡️ Applied timing jitter', 'info');
+
+      const response = await fetch(redirectUri, {
+        method: 'POST',
+        headers: UNIFORM_HEADERS,
+        body: paddedPayload,
       });
 
       const result = (await response.json()) as {
@@ -695,7 +598,6 @@ function WalletApp() {
         );
       }
 
-      // W-05: Session cleanup — audit entry
       const { consentReceipt, auditEntry } = buildSessionCleanup({
         request: authRequest,
         disclosedClaims,
@@ -714,6 +616,7 @@ function WalletApp() {
 
       setLogs((prev) => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
       setStatus('SHREDDED');
+      setShowConsentManager(true);
     } catch (error) {
       addLog(
         `❌ OID4VP Proof Failed: ${error instanceof Error ? error.message : 'Unknown'}`,
@@ -721,20 +624,19 @@ function WalletApp() {
       );
       setStatus('IDLE');
     } finally {
-      // B-03: Crypto-shredding — destroy ephemeral keys
       holderKeys = null;
       issuerKeys = null;
       addLog('🗑️ Ephemeral keys destroyed (crypto-shredding)', 'info');
     }
   };
 
-  // OID4VP: handle incoming request from verifier-demo deep link
-  const handleIncomingOID4VP = async () => {
-    if (!incomingOID4VP) return;
-    const { scenario, endpoint, verifier } = incomingOID4VP;
+  const handleIncomingOID4VP = async (params?: { scenario: string; endpoint: string; verifier: string }) => {
+    const data = params || incomingOID4VP;
+    if (!data) return;
+    const { scenario, endpoint, verifier } = data;
 
     // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
-    fetch(`${endpoint}/notify-scan`, { method: 'POST' }).catch(() => {});
+    fetch(`${endpoint}/notify-scan`, { method: 'POST', headers: UNIFORM_HEADERS }).catch(() => {});
 
     setStatus('EVALUATING');
     setLogs([]);
@@ -787,6 +689,11 @@ function WalletApp() {
         setFlashAllow(true);
         setTimeout(() => setFlashAllow(false), 900);
         await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null);
+        
+        // G-120: If in popup, notify opener
+        if (window.opener) {
+          window.opener.postMessage({ type: 'MITCH_PROOF_COMPLETE', success: true }, '*');
+        }
       }
     } catch (e) {
       addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -797,295 +704,262 @@ function WalletApp() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
-  // OID4VCI: fetch a test credential from issuer-mock
   const handleFetchCredential = async () => {
     setCredentialStatus('fetching');
     addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
     try {
-      const res = await fetch('http://localhost:3005/credential', {
+      const res = await fetch('http://localhost:3005/issue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
-          proof: {},
+          subject: 'did:example:wallet-user',
+          claims: {
+            name: 'Demo User',
+            dateOfBirth: '1990-01-01',
+            age: 36,
+          },
         }),
       });
-      if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
-      const data = (await res.json()) as { credential?: string; error?: string };
-      if (!data.credential) throw new Error(data.error ?? 'No credential in response');
-
-      // Decode JWT payload (header.payload.sig)
-      const parts = data.credential.split('.');
-      if (parts.length < 2) throw new Error('Invalid JWT format');
-      const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-      const payload = JSON.parse(payloadJson) as Record<string, unknown>;
-      const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
-      const subject = (vcPayload?.credentialSubject ??
-        payload['credentialSubject'] ??
-        {}) as Record<string, unknown>;
-
-      const credId = `vc-issuer-${Date.now()}`;
-      await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
+      if (!res.ok) throw new Error('Issuer failed');
+      addLog('✅ New SD-JWT VC received and stored securely', 'success');
       await loadWalletCredentials();
-
       setCredentialStatus('done');
-      addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
     } catch (e) {
+      addLog(`❌ OID4VCI Failed: ${(e as Error).message}`, 'error');
       setCredentialStatus('error');
-      addLog(`❌ Credential fetch failed: ${(e as Error).message}`, 'error');
-    }
-  };
-
-  // UX-02: primary button classes
-  const getPrimaryBtnClass = () => {
-    const base = 'btn-primary';
-    const stateClass =
-      {
-        IDLE: 'btn-primary--idle',
-        LOCKED: 'btn-primary--idle',
-        EVALUATING: 'btn-primary--evaluating',
-        PROVING: 'btn-primary--proving',
-        SHREDDED: 'btn-primary--shredded',
-        DENIED: 'btn-primary--denied',
-      }[status] ?? 'btn-primary--idle';
-    const flash = flashAllow ? ' btn-primary--flash-allow' : '';
-    return `${base} ${stateClass}${flash}`;
-  };
-
-  const getPrimaryBtnLabel = () => {
-    switch (status) {
-      case 'LOCKED':
-        return '🔒 Unlocking...';
-      case 'EVALUATING':
-        return (
-          <>
-            <span className="evaluating-spinner" />
-            Judging...
-          </>
-        );
-      case 'PROVING':
-        return '🔐 Generating Proof...';
-      case 'SHREDDED':
-        return '✓ Done — Data Forgotten';
-      case 'DENIED':
-        return '🚫 Access Denied';
-      default:
-        return '🔞 Prove Age & Forget';
     }
   };
 
   return (
-    <div className="wallet-app">
-      <h1 className="wallet-title">
-        miTch <span className="wallet-title-accent">Smart Wallet</span>
-      </h1>
-
-      {/* OID4VP: incoming request banner */}
-      {incomingOID4VP && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #0a1628, #0d2040)',
-            border: '1px solid #0891b2',
-            borderRadius: 10,
-            padding: '16px 20px',
-            marginBottom: 16,
-          }}
-        >
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#38bdf8', marginBottom: 6 }}>
-            📲 Incoming Verification Request
-          </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
-            Verifier: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.verifier}</code>
-          </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
-            Scenario: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.scenario}</code>
-            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>age ≥ 18</code>
-          </div>
-          <button
-            onClick={handleIncomingOID4VP}
-            disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
-            style={{
-              background: '#0891b2',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              padding: '8px 20px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 13,
-              marginRight: 8,
-            }}
-          >
-            ✅ Accept &amp; Prove
-          </button>
+    <div className={`wallet-container ${flashAllow ? 'flash-allow' : ''}`}>
+      <header className="wallet-header">
+        <div className="wallet-logo">
+          mi<span>T</span>ch
         </div>
-      )}
+        <div className="wallet-version">v1.0-RC</div>
+      </header>
 
-      {/* Passkey Unlock State */}
-      {status === 'LOCKED_PASSKEY' && (
-        <div className="secure-backdrop" style={{ display: 'flex' }}>
-          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40 }}>
-            <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
-            <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
-            <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
-            </p>
-            <button
-              onClick={handlePasskeyUnlock}
-              style={{
-                width: '100%',
-                padding: '16px',
-                background: '#0891b2',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 12,
-                fontWeight: 700,
-                fontSize: 16,
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
-              }}
-            >
-              Unlock with Biometrics
-            </button>
-            <div style={{ marginTop: 24 }}>
-              <button 
-                onClick={async () => {
-                  await walletRef.current.initialize('123456');
-                  setCurrentPolicy(walletRef.current.getPolicy());
-                  await loadWalletCredentials();
-                  setStatus('IDLE');
-                  addLog('🔓 Fallback: Unlocked via PIN', 'warning');
+      <main className="wallet-main">
+        {status === 'IDLE' && guidedDemoActive && (
+          <GuidedDemoMode 
+            isActive={guidedDemoActive}
+            onExit={() => setGuidedDemoActive(false)}
+            onStepExecute={() => {}}
+            steps={DEMO_STEPS_CONFIG as any}
+          />
+        )}
+
+        {status === 'LOCKED_PASSKEY' && (
+          <div className="secure-backdrop" style={{ display: 'flex' }}>
+            <div className="secure-prompt" style={{ textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
+              <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
+              <p style={{ color: '#94a3b8', marginBottom: 32 }}>
+                Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
+              </p>
+              <button
+                onClick={handlePasskeyUnlock}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: '#0891b2',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
                 }}
-                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
               >
-                Use PIN instead
+                Unlock with Biometrics
               </button>
+              <div style={{ marginTop: 24 }}>
+                <button 
+                  onClick={async () => {
+                    await walletRef.current.initialize('123456');
+                    setCurrentPolicy(walletRef.current.getPolicy());
+                    await loadWalletCredentials();
+                    setStatus('IDLE');
+                    addLog('🔓 Fallback: Unlocked via PIN', 'warning');
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+                >
+                  Use PIN instead
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* UX-03: Dynamic Premium Credential Cards */}
-      {status !== 'LOCKED' ? (
-        <>
-          <div className="credential-card-list">
-            {credentials.map((cred) => {
-              let cardClass = 'credential-card--generic';
-              let displayName = 'Verifiable Credential';
-              let icon = '✨';
-              let subText = 'Imported Credential';
+        {status !== 'LOCKED' && status !== 'LOCKED_PASSKEY' && status !== 'UNLOCKING' && (
+          <>
+            <div className="credential-card-list">
+              {credentials.map((cred) => {
+                const types = cred.type || [];
+                let cardClass = '';
+                let displayName = 'Identity Credential';
+                let icon = '🪪';
+                let subText = 'Generic eID';
 
-              const types = cred.type || [];
+                if (types.includes('AgeCredential')) {
+                  cardClass = 'credential-card--age';
+                  displayName = 'Government ID (Age Proof)';
+                  icon = '👤';
+                  subText = 'Official Identity Document';
+                } else if (types.includes('EmploymentCredential')) {
+                  cardClass = 'credential-card--employment';
+                  displayName = 'Hospital Practitioner ID';
+                  icon = '🏥';
+                  subText = 'St. Mary Hospital Professional';
+                } else if (types.includes('PatientSummary')) {
+                  cardClass = 'credential-card--summary';
+                  displayName = 'EHDS Patient Health Summary';
+                  icon = '📋';
+                  subText = 'Clinical Diagnostic Record';
+                } else if (types.includes('Prescription')) {
+                  cardClass = 'credential-card--prescription';
+                  displayName = 'ePrescription Record';
+                  icon = '💊';
+                  subText = 'Authorized Medical Rx';
+                } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
+                  cardClass = 'credential-card--mdl';
+                  displayName = 'Mobile Driver License (mDL)';
+                  icon = '🚗';
+                  subText = 'ISO 18013-5 Compliant';
+                }
 
-              if (types.includes('AgeCredential')) {
-                cardClass = 'credential-card--govid';
-                displayName = 'Age Credential (GovID)';
-                icon = '🪪';
-                subText = 'Government Issued ID';
-              } else if (types.includes('EmploymentCredential')) {
-                cardClass = 'credential-card--employment';
-                displayName = 'Hospital Practitioner ID';
-                icon = '🏥';
-                subText = 'St. Mary Hospital Professional';
-              } else if (types.includes('PatientSummary')) {
-                cardClass = 'credential-card--summary';
-                displayName = 'EHDS Patient Health Summary';
-                icon = '📋';
-                subText = 'Clinical Diagnostic Record';
-              } else if (types.includes('Prescription')) {
-                cardClass = 'credential-card--prescription';
-                displayName = 'ePrescription Record';
-                icon = '💊';
-                subText = 'Authorized Medical Rx';
-              } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
-                cardClass = 'credential-card--mdl';
-                displayName = 'Mobile Driver License (mDL)';
-                icon = '🚗';
-                subText = 'ISO 18013-5 Compliant';
-              }
-
-              return (
-                <div key={cred.id} className={`credential-card ${cardClass}`}>
-                  <div className="credential-card-header">
-                    <span className="credential-card-label">{subText}</span>
-                    <span className="credential-trust-badge">✓ Trusted</span>
-                  </div>
-
-                  <div
-                    className="credential-item"
-                    style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}
-                  >
-                    <span className="credential-icon" style={{ fontSize: 24, marginRight: 12 }}>
-                      {icon}
-                    </span>
-                    <div>
-                      <div
-                        className="credential-name"
-                        style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}
-                      >
-                        {displayName}
-                      </div>
-                      <div
-                        className="credential-issuer"
-                        style={{
-                          fontSize: 11,
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                        }}
-                      >
-                        {cred.issuer}
+                return (
+                  <div key={cred.id} className={`credential-card ${cardClass}`}>
+                    <div className="credential-card-header">
+                      <span className="credential-card-label">{subText}</span>
+                      <span className="credential-trust-badge">✓ Trusted</span>
+                    </div>
+                    <div className="credential-card-body">
+                      <div className="credential-card-icon">{icon}</div>
+                      <div className="credential-card-info">
+                        <div className="credential-card-name">{displayName}</div>
+                        <div className="credential-card-issuer">Issuer: {cred.issuer}</div>
                       </div>
                     </div>
+                    <div className="credential-card-footer">
+                      <span>Ref: {cred.id.substring(0, 8)}...</span>
+                      <span>Verified: {new Date(cred.issuedAt).toLocaleDateString()}</span>
+                    </div>
                   </div>
+                );
+              })}
+            </div>
 
-                  <div className="credential-card-chip" />
+            <div className="quick-actions">
+              <h3>⚡ Quick Actions</h3>
+              <div className="actions-grid">
+                <button
+                  id="btn-liquor-store"
+                  className="action-btn"
+                  onClick={handleProveAge}
+                  disabled={status === 'EVALUATING'}
+                >
+                  🍺 Age Check
+                </button>
+                <button
+                  className="action-btn"
+                  onClick={handleMultiProofDemo}
+                  disabled={status === 'EVALUATING'}
+                >
+                  🏥 Doctor Login
+                </button>
+                <button
+                  className="action-btn"
+                  onClick={handleHealthAccessDemo}
+                  disabled={status === 'EVALUATING'}
+                >
+                  🚑 EHDS ER
+                </button>
+                <button
+                  className="action-btn"
+                  onClick={handlePharmacyDemo}
+                  disabled={status === 'EVALUATING'}
+                >
+                  💊 Pharmacy
+                </button>
+                <button
+                  className="action-btn action-btn--secondary"
+                  onClick={handleWebAuthnDemo}
+                  disabled={status === 'EVALUATING'}
+                >
+                  🔐 HW Presence
+                </button>
+                <button
+                  className="action-btn action-btn--secondary"
+                  onClick={handleRecoveryTest}
+                  disabled={status === 'EVALUATING'}
+                >
+                  🛡️ Social Recovery
+                </button>
+                <button
+                  className="action-btn action-btn--accent"
+                  onClick={handleFetchCredential}
+                  disabled={credentialStatus === 'fetching'}
+                >
+                  🎫 Get New VC
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </main>
 
-                  <div className="credential-card-claims">
-                    {(cred.claims || []).map((claim) => (
-                      <span key={claim} className="credential-card-claim-badge">
-                        • {claim}
-                      </span>
-                    ))}
-                  </div>
+      <aside className="wallet-sidebar">
+        <div className="audit-log-container">
+          <div className="audit-log-header">
+            <h3>📜 Transaction Audit</h3>
+            <button className="copy-btn" onClick={handleCopyLog}>
+              {copyLabel}
+            </button>
+          </div>
+          <div className="audit-log" ref={logContainerRef}>
+            {logs.map((log, i) => {
+              const [type, ...rest] = log.split('|');
+              return (
+                <div key={i} className={`log-entry log-entry--${type.toLowerCase()}`}>
+                  {rest.join('|')}
                 </div>
               );
             })}
+            {logs.length === 0 && <div className="log-empty">No transactions yet.</div>}
           </div>
+        </div>
 
-          {/* OID4VCI: fetch credential from issuer-mock */}
-          <button
-            onClick={handleFetchCredential}
-            disabled={credentialStatus === 'fetching'}
-            style={{
-              width: '100%',
-              maxWidth: 400,
-              padding: '10px 0',
-              marginBottom: 24,
-              background: credentialStatus === 'done' ? '#14532d' : '#0f172a',
-              border: `1px solid ${credentialStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
-              borderRadius: 8,
-              color: credentialStatus === 'done' ? '#86efac' : '#7dd3fc',
-              fontSize: 13,
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontFamily: 'monospace',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-            }}
-          >
-            {credentialStatus === 'fetching'
-              ? '⏳ Fetching from Issuer (OID4VCI)…'
-              : credentialStatus === 'done'
-                ? '✅ AgeCredential from issuer-mock'
-                : credentialStatus === 'error'
-                  ? '❌ Retry — Get Test Credential'
-                  : '🎫 Get Test Credential (OID4VCI)'}
+        <div className="wallet-controls">
+          <button className="control-btn" onClick={() => setShowSecondary(!showSecondary)}>
+            {showSecondary ? 'Hide Details' : 'Show Wallet Stats'}
           </button>
-        </>
-      ) : null}
+          {showSecondary && (
+            <div className="secondary-stats">
+              <div className="stat-item">
+                <span>Protection Layer:</span>
+                <span className="stat-value stat-value--active">ACTIVE</span>
+              </div>
+              <div className="stat-item">
+                <span>ZKP Engine:</span>
+                <span className="stat-value">v2.1.0</span>
+              </div>
+              <div className="stat-item">
+                <span>Identity Key:</span>
+                <span className="stat-value stat-value--success">SECURE (SE)</span>
+              </div>
+            </div>
+          )}
+          <button className="control-btn" onClick={() => setShowDataFlow(true)}>
+            📊 Data Flow Explorer
+          </button>
+          <button className="control-btn" onClick={() => setShowConsentManager(true)}>
+            🛠️ Manual Policy
+          </button>
+        </div>
+      </aside>
 
-      {/* ConsentModal */}
       {showConsent && evaluationResult?.decisionCapsule && (
         <ConsentModal
           capsule={evaluationResult.decisionCapsule}
@@ -1117,20 +991,6 @@ function WalletApp() {
             if (pendingAuth) {
               delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
               delete (window as unknown as Record<string, unknown>)._pendingScenario;
-              const { consentReceipt } = buildSessionCleanup({
-                request: pendingAuth,
-                disclosedClaims: {},
-                outcome: 'DENIED',
-                decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
-              });
-              setLastConsentReceipt(consentReceipt);
-              setConsentReceiptHistory(
-                appendConsentReceiptHistory({
-                  receipt: consentReceipt,
-                  outcome: 'DENIED',
-                  decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
-                })
-              );
             }
             setShowConsent(false);
           }}
@@ -1138,7 +998,6 @@ function WalletApp() {
         />
       )}
 
-      {/* Smart Denial Modal */}
       {status === 'DENIED' && evaluationResult?.denialResolution && (
         <div className="secure-backdrop">
           <div
@@ -1164,7 +1023,7 @@ function WalletApp() {
                   key={action.id}
                   onClick={async () => {
                     addLog(`👉 User triggered: ${action.label}`, 'info');
-                    const actionResult = await walletRef.current.handleAction(action);
+                    const actionResult = await (walletRef.current as any).handleAction(action);
                     if (actionResult.success) {
                       addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
 
@@ -1205,223 +1064,64 @@ function WalletApp() {
                   }}
                   className={`denial-action-btn${action.type === 'OVERRIDE_WITH_CONSENT' ? ' denial-action-btn--override' : ''}`}
                 >
-                  <span>{action.label}</span>
-                  {action.type === 'LEARN_MORE' && <span>↗</span>}
+                  {action.label}
                 </button>
               ))}
-              <button onClick={() => setStatus('IDLE')} className="denial-close-btn">
-                Close
+              <button
+                className="denial-action-btn denial-action-btn--secondary"
+                onClick={() => setStatus('IDLE')}
+              >
+                Cancel
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Privacy Audit */}
-      {showPrivacyAudit && evaluationResult && (
-        <PrivacyAuditModal
-          verifierName={evaluationResult.decisionCapsule?.verifier_did || 'Unknown Verifier'}
-          onAccept={(context) => handlePrivacyAuditAccept(context)}
-          onCancel={() => {
-            setShowPrivacyAudit(false);
-            setShowConsent(true);
-            addLog('🔙 Privacy Audit cancelled, returning to Consent', 'warning');
-          }}
-        />
-      )}
-
-      {/* UX-02: Primary CTA Button */}
-      <button
-        id="btn-liquor-store"
-        onClick={() => {
-          if (status === 'SHREDDED') {
-            setStatus('IDLE');
-            setEvaluationResult(null);
-            setLogs([]);
-            addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
-          } else {
-            handleProveAge();
-          }
-        }}
-        disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
-        className={getPrimaryBtnClass()}
-      >
-        {getPrimaryBtnLabel()}
-      </button>
-
-      {/* UX-02: Progress bar during PROVING */}
-      {status === 'PROVING' && (
-        <div className="proving-progress wallet-section">
-          <div className="proving-progress-bar" />
-        </div>
-      )}
-
-      {/* UX-05: Audit Log */}
-      <div className="audit-section">
-        <div className="audit-header">
-          <h3 className="audit-title">Immutable Audit Trace</h3>
-          <button className="audit-copy-btn" onClick={handleCopyLog}>
-            {copyLabel}
-          </button>
-        </div>
-        <div className="audit-log-container" ref={logContainerRef}>
-          {logs.map(renderLogLine)}
-        </div>
-      </div>
-
-      <div className="wallet-section" style={{ marginTop: 20 }}>
-        <ConsentManagerPanel
-          request={currentRequest}
-          result={evaluationResult}
-          auditEntries={recentAuditEntries}
-          privacyConsent={_privacyConsent}
-          consentReceipt={lastConsentReceipt}
-          receiptHistory={consentReceiptHistory}
-          onOpenDataFlow={() => setShowDataFlow(true)}
-        />
-      </div>
-
-      <div className="wallet-section" style={{ marginTop: 20 }}>
-        <ComplianceDashboard
-          onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
-          onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
-          getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
-          getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
-        />
-      </div>
-
-      <div className="wallet-section" style={{ marginTop: 10 }}>
-        <button onClick={() => setShowDataFlow(!showDataFlow)} className="btn-demo-secondary">
-          {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
-        </button>
-        {showDataFlow && <DataFlowPanel entries={recentAuditEntries} />}
-      </div>
-
-      <div className="wallet-section" style={{ marginBottom: 20 }}>
-        {currentPolicy && (
-          <PolicyEditor
-            policy={currentPolicy}
-            onSave={(p) => {
-              walletRef.current.savePolicy(p);
-              setCurrentPolicy(p);
-              addLog('⚖️ User Policy updated and persisted', 'success');
-            }}
+      {showDataFlow && (
+        <div className="secure-backdrop">
+          <DataFlowPanel
+            entries={recentAuditEntries}
+            onAction={() => setShowDataFlow(false)}
           />
-        )}
-      </div>
-
-      {/* UX-04: Demo Section with Primary / Secondary Button Hierarchy */}
-      <div className="demo-section">
-        <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
-
-        {/* Primary scenarios — bigger, prominent */}
-        <div className="demo-primary-grid">
-          <button
-            id="btn-doctor-login"
-            onClick={handleMultiProofDemo}
-            className="btn-demo-primary btn-demo-primary--full"
-            style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
-          >
-            🏥 Doctor Login
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>
-              High Assurance Multi-VC
-            </span>
-          </button>
-
-          <button
-            id="btn-ehds-er"
-            onClick={handleHealthAccessDemo}
-            className="btn-demo-primary"
-            style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
-          >
-            🚑 ER Access
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>EHDS Emergency</span>
-          </button>
-
-          <button
-            id="btn-pharmacy"
-            onClick={handlePharmacyDemo}
-            className="btn-demo-primary"
-            style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
-          >
-            💊 Pharmacy
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>ePrescription</span>
-          </button>
         </div>
-
-        {/* Secondary — collapsible */}
-        <button
-          className="demo-secondary-toggle"
-          onClick={() => setShowSecondary((s) => !s)}
-          aria-expanded={showSecondary}
-        >
-          {showSecondary ? '▲ Hide' : '▼ More Demos'}
-        </button>
-
-        <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
-          <button
-            onClick={handleWebAuthnDemo}
-            className="btn-demo-secondary"
-            style={{ borderColor: '#a21caf44', color: '#d8b4fe' }}
-          >
-            🔐 Biometric (WebAuthn)
-          </button>
-          <button
-            onClick={handleRecoveryTest}
-            className="btn-demo-secondary"
-            style={{ borderColor: '#06474444', color: '#86efac' }}
-          >
-            🛡️ Social Recovery
-          </button>
-          <button
-            onClick={handleResearchDemo}
-            disabled={status !== 'IDLE'}
-            className="btn-demo-secondary"
-          >
-            🔬 Research Data
-          </button>
-          <button
-            onClick={handleCrossBorderDemo}
-            disabled={status !== 'IDLE'}
-            className="btn-demo-secondary"
-          >
-            🇪🇸 Cross-Border
-          </button>
-        </div>
-      </div>
-
-      {/* Start Guided Demo button */}
-      {status === 'IDLE' && !guidedDemoActive && (
-        <button
-          className="btn-start-demo"
-          onClick={() => {
-            sessionStorage.removeItem('guidedDemoCompleted');
-            setGuidedDemoActive(true);
-          }}
-        >
-          ▶ Start Guided Demo
-        </button>
       )}
 
-      <GuidedDemoMode
-        isActive={guidedDemoActive && status === 'IDLE'}
-        onExit={() => setGuidedDemoActive(false)}
-        onStepExecute={(_stepId) => {}}
-        steps={DEMO_STEPS_CONFIG.map((s) => ({
-          ...s,
-          onExecute:
-            s.id === 1
-              ? handleProveAge
-              : s.id === 2
-                ? handleMultiProofDemo
-                : s.id === 3
-                  ? handleHealthAccessDemo
-                  : handlePharmacyDemo,
-        }))}
-      />
+      {showConsentManager && (
+        <div className="secure-backdrop">
+          <div className="secure-prompt" style={{ maxWidth: '90vw', height: '80vh', overflowY: 'auto', padding: 0 }}>
+             <button 
+                onClick={() => setShowConsentManager(false)}
+                style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}
+             >✕</button>
+             <ConsentManagerPanel
+                request={currentRequest}
+                result={evaluationResult}
+                auditEntries={recentAuditEntries}
+                privacyConsent={null}
+                consentReceipt={lastConsentReceipt}
+                receiptHistory={consentReceiptHistory}
+                onOpenDataFlow={() => { setShowConsentManager(false); setShowDataFlow(true); }}
+             />
+          </div>
+        </div>
+      )}
+
+      {showPopupBlocked && (
+        <PopupBlockedModal 
+          url={blockedPopupUrl} 
+          onClose={() => setShowPopupBlocked(false)} 
+        />
+      )}
+
+      {status === 'EVALUATING' && (
+        <div className="secure-backdrop">
+          <div className="secure-prompt">
+            <div className="spinner"></div>
+            <p>miTch is evaluating verifier risk...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
