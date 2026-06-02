@@ -1,23 +1,5 @@
 import { DenyReasonCode } from './deny-reason-codes';
-
-// Browser-safe SHA-256 hash (sync fallback for non-crypto environments)
-function sha256Hex(data: string): string {
-  // Use node:crypto if available, otherwise a simple deterministic hash
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { createHash } = require('node:crypto');
-    return createHash('sha256').update(data).digest('hex');
-  } catch {
-    // Fallback: simple but deterministic hash for browser environments
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash |= 0;
-    }
-    return Math.abs(hash).toString(16).padStart(8, '0');
-  }
-}
+import { sha256Hex } from './sha256-sync';
 
 export interface AuditInput {
   verifierId: string;
