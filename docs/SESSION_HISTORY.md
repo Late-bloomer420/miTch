@@ -4,6 +4,15 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 13 — Production Path Finalization (2026-06-02)
+- **v1.0-RC Achievement:** Completed all 5 strategic phases for pilot readiness.
+- **Stabilization:** Normalized `dateOfBirth` monorepo-wide and fixed `AGE_NOT_VERIFIED` blockers.
+- **Architecture:** Decoupled storage (Adapters) and decomposed `WalletService` into Repositories.
+- **Security:** Implemented Passkey-first unlock, Sandboxed Iframe rendering (V-02), and Anti-Fingerprinting padding (U-22).
+- **Compliance:** Live TSL integration with signature verification; achieved **100% technical functional coverage**.
+- **Deliverables:** [Detailed Report: Session 13](./session-reports/Session-13-Production-Path.md)
+- **Validation:** 1820+ tests green; full consolidation into `master`.
+
 ### Session 11 — Compliance Gap Sprint (2026-05-25)
 - **EUDI Compliance Matrix:** Updated to 94% coverage (50/53 requirements ✅).
 - **StatusList PoC:** Implemented `SDJWTStatusResolver` in `@mitch/shared-crypto` to wire `@mitch/revocation-statuslist`.
