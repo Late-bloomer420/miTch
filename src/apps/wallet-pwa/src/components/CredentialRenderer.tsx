@@ -1,6 +1,7 @@
 import React from 'react';
 import Mustache from 'mustache';
 import { verifyDigestMultibase } from '@mitch/shared-crypto';
+import { SecureIframeRenderer } from './SecureIframeRenderer';
 
 export interface RenderMethod {
     id: string;
@@ -67,14 +68,6 @@ export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
     return (
         <div className="credential-item">
             <span className="credential-icon">🪪</span>
-            <div>
-                <div className="credential-name">{fallbackName}</div>
-                <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>
-            </div>
-        </div>
-    );
-};
-🪪</span>
             <div>
                 <div className="credential-name">{fallbackName}</div>
                 <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>
