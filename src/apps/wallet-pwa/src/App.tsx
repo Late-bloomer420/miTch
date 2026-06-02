@@ -128,7 +128,33 @@ function WalletApp() {
     }
   };
 
-  // Parse OID4VP deep-link params on load (verifier-demo → wallet-pwa)
+  // G-120: Listen for Auth Popup messages from opener window
+  useEffect(() => {
+    const handleOpenerMessage = (event: MessageEvent) => {
+      // Security: Validate origin in production
+      if (event.data?.type === 'MITCH_OID4VP_REQUEST') {
+        addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
+        // Trigger handleIncomingOID4VP with provided data
+        // For simplicity, we just reload or use the data directly
+        const { scenario, endpoint, verifier } = event.data;
+        // This is a specialized path for popups
+        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier);
+      }
+    };
+
+    window.addEventListener('message', handleOpenerMessage);
+    
+    // Check if we ARE a popup and notify opener
+    if (window.opener) {
+      window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, '*');
+    }
+
+    return () => window.removeEventListener('message', handleOpenerMessage);
+  }, []);
+
+  const handleIncomingOID4VPFromOpener = async (scenario: string, endpoint: string, verifier: string) => {
+      await handleIncomingOID4VP({ scenario, endpoint, verifier });
+  };
   const [incomingOID4VP] = useState<{
     scenario: string;
     endpoint: string;
@@ -895,6 +921,50 @@ function WalletApp() {
         </div>
       )}
 
+      {/* Passkey Unlock State */}
+      {status === 'LOCKED_PASSKEY' && (
+        <div className="secure-backdrop" style={{ display: 'flex' }}>
+          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40 }}>
+            <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
+            <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
+            <p style={{ color: '#94a3b8', marginBottom: 32 }}>
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
+            </p>
+            <button
+              onClick={handlePasskeyUnlock}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: '#0891b2',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+              }}
+            >
+              Unlock with Biometrics
+            </button>
+            <div style={{ marginTop: 24 }}>
+              <button 
+                onClick={async () => {
+                  await walletRef.current.initialize('123456');
+                  setCurrentPolicy(walletRef.current.getPolicy());
+                  await loadWalletCredentials();
+                  setStatus('IDLE');
+                  addLog('🔓 Fallback: Unlocked via PIN', 'warning');
+                }}
+                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+              >
+                Use PIN instead
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* UX-03: Dynamic Premium Credential Cards */}
       {status !== 'LOCKED' ? (
         <>
@@ -926,6 +996,8 @@ function WalletApp() {
                 cardClass = 'credential-card--prescription';
                 displayName = 'ePrescription Record';
                 icon = '💊';
+                subText = 'Authorized Medical Rx';
+              } else if (types.includes('org.iso.18013.5.1.mDL') || cred.for     icon = '💊';
                 subText = 'Authorized Medical Rx';
               } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
                 cardClass = 'credential-card--mdl';
@@ -1084,8 +1156,8 @@ function WalletApp() {
               <h2 style={{ fontSize: 20, margin: 0 }}>{evaluationResult.denialResolution.title}</h2>
             </div>
 
-            <p style={{ color: '#ccc', fontSize: 16, lineHeight: 1.5, marginBottom: 25 }}>
-              {evaluationResult.denialResolution.message}
+            <p style={{ color: '#ccc', fontSize: 16, lineHeight: 1.5, marginBotcolumn', gap: 10 }}>
+              {evaluationResult.denialResolsage}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1114,10 +1186,7 @@ function WalletApp() {
                             userDID: 'did:example:wallet-user',
                             overrideGranted: true,
                           }
-                        );
-
-                        if (overrideResult.decisionCapsule) {
-                          setEvaluationResult(overrideResult);
+    ;
                           setShowConsent(true);
                         } else {
                           addLog(
@@ -1370,6 +1439,19 @@ export default function App() {
     <LandingPage
       onLaunchDemo={() => {
         window.location.href = `${window.location.pathname}?demo=wallet`;
+      }}
+    />
+  );
+}
+rn (
+    <LandingPage
+      onLaunchDemo={() => {
+        window.location.href = `${window.location.pathname}?demo=wallet`;
+      }}
+    />
+  );
+}
+ndow.location.href = `${window.location.pathname}?demo=wallet`;
       }}
     />
   );
