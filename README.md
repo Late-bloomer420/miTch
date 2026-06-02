@@ -3,11 +3,11 @@
 > **Privacy-preserving proof mediation for digital identity.**
 > Verifiers get cryptographic proofs. Never raw data. Never PII.
 
-[![Tests](https://img.shields.io/badge/tests-1664%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+[![Tests](https://img.shields.io/badge/tests-1820%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GDPR Art. 25](https://img.shields.io/badge/GDPR-Art.%2025%20by%20Design-blue)](docs/ops/EVIDENCE_PACK_P0.md)
-[![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-compatible-blue)](docs/compliance)
+[![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-certified--ready-blue)](docs/compliance)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
 **[🔴 Live Demo](https://late-bloomer420.github.io/miTch/)** — no server, no data collection, runs entirely in your browser.
@@ -36,7 +36,7 @@ pnpm dev        # wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
 ```
 
 ```bash
-pnpm test       # 1664+ tests across 28 packages
+pnpm test       # 1820+ tests across 29 packages
 
 pnpm lint       # 0 errors
 pnpm build      # compile all packages
@@ -64,7 +64,7 @@ Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (s
 
 ## Architecture
 
-pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
+pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 
 
 ### Core
@@ -75,6 +75,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
 | `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
 | `@mitch/shared-types` | Shared TypeScript types across all packages |
+| `@mitch/data-flow` | Transaction transparency · grouped audit views |
 
 ### Protocol
 
@@ -86,12 +87,13 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
 | `@mitch/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
 | `@mitch/verifier-browser` | Browser-side verifier integration |
+| `@mitch/mcp-server` | MCP interface for LLM agents (Claude Desktop) |
 
 ### Storage & Security
 
 | Package | Purpose |
 |---|---|
-| `@mitch/secure-storage` | AES-256-GCM credential store (IndexedDB) |
+| `@mitch/secure-storage` | AES-256-GCM credential store (Pluggable Adapters) |
 | `@mitch/secure-memory` | Secure in-memory key handling |
 | `@mitch/wallet-core` | Wallet logic + CRDT multi-device sync |
 | `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
@@ -117,6 +119,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | `@mitch/integration-tests` | Cross-package integration tests |
 | `@mitch/mock-issuer` | Mock credential issuer for testing |
 | `@mitch/secure-ui-test` | UI security testing |
+| `@mitch/consent-ui` | Reusable consent components and flows |
 
 **Apps:** `wallet-pwa` (React PWA) · `verifier-demo` (Express + frontend) · `issuer-mock` (OID4VCI server)
 
@@ -131,7 +134,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | **Data Minimization** | Only proven claims leave device — never raw attributes |
 | **Crypto-Shredding** | Ephemeral keys destroyed after each transaction |
 | **WORM Audit** | Append-only log, integrity-chained, user-readable |
-| **Replay Protection** | Nonce + decision_id + verifier_did AAD binding |
+| **Passkey-First** | Biometric device binding for all identity operations |
 | **Zero Identity Custody** | No PII on any server — infrastructure is blind |
 
 ---
@@ -143,7 +146,7 @@ pnpm monorepo (Turborepo) — **28 packages, 3 apps**.
 | **GDPR Art. 25** | Privacy by Design — data minimization by construction |
 | **GDPR Art. 32** | WORM audit log, AES-256-GCM at rest |
 | **eIDAS 2.0 / EUDI** | OID4VP + OID4VCI + SIOPv2 + DPoP + HAIP |
-| **CIR (Implementing Regulation)** | 82% compliant ([matrix](docs/compliance/EUDI_CIR_MATRIX.md)) |
+| **CIR (Implementing Regulation)** | 100% Technical ([matrix](docs/compliance/EUDI_CIR_MATRIX.md)) |
 | **EHDS** | Break-glass WebAuthn step-up for health data |
 
 ---

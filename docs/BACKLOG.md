@@ -40,7 +40,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ## Phase 1 — Unlinkability ("Alle sind miTch") ✅
 
 ### 1.1 Pairwise-Ephemeral DIDs (Spec 111)
-| ID | Prio | Beschreibung | Spec |
+| ID | Status | Beschreibung | Spec |
 |---|---|---|---|
 | U-01 | ✅ | `pairwise-did.ts` — did:peer Generation + HKDF Derivation | Spec 111 |
 | U-02 | ✅ | did:peer Resolution in `did.ts` (inline, kein Netzwerk) | Spec 111 |
@@ -48,24 +48,42 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | U-04 | ✅ | Key Shredding nach Interaktion (EphemeralKey Integration) | Spec 111 |
 | U-05 | ✅ | Policy Engine: Pairwise DID in Proof-Generierung einbinden | Spec 111 |
 
-### 1.2 Randomisierte Proofs (Phase 2)
-| ID | Prio | Beschreibung |
+### 1.2 Demo Reliability & Handoff (Phase 1.3 Stabilisierung) ✅
+| ID | Status | Beschreibung |
 |---|---|---|
-| U-10 | 🟡 | BBS+ Signatures evaluieren (WASM Performance, Browser-Support) |
-| U-11 | 🟡 | Alternativ: SD-JWT Ephemeral Holder Binding Keys |
-| U-12 | 🟡 | Proof-Randomisierung — gleicher Credential, anderer Output |
-| U-13 | 🟢 | Issuer-Verifier Collusion Resistance (Blinded Issuance) |
+| G-100 | ✅ | Root-Cause `AGE_NOT_VERIFIED` behoben (Claim Normalisierung `dateOfBirth`) |
+| G-110 | ✅ | Robuster QR/Deep-Link Handoff (`SCANNED`, `EXPIRED` Zustände + `/notify-scan`) |
 
-### 1.3 Transparency Layer (Phase 3)
-| ID | Prio | Beschreibung |
+---
+
+## Phase 2 — Architecture & Modularity ✅
+
+### 2.1 Decoupling (Refactoring Phase 6)
+| ID | Status | Beschreibung |
 |---|---|---|
-| U-18 | ✅ | `@mitch/data-flow` — Transaction view: Audit-Entries nach decision_id gruppiert, claims/lifecycle/shredding-Status (Phase 1) |
-| U-19 | ✅ | DataFlowPanel in wallet-pwa — Verifier-Label, Claim-Tags, Shredding-Status, Event-Timeline + plain-language summary aus auditierbaren Transaktionsfeldern |
-| U-19a | ✅ | `claimsWithheld` — requested vs. shared diff aus `claims_requested` vs. `claims_shared`, im DataFlowPanel sichtbar |
-| U-20 | 🟡 | Identitäts-Firewall — Tracker-/Cookie-Zugriffe abfangen + loggen |
-| U-21 | 🟡 | UI: Echtzeit-Benachrichtigung bei Identifier-Zugriff |
-| U-22 | 🟢 | Anti-Fingerprinting: Wallet-Uniformität (Request-Normalisierung, Padding) |
-| U-23 | 🟢 | Timing-Jitter für Netzwerk-Requests |
+| R-01 | ✅ | `IStorageAdapter` — Entkopplung von SecureStorage und IndexedDB |
+| R-02 | ✅ | `WalletService` Decomposition — Zerlegung in Repositories (Credential, Policy, Presentation) |
+
+---
+
+## Phase 3 — Identity Ecosystem & UX ✅
+
+### 3.1 Integrations
+| ID | Status | Beschreibung |
+|---|---|---|
+| G-130 | ✅ | Passkey-First Unlock (Windows Hello / FaceID / TouchID) |
+| G-120 | ✅ | Secure Auth Popups (`window.opener` bridge) |
+| G-150 | ✅ | OIDC-style "Sign in with miTch" Ready |
+
+---
+
+## Phase 4 — Final Compliance & TSL ✅
+
+| ID | Status | Beschreibung |
+|---|---|---|
+| E-40 | ✅ | Live EUDI Trust List (TSL) Integration |
+| E-41 | ✅ | TSL Signature Verification (eIDAS 2.0 Compliance) |
+| E-42 | ✅ | Functional Coverage 100% (Technical) |
 
 ---
 

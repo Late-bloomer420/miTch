@@ -3,9 +3,9 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-05-30
+**Date:** 2026-06-02
 **Branch:** `master` (default)
-**Release tag:** `eudi-pilot-certified-ready`
+**Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
 
 ---
@@ -22,18 +22,18 @@
 - Security Target (CC): [`docs/compliance/SECURITY_TARGET_CC_READY.md`](docs/compliance/SECURITY_TARGET_CC_READY.md)
 - Deployment Orchestration: [`docker-compose.yml`](docker-compose.yml)
 
-## Pilot path (frozen for execution)
+## Pilot path (v1.0-RC Stable)
 
-- **Minimal scenario:** Altersverifikation (18+) only.
-- Purpose: keep pilot scope narrow and avoid parallel drift across multiple use-cases.
+- **Minimal scenario:** Altersverifikation (18+) via OID4VP.
+- **Status:** Release Candidate achieved. All core stabilization and refactoring phases complete.
 
 ## Current status
 
 ### Operational Health
-- **Tests:** 45/45 turbo tasks pass; **1812 individual tests, 0 failures** (policy-engine 296, shared-crypto 237, mdoc 179, poc-hardened 132, wallet-pwa 84, oid4vp-verifier 52, oid4vci 35, consent-ui 23, …). **Suite re-verified 100% green** on master `6226d75` (2026-05-30; build 30/30, lint 0/0). Increase since last refresh: +25 individual tests from `@mitch/consent-ui` (#44) and the wallet-pwa / shared-crypto changes in #43.
+- **Tests:** 45/45 turbo tasks pass; **1820+ individual tests, 0 failures** (policy-engine 296, shared-crypto 241, mdoc 179, poc-hardened 132, wallet-pwa 88, oid4vp-verifier 52, oid4vci 35, consent-ui 23, …). **Suite re-verified 100% green** on master (2026-06-02).
 - **Lint:** 0 errors, 0 warnings
-- **Compliance Score:** 98% (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
-- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5173) → `/authorize` → consent → `/wallet-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache
+- **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
+- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5174) → `/authorize` → Passkey Unlock → `/notify-scan` → consent → `/oid4vp-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache (verified integrity)
 - **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
 - **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.mitch.demo` domains.
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
