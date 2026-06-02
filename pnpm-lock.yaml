@@ -822,6 +822,18 @@ importers:
 
   src/packages/wallet-core:
     dependencies:
+      '@mitch/audit-log':
+        specifier: workspace:*
+        version: link:../audit-log
+      '@mitch/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+      '@mitch/secure-storage':
+        specifier: workspace:*
+        version: link:../secure-storage
+      '@mitch/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types

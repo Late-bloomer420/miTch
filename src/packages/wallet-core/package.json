@@ -20,7 +20,11 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*"
+        "@mitch/shared-types": "workspace:*",
+        "@mitch/shared-crypto": "workspace:*",
+        "@mitch/secure-storage": "workspace:*",
+        "@mitch/policy-engine": "workspace:*",
+        "@mitch/audit-log": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.3.0",
