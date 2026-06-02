@@ -19,6 +19,7 @@
         "@mitch/secure-storage": "workspace:*",
         "@mitch/shared-crypto": "workspace:*",
         "@mitch/shared-types": "workspace:*",
+        "@mitch/wallet-core": "workspace:*",
         "mustache": "^4.2.0",
         "qrcode.react": "^4.2.0",
         "react": "^18.2.0",

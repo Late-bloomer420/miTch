@@ -9,7 +9,7 @@ import type {
   PolicyManifest,
   StoredCredentialMetadata,
 } from '@mitch/shared-types';
-import { WalletService } from './services/WalletService';
+import { WalletService } from '@mitch/wallet-core';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
 import { WebAuthnService, applyJitter } from '@mitch/shared-crypto';
@@ -128,9 +128,13 @@ function WalletApp() {
   const [isPasskeyAvailable, setIsPasskeyAvailable] = useState(false);
   const [isPasskeyRegistered, setIsPasskeyRegistered] = useState(false);
 
+  const internalWalletRef = useRef<WalletService | null>(null);
+  walletRef.current = internalWalletRef.current;
+
   const loadWalletCredentials = async () => {
+    if (!internalWalletRef.current) return;
     try {
-      const creds = await walletRef.current.getCredentials();
+      const creds = await internalWalletRef.current.getCredentials();
       setCredentials(creds);
     } catch (e) {
       console.warn('Failed loading credentials', e);
@@ -178,22 +182,22 @@ function WalletApp() {
 
   // OID4VP: Auto-trigger on load if deep-link params present
   useEffect(() => {
-    if (incomingOID4VP) {
+    if (incomingOID4VP && status === 'IDLE') {
       handleIncomingOID4VP();
     }
-  }, [incomingOID4VP]);
+  }, [incomingOID4VP, status]);
 
-  const logContainerRef = useRef<HTMLDivElement>(null);
-  const internalWalletRef = useRef<WalletService>(new WalletService());
-  walletRef.current = internalWalletRef.current;
-
-  const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
+  const recentAuditEntries = useMemo(() => {
+    if (!internalWalletRef.current) return [];
+    return internalWalletRef.current.getRecentAuditLogs(200);
+  }, [logs]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
   };
 
+  const logContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
@@ -210,13 +214,18 @@ function WalletApp() {
         setIsPasskeyAvailable(available);
         setIsPasskeyRegistered(registered);
 
+        // Modular Factory: uses decoupled storage & repositories
+        const wallet = await WalletService.createBrowserWallet('123456', 'mitch-salt-v1');
+        internalWalletRef.current = wallet;
+        walletRef.current = wallet;
+
         if (available && registered) {
           setStatus('LOCKED_PASSKEY');
           addLog('📱 Passkey found. Biometric unlock available.', 'info');
         } else {
-          await walletRef.current.initialize('123456');
-          addLog('🔓 Wallet Decrypted via PIN (Legacy/Demo)', 'success');
-          setCurrentPolicy(walletRef.current.getPolicy());
+          await wallet.initialize();
+          addLog('🔓 Wallet Decrypted & Ready (Modular Architecture)', 'success');
+          setCurrentPolicy(wallet.getPolicy());
           await loadWalletCredentials();
           setStatus('IDLE');
         }
@@ -233,9 +242,13 @@ function WalletApp() {
       setStatus('UNLOCKING');
       addLog('👤 Requesting Biometric Verification...', 'info');
       await WebAuthnService.provePresence('mitch-wallet-unlock');
-      await walletRef.current.initialize('123456'); 
+      
+      const wallet = internalWalletRef.current;
+      if (!wallet) throw new Error('Wallet not created');
+      
+      await wallet.initialize(); 
       addLog('🔓 Passkey Verified. Wallet Ready.', 'success');
-      setCurrentPolicy(walletRef.current.getPolicy());
+      setCurrentPolicy(wallet.getPolicy());
       await loadWalletCredentials();
       setStatus('IDLE');
     } catch (e) {
@@ -245,6 +258,7 @@ function WalletApp() {
   };
 
   const handleProveAge = async () => {
+    if (!internalWalletRef.current) return;
     setStatus('EVALUATING');
     setLogs([]);
     setEvaluationResult(null);
@@ -266,7 +280,7 @@ function WalletApp() {
     };
 
     addLog('⚖️ Evaluating Policy...', 'info');
-    const result = await walletRef.current.evaluateRequest(request, context);
+    const result = await internalWalletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
@@ -284,7 +298,7 @@ function WalletApp() {
     targetKey?: CryptoKey,
     manualEndpoint?: string
   ) => {
-    if (!result || !result.decisionCapsule) return;
+    if (!result || !result.decisionCapsule || !internalWalletRef.current) return;
 
     setStatus('SENDING');
     const targetEndpoint = manualEndpoint || currentRequest?.serviceEndpoint || CONFIG.VERIFIER_ENDPOINT;
@@ -292,7 +306,7 @@ function WalletApp() {
     try {
       addLog('🔐 Generating Secure Presentation...', 'info');
 
-      const { encryptedVp, auditLog } = await walletRef.current.generatePresentation(
+      const { encryptedVp, auditLog } = await internalWalletRef.current.generatePresentation(
         result.decisionCapsule,
         targetKey
       );
@@ -301,6 +315,7 @@ function WalletApp() {
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
 
+      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Jitter + Uniform Headers)
       const paddedPayload = padPayload(encryptedVp);
       addLog(`🛡️ Payload padded to ${paddedPayload.length} bytes (Uniformity)`, 'info');
       
@@ -353,14 +368,16 @@ function WalletApp() {
     addLog(`🛡️ Acknowledged tracking by: ${consent.acceptedTrackers.join(', ')}`, 'success');
 
     try {
-      const capsule = evaluationResult?.decisionCapsule;
-      const entries = await walletRef.current.recordIdentityFirewallEvents(
-        capsule?.decision_id,
-        capsule?.verifier_did,
-        context.detectedTrackers
-      );
-      if (entries.length > 0) {
-        addLog(`🛡️ Identity Firewall logged ${entries.length} transparency events`, 'info');
+      if (internalWalletRef.current) {
+        const capsule = evaluationResult?.decisionCapsule;
+        const entries = await internalWalletRef.current.recordIdentityFirewallEvents(
+            capsule?.decision_id,
+            capsule?.verifier_did,
+            context.detectedTrackers
+        );
+        if (entries.length > 0) {
+            addLog(`🛡️ Identity Firewall logged ${entries.length} transparency events`, 'info');
+        }
       }
     } catch (error) {
       console.warn('[IdentityFirewall] Failed to record transparency events:', error);
@@ -371,6 +388,7 @@ function WalletApp() {
   };
 
   const handleMultiProofDemo = async () => {
+    if (!internalWalletRef.current) return;
     addLog('🏥 DEMO: Doctor Login (Multi-VC Bundle)...', 'warning');
     addLog('📥 Request: "Provide ID (Age>=18) AND Medical License"', 'info');
 
@@ -396,7 +414,7 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await walletRef.current.evaluateRequest(request, context);
+    const result = await internalWalletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
@@ -425,19 +443,21 @@ function WalletApp() {
   };
 
   const handleRecoveryTest = async () => {
+    if (!internalWalletRef.current) return;
     addLog('🛡️ DEMO: Starting Social Recovery Setup...', 'warning');
-    const fragments = await walletRef.current.splitMasterKey();
+    const fragments = await internalWalletRef.current.splitMasterKey();
     addLog(`✅ DEMO: Master Key split into 3 fragments (Circle of Trust)`, 'success');
     fragments.forEach((f: string, i: number) =>
       addLog(`👤 Friend ${i + 1} received: ${f.substring(0, 8)}...`, 'info')
     );
 
     addLog('🧪 DEMO: Simulating device loss... attempting recovery.', 'warning');
-    await walletRef.current.recoverFromFragments(fragments);
+    await internalWalletRef.current.recoverFromFragments(fragments);
     addLog('🏁 DEMO COMPLETE: Wallet access restored via Social Recovery.', 'success');
   };
 
   const handleHealthAccessDemo = async () => {
+    if (!internalWalletRef.current) return;
     addLog('🚑 EHDS: Simulating Hospital Emergency Access...', 'warning');
     addLog('📥 Request: "Provide Blood Type & Allergies"', 'info');
 
@@ -458,7 +478,7 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await walletRef.current.evaluateRequest(request, context);
+    const result = await internalWalletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
@@ -471,6 +491,7 @@ function WalletApp() {
   };
 
   const handlePharmacyDemo = async () => {
+    if (!internalWalletRef.current) return;
     addLog('💊 DEMO: Pharmacy ePrescription...', 'warning');
     addLog('📥 Request: "Provide active prescriptions"', 'info');
 
@@ -491,7 +512,7 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await walletRef.current.evaluateRequest(request, context);
+    const result = await internalWalletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
@@ -631,6 +652,7 @@ function WalletApp() {
   };
 
   const handleIncomingOID4VP = async (params?: { scenario: string; endpoint: string; verifier: string }) => {
+    if (!internalWalletRef.current) return;
     const data = params || incomingOID4VP;
     if (!data) return;
     const { scenario, endpoint, verifier } = data;
@@ -672,7 +694,7 @@ function WalletApp() {
         timestamp: Date.now(),
         userDID: 'did:example:wallet-user',
       };
-      const result = await walletRef.current.evaluateRequest(policyRequest, context);
+      const result = await internalWalletRef.current.evaluateRequest(policyRequest, context);
       setEvaluationResult(result);
 
       if (result.verdict === 'DENY') {
@@ -777,8 +799,10 @@ function WalletApp() {
               <div style={{ marginTop: 24 }}>
                 <button 
                   onClick={async () => {
-                    await walletRef.current.initialize('123456');
-                    setCurrentPolicy(walletRef.current.getPolicy());
+                    const wallet = internalWalletRef.current;
+                    if (!wallet) return;
+                    await wallet.initialize();
+                    setCurrentPolicy(wallet.getPolicy());
                     await loadWalletCredentials();
                     setStatus('IDLE');
                     addLog('🔓 Fallback: Unlocked via PIN', 'warning');
@@ -1023,43 +1047,45 @@ function WalletApp() {
                   key={action.id}
                   onClick={async () => {
                     addLog(`👉 User triggered: ${action.label}`, 'info');
-                    const actionResult = await (walletRef.current as any).handleAction(action);
-                    if (actionResult.success) {
-                      addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
+                    if (internalWalletRef.current) {
+                        const actionResult = await (internalWalletRef.current as any).handleAction(action);
+                        if (actionResult.success) {
+                        addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
 
-                      if (action.type === 'OVERRIDE_WITH_CONSENT') {
-                        addLog('🔄 Re-evaluating with override permission...', 'info');
+                        if (action.type === 'OVERRIDE_WITH_CONSENT') {
+                            addLog('🔄 Re-evaluating with override permission...', 'info');
 
-                        if (!currentRequest) {
-                          addLog('❌ Error: Original request lost from context.', 'error');
-                          setStatus('DENIED');
-                          return;
-                        }
+                            if (!currentRequest) {
+                            addLog('❌ Error: Original request lost from context.', 'error');
+                            setStatus('DENIED');
+                            return;
+                            }
 
-                        const overrideResult = await walletRef.current.evaluateRequest(
-                          currentRequest,
-                          {
-                            timestamp: Date.now(),
-                            userDID: 'did:example:wallet-user',
-                            overrideGranted: true,
-                          }
-                        );
-                        if (overrideResult.verdict === 'PROMPT') {
-                          setEvaluationResult(overrideResult);
-                          setShowConsent(true);
+                            const overrideResult = await internalWalletRef.current.evaluateRequest(
+                            currentRequest,
+                            {
+                                timestamp: Date.now(),
+                                userDID: 'did:example:wallet-user',
+                                overrideGranted: true,
+                            }
+                            );
+                            if (overrideResult.verdict === 'PROMPT') {
+                            setEvaluationResult(overrideResult);
+                            setShowConsent(true);
+                            } else {
+                            addLog(
+                                '❌ Override failed: Could not generate proof authorization',
+                                'error'
+                            );
+                            setStatus('DENIED');
+                            }
                         } else {
-                          addLog(
-                            '❌ Override failed: Could not generate proof authorization',
-                            'error'
-                          );
-                          setStatus('DENIED');
+                            setTimeout(() => {
+                            setStatus('IDLE');
+                            addLog('🔄 Wallet ready for new transaction', 'info');
+                            }, 1500);
                         }
-                      } else {
-                        setTimeout(() => {
-                          setStatus('IDLE');
-                          addLog('🔄 Wallet ready for new transaction', 'info');
-                        }, 1500);
-                      }
+                        }
                     }
                   }}
                   className={`denial-action-btn${action.type === 'OVERRIDE_WITH_CONSENT' ? ' denial-action-btn--override' : ''}`}

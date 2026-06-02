@@ -20,4 +20,13 @@ export interface IPresentationManager {
      * Log a successful transmission.
      */
     logVpSent(decisionId: string, metadata: Record<string, unknown>): Promise<void>;
+
+    /**
+     * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
+     */
+    generateProximityResponse(
+        credId: string,
+        requestedElements: { ns: string, element: string }[],
+        sessionTranscript: any
+    ): Promise<Uint8Array>;
 }

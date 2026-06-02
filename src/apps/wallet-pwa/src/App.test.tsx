@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from './App';
-import { WalletService } from './services/WalletService';
+import { WalletService } from '@mitch/wallet-core';
 import type { PolicyEvaluationResult } from '@mitch/shared-types';
 
 // Mock @mitch/oid4vp
@@ -27,7 +27,8 @@ vi.mock('@mitch/oid4vp', () => {
 });
 
 // Properly structured Mock Class for Vitest constructor support
-const mockWalletInstance = {
+// Using a function factory that returns a pre-configured instance
+const createMockWallet = () => ({
     initialize: vi.fn().mockResolvedValue(undefined),
     getCredentials: vi.fn().mockResolvedValue([
         {
@@ -53,12 +54,15 @@ const mockWalletInstance = {
     getRecentAuditLogs: vi.fn().mockReturnValue([]),
     recordIdentityFirewallEvents: vi.fn().mockResolvedValue([]),
     savePolicy: vi.fn(),
-};
+});
 
-vi.mock('./services/WalletService', () => {
+let activeMockWallet = createMockWallet();
+
+vi.mock('@mitch/wallet-core', () => {
     return {
-        WalletService: function() {
-            return mockWalletInstance;
+        WalletService: {
+            // Static factory mock
+            createBrowserWallet: vi.fn().mockImplementation(() => Promise.resolve(activeMockWallet))
         }
     };
 });
@@ -84,8 +88,8 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
     return Promise.resolve({ ok: false });
   });
 
-  // Update mock instance for the current test
-  mockWalletInstance.evaluateRequest.mockResolvedValue({
+  // Update active mock for the current test
+  activeMockWallet.evaluateRequest.mockResolvedValue({
     verdict,
     decisionCapsule: {
       decision_id: 'decision-001',
@@ -98,6 +102,7 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
 describe('G-03 — Wallet App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    activeMockWallet = createMockWallet();
     sessionStorage.clear();
     // Reset location
     window.history.replaceState({}, '', '/');
@@ -111,7 +116,6 @@ describe('G-03 — Wallet App', () => {
 
   it('renders credential card with Age Credential', async () => {
     render(<App />);
-    // Match the new label in v1.0.1
     expect(await screen.findByText(/Government ID/i)).toBeInTheDocument();
   });
 
