@@ -33,6 +33,7 @@ import type { ConsentReceipt } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { LandingPage } from './LandingPage';
+import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -322,15 +323,22 @@ function WalletApp() {
         targetKey
       );
 
-      auditLog.forEach((l) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+      auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
+
+      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Jitter + Uniform Headers)
+      const paddedPayload = padPayload(encryptedVp);
+      addLog(`🛡️ Payload padded to ${paddedPayload.length} bytes (Uniformity)`, 'info');
+
+      await applyJitter(20, 100);
+      addLog('🛡️ Applied timing jitter (Side-channel protection)', 'info');
 
       try {
         const response = await fetch(targetEndpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: encryptedVp,
+          headers: UNIFORM_HEADERS,
+          body: paddedPayload,
         });
 
         if (response.ok) {
@@ -679,15 +687,23 @@ function WalletApp() {
       const redirectUri = authRequest.redirect_uri;
       addLog(`🚀 POSTing VP to ${redirectUri}...`, 'info');
 
-      const response = await fetch(redirectUri, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
+      const payload = {
           vp_token: vpTokenString,
           presentation_submission: presentationSubmission,
           state: authRequest.state,
           issuer_jwk: issuerPubJwk,
-        }),
+      };
+      const paddedPayload = padPayload(payload);
+      addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
+
+      await applyJitter(20, 100);
+      addLog('🛡️ Applied timing jitter', 'info');
+
+      const response = await fetch(redirectUri, {
+        method: 'POST',
+        headers: UNIFORM_HEADERS,
+        body: paddedPayload,
       });
 
       const result = (await response.json()) as {
