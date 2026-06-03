@@ -9,15 +9,15 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*",
-        "@mitch/verifier-sdk": "workspace:*",
+        "@mitch/oid4vp": "workspace:*",
         "@mitch/predicates": "workspace:*",
         "@mitch/shared-crypto": "workspace:*",
+        "@mitch/shared-types": "workspace:*",
+        "@mitch/verifier-sdk": "workspace:*",
         "cors": "^2.8.5",
         "express": "^4.18.2",
         "express-rate-limit": "^7.4.1",
-        "jose": "^5.2.0",
-        "@mitch/oid4vp": "workspace:*"
+        "jose": "^5.2.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.17",
@@ -27,6 +27,6 @@
         "supertest": "^6.3.4",
         "tsx": "^4.7.0",
         "typescript": "^5.0.0",
-        "vitest": "^2.1.9"
+        "vitest": "^4.1.8"
     }
 }
