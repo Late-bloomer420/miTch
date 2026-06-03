@@ -16,7 +16,7 @@
     "scripts": {
         "clean": "rimraf dist",
         "build": "tsc -p tsconfig.build.json",
-        "test": "vitest run --dir src/__tests__ --environment node --pool threads --no-cache",
+        "test": "vitest run --dir src/__tests__ --environment node --pool threads --maxWorkers 1 --no-file-parallelism --no-cache",
         "lint": "tsc --noEmit"
     },
     "dependencies": {

@@ -86,7 +86,7 @@ nonceStore.loadFromDisk();
 process.on('SIGINT', () => nonceStore.close());
 process.on('SIGTERM', () => nonceStore.close());
 
-const rateLimiter = new FixedWindowRateLimiter(60_000, 30, {
+const rateLimiter = new FixedWindowRateLimiter(60_000, 10, {
     maxEntries: 100_000,
     pruneIntervalMs: 30_000
 });
@@ -252,7 +252,13 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
     try {
         const requesterId = getRequesterId(req);
         const rate = rateLimiter.check(requesterId, Date.now());
-        if (!rate.allowed) return res.status(429).json({ ok: false, error: 'RATE_LIMIT_EXCEEDED' });
+        if (!rate.allowed) {
+            const resetAfterSeconds = Math.ceil(rate.resetInMs / 1000);
+            res.setHeader('Retry-After', String(resetAfterSeconds));
+            res.setHeader('X-RateLimit-Reset-After', String(resetAfterSeconds));
+            res.setHeader('X-RateLimit-Reset', String(Math.ceil((Date.now() + rate.resetInMs) / 1000)));
+            return res.status(429).json({ ok: false, error: 'RATE_LIMIT_EXCEEDED' });
+        }
         const keys = await getVerifierKeys();
         const sdk = new VerifierSDK({ privateKey: keys.privateKey, verifierDid: 'did:mitch:verifier-liquor-store' });
         const result = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));

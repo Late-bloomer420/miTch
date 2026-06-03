@@ -3,7 +3,6 @@ export * from './keys';
 export * from './hashing';
 export * from './multibase';
 export * from './encryption';
-export * from './jitter';
 export * from './signing';
 export * from './ephemeral';
 export type { IEphemeralKey } from './interfaces/IEphemeralKey';

@@ -21,7 +21,6 @@
     },
     "dependencies": {
         "@mitch/audit-log": "workspace:*",
-        "@mitch/mdoc": "workspace:*",
         "@mitch/policy-engine": "workspace:*",
         "@mitch/secure-storage": "workspace:*",
         "@mitch/shared-crypto": "workspace:*",

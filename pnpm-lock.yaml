@@ -15,6 +15,7 @@ overrides:
   undici@>=7.0.0 <7.24.0: '>=7.24.0'
   flatted@<3.4.2: '>=3.4.2'
   path-to-regexp@<0.1.13: 0.1.13
+  brace-expansion@>=5.0.0 <5.0.6: 5.0.6
   picomatch@<2.3.2: 2.3.2
   picomatch@>=4.0.0 <4.0.4: 4.0.4
   postcss@<8.5.10: '>=8.5.10'
@@ -222,9 +223,6 @@ importers:
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@mitch/wallet-core':
-        specifier: workspace:*
-        version: link:../../packages/wallet-core
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -828,9 +826,6 @@ importers:
       '@mitch/audit-log':
         specifier: workspace:*
         version: link:../audit-log
-      '@mitch/mdoc':
-        specifier: workspace:*
-        version: link:../mdoc
       '@mitch/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
@@ -2009,8 +2004,8 @@ packages:
     resolution: {integrity: sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==}
     engines: {node: '>=18'}
 
-  brace-expansion@5.0.4:
-    resolution: {integrity: sha512-h+DEnpVvxmfVefa4jFbCf5HdH5YMDXRsmKflpf1pILZWRFlTbJpxeU55nJl4Smt5HQaGzg1o6RHFPJaOqnmBDg==}
+  brace-expansion@5.0.6:
+    resolution: {integrity: sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g==}
     engines: {node: 18 || 20 || >=22}
 
   braces@3.0.3:
@@ -4543,7 +4538,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  brace-expansion@5.0.4:
+  brace-expansion@5.0.6:
     dependencies:
       balanced-match: 4.0.4
 
@@ -5334,7 +5329,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.4
+      brace-expansion: 5.0.6
 
   minipass@7.1.2: {}
 

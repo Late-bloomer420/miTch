@@ -30,5 +30,4 @@ export * from './EncryptedCredentialRepository';
 export * from './IPolicyEvaluator';
 export * from './MitchPolicyEvaluator';
 export * from './IPresentationManager';
-export * from './MitchPresentationManager';
 export * from './WalletService';

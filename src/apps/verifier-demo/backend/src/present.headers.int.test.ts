@@ -28,22 +28,23 @@ describe('POST /present rate-limit headers', () => {
         const agent = request(app);
 
         // Fail-closed: these carry only a legacy boolean (no ZK proof), so each is 403 —
-        // but still counts toward the rate limit, so the 31st is rate-limited.
-        for (let i = 0; i < 30; i++) {
+        // but still counts toward the rate limit, so the 11th is rate-limited.
+        for (let i = 0; i < 10; i++) {
             await agent.post('/present').send({}).expect(403);
         }
 
         const res = await agent.post('/present').send({}).expect(429);
 
         const retryAfter = Number(res.header['retry-after']);
-        const resetSeconds = Number(res.header['ratelimit-reset']);
+        const resetAfter = Number(res.header['x-ratelimit-reset-after']);
+        const resetEpoch = Number(res.header['x-ratelimit-reset']);
 
-        // Standard express-rate-limit headers with standardHeaders: true
         expect(Number.isFinite(retryAfter)).toBe(true);
-        expect(Number.isFinite(resetSeconds)).toBe(true);
+        expect(retryAfter).toBe(resetAfter);
 
-        expect(retryAfter).toBeGreaterThan(0);
-        expect(resetSeconds).toBeGreaterThan(0);
+        const nowEpoch = Math.floor(Date.now() / 1000);
+        expect(resetEpoch).toBeGreaterThanOrEqual(nowEpoch);
+        expect(resetEpoch).toBeLessThanOrEqual(nowEpoch + resetAfter + 1);
     });
 
     it('fails closed: rejects a legacy boolean proven_claims without a ZK proof', async () => {
