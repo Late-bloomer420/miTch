@@ -14,8 +14,8 @@
     "jose": "^5.2.0"
   },
   "devDependencies": {
+    "@types/node": "^20.19.33",
     "typescript": "^5.3.3",
-    "vitest": "^2.1.9",
-    "@types/node": "^20.19.33"
+    "vitest": "^4.1.8"
   }
 }
