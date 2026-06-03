@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ProximityService, ProximitySession } from '../services/ProximityService';
-import { WalletService } from '@mitch/wallet-core';
+import { WalletService } from '../services/WalletService';
 
 interface ProximityViewProps {
     wallet: WalletService;

@@ -9,11 +9,12 @@
         "build": "tsc -p tsconfig.build.json",
         "test": "vitest run"
     },
+    "dependencies": {},
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "fake-indexeddb": "^6.2.5",
         "typescript": "^5.0.0",
-        "vitest": "^4.1.8"
+        "@types/node": "^20.0.0",
+        "vitest": "^2.1.9",
+        "fake-indexeddb": "^6.2.5"
     },
     "author": "miTch Core Team",
     "license": "UNLICENSED"

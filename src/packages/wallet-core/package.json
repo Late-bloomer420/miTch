@@ -20,17 +20,16 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/audit-log": "workspace:*",
-        "@mitch/mdoc": "workspace:*",
-        "@mitch/policy-engine": "workspace:*",
-        "@mitch/secure-storage": "workspace:*",
+        "@mitch/shared-types": "workspace:*",
         "@mitch/shared-crypto": "workspace:*",
-        "@mitch/shared-types": "workspace:*"
+        "@mitch/secure-storage": "workspace:*",
+        "@mitch/policy-engine": "workspace:*",
+        "@mitch/audit-log": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "rimraf": "^5.0.0",
         "typescript": "^5.3.0",
-        "vitest": "^4.1.8"
+        "vitest": "^2.1.9",
+        "rimraf": "^5.0.0",
+        "@types/node": "^20.0.0"
     }
 }

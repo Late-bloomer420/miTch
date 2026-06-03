@@ -8,18 +8,18 @@
     "test:e2e": "vitest run --testNamePattern=E2E"
   },
   "dependencies": {
-    "@mitch/eid-issuer-connector": "workspace:*",
-    "@mitch/layer-resolver": "workspace:*",
     "@mitch/mock-issuer": "workspace:*",
-    "@mitch/oid4vp": "workspace:*",
     "@mitch/policy-engine": "workspace:*",
+    "@mitch/layer-resolver": "workspace:*",
     "@mitch/revocation-statuslist": "workspace:*",
-    "@mitch/shared-crypto": "workspace:*",
+    "@mitch/eid-issuer-connector": "workspace:*",
+    "@mitch/webauthn-verifier": "workspace:*",
     "@mitch/shared-types": "workspace:*",
-    "@mitch/webauthn-verifier": "workspace:*"
+    "@mitch/shared-crypto": "workspace:*",
+    "@mitch/oid4vp": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
-    "vitest": "^4.1.8"
+    "vitest": "^2.1.9"
   }
 }

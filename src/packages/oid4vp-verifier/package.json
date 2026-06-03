@@ -9,12 +9,12 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/mdoc": "workspace:*",
-        "@mitch/oid4vp": "workspace:*"
+        "@mitch/oid4vp": "workspace:*",
+        "@mitch/mdoc": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^25.3.5",
         "typescript": "^5.3.3",
-        "vitest": "^4.1.8"
+        "vitest": "^2.1.9"
     }
 }

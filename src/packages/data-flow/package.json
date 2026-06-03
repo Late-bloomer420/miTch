@@ -16,16 +16,16 @@
     "scripts": {
         "clean": "rimraf dist",
         "build": "tsc -p tsconfig.build.json",
-        "test": "vitest run --dir src/__tests__ --environment node --pool threads --no-cache",
+        "test": "vitest run --dir src/__tests__ --environment node --pool threads --poolOptions.threads.singleThread true --no-cache",
         "lint": "tsc --noEmit"
     },
     "dependencies": {
         "@mitch/shared-types": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "rimraf": "^5.0.0",
         "typescript": "^5.0.0",
-        "vitest": "^4.1.8"
+        "vitest": "^2.1.9",
+        "rimraf": "^5.0.0",
+        "@types/node": "^20.0.0"
     }
 }

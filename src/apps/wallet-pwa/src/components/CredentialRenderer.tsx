@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Mustache from 'mustache';
 import { verifyDigestMultibase } from '@mitch/shared-crypto';
-import { SecureIframeRenderer } from './SecureIframeRenderer';
 
 export interface RenderMethod {
     id: string;
@@ -11,47 +10,45 @@ export interface RenderMethod {
 }
 
 interface CredentialRendererProps {
-    renderMethods?: RenderMethod[];
+    /** The credential payload (claims) */
     claims: Record<string, unknown>;
-    fallbackName?: string;
+    /** The render method hints from the VC */
+    renderMethods?: RenderMethod[];
+    /** Fallback name if no template is available */
+    fallbackName: string;
 }
 
 /**
- * Enhanced Credential Renderer (v1.0.1 Patch)
+ * W3C VC-Render compliant credential renderer.
+ * Supports:
+ * - svg-mustache: Renders a remote SVG template with credential data.
+ * - Local fallback: Standard card UI.
  * 
- * Securely renders credential visual templates (SVG) with:
- * 1. Cryptographic integrity check (V-04)
- * 2. Strict Sandboxed Iframe isolation (V-02)
+ * SECURITY NOTE:
+ * Templates should ideally be fetched from a trusted source and 
+ * verified against digestMultibase. For this PoC, we use a simple fetch.
  */
-export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
-    renderMethods = [],
-    claims,
-    fallbackName = 'Verifiable Credential'
+export const CredentialRenderer: React.FC<CredentialRendererProps> = ({ 
+    claims, 
+    renderMethods, 
+    fallbackName 
 }) => {
-    const [svgContent, setSvgContent] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const svgTemplateMethod = renderMethods?.find(m => m.format === 'svg-mustache');
 
-    const svgTemplateMethod = renderMethods.find(m => m.type === 'SvgTemplate');
+    const [svgContent, setSvgContent] = React.useState<string | null>(null);
+    const [error, setError] = React.useState<string | null>(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (svgTemplateMethod) {
             fetch(svgTemplateMethod.id)
-                .then(async res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                .then(res => {
+                    if (!res.ok) throw new Error(`Template fetch failed: ${res.status}`);
                     return res.text();
                 })
                 .then(async template => {
-                    // V-04: Verify cryptographic digest of the remote template
                     if (svgTemplateMethod.digestMultibase) {
-                        try {
-                            await verifyDigestMultibase(template, svgTemplateMethod.digestMultibase);
-                        } catch (e) {
-                            console.error('V-04 Integrity Violation:', e);
-                            throw new Error('TEMPLATE_INTEGRITY_FAILED');
-                        }
+                        await verifyDigestMultibase(template, svgTemplateMethod.digestMultibase);
                     }
-
-                    // Render with mustache
                     const rendered = Mustache.render(template, claims);
                     setSvgContent(rendered);
                 })
@@ -67,10 +64,17 @@ export const CredentialRenderer: React.FC<CredentialRendererProps> = ({
             <SecureIframeRenderer content={svgContent} />
         );
     }
-
     return (
         <div className="credential-item">
             <span className="credential-icon">🪪</span>
+            <div>
+                <div className="credential-name">{fallbackName}</div>
+                <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>
+            </div>
+        </div>
+    );
+};
+🪪</span>
             <div>
                 <div className="credential-name">{fallbackName}</div>
                 <div className="credential-issuer">{error ? `Error: ${error}` : 'did:example:issuer'}</div>

@@ -86,7 +86,7 @@ nonceStore.loadFromDisk();
 process.on('SIGINT', () => nonceStore.close());
 process.on('SIGTERM', () => nonceStore.close());
 
-const rateLimiter = new FixedWindowRateLimiter(60_000, 30, {
+const rateLimiter = new FixedWindowRateLimiter(60_000, 10, {
     maxEntries: 100_000,
     pruneIntervalMs: 30_000
 });

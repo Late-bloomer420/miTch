@@ -9,14 +9,13 @@ import type {
   PolicyManifest,
   StoredCredentialMetadata,
 } from '@mitch/shared-types';
-import { WalletService } from '@mitch/wallet-core';
+import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
-import { WebAuthnService, applyJitter } from '@mitch/shared-crypto';
+import { WebAuthnService } from '@mitch/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
-import { PopupBlockedModal } from './components/PopupBlockedModal';
 import { ConsentManagerPanel } from './components/ConsentManagerPanel';
 import { CONFIG } from './config';
 import {
@@ -34,7 +33,6 @@ import type { ConsentReceipt } from '@mitch/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { LandingPage } from './LandingPage';
-import { UNIFORM_HEADERS, padPayload } from './utils/anti-fingerprinting';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -92,8 +90,6 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   },
 ];
 
-const walletRef = { current: null as any };
-
 function WalletApp() {
   useEffect(() => {
     document.title = 'miTch Wallet';
@@ -107,16 +103,13 @@ function WalletApp() {
   const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
   const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
   const [showDataFlow, setShowDataFlow] = useState(false);
-  const [showPopupBlocked, setShowPopupBlocked] = useState(false);
-  const [blockedPopupUrl, setBlockedPopupUrl] = useState('');
-  const [showConsentManager, setShowConsentManager] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
   const [consentReceiptHistory, setConsentReceiptHistory] = useState(() =>
     loadConsentReceiptHistory()
   );
   const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
-    () => !sessionStorage.getItem('guidedDemoCompleted') && import.meta.env.MODE !== 'test'
+    () => !sessionStorage.getItem('guidedDemoCompleted')
   );
   const [showSecondary, setShowSecondary] = useState(false);
   const [flashAllow, setFlashAllow] = useState(false);
@@ -125,16 +118,10 @@ function WalletApp() {
     'idle'
   );
   const [credentials, setCredentials] = useState<StoredCredentialMetadata[]>([]);
-  const [isPasskeyAvailable, setIsPasskeyAvailable] = useState(false);
-  const [isPasskeyRegistered, setIsPasskeyRegistered] = useState(false);
-
-  const internalWalletRef = useRef<WalletService | null>(null);
-  walletRef.current = internalWalletRef.current;
 
   const loadWalletCredentials = async () => {
-    if (!internalWalletRef.current) return;
     try {
-      const creds = await internalWalletRef.current.getCredentials();
+      const creds = await walletRef.current.getCredentials();
       setCredentials(creds);
     } catch (e) {
       console.warn('Failed loading credentials', e);
@@ -144,15 +131,20 @@ function WalletApp() {
   // G-120: Listen for Auth Popup messages from opener window
   useEffect(() => {
     const handleOpenerMessage = (event: MessageEvent) => {
+      // Security: Validate origin in production
       if (event.data?.type === 'MITCH_OID4VP_REQUEST') {
         addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
+        // Trigger handleIncomingOID4VP with provided data
+        // For simplicity, we just reload or use the data directly
         const { scenario, endpoint, verifier } = event.data;
-        handleIncomingOID4VP({ scenario, endpoint, verifier });
+        // This is a specialized path for popups
+        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier);
       }
     };
 
     window.addEventListener('message', handleOpenerMessage);
     
+    // Check if we ARE a popup and notify opener
     if (window.opener) {
       window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, '*');
     }
@@ -160,6 +152,9 @@ function WalletApp() {
     return () => window.removeEventListener('message', handleOpenerMessage);
   }, []);
 
+  const handleIncomingOID4VPFromOpener = async (scenario: string, endpoint: string, verifier: string) => {
+      await handleIncomingOID4VP({ scenario, endpoint, verifier });
+  };
   const [incomingOID4VP] = useState<{
     scenario: string;
     endpoint: string;
@@ -180,24 +175,16 @@ function WalletApp() {
     }
   });
 
-  // OID4VP: Auto-trigger on load if deep-link params present
-  useEffect(() => {
-    if (incomingOID4VP && status === 'IDLE') {
-      handleIncomingOID4VP();
-    }
-  }, [incomingOID4VP, status]);
-
-  const recentAuditEntries = useMemo(() => {
-    if (!internalWalletRef.current) return [];
-    return internalWalletRef.current.getRecentAuditLogs(200);
-  }, [logs]);
+  const logContainerRef = useRef<HTMLDivElement>(null);
+  const walletRef = useRef<WalletService>(new WalletService());
+  const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
   };
 
-  const logContainerRef = useRef<HTMLDivElement>(null);
+  // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
     if (logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
@@ -209,56 +196,37 @@ function WalletApp() {
     const init = async () => {
       addLog('🔐 Initializing Wallet Service...', 'info');
       try {
-        const available = await WebAuthnService.isAvailable();
-        const registered = await WebAuthnService.isRegistered();
-        setIsPasskeyAvailable(available);
-        setIsPasskeyRegistered(registered);
+        await walletRef.current.initialize('123456');
+        addLog('🔓 Wallet Decrypted & Ready', 'success');
+        setCurrentPolicy(walletRef.current.getPolicy());
 
-        // Modular Factory: uses decoupled storage & repositories
-        const wallet = await WalletService.createBrowserWallet('123456', 'mitch-salt-v1');
-        internalWalletRef.current = wallet;
-        walletRef.current = wallet;
-
-        if (available && registered) {
-          setStatus('LOCKED_PASSKEY');
-          addLog('📱 Passkey found. Biometric unlock available.', 'info');
-        } else {
-          await wallet.initialize();
-          addLog('🔓 Wallet Decrypted & Ready (Modular Architecture)', 'success');
-          setCurrentPolicy(wallet.getPolicy());
-          await loadWalletCredentials();
-          setStatus('IDLE');
+        try {
+          const isAvailable = await WebAuthnService.isAvailable();
+          const isRegistered = await WebAuthnService.isRegistered();
+          if (isAvailable && !isRegistered) {
+            addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
+            await WebAuthnService.registerPasskey();
+            addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
+          }
+        } catch (authError) {
+          addLog(
+            `⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
+            'warning'
+          );
         }
+
+        await loadWalletCredentials();
+        setStatus('IDLE');
       } catch (e) {
         console.error(e);
-        addLog(`❌ Init Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        const message = e instanceof Error ? e.message : String(e);
+        addLog(`❌ Init Failed: ${message || 'Unknown error'}`, 'error');
       }
     };
     init();
   }, []);
 
-  const handlePasskeyUnlock = async () => {
-    try {
-      setStatus('UNLOCKING');
-      addLog('👤 Requesting Biometric Verification...', 'info');
-      await WebAuthnService.provePresence('mitch-wallet-unlock');
-      
-      const wallet = internalWalletRef.current;
-      if (!wallet) throw new Error('Wallet not created');
-      
-      await wallet.initialize(); 
-      addLog('🔓 Passkey Verified. Wallet Ready.', 'success');
-      setCurrentPolicy(wallet.getPolicy());
-      await loadWalletCredentials();
-      setStatus('IDLE');
-    } catch (e) {
-      addLog(`❌ Unlock Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
-      setStatus('LOCKED_PASSKEY');
-    }
-  };
-
   const handleProveAge = async () => {
-    if (!internalWalletRef.current) return;
     setStatus('EVALUATING');
     setLogs([]);
     setEvaluationResult(null);
@@ -280,53 +248,73 @@ function WalletApp() {
     };
 
     addLog('⚖️ Evaluating Policy...', 'info');
-    const result = await internalWalletRef.current.evaluateRequest(request, context);
-    setEvaluationResult(result);
+    try {
+      const result = await walletRef.current.evaluateRequest(request, context);
+      setEvaluationResult(result);
 
-    if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Policy ALLOWED Age Verification.`, 'success');
-      if (result.verdict === 'PROMPT') setShowConsent(true);
-      else await proceedWithProof(result, undefined, request.serviceEndpoint);
-    } else {
-      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+      if (result.verdict === 'DENY') {
+        setStatus('DENIED');
+        addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+        return;
+      }
+
+      if (result.verdict === 'PROMPT') {
+        addLog(`🔔 Consent Required: ${result.reasonCodes.join(', ')}`, 'info');
+        setShowConsent(true);
+        return;
+      }
+
+      // ALLOW
+      addLog(`✅ Policy ALLOWED. Auto-issuing...`, 'success');
+      setFlashAllow(true);
+      setTimeout(() => setFlashAllow(false), 900);
+      await proceedWithProof(result, undefined, request.serviceEndpoint);
+    } catch (e) {
+      console.error(e);
+      addLog(`❌ Evaluation Error: ${(e as Error).message}`, 'error');
       setStatus('IDLE');
     }
   };
 
   const proceedWithProof = async (
-    result?: PolicyEvaluationResult,
+    policyResult?: PolicyEvaluationResult,
     targetKey?: CryptoKey,
-    manualEndpoint?: string
+    endpoint?: string
   ) => {
-    if (!result || !result.decisionCapsule || !internalWalletRef.current) return;
+    const result = policyResult || evaluationResult;
 
-    setStatus('SENDING');
-    const targetEndpoint = manualEndpoint || currentRequest?.serviceEndpoint || CONFIG.VERIFIER_ENDPOINT;
+    if (!result || !result.decisionCapsule) {
+      addLog('❌ No Decision Capsule found!', 'error');
+      return;
+    }
+
+    const targetEndpoint =
+      endpoint ||
+      ((result.decisionCapsule as unknown as Record<string, unknown>).service_endpoint as
+        | string
+        | undefined) ||
+      CONFIG.VERIFIER_ENDPOINT;
+
+    setShowConsent(false);
+    setStatus('PROVING');
 
     try {
       addLog('🔐 Generating Secure Presentation...', 'info');
 
-      const { encryptedVp, auditLog } = await internalWalletRef.current.generatePresentation(
+      const { encryptedVp, auditLog } = await walletRef.current.generatePresentation(
         result.decisionCapsule,
         targetKey
       );
 
-      auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+      auditLog.forEach((l) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
-
-      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Jitter + Uniform Headers)
-      const paddedPayload = padPayload(encryptedVp);
-      addLog(`🛡️ Payload padded to ${paddedPayload.length} bytes (Uniformity)`, 'info');
-      
-      await applyJitter(20, 100);
-      addLog('🛡️ Applied timing jitter (Side-channel protection)', 'info');
 
       try {
         const response = await fetch(targetEndpoint, {
           method: 'POST',
-          headers: UNIFORM_HEADERS,
-          body: paddedPayload,
+          headers: { 'Content-Type': 'application/json' },
+          body: encryptedVp,
         });
 
         if (response.ok) {
@@ -348,7 +336,6 @@ function WalletApp() {
 
       setLogs((prev) => [...prev, 'DONE|--- PROOF COMPLETE ---']);
       setStatus('SHREDDED');
-      setShowConsentManager(true);
     } catch (error) {
       console.error(error);
       addLog(`❌ Proof Gen Failed: ${error instanceof Error ? error.message : 'Unknown'}`, 'error');
@@ -368,16 +355,14 @@ function WalletApp() {
     addLog(`🛡️ Acknowledged tracking by: ${consent.acceptedTrackers.join(', ')}`, 'success');
 
     try {
-      if (internalWalletRef.current) {
-        const capsule = evaluationResult?.decisionCapsule;
-        const entries = await internalWalletRef.current.recordIdentityFirewallEvents(
-            capsule?.decision_id,
-            capsule?.verifier_did,
-            context.detectedTrackers
-        );
-        if (entries.length > 0) {
-            addLog(`🛡️ Identity Firewall logged ${entries.length} transparency events`, 'info');
-        }
+      const capsule = evaluationResult?.decisionCapsule;
+      const entries = await walletRef.current.recordIdentityFirewallEvents(
+        capsule?.decision_id,
+        capsule?.verifier_did,
+        context.detectedTrackers
+      );
+      if (entries.length > 0) {
+        addLog(`🛡️ Identity Firewall logged ${entries.length} transparency events`, 'info');
       }
     } catch (error) {
       console.warn('[IdentityFirewall] Failed to record transparency events:', error);
@@ -388,7 +373,6 @@ function WalletApp() {
   };
 
   const handleMultiProofDemo = async () => {
-    if (!internalWalletRef.current) return;
     addLog('🏥 DEMO: Doctor Login (Multi-VC Bundle)...', 'warning');
     addLog('📥 Request: "Provide ID (Age>=18) AND Medical License"', 'info');
 
@@ -414,7 +398,7 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await internalWalletRef.current.evaluateRequest(request, context);
+    const result = await walletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
@@ -443,31 +427,29 @@ function WalletApp() {
   };
 
   const handleRecoveryTest = async () => {
-    if (!internalWalletRef.current) return;
     addLog('🛡️ DEMO: Starting Social Recovery Setup...', 'warning');
-    const fragments = await internalWalletRef.current.splitMasterKey();
+    const fragments = await walletRef.current.splitMasterKey();
     addLog(`✅ DEMO: Master Key split into 3 fragments (Circle of Trust)`, 'success');
-    fragments.forEach((f: string, i: number) =>
+    fragments.forEach((f, i) =>
       addLog(`👤 Friend ${i + 1} received: ${f.substring(0, 8)}...`, 'info')
     );
 
     addLog('🧪 DEMO: Simulating device loss... attempting recovery.', 'warning');
-    await internalWalletRef.current.recoverFromFragments(fragments);
+    await walletRef.current.recoverFromFragments(fragments);
     addLog('🏁 DEMO COMPLETE: Wallet access restored via Social Recovery.', 'success');
   };
 
   const handleHealthAccessDemo = async () => {
-    if (!internalWalletRef.current) return;
     addLog('🚑 EHDS: Simulating Hospital Emergency Access...', 'warning');
     addLog('📥 Request: "Provide Blood Type & Allergies"', 'info');
 
     const request: VerifierRequest = {
-      verifierId: 'ehds-emergency-portal',
-      origin: 'https://emergency.hospital.es',
+      verifierId: 'hospital-madrid-er-1',
+      origin: 'https://er.madrid.health',
       requirements: [
         {
           credentialType: 'PatientSummary',
-          requestedClaims: ['bloodGroup', 'allergies', 'emergencyContacts'],
+          requestedClaims: ['bloodGroup', 'allergies'],
           requestedProvenClaims: [],
         },
       ],
@@ -478,30 +460,29 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await internalWalletRef.current.evaluateRequest(request, context);
+    const result = await walletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Policy ALLOWED Emergency Access.`, 'success');
+      addLog(`✅ Policy ALLOWED Health Data Access.`, 'success');
       if (result.verdict === 'PROMPT') setShowConsent(true);
       else proceedWithProof(result);
     } else {
-      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+      addLog(`🚫 Policy BLOCKED Health Request: ${result.reasonCodes.join(', ')}`, 'error');
     }
   };
 
   const handlePharmacyDemo = async () => {
-    if (!internalWalletRef.current) return;
-    addLog('💊 DEMO: Pharmacy ePrescription...', 'warning');
-    addLog('📥 Request: "Provide active prescriptions"', 'info');
+    addLog('💊 PHARMACY: Simulating Prescription Dispense...', 'warning');
+    addLog('📥 Request: "Provide Medication & Dosage"', 'info');
 
     const request: VerifierRequest = {
-      verifierId: 'pharmacy-xyz',
-      origin: 'https://pharmacy.xyz',
+      verifierId: 'pharmacy-berlin-center',
+      origin: 'https://pharmacy.berlin.health',
       requirements: [
         {
           credentialType: 'Prescription',
-          requestedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
+          requestedClaims: ['medication', 'dosageInstruction'],
           requestedProvenClaims: [],
         },
       ],
@@ -512,18 +493,115 @@ function WalletApp() {
       userDID: 'did:example:wallet-user',
     };
 
-    const result = await internalWalletRef.current.evaluateRequest(request, context);
+    const result = await walletRef.current.evaluateRequest(request, context);
     setEvaluationResult(result);
 
     if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
-      addLog(`✅ Policy ALLOWED Prescription Access.`, 'success');
+      addLog(`✅ Policy ALLOWED Pharmacy Access.`, 'success');
       if (result.verdict === 'PROMPT') setShowConsent(true);
-      else await proceedWithProof(result);
+      else proceedWithProof(result);
     } else {
-      addLog(`🚫 Policy BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+      addLog(`🚫 Policy BLOCKED Pharmacy Request: ${result.reasonCodes.join(', ')}`, 'error');
     }
   };
 
+  const handleResearchDemo = async () => {
+    addLog('🔬 RESEARCH: Simulating Secondary-Use Data Request...', 'warning');
+    addLog('📥 Request: "Provide Blood Group & Allergies for research"', 'info');
+
+    const request: VerifierRequest = {
+      verifierId: 'did:eu:research-institute-fhi',
+      origin: 'https://research.fhi.eu',
+      usagePurpose: 'researchSecondary',
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
+    };
+
+    const context: EvaluationContext = {
+      timestamp: Date.now(),
+      userDID: 'did:example:wallet-user',
+    };
+
+    const result = await walletRef.current.evaluateRequest(request, context);
+    setEvaluationResult(result);
+
+    if (result.verdict === 'DENY') {
+      setStatus('DENIED');
+      addLog(`🚫 Secondary Use BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+      return;
+    }
+    if (result.verdict === 'PROMPT') {
+      addLog(`🔔 Research Consent Required: ${result.reasonCodes.join(', ')}`, 'info');
+      setShowConsent(true);
+      return;
+    }
+    addLog(`✅ Research Access ALLOWED`, 'success');
+    await proceedWithProof(result);
+  };
+
+  const handleCrossBorderDemo = async () => {
+    addLog('🇪🇸 CROSS-BORDER: Spanish Hospital Emergency...', 'warning');
+    addLog('📥 Request: "Provide Blood Type & Allergies (Cross-Border EU)"', 'info');
+
+    const request: VerifierRequest = {
+      verifierId: 'did:es:hospital-barcelona-er-1',
+      origin: 'https://er.barcelona.health',
+      requirements: [
+        {
+          credentialType: 'PatientSummary',
+          requestedClaims: ['bloodGroup', 'allergies'],
+          requestedProvenClaims: [],
+        },
+      ],
+    };
+
+    const context: EvaluationContext = {
+      timestamp: Date.now(),
+      userDID: 'did:example:wallet-user',
+    };
+
+    const result = await walletRef.current.evaluateRequest(request, context);
+    setEvaluationResult(result);
+
+    if (result.verdict === 'ALLOW' || result.verdict === 'PROMPT') {
+      addLog(`✅ Cross-Border Access via GDPR Art. 1`, 'success');
+      if (result.verdict === 'PROMPT') setShowConsent(true);
+      else await proceedWithProof(result);
+    } else {
+      addLog(`🚫 Cross-Border BLOCKED: ${result.reasonCodes.join(', ')}`, 'error');
+    }
+  };
+
+  // UX-05: Render log with slide-in animation (key includes index for animation re-trigger)
+  const renderLogLine = (l: string, i: number) => {
+    if (l.startsWith('DONE'))
+      return (
+        <div key={i} className="audit-log-done">
+          {l.split('|')[1]}
+        </div>
+      );
+    const parts = l.split('|');
+    if (parts.length < 3) return <div key={i}>{l}</div>;
+
+    const type = parts[0];
+    const time = parts[1];
+    const msg = parts.slice(2).join('|');
+    const className = `audit-${type.toLowerCase()} audit-log-entry`;
+
+    return (
+      <div key={i} className={className}>
+        <span className="audit-log-time">{time}</span>
+        <span className="audit-log-msg">{msg}</span>
+      </div>
+    );
+  };
+
+  // UX-05: Copy log to clipboard
   const handleCopyLog = () => {
     const text = logs
       .map((l) => {
@@ -537,6 +615,7 @@ function WalletApp() {
     });
   };
 
+  // OID4VP: present SD-JWT VP to verifier via direct_post
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
     scenarioId: string,
@@ -549,6 +628,7 @@ function WalletApp() {
       setStatus('PROVING');
       addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
 
+      // Generate ephemeral key pairs (PoC — in production, holder key is from wallet, issuer from trust registry)
       holderKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
         'sign',
         'verify',
@@ -558,44 +638,40 @@ function WalletApp() {
         'verify',
       ]);
 
-      const claims = SCENARIO_CLAIMS[scenarioId] || SCENARIO_CLAIMS['liquor-store'];
-      const vct = SCENARIO_VCT[scenarioId] || 'https://mitch.demo/vct/age-credential';
+      const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
+      const isRevoked = scenarioId === 'revoked';
 
+      // W-03: Build SD-JWT VP Token with Key Binding JWT
       const { vpTokenString, presentationSubmission, disclosedClaims } =
         await buildSDJWTPresentation({
           request: authRequest,
           issuerPrivateKey: issuerKeys.privateKey,
           holderKeyPair: holderKeys,
           claims,
-          vct,
+          vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
           issuerDid: 'https://issuer.mitch.demo',
-          revoked: scenarioId === 'revoked',
+          revoked: isRevoked,
         });
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
       addLog(`🔑 Key Binding JWT attached (nonce + aud bound)`, 'info');
 
+      // Send issuer public key alongside VP for PoC verification
       const issuerPubJwk = await crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
+
+      // POST direct_post to verifier redirect_uri
       const redirectUri = authRequest.redirect_uri;
       addLog(`🚀 POSTing VP to ${redirectUri}...`, 'info');
 
-      // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
-      const payload = {
+      const response = await fetch(redirectUri, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           vp_token: vpTokenString,
           presentation_submission: presentationSubmission,
           state: authRequest.state,
           issuer_jwk: issuerPubJwk,
-      };
-      const paddedPayload = padPayload(payload);
-      addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
-
-      await applyJitter(20, 100);
-      addLog('🛡️ Applied timing jitter', 'info');
-
-      const response = await fetch(redirectUri, {
-        method: 'POST',
-        headers: UNIFORM_HEADERS,
-        body: paddedPayload,
+        }),
       });
 
       const result = (await response.json()) as {
@@ -619,6 +695,7 @@ function WalletApp() {
         );
       }
 
+      // W-05: Session cleanup — audit entry
       const { consentReceipt, auditEntry } = buildSessionCleanup({
         request: authRequest,
         disclosedClaims,
@@ -637,7 +714,6 @@ function WalletApp() {
 
       setLogs((prev) => [...prev, 'DONE|--- OID4VP PROOF COMPLETE ---']);
       setStatus('SHREDDED');
-      setShowConsentManager(true);
     } catch (error) {
       addLog(
         `❌ OID4VP Proof Failed: ${error instanceof Error ? error.message : 'Unknown'}`,
@@ -645,20 +721,20 @@ function WalletApp() {
       );
       setStatus('IDLE');
     } finally {
+      // B-03: Crypto-shredding — destroy ephemeral keys
       holderKeys = null;
       issuerKeys = null;
       addLog('🗑️ Ephemeral keys destroyed (crypto-shredding)', 'info');
     }
   };
 
-  const handleIncomingOID4VP = async (params?: { scenario: string; endpoint: string; verifier: string }) => {
-    if (!internalWalletRef.current) return;
-    const data = params || incomingOID4VP;
-    if (!data) return;
-    const { scenario, endpoint, verifier } = data;
+  // OID4VP: handle incoming request from verifier-demo deep link
+  const handleIncomingOID4VP = async () => {
+    if (!incomingOID4VP) return;
+    const { scenario, endpoint, verifier } = incomingOID4VP;
 
     // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
-    fetch(`${endpoint}/notify-scan`, { method: 'POST', headers: UNIFORM_HEADERS }).catch(() => {});
+    fetch(`${endpoint}/notify-scan`, { method: 'POST' }).catch(() => {});
 
     setStatus('EVALUATING');
     setLogs([]);
@@ -694,7 +770,7 @@ function WalletApp() {
         timestamp: Date.now(),
         userDID: 'did:example:wallet-user',
       };
-      const result = await internalWalletRef.current.evaluateRequest(policyRequest, context);
+      const result = await walletRef.current.evaluateRequest(policyRequest, context);
       setEvaluationResult(result);
 
       if (result.verdict === 'DENY') {
@@ -711,11 +787,6 @@ function WalletApp() {
         setFlashAllow(true);
         setTimeout(() => setFlashAllow(false), 900);
         await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null);
-        
-        // G-120: If in popup, notify opener
-        if (window.opener) {
-          window.opener.postMessage({ type: 'MITCH_PROOF_COMPLETE', success: true }, '*');
-        }
       }
     } catch (e) {
       addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -726,264 +797,295 @@ function WalletApp() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
+  // OID4VCI: fetch a test credential from issuer-mock
   const handleFetchCredential = async () => {
     setCredentialStatus('fetching');
     addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
     try {
-      const res = await fetch('http://localhost:3005/issue', {
+      const res = await fetch('http://localhost:3005/credential', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subject: 'did:example:wallet-user',
-          claims: {
-            name: 'Demo User',
-            dateOfBirth: '1990-01-01',
-            age: 36,
-          },
+          credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
+          proof: {},
         }),
       });
-      if (!res.ok) throw new Error('Issuer failed');
-      addLog('✅ New SD-JWT VC received and stored securely', 'success');
+      if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
+      const data = (await res.json()) as { credential?: string; error?: string };
+      if (!data.credential) throw new Error(data.error ?? 'No credential in response');
+
+      // Decode JWT payload (header.payload.sig)
+      const parts = data.credential.split('.');
+      if (parts.length < 2) throw new Error('Invalid JWT format');
+      const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+      const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
+      const subject = (vcPayload?.credentialSubject ??
+        payload['credentialSubject'] ??
+        {}) as Record<string, unknown>;
+
+      const credId = `vc-issuer-${Date.now()}`;
+      await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
       await loadWalletCredentials();
+
       setCredentialStatus('done');
+      addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
     } catch (e) {
-      addLog(`❌ OID4VCI Failed: ${(e as Error).message}`, 'error');
       setCredentialStatus('error');
+      addLog(`❌ Credential fetch failed: ${(e as Error).message}`, 'error');
+    }
+  };
+
+  // UX-02: primary button classes
+  const getPrimaryBtnClass = () => {
+    const base = 'btn-primary';
+    const stateClass =
+      {
+        IDLE: 'btn-primary--idle',
+        LOCKED: 'btn-primary--idle',
+        EVALUATING: 'btn-primary--evaluating',
+        PROVING: 'btn-primary--proving',
+        SHREDDED: 'btn-primary--shredded',
+        DENIED: 'btn-primary--denied',
+      }[status] ?? 'btn-primary--idle';
+    const flash = flashAllow ? ' btn-primary--flash-allow' : '';
+    return `${base} ${stateClass}${flash}`;
+  };
+
+  const getPrimaryBtnLabel = () => {
+    switch (status) {
+      case 'LOCKED':
+        return '🔒 Unlocking...';
+      case 'EVALUATING':
+        return (
+          <>
+            <span className="evaluating-spinner" />
+            Judging...
+          </>
+        );
+      case 'PROVING':
+        return '🔐 Generating Proof...';
+      case 'SHREDDED':
+        return '✓ Done — Data Forgotten';
+      case 'DENIED':
+        return '🚫 Access Denied';
+      default:
+        return '🔞 Prove Age & Forget';
     }
   };
 
   return (
-    <div className={`wallet-container ${flashAllow ? 'flash-allow' : ''}`}>
-      <header className="wallet-header">
-        <div className="wallet-logo">
-          mi<span>T</span>ch
+    <div className="wallet-app">
+      <h1 className="wallet-title">
+        miTch <span className="wallet-title-accent">Smart Wallet</span>
+      </h1>
+
+      {/* OID4VP: incoming request banner */}
+      {incomingOID4VP && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #0a1628, #0d2040)',
+            border: '1px solid #0891b2',
+            borderRadius: 10,
+            padding: '16px 20px',
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#38bdf8', marginBottom: 6 }}>
+            📲 Incoming Verification Request
+          </div>
+          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+            Verifier: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.verifier}</code>
+          </div>
+          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
+            Scenario: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.scenario}</code>
+            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>age ≥ 18</code>
+          </div>
+          <button
+            onClick={handleIncomingOID4VP}
+            disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+            style={{
+              background: '#0891b2',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '8px 20px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 13,
+              marginRight: 8,
+            }}
+          >
+            ✅ Accept &amp; Prove
+          </button>
         </div>
-        <div className="wallet-version">v1.0-RC</div>
-      </header>
+      )}
 
-      <main className="wallet-main">
-        {status === 'IDLE' && guidedDemoActive && (
-          <GuidedDemoMode 
-            isActive={guidedDemoActive}
-            onExit={() => setGuidedDemoActive(false)}
-            onStepExecute={() => {}}
-            steps={DEMO_STEPS_CONFIG as any}
-          />
-        )}
-
-        {status === 'LOCKED_PASSKEY' && (
-          <div className="secure-backdrop" style={{ display: 'flex' }}>
-            <div className="secure-prompt" style={{ textAlign: 'center', padding: 40 }}>
-              <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
-              <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
-              <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-                Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
-              </p>
-              <button
-                onClick={handlePasskeyUnlock}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  background: '#0891b2',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 12,
-                  fontWeight: 700,
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+      {/* Passkey Unlock State */}
+      {status === 'LOCKED_PASSKEY' && (
+        <div className="secure-backdrop" style={{ display: 'flex' }}>
+          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40 }}>
+            <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
+            <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
+            <p style={{ color: '#94a3b8', marginBottom: 32 }}>
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
+            </p>
+            <button
+              onClick={handlePasskeyUnlock}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: '#0891b2',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+              }}
+            >
+              Unlock with Biometrics
+            </button>
+            <div style={{ marginTop: 24 }}>
+              <button 
+                onClick={async () => {
+                  await walletRef.current.initialize('123456');
+                  setCurrentPolicy(walletRef.current.getPolicy());
+                  await loadWalletCredentials();
+                  setStatus('IDLE');
+                  addLog('🔓 Fallback: Unlocked via PIN', 'warning');
                 }}
+                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
               >
-                Unlock with Biometrics
+                Use PIN instead
               </button>
-              <div style={{ marginTop: 24 }}>
-                <button 
-                  onClick={async () => {
-                    const wallet = internalWalletRef.current;
-                    if (!wallet) return;
-                    await wallet.initialize();
-                    setCurrentPolicy(wallet.getPolicy());
-                    await loadWalletCredentials();
-                    setStatus('IDLE');
-                    addLog('🔓 Fallback: Unlocked via PIN', 'warning');
-                  }}
-                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
-                >
-                  Use PIN instead
-                </button>
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {status !== 'LOCKED' && status !== 'LOCKED_PASSKEY' && status !== 'UNLOCKING' && (
-          <>
-            <div className="credential-card-list">
-              {credentials.map((cred) => {
-                const types = cred.type || [];
-                let cardClass = '';
-                let displayName = 'Identity Credential';
-                let icon = '🪪';
-                let subText = 'Generic eID';
+      {/* UX-03: Dynamic Premium Credential Cards */}
+      {status !== 'LOCKED' ? (
+        <>
+          <div className="credential-card-list">
+            {credentials.map((cred) => {
+              let cardClass = 'credential-card--generic';
+              let displayName = 'Verifiable Credential';
+              let icon = '✨';
+              let subText = 'Imported Credential';
 
-                if (types.includes('AgeCredential')) {
-                  cardClass = 'credential-card--age';
-                  displayName = 'Government ID (Age Proof)';
-                  icon = '👤';
-                  subText = 'Official Identity Document';
-                } else if (types.includes('EmploymentCredential')) {
-                  cardClass = 'credential-card--employment';
-                  displayName = 'Hospital Practitioner ID';
-                  icon = '🏥';
-                  subText = 'St. Mary Hospital Professional';
-                } else if (types.includes('PatientSummary')) {
-                  cardClass = 'credential-card--summary';
-                  displayName = 'EHDS Patient Health Summary';
-                  icon = '📋';
-                  subText = 'Clinical Diagnostic Record';
-                } else if (types.includes('Prescription')) {
-                  cardClass = 'credential-card--prescription';
-                  displayName = 'ePrescription Record';
-                  icon = '💊';
-                  subText = 'Authorized Medical Rx';
-                } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
-                  cardClass = 'credential-card--mdl';
-                  displayName = 'Mobile Driver License (mDL)';
-                  icon = '🚗';
-                  subText = 'ISO 18013-5 Compliant';
-                }
+              const types = cred.type || [];
 
-                return (
-                  <div key={cred.id} className={`credential-card ${cardClass}`}>
-                    <div className="credential-card-header">
-                      <span className="credential-card-label">{subText}</span>
-                      <span className="credential-trust-badge">✓ Trusted</span>
-                    </div>
-                    <div className="credential-card-body">
-                      <div className="credential-card-icon">{icon}</div>
-                      <div className="credential-card-info">
-                        <div className="credential-card-name">{displayName}</div>
-                        <div className="credential-card-issuer">Issuer: {cred.issuer}</div>
+              if (types.includes('AgeCredential')) {
+                cardClass = 'credential-card--govid';
+                displayName = 'Age Credential (GovID)';
+                icon = '🪪';
+                subText = 'Government Issued ID';
+              } else if (types.includes('EmploymentCredential')) {
+                cardClass = 'credential-card--employment';
+                displayName = 'Hospital Practitioner ID';
+                icon = '🏥';
+                subText = 'St. Mary Hospital Professional';
+              } else if (types.includes('PatientSummary')) {
+                cardClass = 'credential-card--summary';
+                displayName = 'EHDS Patient Health Summary';
+                icon = '📋';
+                subText = 'Clinical Diagnostic Record';
+              } else if (types.includes('Prescription')) {
+                cardClass = 'credential-card--prescription';
+                displayName = 'ePrescription Record';
+                icon = '💊';
+                subText = 'Authorized Medical Rx';
+              } else if (types.includes('org.iso.18013.5.1.mDL') || cred.format === 'mso_mdoc') {
+                cardClass = 'credential-card--mdl';
+                displayName = 'Mobile Driver License (mDL)';
+                icon = '🚗';
+                subText = 'ISO 18013-5 Compliant';
+              }
+
+              return (
+                <div key={cred.id} className={`credential-card ${cardClass}`}>
+                  <div className="credential-card-header">
+                    <span className="credential-card-label">{subText}</span>
+                    <span className="credential-trust-badge">✓ Trusted</span>
+                  </div>
+
+                  <div
+                    className="credential-item"
+                    style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}
+                  >
+                    <span className="credential-icon" style={{ fontSize: 24, marginRight: 12 }}>
+                      {icon}
+                    </span>
+                    <div>
+                      <div
+                        className="credential-name"
+                        style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}
+                      >
+                        {displayName}
+                      </div>
+                      <div
+                        className="credential-issuer"
+                        style={{
+                          fontSize: 11,
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        {cred.issuer}
                       </div>
                     </div>
-                    <div className="credential-card-footer">
-                      <span>Ref: {cred.id.substring(0, 8)}...</span>
-                      <span>Verified: {new Date(cred.issuedAt).toLocaleDateString()}</span>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
 
-            <div className="quick-actions">
-              <h3>⚡ Quick Actions</h3>
-              <div className="actions-grid">
-                <button
-                  id="btn-liquor-store"
-                  className="action-btn"
-                  onClick={handleProveAge}
-                  disabled={status === 'EVALUATING'}
-                >
-                  🍺 Age Check
-                </button>
-                <button
-                  className="action-btn"
-                  onClick={handleMultiProofDemo}
-                  disabled={status === 'EVALUATING'}
-                >
-                  🏥 Doctor Login
-                </button>
-                <button
-                  className="action-btn"
-                  onClick={handleHealthAccessDemo}
-                  disabled={status === 'EVALUATING'}
-                >
-                  🚑 EHDS ER
-                </button>
-                <button
-                  className="action-btn"
-                  onClick={handlePharmacyDemo}
-                  disabled={status === 'EVALUATING'}
-                >
-                  💊 Pharmacy
-                </button>
-                <button
-                  className="action-btn action-btn--secondary"
-                  onClick={handleWebAuthnDemo}
-                  disabled={status === 'EVALUATING'}
-                >
-                  🔐 HW Presence
-                </button>
-                <button
-                  className="action-btn action-btn--secondary"
-                  onClick={handleRecoveryTest}
-                  disabled={status === 'EVALUATING'}
-                >
-                  🛡️ Social Recovery
-                </button>
-                <button
-                  className="action-btn action-btn--accent"
-                  onClick={handleFetchCredential}
-                  disabled={credentialStatus === 'fetching'}
-                >
-                  🎫 Get New VC
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </main>
+                  <div className="credential-card-chip" />
 
-      <aside className="wallet-sidebar">
-        <div className="audit-log-container">
-          <div className="audit-log-header">
-            <h3>📜 Transaction Audit</h3>
-            <button className="copy-btn" onClick={handleCopyLog}>
-              {copyLabel}
-            </button>
-          </div>
-          <div className="audit-log" ref={logContainerRef}>
-            {logs.map((log, i) => {
-              const [type, ...rest] = log.split('|');
-              return (
-                <div key={i} className={`log-entry log-entry--${type.toLowerCase()}`}>
-                  {rest.join('|')}
+                  <div className="credential-card-claims">
+                    {(cred.claims || []).map((claim) => (
+                      <span key={claim} className="credential-card-claim-badge">
+                        • {claim}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               );
             })}
-            {logs.length === 0 && <div className="log-empty">No transactions yet.</div>}
           </div>
-        </div>
 
-        <div className="wallet-controls">
-          <button className="control-btn" onClick={() => setShowSecondary(!showSecondary)}>
-            {showSecondary ? 'Hide Details' : 'Show Wallet Stats'}
+          {/* OID4VCI: fetch credential from issuer-mock */}
+          <button
+            onClick={handleFetchCredential}
+            disabled={credentialStatus === 'fetching'}
+            style={{
+              width: '100%',
+              maxWidth: 400,
+              padding: '10px 0',
+              marginBottom: 24,
+              background: credentialStatus === 'done' ? '#14532d' : '#0f172a',
+              border: `1px solid ${credentialStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
+              borderRadius: 8,
+              color: credentialStatus === 'done' ? '#86efac' : '#7dd3fc',
+              fontSize: 13,
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            {credentialStatus === 'fetching'
+              ? '⏳ Fetching from Issuer (OID4VCI)…'
+              : credentialStatus === 'done'
+                ? '✅ AgeCredential from issuer-mock'
+                : credentialStatus === 'error'
+                  ? '❌ Retry — Get Test Credential'
+                  : '🎫 Get Test Credential (OID4VCI)'}
           </button>
-          {showSecondary && (
-            <div className="secondary-stats">
-              <div className="stat-item">
-                <span>Protection Layer:</span>
-                <span className="stat-value stat-value--active">ACTIVE</span>
-              </div>
-              <div className="stat-item">
-                <span>ZKP Engine:</span>
-                <span className="stat-value">v2.1.0</span>
-              </div>
-              <div className="stat-item">
-                <span>Identity Key:</span>
-                <span className="stat-value stat-value--success">SECURE (SE)</span>
-              </div>
-            </div>
-          )}
-          <button className="control-btn" onClick={() => setShowDataFlow(true)}>
-            📊 Data Flow Explorer
-          </button>
-          <button className="control-btn" onClick={() => setShowConsentManager(true)}>
-            🛠️ Manual Policy
-          </button>
-        </div>
-      </aside>
+        </>
+      ) : null}
 
+      {/* ConsentModal */}
       {showConsent && evaluationResult?.decisionCapsule && (
         <ConsentModal
           capsule={evaluationResult.decisionCapsule}
@@ -1015,6 +1117,20 @@ function WalletApp() {
             if (pendingAuth) {
               delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
               delete (window as unknown as Record<string, unknown>)._pendingScenario;
+              const { consentReceipt } = buildSessionCleanup({
+                request: pendingAuth,
+                disclosedClaims: {},
+                outcome: 'DENIED',
+                decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
+              });
+              setLastConsentReceipt(consentReceipt);
+              setConsentReceiptHistory(
+                appendConsentReceiptHistory({
+                  receipt: consentReceipt,
+                  outcome: 'DENIED',
+                  decisionId: evaluationResult?.decisionCapsule?.decision_id ?? null,
+                })
+              );
             }
             setShowConsent(false);
           }}
@@ -1022,6 +1138,7 @@ function WalletApp() {
         />
       )}
 
+      {/* Smart Denial Modal */}
       {status === 'DENIED' && evaluationResult?.denialResolution && (
         <div className="secure-backdrop">
           <div
@@ -1047,107 +1164,264 @@ function WalletApp() {
                   key={action.id}
                   onClick={async () => {
                     addLog(`👉 User triggered: ${action.label}`, 'info');
-                    if (internalWalletRef.current) {
-                        const actionResult = await (internalWalletRef.current as any).handleAction(action);
-                        if (actionResult.success) {
-                        addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
+                    const actionResult = await walletRef.current.handleAction(action);
+                    if (actionResult.success) {
+                      addLog(`✅ Action Completed: ${actionResult.message}`, 'success');
 
-                        if (action.type === 'OVERRIDE_WITH_CONSENT') {
-                            addLog('🔄 Re-evaluating with override permission...', 'info');
+                      if (action.type === 'OVERRIDE_WITH_CONSENT') {
+                        addLog('🔄 Re-evaluating with override permission...', 'info');
 
-                            if (!currentRequest) {
-                            addLog('❌ Error: Original request lost from context.', 'error');
-                            setStatus('DENIED');
-                            return;
-                            }
+                        if (!currentRequest) {
+                          addLog('❌ Error: Original request lost from context.', 'error');
+                          setStatus('DENIED');
+                          return;
+                        }
 
-                            const overrideResult = await internalWalletRef.current.evaluateRequest(
-                            currentRequest,
-                            {
-                                timestamp: Date.now(),
-                                userDID: 'did:example:wallet-user',
-                                overrideGranted: true,
-                            }
-                            );
-                            if (overrideResult.verdict === 'PROMPT') {
-                            setEvaluationResult(overrideResult);
-                            setShowConsent(true);
-                            } else {
-                            addLog(
-                                '❌ Override failed: Could not generate proof authorization',
-                                'error'
-                            );
-                            setStatus('DENIED');
-                            }
+                        const overrideResult = await walletRef.current.evaluateRequest(
+                          currentRequest,
+                          {
+                            timestamp: Date.now(),
+                            userDID: 'did:example:wallet-user',
+                            overrideGranted: true,
+                          }
+                        );
+                        if (overrideResult.verdict === 'PROMPT') {
+                          setEvaluationResult(overrideResult);
+                          setShowConsent(true);
                         } else {
-                            setTimeout(() => {
-                            setStatus('IDLE');
-                            addLog('🔄 Wallet ready for new transaction', 'info');
-                            }, 1500);
+                          addLog(
+                            '❌ Override failed: Could not generate proof authorization',
+                            'error'
+                          );
+                          setStatus('DENIED');
                         }
-                        }
+                      } else {
+                        setTimeout(() => {
+                          setStatus('IDLE');
+                          addLog('🔄 Wallet ready for new transaction', 'info');
+                        }, 1500);
+                      }
                     }
                   }}
                   className={`denial-action-btn${action.type === 'OVERRIDE_WITH_CONSENT' ? ' denial-action-btn--override' : ''}`}
                 >
-                  {action.label}
+                  <span>{action.label}</span>
+                  {action.type === 'LEARN_MORE' && <span>↗</span>}
                 </button>
               ))}
-              <button
-                className="denial-action-btn denial-action-btn--secondary"
-                onClick={() => setStatus('IDLE')}
-              >
-                Cancel
+              <button onClick={() => setStatus('IDLE')} className="denial-close-btn">
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {showDataFlow && (
-        <div className="secure-backdrop">
-          <DataFlowPanel
-            entries={recentAuditEntries}
-            onAction={() => setShowDataFlow(false)}
-          />
-        </div>
-      )}
-
-      {showConsentManager && (
-        <div className="secure-backdrop">
-          <div className="secure-prompt" style={{ maxWidth: '90vw', height: '80vh', overflowY: 'auto', padding: 0 }}>
-             <button 
-                onClick={() => setShowConsentManager(false)}
-                style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}
-             >✕</button>
-             <ConsentManagerPanel
-                request={currentRequest}
-                result={evaluationResult}
-                auditEntries={recentAuditEntries}
-                privacyConsent={null}
-                consentReceipt={lastConsentReceipt}
-                receiptHistory={consentReceiptHistory}
-                onOpenDataFlow={() => { setShowConsentManager(false); setShowDataFlow(true); }}
-             />
-          </div>
-        </div>
-      )}
-
-      {showPopupBlocked && (
-        <PopupBlockedModal 
-          url={blockedPopupUrl} 
-          onClose={() => setShowPopupBlocked(false)} 
+      {/* Privacy Audit */}
+      {showPrivacyAudit && evaluationResult && (
+        <PrivacyAuditModal
+          verifierName={evaluationResult.decisionCapsule?.verifier_did || 'Unknown Verifier'}
+          onAccept={(context) => handlePrivacyAuditAccept(context)}
+          onCancel={() => {
+            setShowPrivacyAudit(false);
+            setShowConsent(true);
+            addLog('🔙 Privacy Audit cancelled, returning to Consent', 'warning');
+          }}
         />
       )}
 
-      {status === 'EVALUATING' && (
-        <div className="secure-backdrop">
-          <div className="secure-prompt">
-            <div className="spinner"></div>
-            <p>miTch is evaluating verifier risk...</p>
-          </div>
+      {/* UX-02: Primary CTA Button */}
+      <button
+        id="btn-liquor-store"
+        onClick={() => {
+          if (status === 'SHREDDED') {
+            setStatus('IDLE');
+            setEvaluationResult(null);
+            setLogs([]);
+            addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
+          } else {
+            handleProveAge();
+          }
+        }}
+        disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+        className={getPrimaryBtnClass()}
+      >
+        {getPrimaryBtnLabel()}
+      </button>
+
+      {/* UX-02: Progress bar during PROVING */}
+      {status === 'PROVING' && (
+        <div className="proving-progress wallet-section">
+          <div className="proving-progress-bar" />
         </div>
       )}
+
+      {/* UX-05: Audit Log */}
+      <div className="audit-section">
+        <div className="audit-header">
+          <h3 className="audit-title">Immutable Audit Trace</h3>
+          <button className="audit-copy-btn" onClick={handleCopyLog}>
+            {copyLabel}
+          </button>
+        </div>
+        <div className="audit-log-container" ref={logContainerRef}>
+          {logs.map(renderLogLine)}
+        </div>
+      </div>
+
+      <div className="wallet-section" style={{ marginTop: 20 }}>
+        <ConsentManagerPanel
+          request={currentRequest}
+          result={evaluationResult}
+          auditEntries={recentAuditEntries}
+          privacyConsent={_privacyConsent}
+          consentReceipt={lastConsentReceipt}
+          receiptHistory={consentReceiptHistory}
+          onOpenDataFlow={() => setShowDataFlow(true)}
+        />
+      </div>
+
+      <div className="wallet-section" style={{ marginTop: 20 }}>
+        <ComplianceDashboard
+          onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
+          onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
+          getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
+          getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
+        />
+      </div>
+
+      <div className="wallet-section" style={{ marginTop: 10 }}>
+        <button onClick={() => setShowDataFlow(!showDataFlow)} className="btn-demo-secondary">
+          {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
+        </button>
+        {showDataFlow && <DataFlowPanel entries={recentAuditEntries} />}
+      </div>
+
+      <div className="wallet-section" style={{ marginBottom: 20 }}>
+        {currentPolicy && (
+          <PolicyEditor
+            policy={currentPolicy}
+            onSave={(p) => {
+              walletRef.current.savePolicy(p);
+              setCurrentPolicy(p);
+              addLog('⚖️ User Policy updated and persisted', 'success');
+            }}
+          />
+        )}
+      </div>
+
+      {/* UX-04: Demo Section with Primary / Secondary Button Hierarchy */}
+      <div className="demo-section">
+        <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
+
+        {/* Primary scenarios — bigger, prominent */}
+        <div className="demo-primary-grid">
+          <button
+            id="btn-doctor-login"
+            onClick={handleMultiProofDemo}
+            className="btn-demo-primary btn-demo-primary--full"
+            style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
+          >
+            🏥 Doctor Login
+            <br />
+            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>
+              High Assurance Multi-VC
+            </span>
+          </button>
+
+          <button
+            id="btn-ehds-er"
+            onClick={handleHealthAccessDemo}
+            className="btn-demo-primary"
+            style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
+          >
+            🚑 ER Access
+            <br />
+            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>EHDS Emergency</span>
+          </button>
+
+          <button
+            id="btn-pharmacy"
+            onClick={handlePharmacyDemo}
+            className="btn-demo-primary"
+            style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
+          >
+            💊 Pharmacy
+            <br />
+            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>ePrescription</span>
+          </button>
+        </div>
+
+        {/* Secondary — collapsible */}
+        <button
+          className="demo-secondary-toggle"
+          onClick={() => setShowSecondary((s) => !s)}
+          aria-expanded={showSecondary}
+        >
+          {showSecondary ? '▲ Hide' : '▼ More Demos'}
+        </button>
+
+        <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
+          <button
+            onClick={handleWebAuthnDemo}
+            className="btn-demo-secondary"
+            style={{ borderColor: '#a21caf44', color: '#d8b4fe' }}
+          >
+            🔐 Biometric (WebAuthn)
+          </button>
+          <button
+            onClick={handleRecoveryTest}
+            className="btn-demo-secondary"
+            style={{ borderColor: '#06474444', color: '#86efac' }}
+          >
+            🛡️ Social Recovery
+          </button>
+          <button
+            onClick={handleResearchDemo}
+            disabled={status !== 'IDLE'}
+            className="btn-demo-secondary"
+          >
+            🔬 Research Data
+          </button>
+          <button
+            onClick={handleCrossBorderDemo}
+            disabled={status !== 'IDLE'}
+            className="btn-demo-secondary"
+          >
+            🇪🇸 Cross-Border
+          </button>
+        </div>
+      </div>
+
+      {/* Start Guided Demo button */}
+      {status === 'IDLE' && !guidedDemoActive && (
+        <button
+          className="btn-start-demo"
+          onClick={() => {
+            sessionStorage.removeItem('guidedDemoCompleted');
+            setGuidedDemoActive(true);
+          }}
+        >
+          ▶ Start Guided Demo
+        </button>
+      )}
+
+      <GuidedDemoMode
+        isActive={guidedDemoActive && status === 'IDLE'}
+        onExit={() => setGuidedDemoActive(false)}
+        onStepExecute={(_stepId) => {}}
+        steps={DEMO_STEPS_CONFIG.map((s) => ({
+          ...s,
+          onExecute:
+            s.id === 1
+              ? handleProveAge
+              : s.id === 2
+                ? handleMultiProofDemo
+                : s.id === 3
+                  ? handleHealthAccessDemo
+                  : handlePharmacyDemo,
+        }))}
+      />
     </div>
   );
 }
