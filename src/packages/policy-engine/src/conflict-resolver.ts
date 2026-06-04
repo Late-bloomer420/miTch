@@ -1,5 +1,5 @@
 /**
- * @module @mitch/policy-engine/conflict-resolver
+ * @module @askmi/policy-engine/conflict-resolver
  *
  * Deterministic Policy Conflict Resolution (Spec 108)
  *

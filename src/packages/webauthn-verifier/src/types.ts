@@ -1,5 +1,5 @@
 /**
- * @package @mitch/webauthn-verifier
+ * @package @askmi/webauthn-verifier
  * @description Type definitions for WebAuthn verification
  */
 

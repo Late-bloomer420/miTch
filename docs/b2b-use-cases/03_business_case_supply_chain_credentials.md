@@ -2,7 +2,7 @@
 
 Stand: 2026-05-23
 Vertical: Manufacturing procurement · ESG/CSRD reporting · Contractor & professional licensing
-Status: Concept (verifier-side integration via `@mitch/verifier-sdk`; in-person via `@mitch/mdoc`)
+Status: Concept (verifier-side integration via `@askmi/verifier-sdk`; in-person via `@askmi/mdoc`)
 
 ## 1) Positioning
 
@@ -17,7 +17,7 @@ procurement / site-access systems:
   `forced_labour_screened`, `license_valid AND recognised_in=DE`) — not the underlying contracts,
   personnel files, or audit reports.
 - Cross-border recognition, freshness, and revocation are enforced fail-closed; multi-year audit
-  chains are anchored for non-repudiation (`@mitch/anchor-service`).
+  chains are anchored for non-repudiation (`@askmi/anchor-service`).
 
 ## 2) Problem
 
@@ -36,7 +36,7 @@ last_audit_within_12m AND forced_labour_screened`), or for a worker
    `license_valid AND recognised_in=<country>`.
 2. The holder's wallet (or an mdoc on a site-access card) presents a signed proof; the policy
    engine checks issuer accreditation, freshness, jurisdiction, and revocation fail-closed.
-3. The buyer verifies via `@mitch/verifier-sdk` and stores a WORM receipt as CSRD/CSDDD evidence.
+3. The buyer verifies via `@askmi/verifier-sdk` and stores a WORM receipt as CSRD/CSDDD evidence.
 4. A lapsed audit or suspended license fails closed (`DENY_CREDENTIAL_TOO_OLD`,
    `DENY_CREDENTIAL_REVOKED`).
 
@@ -61,7 +61,7 @@ last_audit_within_12m AND forced_labour_screened`), or for a worker
 
 - Supplier predicates: `iso_27001_valid`, `iso_14001_valid`, `last_audit_within_12m`,
   `no_sanctions_match`, `forced_labour_screened`.
-- Worker predicate: `license_valid` + `recognised_in=<country>` (`@mitch/mdoc` for NFC tap).
+- Worker predicate: `license_valid` + `recognised_in=<country>` (`@askmi/mdoc` for NFC tap).
 - 1 accredited-auditor issuer + 1 buyer pilot.
 - Anchored audit chain for multi-year non-repudiation.
 

@@ -21,17 +21,17 @@ const VALID_INPUT = {
   context: { user_did: 'did:peer:2.Ez6LStest' },
 };
 
-describe('mitch_evaluate_disclosure (stub)', () => {
+describe('askmi_evaluate_disclosure (stub)', () => {
   it('is listed in the tool inventory', async () => {
     const client = await createConnectedClient();
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name)).toContain('mitch_evaluate_disclosure');
+    expect(tools.map((t) => t.name)).toContain('askmi_evaluate_disclosure');
     await client.close();
   });
 
   it('returns a well-formed stub DecisionCapsule', async () => {
     const client = await createConnectedClient();
-    const result = await client.callTool({ name: 'mitch_evaluate_disclosure', arguments: VALID_INPUT });
+    const result = await client.callTool({ name: 'askmi_evaluate_disclosure', arguments: VALID_INPUT });
     expect(result.isError).toBeFalsy();
     const block = result.content[0] as { type: string; text: string };
     expect(block.type).toBe('text');
@@ -46,8 +46,8 @@ describe('mitch_evaluate_disclosure (stub)', () => {
   it('returns unique decision_id per call', async () => {
     const client = await createConnectedClient();
     const [r1, r2] = await Promise.all([
-      client.callTool({ name: 'mitch_evaluate_disclosure', arguments: VALID_INPUT }),
-      client.callTool({ name: 'mitch_evaluate_disclosure', arguments: VALID_INPUT }),
+      client.callTool({ name: 'askmi_evaluate_disclosure', arguments: VALID_INPUT }),
+      client.callTool({ name: 'askmi_evaluate_disclosure', arguments: VALID_INPUT }),
     ]);
     const id1 = JSON.parse((r1.content[0] as { type: string; text: string }).text).decision_id;
     const id2 = JSON.parse((r2.content[0] as { type: string; text: string }).text).decision_id;
@@ -58,7 +58,7 @@ describe('mitch_evaluate_disclosure (stub)', () => {
   it('rejects input with too-short nonce', async () => {
     const client = await createConnectedClient();
     const result = await client.callTool({
-      name: 'mitch_evaluate_disclosure',
+      name: 'askmi_evaluate_disclosure',
       arguments: { ...VALID_INPUT, verifier_request: { ...VALID_INPUT.verifier_request, nonce: 'short' } },
     });
     expect(result.isError).toBe(true);

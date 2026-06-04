@@ -1,5 +1,5 @@
 /**
- * @mitch/policy-engine - Policy Validator (Fail-Closed)
+ * @askmi/policy-engine - Policy Validator (Fail-Closed)
  * 
  * Implements the "POLICY CHECK GPT" specification for structural validity.
  * Detects structural invalidity, ambiguity, and GDPR violations in PolicyManifests.

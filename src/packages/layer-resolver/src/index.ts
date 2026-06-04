@@ -1,8 +1,8 @@
 /**
- * @package @mitch/layer-resolver
+ * @package @askmi/layer-resolver
  * @description Protection Layer Resolution and Enforcement
  *
- * miTch implements a layer-based protection model where higher layers
+ * AskMI implements a layer-based protection model where higher layers
  * inherit protections from lower layers. This package provides the
  * core enum and utilities for layer-aware policy decisions.
  */

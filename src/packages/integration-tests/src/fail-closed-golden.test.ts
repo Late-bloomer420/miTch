@@ -20,9 +20,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
 import type { StatusListEntry, StatusListCredential } from '@askmi/revocation-statuslist';
 import { DIDResolver, DIDResolutionError } from '@askmi/shared-crypto';
-import { PolicyEngine, ReasonCode } from '@mitch/policy-engine';
+import { PolicyEngine, ReasonCode } from '@askmi/policy-engine';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
-import type { EvaluationContext } from '@mitch/policy-engine';
+import type { EvaluationContext } from '@askmi/policy-engine';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
  * - FAIL-CLOSED: any fetch failure or timeout → DENY (not ALLOW!)
  * - Privacy-preserving: batch fetch entire list, never per-credential queries
  * - Configurable TTL cache with offline grace period per risk tier
- * - Uses deny reason codes from @mitch/policy-engine
+ * - Uses deny reason codes from @askmi/policy-engine
  *
  * @see https://www.w3.org/TR/vc-status-list/
  */
@@ -21,7 +21,7 @@ import type {
 } from './types';
 
 // Deny reason codes — inline strings to avoid cross-package dep at runtime.
-// Values match @mitch/policy-engine DenyReasonCode enum.
+// Values match @askmi/policy-engine DenyReasonCode enum.
 const DENY_REVOKED = 'DENY_CREDENTIAL_REVOKED';
 const DENY_STATUS_UNAVAILABLE = 'DENY_STATUS_SOURCE_UNAVAILABLE';
 const DENY_INTERNAL = 'DENY_INTERNAL_SAFE_FAILURE';

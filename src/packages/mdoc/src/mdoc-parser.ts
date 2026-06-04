@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/mdoc-parser
+ * @module @askmi/mdoc/mdoc-parser
  *
  * ISO 18013-5 — Parse CBOR-encoded mdoc DeviceResponse into typed structures.
  *

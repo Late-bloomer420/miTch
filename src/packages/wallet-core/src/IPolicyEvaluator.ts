@@ -4,7 +4,7 @@ import {
     PolicyManifest, 
     StoredCredentialMetadata
 } from '@askmi/shared-types';
-import { EvaluationContext } from '@mitch/policy-engine';
+import { EvaluationContext } from '@askmi/policy-engine';
 
 /**
  * Interface for policy evaluation and disclosure authorization.

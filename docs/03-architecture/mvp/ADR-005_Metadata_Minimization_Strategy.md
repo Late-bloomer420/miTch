@@ -19,7 +19,7 @@ EUDI-CIR und DSGVO Art. 25 verlangen „Datenminimierung durch Design“ – das
 
 **Technische Umsetzung:**
 - `@askmi/shared-crypto` HKDF-Derivation pro Session
-- `@mitch/policy-engine` prüft vor SD-JWT-Generierung: `metadata_leak_score == 0`
+- `@askmi/policy-engine` prüft vor SD-JWT-Generierung: `metadata_leak_score == 0`
 - Fail-Closed: Bei jedem Metadata-Rest → DENY + Crypto-Shredding
 
 ## Alternatives Considered

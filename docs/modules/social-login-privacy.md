@@ -153,11 +153,11 @@ A fictional dating app with low trust score (35/100) requests maximum data:
 | Component | Package | Status |
 |---|---|---|
 | Pairwise DID derivation | `@askmi/shared-crypto` | ✅ Implemented |
-| `isOver18` predicate | `@mitch/predicates` | ✅ Implemented |
-| Policy Engine deny codes | `@mitch/policy-engine` | ✅ Implemented (needs social-login-specific rules) |
-| OID4VP presentation flow | `@mitch/oid4vp` | ✅ Implemented |
-| Collective Signal | `@mitch/policy-engine` | ⚠️ Concept only (see student-discount-ibk.md) |
-| Social-login policy rules | `@mitch/policy-engine` | ❌ Not yet implemented |
+| `isOver18` predicate | `@askmi/predicates` | ✅ Implemented |
+| Policy Engine deny codes | `@askmi/policy-engine` | ✅ Implemented (needs social-login-specific rules) |
+| OID4VP presentation flow | `@askmi/oid4vp` | ✅ Implemented |
+| Collective Signal | `@askmi/policy-engine` | ⚠️ Concept only (see student-discount-ibk.md) |
+| Social-login policy rules | `@askmi/policy-engine` | ❌ Not yet implemented |
 | DSA complaint generator | — | ❌ Not yet implemented |
 
 ### New Deny Codes Needed

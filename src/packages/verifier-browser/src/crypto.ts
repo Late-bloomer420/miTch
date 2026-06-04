@@ -1,5 +1,5 @@
 /**
- * @module @mitch/verifier-browser/crypto
+ * @module @askmi/verifier-browser/crypto
  * 
  * Cryptographic utilities using WebCrypto API
  * All operations use ephemeral keys (never persisted to disk)

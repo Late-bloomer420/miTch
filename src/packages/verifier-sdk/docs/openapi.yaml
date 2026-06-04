@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
-  title: miTch Verifier API
+  title: AskMI Verifier API
   description: >
-    Specification for a miTch-compliant Verifier Backend. 
+    Specification for a AskMI-compliant Verifier Backend.
     Enables secure, privacy-preserving credential verification with AAD-binding and cryptographic shredding guarantees.
   version: 1.0.0
   contact:
-    name: miTch Core Team
-    url: https://mitch-id.example.com
+    name: AskMI Core Team
+    url: https://AskMI-id.example.com
 
 servers:
   - url: http://localhost:3001
@@ -16,9 +16,9 @@ servers:
 paths:
   /present:
     post:
-      summary: Receive and verify a cryptographic presentation from a miTch Wallet.
+      summary: Receive and verify a cryptographic presentation from a AskMI Wallet.
       description: >
-        The Wallet POSTs an encrypted transport package here. The Verifier SDK will 
+        The Wallet POSTs an encrypted transport package here. The Verifier SDK will
         verify the AAD-binding, unwrap the session keys, and decrypt the proof.
       operationId: submitPresentation
       requestBody:

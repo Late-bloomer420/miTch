@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { appendConsentReceiptHistory, buildConsentReceiptExport, loadConsentReceiptHistory } from '../receipt-store';
 
 const RECEIPT_BASE = {
-  verifier: 'did:mitch:verifier-liquor-store',
+  verifier: 'did:askmi:verifier-liquor-store',
   purpose: 'Age verification',
   claimsShared: ['age'],
   timestamp: '2026-05-21T10:00:01.000Z',

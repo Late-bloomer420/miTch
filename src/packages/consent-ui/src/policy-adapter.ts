@@ -1,11 +1,11 @@
 /**
- * Adapter: maps @mitch/policy-engine outputs onto the embeddable ConsentRequest.
+ * Adapter: maps @askmi/policy-engine outputs onto the embeddable ConsentRequest.
  *
  * Type-only import keeps the runtime decoupled — the policy engine's Node-side
  * crypto never gets pulled into the browser bundle.
  */
 
-import type { Decision, DisclosureRequest, Policy } from '@mitch/policy-engine';
+import type { Decision, DisclosureRequest, Policy } from '@askmi/policy-engine';
 import type { ClaimItem, ConsentRequest, PredicateItem } from './types';
 
 export interface FromPolicyDecisionInput {

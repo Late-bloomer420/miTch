@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquor Store POS | miTch</title>
+    <title>Liquor Store POS | AskMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
         integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU"
@@ -70,7 +70,7 @@
             const dummyData = prompt("Paste JWE (or leave empty for mock success)");
             if (!dummyData) {
                 // Mock Success
-                ui.success({ issuer: "did:mitch:gov-id" });
+                ui.success({ issuer: "did:askmi:gov-id" });
             } else {
                 try {
                     const decrypted = await client.verifyResponse(dummyData, session);
@@ -92,12 +92,12 @@
             class="bg-blue-600 text-white px-8 py-4 rounded-xl text-2xl shadow-lg hover:bg-blue-700 transition">
             🔞 Check Age
         </button>
-        <p class="mt-4 text-gray-500">miTch Verified</p>
+        <p class="mt-4 text-gray-500">AskMI Verified</p>
     </div>
 
     <!-- Step 2: Pending (QR Code) -->
     <div id="step-pending" class="hidden text-center bg-white p-8 rounded-2xl shadow-xl">
-        <h2 class="text-2xl font-bold mb-4">Scan with miTch Wallet</h2>
+        <h2 class="text-2xl font-bold mb-4">Scan with AskMI Wallet</h2>
         <div id="qrcode" class="flex justify-center mb-4"></div>
         <div class="animate-pulse text-blue-600 font-mono text-sm">Waiting for connection...</div>
 

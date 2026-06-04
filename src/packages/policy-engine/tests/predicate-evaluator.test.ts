@@ -8,7 +8,7 @@ import {
  * T-51 Unit Tests: Predicate Evaluator
  * 
  * REFACTORED (T-60):
- * Tests the Adapter/Facade which delegates to @mitch/predicates.
+ * Tests the Adapter/Facade which delegates to @askmi/predicates.
  */
 
 describe('PredicateEvaluator (Adapter)', () => {

@@ -1,5 +1,5 @@
 /**
- * Audit Chain — Tamper-evident hash chain for all miTch actions
+ * Audit Chain — Tamper-evident hash chain for all AskMI actions
  * 
  * Every action (issue, present, consent, shred) gets an entry.
  * Entries are hash-chained: tampering with one breaks the chain.

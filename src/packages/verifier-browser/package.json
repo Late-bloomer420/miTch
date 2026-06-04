@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/verifier-browser",
+    "name": "@askmi/verifier-browser",
     "version": "0.1.0",
     "private": true,
     "type": "module",

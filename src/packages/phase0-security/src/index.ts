@@ -2,7 +2,7 @@
  * Phase-0 Security Package (Consolidated Entry)
  * Includes:
  * - LocalAuditLog (hash-chain, IndexedDB, AES-GCM)
- * - VerifierDirectProtocol (Verifier-Direct, no miTch server relay)
+ * - VerifierDirectProtocol (Verifier-Direct, no AskMI server relay)
  * - EIDASComplianceChecker (automated checks)
  * - Advanced Security Hardening strategies (conceptual + placeholders)
  * - Integration example (demo flow)
@@ -50,7 +50,7 @@ export class LocalAuditLog {
     private db: IDBDatabase | null = null;
     private encryptionKey: CryptoKey | null = null;
     private currentHash: string = '0'.repeat(64); // Genesis hash
-    private readonly DB_NAME = 'mitch-audit-log';
+    private readonly DB_NAME = 'askmi-audit-log';
     private readonly STORE_NAME = 'audit_events';
     private readonly DB_VERSION = 1;
 
@@ -349,7 +349,7 @@ export class VerifierDirectClient {
         };
 
         const jwt = await this.signJWT(request);
-        const deepLink = `mitch://present?request=${encodeURIComponent(jwt)}`;
+        const deepLink = `askmi://present?request=${encodeURIComponent(jwt)}`;
 
         console.info('[Verifier] Request generated:', {
             verifierDID: this.verifierDID,
@@ -660,14 +660,14 @@ export class EIDASComplianceChecker {
             requirement: 'PII must not reach server (structural guarantee)',
             regulation: 'DSGVO Art. 25 (Data Protection by Design)',
             status: 'PASS',
-            details: 'Verifier-Direct Protocol: miTch server sees zero presentation data (architectural guarantee)'
+            details: 'Verifier-Direct Protocol: AskMI server sees zero presentation data (architectural guarantee)'
         };
     }
 
     private checkKeyEphemerality(): ComplianceCheck {
         return {
             requirement: 'Keys must be ephemeral (Phase-0 policy)',
-            regulation: 'miTch Phase-0 Architecture',
+            regulation: 'AskMI Phase-0 Architecture',
             status: 'PASS',
             details: 'Identity keys are SESSION-SCOPED (non-extractable, no persistence) - requires code audit to verify'
         };
@@ -728,7 +728,7 @@ export class UserDerivedKeyProtection {
         const keyMaterial = await crypto.subtle.importKey('raw', combined, { name: 'PBKDF2' }, false, ['deriveKey']);
 
         const derivedKey = await crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: new TextEncoder().encode('mitch-v1-salt'), iterations: 600000, hash: 'SHA-256' },
+            { name: 'PBKDF2', salt: new TextEncoder().encode('AskMI-v1-salt'), iterations: 600000, hash: 'SHA-256' },
             keyMaterial,
             { name: 'AES-GCM', length: 256 },
             false,
@@ -991,7 +991,7 @@ export interface UserEvent {
 
 export async function demonstrateSecurePresentation(): Promise<void> {
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('  miTch Phase-0: Secure Credential Presentation Demo');
+    console.log('  AskMI Phase-0: Secure Credential Presentation Demo');
     console.log('═══════════════════════════════════════════════════════════\n');
 
     console.log('1️⃣  Initializing Wallet (User-Side)...');
@@ -1006,20 +1006,20 @@ export async function demonstrateSecurePresentation(): Promise<void> {
     console.log('   ✓ Wallet initialized with ephemeral keys\n');
 
     console.log('2️⃣  Initializing Verifier (Liquor Store)...');
-    const verifier = new VerifierDirectClient('did:mitch:verifier-liquor-store');
+    const verifier = new VerifierDirectClient('did:askmi:verifier-liquor-store');
     await verifier.initialize();
     console.log('   ✓ Verifier initialized with ephemeral session key\n');
 
     console.log('3️⃣  Verifier generates QR-Code (locally, no server)...');
     const deepLink = await verifier.generateRequest(['AgeCredential'], 'https://liquor-store.com/api/verify');
     console.log('   QR-Code content:', deepLink.slice(0, 60) + '...');
-    console.log('   ⚠️  miTch server saw: NOTHING (0 requests)\n');
+    console.log('   ⚠️  AskMI server saw: NOTHING (0 requests)\n');
 
     console.log('4️⃣  Wallet scans QR-Code (locally, no server)...');
     const walletProtocol = new WalletDirectProtocol();
     const request = await walletProtocol.parseRequest(deepLink);
     console.log('   ✓ Request validated:', { verifier: request.verifierDID, credentialTypes: request.credentialTypes });
-    console.log('   ⚠️  miTch server saw: NOTHING (0 requests)\n');
+    console.log('   ⚠️  AskMI server saw: NOTHING (0 requests)\n');
 
     console.log('5️⃣  Wallet evaluates policy (locally)...');
     await auditLog.append({
@@ -1036,13 +1036,13 @@ export async function demonstrateSecurePresentation(): Promise<void> {
 
     console.log('7️⃣  Wallet sends proof to Verifier (direct HTTPS)...');
     console.log('   POST', request.callbackURL);
-    console.log('   ⚠️  miTch server saw: NOTHING (bypassed completely)\n');
+    console.log('   ⚠️  AskMI server saw: NOTHING (bypassed completely)\n');
 
     console.log('═══════════════════════════════════════════════════════════');
     console.log('  NETWORK TRAFFIC AUDIT');
     console.log('═══════════════════════════════════════════════════════════\n');
 
-    console.log('📊 Requests to miTch Server: 0');
+    console.log('📊 Requests to AskMI Server: 0');
     console.log('   ✓ Verifier generated request locally (JavaScript)');
     console.log('   ✓ Wallet parsed request locally (no fetch)');
     console.log('   ✓ Wallet sent proof directly to Verifier\n');
@@ -1052,7 +1052,7 @@ export async function demonstrateSecurePresentation(): Promise<void> {
     console.log('   ✗ No birthdate, no name, no DID transmitted\n');
 
     console.log('📊 Server-Side Logs:');
-    console.log('   miTch Server: EMPTY (structural non-existence)');
+    console.log('   AskMI Server: EMPTY (structural non-existence)');
     console.log('   Liquor Store: "ZK-Proof verified: age >= 18" (anonymous)\n');
 
     console.log('═══════════════════════════════════════════════════════════');
@@ -1086,7 +1086,7 @@ export async function demonstrateSecurePresentation(): Promise<void> {
     console.log('═══════════════════════════════════════════════════════════\n');
 
     console.log('✅ Structural Non-Existence:');
-    console.log('   miTch server saw ZERO presentation data\n');
+    console.log('   AskMI server saw ZERO presentation data\n');
 
     console.log('✅ Local Audit-Log:');
     console.log('   User has complete processing record (hash-chain verified)\n');

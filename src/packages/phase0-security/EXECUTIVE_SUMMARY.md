@@ -4,7 +4,7 @@
 
 **JA, wir können es DEUTLICH sicherer machen – und zwar gegen ALLE Angreifer:**
 
-| Gegner | Schwachstelle (Standard-SSI) | miTch-Lösung |
+| Gegner | Schwachstelle (Standard-SSI) | AskMI-Lösung |
 |--------|------------------------------|--------------|
 | **Google/Apple** | Zugriff auf OS Keychain | Split-Key (Shamir 2-of-3) ODER User-Derived Keys |
 | **NSA/BND** | TLS-Interception, DNS-Überwachung | Tor-Routing + Certificate Pinning |
@@ -27,8 +27,8 @@
 
 2. **Verifier-Direct Protocol** (`VerifierDirectProtocol.ts`)
    - Verifier generiert Request lokal (JavaScript im Browser)
-   - Wallet sendet Proof DIREKT an Verifier (nicht über miTch Server)
-   - miTch Server sieht: **0 Requests** (structural non-existence)
+   - Wallet sendet Proof DIREKT an Verifier (nicht über AskMI Server)
+   - AskMI Server sieht: **0 Requests** (structural non-existence)
 
 3. **eIDAS 2.0 Compliance Checker** (`EIDASComplianceChecker.ts`)
    - Automatisierter Compliance-Audit
@@ -37,7 +37,7 @@
 
 ---
 
-## 🔒 ADVANCED SECURITY: Was macht miTch ANDERS?
+## 🔒 ADVANCED SECURITY: Was macht AskMI ANDERS?
 
 ### 1. **Gegen Google/Apple (Platform-Vendor-Zugriff)**
 
@@ -140,7 +140,7 @@ const ip = await resolveDNSEncrypted('liquor-store.com');
 
 ### 4. **Gegen Supply-Chain-Attacks (backdoored npm packages)**
 
-**Problem:** miTch importiert npm-Pakete (z.B. crypto-libs). Jedes könnte kompromittiert sein.
+**Problem:** AskMI importiert npm-Pakete (z.B. crypto-libs). Jedes könnte kompromittiert sein.
 
 **Lösung A: Subresource Integrity (SRI)**
 ```typescript
@@ -166,7 +166,7 @@ const ALLOWED = ['@noble/curves', '@noble/hashes'];
 
 **Lösung C: Reproducible Builds**
 ```typescript
-// User kann miTch selbst kompilieren
+// User kann AskMI selbst kompilieren
 // Vergleicht Hash mit published build
 // Bei Mismatch: Tampering detektiert
 ```
@@ -230,9 +230,9 @@ if (presentationCount > 5) {
 
 ---
 
-## 📈 Vergleich: miTch vs. "gibt es das schon?"
+## 📈 Vergleich: AskMI vs. "gibt es das schon?"
 
-| Feature | Microsoft Entra | Lissi | Trinsic | **miTch** |
+| Feature | Microsoft Entra | Lissi | Trinsic | **AskMI** |
 |---------|-----------------|-------|---------|-----------|
 | Verifier-Direct | ❌ Server relay | ✅ | ⚠️ | ✅ **TRUE P2P** |
 | Local Audit-Log | ❌ Server | ⚠️ | ❌ | ✅ **Hash-chain** |
@@ -256,7 +256,7 @@ if (presentationCount > 5) {
 ### **VORHER (Standard-SSI):**
 ```
 ┌─────────┐         ┌──────────────┐         ┌──────────┐
-│ Wallet  │────────>│ miTch Server │────────>│ Verifier │
+│ Wallet  │────────>│ AskMI Server │────────>│ Verifier │
 └─────────┘         └──────────────┘         └──────────┘
                            │
                     Server sieht:
@@ -267,13 +267,13 @@ if (presentationCount > 5) {
                     - IP-Adresse
 ```
 
-### **NACHHER (miTch Phase-0):**
+### **NACHHER (AskMI Phase-0):**
 ```
 ┌─────────┐                              ┌──────────┐
 │ Wallet  │─────────── HTTPS ────────────│ Verifier │
 └─────────┘                              └──────────┘
 
-miTch Server: 📭 (EMPTY - sieht NICHTS)
+AskMI Server: 📭 (EMPTY - sieht NICHTS)
 
 Netzwerk-Traffic:
 - Wallet → Verifier: ZK-Proof (TRUE/FALSE)
@@ -287,12 +287,12 @@ Netzwerk-Traffic:
 | **Issuance** (1x) | User DID + birthdate | **Issuer only** (Government) |
 | **Re-Issuance** (pro Session) | New DID + pre-auth code | **Issuer only** |
 | **Presentation** (jedes Mal) | ZK-Proof (TRUE/FALSE) | **Verifier only** (Liquor Store) |
-| **miTch Server** | **NOTHING** | **Nobody** |
+| **AskMI Server** | **NOTHING** | **Nobody** |
 
 **PII im Netzwerk:**
 - ✅ Issuance: Ja (aber nur Wallet ↔ Issuer, normal für Credential-Ausstellung)
 - ❌ Presentation: NEIN (nur ZK-Proof, kein PII)
-- ❌ miTch Server: NEIN (structural non-existence)
+- ❌ AskMI Server: NEIN (structural non-existence)
 
 ---
 
@@ -334,7 +334,7 @@ Netzwerk-Traffic:
 
 ---
 
-## 🏆 Was macht miTch WIRKLICH anders?
+## 🏆 Was macht AskMI WIRKLICH anders?
 
 1. **Structural Non-Existence ist REAL:**
    - Nicht "wir loggen nicht" (Privacy Policy)
@@ -362,7 +362,7 @@ Netzwerk-Traffic:
 ## 📦 Was wurde geliefert?
 
 ```
-mitch-phase0-security/
+AskMI-phase0-security/
 ├── LocalAuditLog.ts                    # ✅ Hash-chain audit-log
 ├── VerifierDirectProtocol.ts           # ✅ P2P presentation
 ├── EIDASComplianceChecker.ts           # ✅ Automated compliance
@@ -391,7 +391,7 @@ mitch-phase0-security/
 
 **JA. In ALLEN 3 Bereichen:**
 
-1. **Structural Non-Existence:** ✅ Verifier-Direct (kein miTch-Server)
+1. **Structural Non-Existence:** ✅ Verifier-Direct (kein AskMI-Server)
 2. **Der Mensch ist Root-Key:** ✅ WebAuthn + Behavioral Biometrics
 3. **KI-Restriktionen:** ✅ Proof-of-Humanity + Rate Limiting
 

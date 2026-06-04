@@ -11,7 +11,7 @@ export interface EncryptedDocument {
 
 /**
  * Interface for pluggable storage backends.
- * Allows miTch to run in Browser (IndexedDB), Node.js (File/SQLite), or TEE.
+ * Allows AskMI to run in Browser (IndexedDB), Node.js (File/SQLite), or TEE.
  */
 export interface IStorageAdapter {
     /**

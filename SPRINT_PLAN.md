@@ -407,7 +407,7 @@ Kein Pilot-Blocker. Erledigen wenn Kapazität.
 #### E-50: mdoc Proximity UI (Wallet-PWA)
 
 - **Status:** ✅ Implemented
-- **Problem:** `@mitch/mdoc` Logik existiert, aber PWA UI-Pfad fehlte.
+- **Problem:** `@askmi/mdoc` Logik existiert, aber PWA UI-Pfad fehlte.
 - **Fix:** `ProximityView` (QR + State Machine), `ProximityService` (Mock Transport), `WalletService.generateProximityResponse` (ISO 18013-5 DeviceResponse) implementiert.
 
 ---

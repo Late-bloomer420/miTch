@@ -1,5 +1,5 @@
 /**
- * @module @mitch/verifier-browser
+ * @module @askmi/verifier-browser
  *
  * Browser-Only Verifier SDK
  * Enables static HTML pages to perform credential verification

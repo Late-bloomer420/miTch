@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/x5chain
+ * @module @askmi/mdoc/x5chain
  *
  * ISO 18013-5 / RFC 9360 — x5chain (header label 33) extraction
  * from COSE_Sign1 protected/unprotected headers.

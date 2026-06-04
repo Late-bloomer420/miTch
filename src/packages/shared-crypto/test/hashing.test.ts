@@ -30,7 +30,7 @@ describe('Hashing utilities', () => {
     });
 
     test('verifyDigestMultibase validates correct hash', async () => {
-        const content = 'Hello, miTch!';
+        const content = 'Hello, AskMI!';
         const hashBytes = await sha256Bytes(content);
         const multihash = wrapSha256Multihash(hashBytes);
         const digest = encodeBase58btc(multihash);
@@ -39,7 +39,7 @@ describe('Hashing utilities', () => {
     });
 
     test('verifyDigestMultibase fails on tampered content', async () => {
-        const content = 'Hello, miTch!';
+        const content = 'Hello, AskMI!';
         const hashBytes = await sha256Bytes(content);
         const multihash = wrapSha256Multihash(hashBytes);
         const digest = encodeBase58btc(multihash);

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MockGovernmentIssuer, computeAgeProof } from '@mitch/mock-issuer';
-import { PolicyEngine } from '@mitch/policy-engine';
-import { ProtectionLayer } from '@mitch/layer-resolver';
+import { MockGovernmentIssuer, computeAgeProof } from '@askmi/mock-issuer';
+import { PolicyEngine } from '@askmi/policy-engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
-import { EIDIssuerConnector } from '@mitch/eid-issuer-connector';
+import { EIDIssuerConnector } from '@askmi/eid-issuer-connector';
 import type { PolicyRule } from '@askmi/shared-types';
 
 describe('E2E: Full Credential Lifecycle', () => {
@@ -100,7 +100,7 @@ describe('E2E: Full Credential Lifecycle', () => {
 
   it('E2E: WebAuthn + Policy + Revocation (Full Stack)', async () => {
     // G-10: Full stack test with mocked WebAuthn step-up authentication
-    const { WebAuthnNativeVerifier } = await import('@mitch/webauthn-verifier');
+    const { WebAuthnNativeVerifier } = await import('@askmi/webauthn-verifier');
 
     const verifier = new WebAuthnNativeVerifier('mitch.example.com', 'https://mitch.example.com');
     const userDID = 'did:example:alice';
@@ -192,7 +192,7 @@ describe('E2E: Full Credential Lifecycle', () => {
   });
 
   it('E2E: WebAuthn step-up rejects expired challenge', async () => {
-    const { WebAuthnNativeVerifier } = await import('@mitch/webauthn-verifier');
+    const { WebAuthnNativeVerifier } = await import('@askmi/webauthn-verifier');
 
     const verifier = new WebAuthnNativeVerifier('mitch.example.com', 'https://mitch.example.com');
     const userDID = 'did:example:bob';
@@ -237,7 +237,7 @@ describe('E2E: Full Credential Lifecycle', () => {
   });
 
   it('E2E: WebAuthn step-up rejects counter replay', async () => {
-    const { WebAuthnNativeVerifier } = await import('@mitch/webauthn-verifier');
+    const { WebAuthnNativeVerifier } = await import('@askmi/webauthn-verifier');
 
     const verifier = new WebAuthnNativeVerifier('mitch.example.com', 'https://mitch.example.com');
     const userDID = 'did:example:charlie';

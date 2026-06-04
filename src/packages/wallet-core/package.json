@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/wallet-core",
+    "name": "@askmi/wallet-core",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -20,9 +20,9 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/audit-log": "workspace:*",
-        "@mitch/policy-engine": "workspace:*",
-        "@mitch/secure-storage": "workspace:*",
+        "@askmi/audit-log": "workspace:*",
+        "@askmi/policy-engine": "workspace:*",
+        "@askmi/secure-storage": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },

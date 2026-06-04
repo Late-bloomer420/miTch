@@ -1,13 +1,13 @@
 /**
- * Tool: mitch_evaluate_disclosure
+ * Tool: askmi_evaluate_disclosure
  *
- * Evaluates a verifier disclosure request against the miTch privacy policy engine.
+ * Evaluates a verifier disclosure request against the AskMI privacy policy engine.
  * Returns a signed DecisionCapsule with verdict ALLOW | DENY | PROMPT, reason codes,
  * and (on ALLOW) the selective disclosure plan.
  *
  * Fail-closed: any ambiguity -> DENY. Never default to ALLOW.
  *
- * Status: STUB -- returns DENY / NOT_IMPLEMENTED until @mitch/policy-engine is wired.
+ * Status: STUB -- returns DENY / NOT_IMPLEMENTED until @askmi/policy-engine is wired.
  * See docs/mcp-server-architecture.md section 4-5 for the full spec.
  */
 
@@ -66,10 +66,10 @@ interface DecisionCapsuleStub {
 
 export function registerEvaluateDisclosure(server: McpServer): void {
   server.registerTool(
-    'mitch_evaluate_disclosure',
+    'askmi_evaluate_disclosure',
     {
       description:
-        'Evaluate a verifier disclosure request against the miTch privacy policy engine. ' +
+        'Evaluate a verifier disclosure request against the AskMI privacy policy engine. ' +
         'Returns a DecisionCapsule with verdict ALLOW | DENY | PROMPT and reason codes. ' +
         'Fail-closed: ambiguous or incomplete requests always resolve to DENY.',
       inputSchema: EvaluateDisclosureShape,
@@ -81,7 +81,7 @@ export function registerEvaluateDisclosure(server: McpServer): void {
       },
     },
     async (_args) => {
-      // STUB -- wire @mitch/policy-engine here:
+      // STUB -- wire @askmi/policy-engine here:
       //   const engine = new PolicyEngine(await loadDefaultPolicy());
       //   const result = await engine.evaluate(_args.verifier_request, _args.context);
       //   return formatResult(result, _args.response_format);
@@ -94,8 +94,8 @@ export function registerEvaluateDisclosure(server: McpServer): void {
         evaluated_at: Date.now(),
         stub: true,
         stub_message:
-          'mitch_evaluate_disclosure is a stub. ' +
-          'Wire @mitch/policy-engine to activate. ' +
+          'askmi_evaluate_disclosure is a stub. ' +
+          'Wire @askmi/policy-engine to activate. ' +
           'See docs/mcp-server-architecture.md section 10.',
       };
 

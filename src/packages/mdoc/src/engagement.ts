@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/engagement
+ * @module @askmi/mdoc/engagement
  *
  * ISO 18013-5 §8.2.1 — Device Engagement.
  * Generates the QR code payload for proximity presentation.

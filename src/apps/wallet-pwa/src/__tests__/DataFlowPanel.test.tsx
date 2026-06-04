@@ -36,7 +36,7 @@ function buildTypicalEntries(): AuditLogEntry[] {
       timestamp: t1,
       metadata: {
         decision_id: DEC_ID,
-        verifier_did: 'did:mitch:verifier-liquor-store',
+        verifier_did: 'did:askmi:verifier-liquor-store',
         claims_shared: ['age'],
         credential_types: ['AgeCredential'],
         proven_claims: ['age >= 18'],
@@ -91,7 +91,7 @@ describe('DataFlowPanel', () => {
         timestamp: '2026-03-15T10:00:00Z',
         metadata: {
           decision_id: DEC_ID,
-          verifier_did: 'did:mitch:verifier-hospital',
+          verifier_did: 'did:askmi:verifier-hospital',
           claims_shared: ['age'],
           claims_requested: ['age', 'name', 'address'],
           credential_types: ['AgeCredential'],
@@ -119,7 +119,7 @@ describe('DataFlowPanel', () => {
         timestamp: '2026-03-15T10:00:00Z',
         metadata: {
           decision_id: DEC_ID,
-          verifier_did: 'did:mitch:verifier-liquor-store',
+          verifier_did: 'did:askmi:verifier-liquor-store',
           access_type: 'browser_api',
           surface: 'navigator.userAgent',
           actor_label: 'Google Chrome',

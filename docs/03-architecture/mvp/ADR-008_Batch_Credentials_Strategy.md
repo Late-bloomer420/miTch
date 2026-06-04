@@ -1,13 +1,13 @@
 # ADR-008 — Batch Credentials Strategy (Unlinkable Multi-Credential Issuance)
 
-**Status:** PROPOSED  
-**Date:** 2026-03-14  
-**Owner:** Architecture Lead  
+**Status:** PROPOSED
+**Date:** 2026-03-14
+**Owner:** Architecture Lead
 **Decision:** Batch-Issuance von bis zu 8 Credentials in einer Session mit per-Credential Shredding und Nullifier-Rotation
 
 ## Context
-Nach ADR-007 (AI Orchestrator) fehlt eine formale Strategie für Batch-Credentials.  
-Im Backlog (Task B-08) und in der REFACTORING_ROADMAP wird „batch_credential“ nur als Stub erwähnt.  
+Nach ADR-007 (AI Orchestrator) fehlt eine formale Strategie für Batch-Credentials.
+Im Backlog (Task B-08) und in der REFACTORING_ROADMAP wird „batch_credential“ nur als Stub erwähnt.
 EUDI-CIR und DSGVO Art. 25 verlangen, dass auch Massenfreigaben (z. B. Führerschein + Alter + Student-Status gleichzeitig) keine Linkability oder Metadata-Leaks erzeugen dürfen.
 
 ## Decision
@@ -18,18 +18,18 @@ EUDI-CIR und DSGVO Art. 25 verlangen, dass auch Massenfreigaben (z. B. Führersc
 - **Blind Provider Enforcement**: miTch-Proxy sieht nur den finalen Batch-Proof, niemals die einzelnen Credentials oder deren Zusammenhang
 
 **Technische Umsetzung:**
-- `@mitch/wallet-core` erweitert um `issueBatchCredentials(claims[])` 
+- `@askmi/wallet-core` erweitert um `issueBatchCredentials(claims[])`
 - `@askmi/shared-crypto` rotiert automatisch Nullifier pro Credential
 - Fail-Closed: Bei jeder Batch-Session wird die Session-ID sofort nach Abschluss shredded
 
 ## Alternatives Considered
-- Separate Sessions pro Credential → schlechte UX + mehr Human-in-the-Loop-Interaktionen  
+- Separate Sessions pro Credential → schlechte UX + mehr Human-in-the-Loop-Interaktionen
 - Ein großer zusammenhängender JWT → verstößt massiv gegen Unlinkability + Blind Provider
 
 ## Consequences
-✅ **Human-in-the-Loop** bleibt erhalten (ein WebAuthn-Confirm für den gesamten Batch)  
-✅ **Crypto-Shredding** wird auf Batch-Ebene erweitert (pro-Credential $0x00)  
-✅ **Smart Policy Engine** entscheidet lokal über Batch-Größe und Zulässigkeit  
+✅ **Human-in-the-Loop** bleibt erhalten (ein WebAuthn-Confirm für den gesamten Batch)
+✅ **Crypto-Shredding** wird auf Batch-Ebene erweitert (pro-Credential $0x00)
+✅ **Smart Policy Engine** entscheidet lokal über Batch-Größe und Zulässigkeit
 ✅ **Blind Provider** bleibt blind (kein Zusammenhang zwischen Credentials sichtbar)
 
 ## Acceptance Evidence

@@ -1,4 +1,4 @@
-# miTch Sovereign Deployment Orchestration
+# AskMI Sovereign Deployment Orchestration
 # 100% EUDI Compliance & Data Sovereignty
 
 services:
@@ -9,9 +9,9 @@ services:
       dockerfile: src/apps/verifier-demo/backend/Dockerfile
     environment:
       - PORT=3000
-      - MITCH_TRUST_MODE=live
-      - MITCH_TSL_URL=https://trust.mitch.demo/v1/eudi-lotl.json
-      - VERIFIER_BASE_URL=https://verifier.mitch.demo
+      - ASKMI_TRUST_MODE=live
+      - ASKMI_TSL_URL=https://trust.askmi.demo/v1/eudi-lotl.json
+      - VERIFIER_BASE_URL=https://verifier.askmi.demo
     networks:
       - mitch-network
     restart: always
@@ -23,7 +23,7 @@ services:
       dockerfile: src/apps/issuer-mock/Dockerfile
     environment:
       - PORT=4000
-      - ISSUER_DID=did:web:issuer.mitch.demo
+      - ISSUER_DID=did:web:issuer.askmi.demo
     networks:
       - mitch-network
     restart: always

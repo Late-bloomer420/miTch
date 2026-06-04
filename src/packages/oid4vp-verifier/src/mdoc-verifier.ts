@@ -1,7 +1,7 @@
 /**
  * OID4VP Verifier — mdoc (ISO 18013-5) presentation verification.
  *
- * Bridges the OID4VP authorization response flow with the @mitch/mdoc
+ * Bridges the OID4VP authorization response flow with the @askmi/mdoc
  * offline verification pipeline. Handles:
  * - Base64-encoded DeviceResponse parsing
  * - Full offline verification (issuer-auth, digests, validity, doctype, device-auth)
@@ -17,7 +17,7 @@ import {
   type MdocDocument,
   type IssuerSignedItem,
   type TrustAnchorVerifier,
-} from '@mitch/mdoc';
+} from '@askmi/mdoc';
 
 // ─── Types ───────────────────────────────────────────────────────────
 

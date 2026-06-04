@@ -1,10 +1,10 @@
-# miTch — Master Backlog
+# AskMI — Master Backlog
 
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
 **Stand:** 2026-06-04 (Sprint-0-Reconciliation: PR #66 npm scope alignment merged; `docs/qa/` als Evidence-Fläche identifiziert; ältere Video-Gap-Tabellen teilweise durch Phase-1 bis Phase-4-Arbeit überholt)
-**Leitsatz:** *"Alle sind miTch."*
+**Leitsatz:** *"Alle sind AskMI."*
 
 ---
 
@@ -13,6 +13,21 @@
 - 🟡 P1 — Wichtig, sollte bald passieren
 - 🟢 P2 — Nice-to-have / Langfristig
 - ✅ — Erledigt
+
+---
+
+## Sprint 02 — Big Audit Follow-Ups (2026-06-04)
+
+Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
+`docs/qa/BIG_AUDIT_CONSTANTS_CONTRACTS_2026-06-04.md`.
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| S2-01 | ✅ | ✅ | Gemeinsame AskMI Runtime-/Demo-Konstanten für Identifier, Env-Namen, Storage-Keys und Scenario-VCTs | `@askmi/shared-types` exportiert die Contracts; aktive Pilot-Flows nutzen sie |
+| S2-02 | ✅ | ✅ | Wallet Policy Manifest nicht mehr im Klartext-`localStorage` speichern | Aktive Policy liegt in `SecureStorage`; Legacy-Key wird einmalig migriert und entfernt; Systemdokument erscheint nicht in `getCredentials()` |
+| S2-03 | ✅ | ✅ | Active-code Rebrand Guard in CI | `src`, `.github`, Root Configs brechen bei `@mitch/*`, `did:mitch`, `mitch.demo`, `MitchPolicyEvaluator` |
+| S2-04 | 🟡 P1 | ⏳ | Demo-Scenario-Fixtures prüfen/extrahieren | Claims/Scenario IDs werden wiederverwendet, ohne UX-Copy unnötig zu verallgemeinern |
+| S2-05 | 🟢 P2 | ⏳ | Trust-/StatusList-Test-Fixtures als Testhelper | Zweite Runtime-Testfläche kann dieselben Builder ohne Copy/Paste nutzen |
 
 ---
 
@@ -68,7 +83,7 @@ geplant werden.
 | G-140.1 | 🟡 P1 | ⏳ | Vor Abgabe klare Anzeige: requested/allowed/withheld | Nutzer sieht exakt was geteilt wird |
 | G-140.2 | 🟡 P1 | ⏳ | Ergebnis-Screen + Return-to-verifier UX | Erfolgs-/Fehler-Rückgabe konsistent |
 
-### EPIC G-150 — “Sign in with miTch” Integration Kit
+### EPIC G-150 — “Sign in with AskMI” Integration Kit
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
@@ -114,7 +129,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 ---
 
-## Phase 1 — Unlinkability ("Alle sind miTch") ✅
+## Phase 1 — Unlinkability ("Alle sind AskMI") ✅
 
 ### 1.1 Pairwise-Ephemeral DIDs (Spec 111)
 | ID | Status | Beschreibung | Spec |
@@ -150,7 +165,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 |---|---|---|
 | G-130 | ✅ | Passkey-First Unlock (Windows Hello / FaceID / TouchID) |
 | G-120 | ✅ | Secure Auth Popups (`window.opener` bridge) |
-| G-150 | ✅ | OIDC-style "Sign in with miTch" Ready |
+| G-150 | ✅ | OIDC-style "Sign in with AskMI" Ready |
 
 ---
 
@@ -179,7 +194,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | ✅ | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@mitch/mdoc`: CBOR Codec, COSE Sign1, **COSE_Mac0** (HMAC-SHA-256, ECDH+HKDF Key Derivation), Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 169 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements) | ISO.18013-5 |
+| E-11 | ✅ | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@askmi/mdoc`: CBOR Codec, COSE Sign1, **COSE_Mac0** (HMAC-SHA-256, ECDH+HKDF Key Derivation), Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 169 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements) | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 
@@ -271,13 +286,13 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 |---|---|---|
 | H-01 | ✅ | ESLint Sweep: 0 errors, 0 warnings (war 170 warnings + 2 errors) |
 | H-02 | 🟢 | `mitch-temp` Repo archivieren |
-| H-03 | 🟢 | `miTch---Policy-Enforcement-Layer` Repo löschen |
+| H-03 | 🟢 | `AskMI---Policy-Enforcement-Layer` Repo löschen |
 | H-04 | ✅ | GitHub `main` Branch löschen (nur `master` behalten) — war bereits gelöscht |
 | H-05 | ✅ | `.gitattributes` mit `* text=auto eol=lf` (Line-Ending Fix) |
 | H-06 | ✅ | Demo E2E Flow testen (5 Szenarien) — 1812 Tests pass |
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
 | H-08 | ✅ | Branch/PR-Consolidation (2026-05-27): alle 10 offenen PRs auf `master` aufgelöst, Branch-Sprawl 22→3. Nur net-new value gesalvaged (Trust Kit #35, B2B-Use-Cases + Agent-Skills + ADR-010 #37, MCP-Freeze-Decisions #38, Verifier fail-closed + no-PII-log #34, PII-Substring-Testfix #36, `_tmp_*` gitignore #39); stale-base PRs ohne Wert mit Begründung geschlossen (#14/#16/#17/#18/#24/#26/#27/#30). **Kein Paperclip auf master** (Pflicht erfüllt); Suite 100% grün (44/44 Tasks, 1787 Tests) |
-| H-09 | ✅ | npm scope alignment (2026-06-04): drei veröffentlichte Pakete als `@askmi/shared-types`, `@askmi/shared-crypto`, `@askmi/revocation-statuslist`; miTch bleibt Projektname, andere interne Pakete bleiben `@mitch/*`; PR #66 auf `master` gemerged |
+| H-09 | ✅ | npm scope alignment (2026-06-04): drei veröffentlichte Pakete als `@askmi/shared-types`, `@askmi/shared-crypto`, `@askmi/revocation-statuslist`; vollständiger Workspace-Rebrand auf AskMI / `@askmi/*`; PR #66 auf `master` gemerged |
 | H-10 | 🟡 | Sprint 0 Repo Truth Alignment: `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, `AGENTS.md`, `CLAUDE.md` und historische Session-Dateien konsolidieren |
 
 ---

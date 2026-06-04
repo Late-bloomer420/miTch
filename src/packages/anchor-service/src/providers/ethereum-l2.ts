@@ -1,5 +1,5 @@
 /**
- * @module @mitch/anchor-service/providers/ethereum-l2
+ * @module @askmi/anchor-service/providers/ethereum-l2
  *
  * G-09: L2/Blockchain anchoring stub.
  *
@@ -23,7 +23,7 @@ import type { AnchorProvider } from '../types.js';
 export interface EthereumL2Config {
   /** L2 network name for logging/receipts (e.g. 'polygon', 'arbitrum', 'optimism') */
   network: string;
-  /** Smart contract address of the miTch AnchorRegistry on L2 (hex, 0x-prefixed) */
+  /** Smart contract address of the AskMI AnchorRegistry on L2 (hex, 0x-prefixed) */
   contractAddress: string;
   /** RPC endpoint URL (stub: not used) */
   rpcUrl: string;

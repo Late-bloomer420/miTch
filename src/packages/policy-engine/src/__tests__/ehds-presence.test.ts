@@ -33,7 +33,7 @@ const EHDS_POLICY: PolicyManifest = {
     },
     {
       id: 'rule-liquor-store',
-      verifierPattern: 'did:mitch:verifier-liquor-store',
+      verifierPattern: 'did:askmi:verifier-liquor-store',
       allowedClaims: [],
       provenClaims: ['age >= 18'],
       deniedClaims: ['dateOfBirth'],
@@ -83,7 +83,7 @@ describe('EHDS Emergency: requiresPresence flow', () => {
 
   it('liquor store request → ALLOW (no presence, no consent)', async () => {
     const request: VerifierRequest = {
-      verifierId: 'did:mitch:verifier-liquor-store',
+      verifierId: 'did:askmi:verifier-liquor-store',
       origin: 'https://liquor.example.com',
       requirements: [{
         credentialType: 'AgeCredential',

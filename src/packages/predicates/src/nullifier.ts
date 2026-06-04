@@ -1,5 +1,5 @@
 /**
- * @module @mitch/predicates/nullifier
+ * @module @askmi/predicates/nullifier
  *
  * Deterministic, unlinkable nullifier generation for ad-tech frequency capping.
  *

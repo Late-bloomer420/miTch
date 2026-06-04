@@ -1,8 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import { generateKeyPair, signVC } from '@askmi/shared-crypto';
-import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@mitch/mdoc';
-import type { ValidityInfo } from '@mitch/mdoc';
+import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@askmi/mdoc';
+import type { ValidityInfo } from '@askmi/mdoc';
 import type { AgeCredential, CredentialRequest, CredentialResponse } from '@askmi/shared-types';
 
 const app = express();
@@ -46,7 +46,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('miTch Issuer Mock Service (Port 3005) - OID4VCI Ready');
+    res.send('AskMI Issuer Mock Service (Port 3005) - OID4VCI Ready');
 });
 
 // OID4VCI Metadata Endpoint

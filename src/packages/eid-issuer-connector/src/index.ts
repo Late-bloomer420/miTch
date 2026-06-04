@@ -1,5 +1,5 @@
 /**
- * @package @mitch/eid-issuer-connector
+ * @package @askmi/eid-issuer-connector
  * @description Connector for German eID issuers — High-Fidelity Simulator
  *
  * Supports:

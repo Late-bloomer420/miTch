@@ -12,7 +12,7 @@ Each vertical has two documents:
 
 All four verticals reuse the same core: a verifier requests a **predicate**, the wallet returns a
 signed `DecisionProofPayload` (booleans + binding, no PII), and the relying party verifies it with
-`@mitch/verifier-sdk`. The differentiator is the same across every vertical: **the customer's
+`@askmi/verifier-sdk`. The differentiator is the same across every vertical: **the customer's
 breach surface shrinks instead of growing, because the verifier never holds the underlying data.**
 
 > Status: all four are **concept / design** documents (verifier-side integration). They are not
@@ -74,7 +74,7 @@ Differentiation(10%). Scores 1 (low) – 5 (high).
 Every vertical integrates the same way on the relying-party side:
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const sdk = new VerifierSDK({ verifierDid, privateKey, replayCheck });
 const { proof } = await sdk.verifyPresentation(req.body);
@@ -84,8 +84,8 @@ if (proof.allPassed) {
 ```
 
 - Proof shape: `PredicateRequest` → `DecisionProofPayload` (`@askmi/shared-types`).
-- Policy: fail-closed evaluation in `@mitch/policy-engine` (deny codes in `deny-reason-codes.ts`).
-- Audit: WORM receipts via `@mitch/audit-log` (GDPR Art. 32 / EHDS Art. 31).
+- Policy: fail-closed evaluation in `@askmi/policy-engine` (deny codes in `deny-reason-codes.ts`).
+- Audit: WORM receipts via `@askmi/audit-log` (GDPR Art. 32 / EHDS Art. 31).
 
 ---
 

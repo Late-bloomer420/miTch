@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@askmi/shared-types';
 import type { PrivacyConsent } from '../services/PrivacyAuditService';
-import type { ConsentReceipt } from '@mitch/oid4vp';
+import type { ConsentReceipt } from '@askmi/oid4vp';
 import { buildConsentManagerViewModel } from '../consent-manager/model';
 import { buildConsentReceiptExport, type StoredConsentReceiptEntry } from '../consent-manager/receipt-store';
 

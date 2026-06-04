@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { ReasonCode } from '@mitch/policy-engine';
+import { ReasonCode } from '@askmi/policy-engine';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

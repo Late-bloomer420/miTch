@@ -6,7 +6,7 @@
 import { DID } from './vc';
 
 /**
- * Types of auditable events in the miTch system
+ * Types of auditable events in the AskMI system
  */
 export type AuditEventType =
     | 'KEY_CREATED'          // Ephemeral key generated

@@ -1,5 +1,5 @@
 # ============================================================
-#  miTch — E2E Demo Start Script (Windows PowerShell)
+#  AskMI — E2E Demo Start Script (Windows PowerShell)
 #  Usage:  .\dev-demo.ps1
 #  Stop:   Ctrl+C  oder Fenster schließen
 # ============================================================
@@ -14,7 +14,7 @@ function Write-Color($Text, $Color = "White") {
 # ── Header ───────────────────────────────────────────────────
 Clear-Host
 Write-Color "╔══════════════════════════════════════════════════════╗" Cyan
-Write-Color "║           miTch — Personal Trust Hub                ║" Cyan
+Write-Color "║           AskMI — Personal Trust Hub                ║" Cyan
 Write-Color "║                  E2E Demo Mode                      ║" Cyan
 Write-Color "╚══════════════════════════════════════════════════════╝" Cyan
 Write-Host ""
@@ -35,7 +35,7 @@ $jobs = @()
 
 Write-Color "▶  Starting Issuer-Mock     (port 3005)..." Cyan
 $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-  "Write-Host '[Issuer-Mock]' -ForegroundColor Cyan -NoNewline; pnpm --filter '@mitch/issuer-mock' dev" `
+  "Write-Host '[Issuer-Mock]' -ForegroundColor Cyan -NoNewline; pnpm --filter '@askmi/issuer-mock' dev" `
   -PassThru
 
 Start-Sleep -Milliseconds 800
@@ -49,7 +49,7 @@ Start-Sleep -Milliseconds 800
 
 Write-Color "▶  Starting Wallet PWA       (port 5174)..." Green
 $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-  "Write-Host '[Wallet-PWA]' -ForegroundColor Green -NoNewline; pnpm --filter '@mitch/wallet-pwa' dev" `
+  "Write-Host '[Wallet-PWA]' -ForegroundColor Green -NoNewline; pnpm --filter '@askmi/wallet-pwa' dev" `
   -PassThru
 
 Start-Sleep -Milliseconds 800
@@ -65,7 +65,7 @@ if (Test-Path "verifier-demo\frontend\package.json") {
 # ── Status ───────────────────────────────────────────────────
 Write-Host ""
 Write-Color "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" Blue
-Write-Color "🚀  miTch Services starting up:" White
+Write-Color "🚀  AskMI Services starting up:" White
 Write-Host ""
 Write-Color "  ●  Issuer-Mock        →  http://localhost:3005" Cyan
 Write-Color "  ●  Verifier-Backend   →  http://localhost:3004" Magenta

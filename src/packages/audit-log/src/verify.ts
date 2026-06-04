@@ -2,7 +2,7 @@ import { AuditLogExport } from '@askmi/shared-types';
 import { sha256, verifyData, canonicalStringify } from '@askmi/shared-crypto';
 
 /**
- * Independent Auditor Tool: Verifies a miTch Audit Report.
+ * Independent Auditor Tool: Verifies a AskMI Audit Report.
  * 
  * Checks:
  * 1. Hash Chain Integrity (prevHash -> currentHash)

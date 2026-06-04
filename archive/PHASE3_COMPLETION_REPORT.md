@@ -41,7 +41,7 @@ Phase 3 implements production-critical components for credential lifecycle manag
 
 ---
 
-### 2. eID Issuer Connector (@mitch/eid-issuer-connector) ✅
+### 2. eID Issuer Connector (@askmi/eid-issuer-connector) ✅
 **Purpose:** Integration with German eID infrastructure
 
 **Modes:**
@@ -65,7 +65,7 @@ Phase 3 implements production-critical components for credential lifecycle manag
 
 ---
 
-### 3. Integration Tests (@mitch/integration-tests) ✅
+### 3. Integration Tests (@askmi/integration-tests) ✅
 **Purpose:** E2E testing across all packages
 
 **Test Scenarios:**
@@ -301,8 +301,8 @@ const response = await eidConnector.requestIssuance(request);
 
 ### Code
 - [x] StatusList2021 revocation (@askmi/revocation-statuslist)
-- [x] eID Issuer Connector (@mitch/eid-issuer-connector)
-- [x] Integration test suite (@mitch/integration-tests)
+- [x] eID Issuer Connector (@askmi/eid-issuer-connector)
+- [x] Integration test suite (@askmi/integration-tests)
 - [x] All packages building (23/23)
 - [x] All tests passing (64/64)
 

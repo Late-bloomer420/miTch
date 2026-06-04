@@ -1,6 +1,6 @@
 # Fleetbench Reference Workloads
 
-This package contains the **Performance Baseline** benchmarks for the miTch ecosystem (Phase 6).
+This package contains the **Performance Baseline** benchmarks for the AskMI ecosystem (Phase 6).
 
 ## L2 Anchor Stress Test (`l2_stress_test.ts`)
 
@@ -16,8 +16,8 @@ Simulates a "Shredding Storm" of 10,000 concurrent events to validate the effici
 ```bash
 # From root
 pnpm install
-pnpm build --filter @mitch/audit-log
-pnpm --filter @mitch/benchmarks bench:anchor
+pnpm build --filter @askmi/audit-log
+pnpm --filter @askmi/benchmarks bench:anchor
 ```
 
 ## Workload Definition

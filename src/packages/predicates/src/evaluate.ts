@@ -1,5 +1,5 @@
 /**
- * @mitch/predicates - Wallet-Side Predicate Evaluation
+ * @askmi/predicates - Wallet-Side Predicate Evaluation
  * 
  * Evaluates predicates locally on the wallet without leaking PII.
  * Returns only boolean results + cryptographic bindings.

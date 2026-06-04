@@ -259,7 +259,7 @@ describe('VerifierDirectProtocol.createDirectSession', () => {
         const protocol = new VerifierDirectProtocol();
         const session = await protocol.createDirectSession();
         expect(session.sessionId).toMatch(/^[0-9a-f-]{36}$/);
-        expect(session.deepLink).toMatch(/^mitch:\/\/present\?/);
+        expect(session.deepLink).toMatch(/^askmi:\/\/present\?/);
         expect(session.verifierEndpoint).toContain('/present/');
         expect(session.verifierEndpoint).toContain(session.sessionId);
     });
@@ -273,7 +273,7 @@ describe('VerifierDirectProtocol.createDirectSession', () => {
     it('deep link contains nonce', async () => {
         const protocol = new VerifierDirectProtocol();
         const session = await protocol.createDirectSession();
-        const url = new URL(session.deepLink.replace('mitch://', 'https://x/'));
+        const url = new URL(session.deepLink.replace('askmi://', 'https://x/'));
         const nonce = url.searchParams.get('nonce');
         expect(nonce).toBeTruthy();
         expect(nonce!.length).toBeGreaterThan(10);
@@ -282,7 +282,7 @@ describe('VerifierDirectProtocol.createDirectSession', () => {
     it('deep link contains claims', async () => {
         const protocol = new VerifierDirectProtocol();
         const session = await protocol.createDirectSession();
-        const url = new URL(session.deepLink.replace('mitch://', 'https://x/'));
+        const url = new URL(session.deepLink.replace('askmi://', 'https://x/'));
         const claims = url.searchParams.get('claims');
         expect(claims).toBeTruthy();
         const parsed = JSON.parse(claims!);
@@ -305,7 +305,7 @@ describe('VerifierDirectProtocol.createDirectSession', () => {
     it('callback param in deep link matches verifierEndpoint', async () => {
         const protocol = new VerifierDirectProtocol();
         const session = await protocol.createDirectSession();
-        const url = new URL(session.deepLink.replace('mitch://', 'https://x/'));
+        const url = new URL(session.deepLink.replace('askmi://', 'https://x/'));
         const callback = url.searchParams.get('callback');
         expect(callback).toBe(session.verifierEndpoint);
     });

@@ -3,9 +3,9 @@ import {
     generateKeyPair,
     WebAuthnService
 } from '@askmi/shared-crypto';
-import { SecureStorage, BrowserIndexedDBAdapter, InMemoryStorageAdapter } from '@mitch/secure-storage';
-import { AuditLog } from '@mitch/audit-log';
-import { PolicyEngine } from '@mitch/policy-engine';
+import { SecureStorage, BrowserIndexedDBAdapter, InMemoryStorageAdapter } from '@askmi/secure-storage';
+import { AuditLog } from '@askmi/audit-log';
+import { PolicyEngine } from '@askmi/policy-engine';
 import { 
     StoredCredentialMetadata, 
     PolicyManifest, 
@@ -13,12 +13,12 @@ import {
     PolicyEvaluationResult,
     DecisionCapsule
 } from '@askmi/shared-types';
-import { EvaluationContext } from '@mitch/policy-engine';
+import { EvaluationContext } from '@askmi/policy-engine';
 
 import { ICredentialRepository } from './ICredentialRepository';
 import { EncryptedCredentialRepository } from './EncryptedCredentialRepository';
 import { IPolicyEvaluator } from './IPolicyEvaluator';
-import { MitchPolicyEvaluator } from './MitchPolicyEvaluator';
+import { AskmiPolicyEvaluator } from './AskmiPolicyEvaluator';
 import { IPresentationManager } from './IPresentationManager';
 
 /**
@@ -66,7 +66,7 @@ export class WalletService {
             // Placeholder for identity signing (T-31)
             return "mock-signature";
         });
-        const policyEvaluator = new MitchPolicyEvaluator(engine, localStorage);
+        const policyEvaluator = new AskmiPolicyEvaluator(engine, localStorage);
 
         return new WalletService(credRepo, policyEvaluator, auditLog);
     }

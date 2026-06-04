@@ -54,7 +54,7 @@ export const DEMO_POLICY: PolicyManifest = {
     {
       id: 'rule-age-proof-01',
       context: 'Altersnachweis ≥18 für regulierten Kauf (Liquor, Tabak)',
-      verifierPattern: 'did:mitch:verifier-liquor-store',
+      verifierPattern: 'did:askmi:verifier-liquor-store',
       allowedClaims: [],               // Keine Rohdaten
       provenClaims: ['age >= 18'],     // Nur Nachweis (ZKP)
       deniedClaims: ['birthDate', 'name', 'address', 'nationalId'],

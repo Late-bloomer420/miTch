@@ -4,7 +4,7 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
-        <title>miTch consent surface — demo</title>
+        <title>AskMI consent surface — demo</title>
         <style>
             html, body { margin: 0; background: #07090d; color: #cfd2d8; font-family: system-ui, sans-serif; }
             main { max-width: 720px; margin: 0 auto; padding: 40px 16px; }
@@ -18,16 +18,16 @@
     </head>
     <body>
         <main>
-            <h1>miTch consent surface</h1>
+            <h1>AskMI consent surface</h1>
             <p class="lead">
                 Embeddable. Framework-agnostic. Three states — requested · allowed · withheld.
-                Listen for <code>mitch-consent</code> and <code>mitch-consent-cancel</code>.
+                Listen for <code>AskMI-consent</code> and <code>AskMI-consent-cancel</code>.
             </p>
 
             <div class="row">
                 <section>
                     <label>Live component</label>
-                    <mitch-consent id="consent"></mitch-consent>
+                    <AskMI-consent id="consent"></AskMI-consent>
                 </section>
                 <section>
                     <label>Last event</label>
@@ -41,10 +41,10 @@
 
             defineConsentElement();
 
-            // A typical DisclosureRequest from @mitch/policy-engine.
+            // A typical DisclosureRequest from @askmi/policy-engine.
             const request = {
                 requestId: 'demo-req-1',
-                verifierDid: 'did:mitch:verifier-liquor-store',
+                verifierDid: 'did:askmi:verifier-liquor-store',
                 purpose: 'Age verification (18+)',
                 requestedClaims: ['age', 'name', 'address'],
                 requestedPredicates: [
@@ -77,10 +77,10 @@
             el.request = consentRequest;
 
             const out = document.getElementById('out');
-            el.addEventListener('mitch-consent', (e) => {
+            el.addEventListener('AskMI-consent', (e) => {
                 out.textContent = JSON.stringify(e.detail, null, 2);
             });
-            el.addEventListener('mitch-consent-cancel', (e) => {
+            el.addEventListener('AskMI-consent-cancel', (e) => {
                 out.textContent = JSON.stringify(e.detail, null, 2);
             });
         </script>

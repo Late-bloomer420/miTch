@@ -2,13 +2,14 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
 
-import { type EvaluationContext } from '@mitch/policy-engine';
+import { type EvaluationContext } from '@askmi/policy-engine';
 import type {
   VerifierRequest,
   PolicyEvaluationResult,
   PolicyManifest,
   StoredCredentialMetadata,
 } from '@askmi/shared-types';
+import { ASKMI_DEMO } from '@askmi/shared-types';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
@@ -28,8 +29,8 @@ import {
   buildSessionCleanup,
   SCENARIO_VCT,
   type AuthorizationRequest,
-} from '@mitch/oid4vp';
-import type { ConsentReceipt } from '@mitch/oid4vp';
+} from '@askmi/oid4vp';
+import type { ConsentReceipt } from '@askmi/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { LandingPage } from './LandingPage';
@@ -41,9 +42,9 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     scenario: '🍺 Age Check',
     title: 'Age Verification — Zero Knowledge',
     description:
-      'A liquor store scans your wallet QR. miTch evaluates the request against ' +
+      'A liquor store scans your wallet QR. AskMI evaluates the request against ' +
       'your policy. The store is trusted and only asks for proof of age ≥ 18. ' +
-      'No consent dialog needed — miTch auto-approves because the rule already covers this.',
+      'No consent dialog needed — AskMI auto-approves because the rule already covers this.',
     whatVerifierSees: '✅ age ≥ 18: true (proof only)',
     whatIsBlocked: '❌ birthDate  ❌ name  ❌ address',
     buttonId: 'btn-liquor-store',
@@ -55,7 +56,7 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     title: 'Multi-Credential — Consent Required',
     description:
       'A hospital portal requests your ID (age ≥ 18) and medical license. ' +
-      'miTch finds a matching rule but flags it for explicit consent — ' +
+      'AskMI finds a matching rule but flags it for explicit consent — ' +
       'two credential types, professional data. You must approve.',
     whatVerifierSees: '✅ age ≥ 18  ✅ role: Physician  ✅ licenseId',
     whatIsBlocked: '❌ birthDate  ❌ salary  ❌ home address',
@@ -68,7 +69,7 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
     title: 'Health Data — Biometric Binding Required',
     description:
       'A Spanish ER requests your patient summary (blood group, allergies). ' +
-      'This is Layer 2 data — the highest protection tier. miTch requires ' +
+      'This is Layer 2 data — the highest protection tier. AskMI requires ' +
       'explicit consent AND biometric presence (WebAuthn). ' +
       'The Approve button stays locked until your fingerprint/PIN confirms presence.',
     whatVerifierSees: '✅ bloodGroup  ✅ allergies  ✅ emergencyContacts',
@@ -93,7 +94,7 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
 
 function WalletApp() {
   useEffect(() => {
-    document.title = 'miTch Wallet';
+    document.title = 'AskMI Wallet';
   }, []);
 
   const [status, setStatus] = useState<string>('LOCKED');
@@ -133,7 +134,10 @@ function WalletApp() {
   useEffect(() => {
     const handleOpenerMessage = (event: MessageEvent) => {
       // Security: Validate origin in production
-      if (event.data?.type === 'MITCH_OID4VP_REQUEST') {
+      if (
+        event.data?.type === 'ASKMI_OID4VP_REQUEST' ||
+        event.data?.type === 'MITCH_OID4VP_REQUEST'
+      ) {
         addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
         // Trigger handleIncomingOID4VP with provided data
         // For simplicity, we just reload or use the data directly
@@ -144,17 +148,22 @@ function WalletApp() {
     };
 
     window.addEventListener('message', handleOpenerMessage);
-    
+
     // Check if we ARE a popup and notify opener
     if (window.opener) {
+      window.opener.postMessage({ type: 'ASKMI_WALLET_READY' }, '*');
       window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, '*');
     }
 
     return () => window.removeEventListener('message', handleOpenerMessage);
   }, []);
 
-  const handleIncomingOID4VPFromOpener = async (scenario: string, endpoint: string, verifier: string) => {
-      await handleIncomingOID4VP({ scenario, endpoint, verifier });
+  const handleIncomingOID4VPFromOpener = async (
+    scenario: string,
+    endpoint: string,
+    verifier: string
+  ) => {
+    await handleIncomingOID4VP({ scenario, endpoint, verifier });
   };
   const [incomingOID4VP] = useState<{
     scenario: string;
@@ -169,7 +178,7 @@ function WalletApp() {
       return {
         scenario,
         endpoint,
-        verifier: p.get('verifier') ?? 'did:mitch:verifier-liquor-store',
+        verifier: p.get('verifier') ?? ASKMI_DEMO.verifierDid,
       };
     } catch {
       return null;
@@ -231,7 +240,7 @@ function WalletApp() {
     try {
       setStatus('UNLOCKING');
       addLog('👤 Requesting Biometric Verification...', 'info');
-      await WebAuthnService.provePresence('mitch-wallet-unlock');
+      await WebAuthnService.provePresence('AskMI-wallet-unlock');
       await walletRef.current.initialize('123456');
       addLog('🔓 Passkey Verified. Wallet Ready.', 'success');
       setCurrentPolicy(walletRef.current.getPolicy());
@@ -249,9 +258,9 @@ function WalletApp() {
     setEvaluationResult(null);
     setFlashAllow(false);
 
-    addLog(`📥 Received request from: did:mitch:verifier-liquor-store`, 'info');
+    addLog(`📥 Received request from: ${ASKMI_DEMO.verifierDid}`, 'info');
     const request: VerifierRequest = {
-      verifierId: 'did:mitch:verifier-liquor-store',
+      verifierId: ASKMI_DEMO.verifierDid,
       requestedClaims: [],
       requestedProvenClaims: ['age >= 18'],
       origin: CONFIG.VERIFIER_ENDPOINT.replace(/\/present$/, ''),
@@ -672,10 +681,10 @@ function WalletApp() {
           issuerPrivateKey: issuerKeys.privateKey,
           holderKeyPair: holderKeys,
           claims,
-          vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
-          issuerDid: 'https://issuer.mitch.demo',
+          vct: SCENARIO_VCT[scenarioId] ?? 'https://askmi.demo/vct/age-credential',
+          issuerDid: ASKMI_DEMO.issuerUri,
           revoked: isRevoked,
-          statusListUri: 'http://localhost:3005/status-list/1',
+          statusListUri: ASKMI_DEMO.statusListUri,
         });
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
@@ -690,10 +699,10 @@ function WalletApp() {
 
       // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
       const payload = {
-          vp_token: vpTokenString,
-          presentation_submission: presentationSubmission,
-          state: authRequest.state,
-          issuer_jwk: issuerPubJwk,
+        vp_token: vpTokenString,
+        presentation_submission: presentationSubmission,
+        state: authRequest.state,
+        issuer_jwk: issuerPubJwk,
       };
       const paddedPayload = padPayload(payload);
       addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
@@ -915,7 +924,7 @@ function WalletApp() {
   return (
     <div className="wallet-app">
       <h1 className="wallet-title">
-        miTch <span className="wallet-title-accent">Smart Wallet</span>
+        AskMI <span className="wallet-title-accent">Smart Wallet</span>
       </h1>
 
       {/* OID4VP: incoming request banner */}
@@ -966,7 +975,8 @@ function WalletApp() {
             <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
             <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
             <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your miTch Wallet.
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your AskMI
+              Wallet.
             </p>
             <button
               onClick={handlePasskeyUnlock}
@@ -986,7 +996,7 @@ function WalletApp() {
               Unlock with Biometrics
             </button>
             <div style={{ marginTop: 24 }}>
-              <button 
+              <button
                 onClick={async () => {
                   await walletRef.current.initialize('123456');
                   setCurrentPolicy(walletRef.current.getPolicy());
@@ -994,7 +1004,14 @@ function WalletApp() {
                   setStatus('IDLE');
                   addLog('🔓 Fallback: Unlocked via PIN', 'warning');
                 }}
-                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  fontSize: 13,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
               >
                 Use PIN instead
               </button>

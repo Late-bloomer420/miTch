@@ -4,7 +4,7 @@ import type { ConsentRequest, ConsentResult } from '../types';
 
 const req: ConsentRequest = {
     requestId: 'req-1',
-    verifier: { id: 'did:mitch:verifier-x', displayName: 'X' },
+    verifier: { id: 'did:askmi:verifier-x', displayName: 'X' },
     purpose: 'Age',
     claims: [
         { key: 'age', policyState: 'requested' },
@@ -32,7 +32,7 @@ describe('buildConsentReceipt', () => {
         expect(r.requestId).toBe('req-1');
         expect(r.verdict).toBe('CONSENTED');
         expect(r.verifierRef.startsWith('sha256:')).toBe(true);
-        expect(r.verifierRef).not.toContain('did:mitch:verifier-x');
+        expect(r.verifierRef).not.toContain('did:askmi:verifier-x');
         expect(r.requestHash).toMatch(/^[0-9a-f]{64}$/);
         expect(r.policyHash).toBe('sha256:abc');
         expect(r.allowedClaims).toEqual(['age']);
@@ -41,7 +41,7 @@ describe('buildConsentReceipt', () => {
         // No raw value fields leak through:
         const serialized = JSON.stringify(r);
         expect(serialized).not.toContain('"raw"');
-        expect(serialized).not.toContain('did:mitch:verifier-x');
+        expect(serialized).not.toContain('did:askmi:verifier-x');
     });
 
     it('is deterministic for the same inputs', async () => {

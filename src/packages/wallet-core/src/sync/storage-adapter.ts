@@ -1,5 +1,5 @@
 /**
- * @module @mitch/wallet-core/sync/storage-adapter
+ * @module @askmi/wallet-core/sync/storage-adapter
  *
  * Pluggable storage adapter interface for CRDT state sync.
  *

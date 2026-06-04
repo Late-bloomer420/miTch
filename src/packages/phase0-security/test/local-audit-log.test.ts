@@ -139,13 +139,13 @@ describe('LocalAuditLog', () => {
       await log.append({
         type: 'CREDENTIAL_PRESENTED',
         timestamp: 5000,
-        details: { verifier: 'did:mitch:liquor-store', claim: 'age_over_18' },
+        details: { verifier: 'did:askmi:liquor-store', claim: 'age_over_18' },
       });
 
       const exported = await log.exportForUser();
       const entry = exported.entries[0];
       expect(entry.type).toBe('CREDENTIAL_PRESENTED');
-      expect(entry.details.verifier).toBe('did:mitch:liquor-store');
+      expect(entry.details.verifier).toBe('did:askmi:liquor-store');
       expect(entry.details.claim).toBe('age_over_18');
     });
 
@@ -227,7 +227,7 @@ describe('LocalAuditLog', () => {
   describe('encryption', () => {
     it('stores encrypted data that can be decrypted within the same session', async () => {
       const sensitiveDetails = {
-        verifier: 'did:mitch:hospital',
+        verifier: 'did:askmi:hospital',
         claim: 'blood_type',
         value: 'A+',
       };

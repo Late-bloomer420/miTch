@@ -126,11 +126,11 @@ export const PrivacyAuditModal: React.FC<PrivacyAuditModalProps> = ({ verifierNa
                             <TrackerRow key={idx} tracker={t} />
                         ))}
 
-                        {/* Always show miTch as green */}
+                        {/* Always show AskMI as green */}
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', opacity: 0.8 }}>
                             <div style={{ background: '#065f46', width: '8px', height: '8px', borderRadius: '50%', marginTop: '6px' }} />
                             <div>
-                                <div style={{ fontWeight: '600', fontSize: '14px', color: '#34d399' }}>miTch Protocol</div>
+                                <div style={{ fontWeight: '600', fontSize: '14px', color: '#34d399' }}>AskMI Protocol</div>
                                 <div style={{ fontSize: '11px', color: '#9ca3af' }}>
                                     Sees metadata only. <span style={{ color: '#10b981' }}>Crypto-Shredding active.</span>
                                 </div>

@@ -3,7 +3,7 @@
 ## "Prove the Player Is Allowed to Play — Without Holding Who They Are"
 
 > Not implementation-ready. Concept and design only.
-> Verifier-side integration via `@mitch/verifier-sdk`. Companion business case:
+> Verifier-side integration via `@askmi/verifier-sdk`. Companion business case:
 > `02_business_case_igaming_compliance.md`.
 
 ---
@@ -54,7 +54,7 @@ credential revocation.
 ### Path A — eID / age credential
 
 Age and identity bootstrap from a national eID (eIDAS 2.0) or bank-issued credential over
-`@mitch/oid4vci`. Output predicate: `age_gte=18`. Raw DOB never leaves the wallet.
+`@askmi/oid4vci`. Output predicate: `age_gte=18`. Raw DOB never leaves the wallet.
 
 ### Path B — Self-exclusion register bridge
 
@@ -82,7 +82,7 @@ nonce:       <random>
 purpose:     "Session start — age, self-exclusion, limit check"
 ```
 
-The policy engine (`@mitch/policy-engine`) evaluates fail-closed:
+The policy engine (`@askmi/policy-engine`) evaluates fail-closed:
 
 ```
 PredicateClause path=credentialSubject.birthDate    op=gte type=age_years value=18
@@ -93,7 +93,7 @@ PredicateClause path=limits.remaining               op=gte type=number    value=
 
 - Deposit-limit and session-frequency logic reuse `rate-limiter.ts` and `proof-fatigue.ts`.
 - Above the high-stake threshold, the engine returns `DENY_REAUTH_REQUIRED` until a WebAuthn
-  step-up (`@mitch/webauthn-verifier`) is completed; the resulting proof is AAD-bound into the
+  step-up (`@askmi/webauthn-verifier`) is completed; the resulting proof is AAD-bound into the
   bet authorisation.
 - A revoked self-exclusion credential → `DENY_CREDENTIAL_REVOKED`, regardless of operator.
 
@@ -120,7 +120,7 @@ PredicateClause path=limits.remaining               op=gte type=number    value=
 ## Verifier Integration (Operator Side)
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const sdk = new VerifierSDK({
   verifierDid: 'did:web:operator.example',
@@ -175,13 +175,13 @@ app.post('/session/authorize', async (req, res) => {
 
 | Package                        | Role in this module                                      |
 | ------------------------------ | -------------------------------------------------------- |
-| `@mitch/policy-engine`         | Fail-closed eval; `rate-limiter.ts`, `proof-fatigue.ts`  |
-| `@mitch/predicates`            | Age / self-exclusion / limit DSL; `nullifier.ts`         |
+| `@askmi/policy-engine`         | Fail-closed eval; `rate-limiter.ts`, `proof-fatigue.ts`  |
+| `@askmi/predicates`            | Age / self-exclusion / limit DSL; `nullifier.ts`         |
 | `@askmi/shared-crypto`         | Pairwise DID per operator (cross-operator unlinkability) |
-| `@mitch/webauthn-verifier`     | Step-up auth for high-value actions                      |
+| `@askmi/webauthn-verifier`     | Step-up auth for high-value actions                      |
 | `@askmi/revocation-statuslist` | Self-exclusion = revocation, propagates everywhere       |
-| `@mitch/verifier-sdk`          | Operator-side verification + replay-check                |
-| `@mitch/audit-log`             | WORM receipts for GGL/UKGC inspection                    |
+| `@askmi/verifier-sdk`          | Operator-side verification + replay-check                |
+| `@askmi/audit-log`             | WORM receipts for GGL/UKGC inspection                    |
 
 Relevant deny codes: `DENY_CREDENTIAL_REVOKED` (self-exclusion), `DENY_REAUTH_REQUIRED`
 (step-up), `DENY_RATE_LIMIT_EXCEEDED` (limits), `DENY_JURISDICTION_INCOMPATIBLE`,

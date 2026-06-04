@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "DecisionCapsule",
-    "description": "Cryptographically bound policy decision artifact for miTch. Structure definition only.",
+    "description": "Cryptographically bound policy decision artifact for AskMI. Structure definition only.",
     "type": "object",
     "required": [
         "decision_id",

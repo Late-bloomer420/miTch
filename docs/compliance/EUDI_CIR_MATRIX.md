@@ -72,7 +72,7 @@
 | 2982-15 | Trust anchor registry / trusted issuer list | ✅ | `EUDITrustListResolver` with dynamic JSON LOTL fetching · `trust-list-plan.md` |
 | 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
 | 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
-| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@mitch/mdoc` + `ProximityView.tsx` |
+| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@askmi/mdoc` + `ProximityView.tsx` |
 
 ---
 

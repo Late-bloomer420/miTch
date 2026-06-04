@@ -1,5 +1,5 @@
 /**
- * @module @mitch/policy-engine/webauthn-reason-map
+ * @module @askmi/policy-engine/webauthn-reason-map
  *
  * Deterministic mapping from WebAuthn verification failure reasons
  * to policy-engine deny reason codes.
@@ -20,7 +20,7 @@
 
 import { DenyReasonCode } from './deny-reason-codes';
 
-/** WebAuthn verification failure reasons (from @mitch/webauthn-verifier) */
+/** WebAuthn verification failure reasons (from @askmi/webauthn-verifier) */
 export type WebAuthnFailureReason =
   | 'CHALLENGE_EXPIRED'
   | 'CHALLENGE_NOT_FOUND'

@@ -1,5 +1,5 @@
 /**
- * @package @mitch/demo-liquor-store
+ * @package @askmi/demo-liquor-store
  * @description Interactive Liquor Store Demo for Investor Presentations
  *
  * Demonstrates:
@@ -9,8 +9,8 @@
  * - Automated layer violation detection
  */
 
-import { MockGovernmentIssuer, computeAgeProof } from '@mitch/mock-issuer';
-import { ProtectionLayer, getLayerName } from '@mitch/layer-resolver';
+import { MockGovernmentIssuer, computeAgeProof } from '@askmi/mock-issuer';
+import { ProtectionLayer, getLayerName } from '@askmi/layer-resolver';
 
 async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -42,7 +42,7 @@ async function spinner(message: string, duration: number, success: boolean = tru
 
 async function runDemo() {
   console.clear();
-  log('\n🎉 miTch Liquor Store Demo\n', 'header');
+  log('\n🎉 AskMI Liquor Store Demo\n', 'header');
   log('Layer-based Privacy & Consent Management\n');
 
   // Step 1: Issuer Setup
@@ -136,7 +136,7 @@ async function runDemo() {
   log('✅ Layer Protection: Automated enforcement', 'success');
   log('✅ Fail-Closed: Deny-by-default policy\n', 'success');
 
-  log('💡 miTch - Where Privacy Meets Compliance\n');
+  log('💡 AskMI - Where Privacy Meets Compliance\n');
 
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'header');
   log('Demo complete! Ready for investor presentation. 🎊\n', 'success');

@@ -1,7 +1,7 @@
 /**
- * @module @mitch/verifier-sdk/ad-verifier
+ * @module @askmi/verifier-sdk/ad-verifier
  *
- * AdTechVerifier — verifier-side ad verification for the miTch Blind Provider flow.
+ * AdTechVerifier — verifier-side ad verification for the AskMI Blind Provider flow.
  *
  * Responsibilities:
  * 1. Build AdVerificationRequest objects (with nonce, expiry)
@@ -14,7 +14,7 @@
  * - Budget signals are ephemeral — not stored
  */
 
-import { verifyNullifierScope } from '@mitch/predicates';
+import { verifyNullifierScope } from '@askmi/predicates';
 import type {
     AdVerificationRequest,
     AdVerificationResponse,

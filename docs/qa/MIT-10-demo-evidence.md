@@ -13,13 +13,13 @@
 | Node | v24.13.1 |
 | pnpm | 9.15.9 |
 | Vite (wallet) | 6.4.2 |
-| Build state | All 26 `@mitch/*` workspace packages resolve to prebuilt `dist/` |
+| Build state | All 26 `@askmi/*` workspace packages resolve to prebuilt `dist/` |
 
 Services started via:
 ```bash
-pnpm --filter '@mitch/issuer-mock' dev      # → http://localhost:3005
+pnpm --filter '@askmi/issuer-mock' dev      # → http://localhost:3005
 pnpm --filter 'verifier-backend' dev         # → http://localhost:3004
-pnpm --filter '@mitch/wallet-pwa' dev        # → http://localhost:5174
+pnpm --filter '@askmi/wallet-pwa' dev        # → http://localhost:5174
 ```
 
 ## Steps & Results

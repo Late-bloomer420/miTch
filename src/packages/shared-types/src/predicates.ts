@@ -1,7 +1,7 @@
 /**
  * @module @askmi/shared-types/predicates
  * 
- * Predicate type definitions for miTch identity infrastructure.
+ * Predicate type definitions for AskMI identity infrastructure.
  * 
  * TWO MODELS:
  * 1. DSL Model (canonical): Full predicate AST with expressions, path-based queries
@@ -281,7 +281,7 @@ function canonicalizeExpression(expr: PredicateExpression): string {
 
 /**
  * Canonicalize a full predicate for hashing.
- * NOTE: Does not compute hash (no crypto import). Use @mitch/predicates for hashing.
+ * NOTE: Does not compute hash (no crypto import). Use @askmi/predicates for hashing.
  */
 export function canonicalizePredicate(predicate: Predicate): string {
     return JSON.stringify({
@@ -294,7 +294,7 @@ export function canonicalizePredicate(predicate: Predicate): string {
 
 /**
  * Canonicalize a predicate request for binding.
- * NOTE: Does not compute hash (no crypto import). Use @mitch/predicates for hashing.
+ * NOTE: Does not compute hash (no crypto import). Use @askmi/predicates for hashing.
  */
 export function canonicalizeRequest(request: PredicateRequest): string {
     const predicateReps = request.predicates.map(p => {

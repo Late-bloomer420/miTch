@@ -1,7 +1,7 @@
 /**
- * @mitch/predicates
+ * @askmi/predicates
  * 
- * Predicate subsystem for miTch identity infrastructure.
+ * Predicate subsystem for AskMI identity infrastructure.
  * Enables "Structural Non-Existence" by evaluating predicates on-device
  * and returning only cryptographically bound boolean results.
  */

@@ -39,7 +39,7 @@ async function buildValidChain(overrides?: {
         iss: PROVIDER_ISS,
         clientId: CLIENT_ID,
         walletPublicKey,
-        walletName: 'miTch Wallet',
+        walletName: 'AskMI Wallet',
     }, providerPrivateKey);
 
     const pop = await createClientAttestationPoP({
@@ -76,11 +76,11 @@ describe('Client Attestation Issuance', () => {
             iss: PROVIDER_ISS,
             clientId: CLIENT_ID,
             walletPublicKey,
-            walletName: 'miTch Wallet v1',
+            walletName: 'AskMI Wallet v1',
         }, providerPrivateKey);
         const payloadB64 = jwt.split('.')[1];
         const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-        expect(payload.wallet_name).toBe('miTch Wallet v1');
+        expect(payload.wallet_name).toBe('AskMI Wallet v1');
     });
 });
 

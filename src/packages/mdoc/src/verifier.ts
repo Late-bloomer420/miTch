@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/verifier
+ * @module @askmi/mdoc/verifier
  *
  * ISO 18013-5 §8 — Full Offline mdoc Verification Pipeline.
  *

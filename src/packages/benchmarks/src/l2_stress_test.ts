@@ -1,4 +1,4 @@
-import { AuditLog } from '@mitch/audit-log';
+import { AuditLog } from '@askmi/audit-log';
 import { generateKeyPair } from '@askmi/shared-crypto';
 import { performance } from 'perf_hooks';
 

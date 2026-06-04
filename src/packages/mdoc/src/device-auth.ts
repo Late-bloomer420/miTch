@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/device-auth
+ * @module @askmi/mdoc/device-auth
  *
  * ISO 18013-5 Device Authentication verification.
  *

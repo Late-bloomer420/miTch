@@ -1,1626 +1,1754 @@
+import { PolicyEngine, type EvaluationContext } from '@askmi/policy-engine';
+import { SecureStorage } from '@askmi/secure-storage';
+import { AuditLog } from '@askmi/audit-log';
 import {
-    PolicyEngine,
-    type EvaluationContext
-} from '@mitch/policy-engine';
-import { SecureStorage } from '@mitch/secure-storage';
-import { AuditLog } from '@mitch/audit-log';
-import {
-    PolicyManifest,
-    VerifierRequest,
-    PolicyEvaluationResult,
-    DecisionCapsule,
-    AuditLogEntry,
-    AuditLogExport,
-    StoredCredentialMetadata,
-    IdentityFirewallMetadata,
-    IdentityPersistence,
-    IdentityLinkability,
-    IdentitySeverity
+  PolicyManifest,
+  VerifierRequest,
+  PolicyEvaluationResult,
+  DecisionCapsule,
+  AuditLogEntry,
+  AuditLogExport,
+  StoredCredentialMetadata,
+  IdentityFirewallMetadata,
+  IdentityPersistence,
+  IdentityLinkability,
+  IdentitySeverity,
+  ASKMI_STORAGE_KEYS,
 } from '@askmi/shared-types';
 import {
-    EphemeralKey,
-    deriveKeyFromPassword,
-    generateKeyPair,
-    canonicalStringify,
-    RecoveryService,
-    WebAuthnService,
-    signData,
-    sha256,
-    resolveDID,
-    detectKeyAlgorithm
+  EphemeralKey,
+  deriveKeyFromPassword,
+  generateKeyPair,
+  canonicalStringify,
+  RecoveryService,
+  WebAuthnService,
+  signData,
+  sha256,
+  resolveDID,
+  detectKeyAlgorithm,
 } from '@askmi/shared-crypto';
 
-
-import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@mitch/mdoc';
+import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
 import { DEMO_POLICY } from '../data/DemoPolicy';
 import { ProofOfExistence } from './DocumentService';
-import {
-    evaluatePredicates,
-    CommonPredicates,
-    type PredicateRequest
-} from '@mitch/predicates';
+import { evaluatePredicates, CommonPredicates, type PredicateRequest } from '@askmi/predicates';
 import type { TrackingPoint } from './PrivacyAuditService';
 
 // ─── mdoc base64 helpers ──────────────────────────────────────────────────
 function uint8ArrayToBase64(data: Uint8Array): string {
-    let binary = '';
-    for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
-    return btoa(binary);
+  let binary = '';
+  for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
+  return btoa(binary);
 }
 
 function base64ToUint8Array(base64: string): Uint8Array {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }
 
-const POLICY_STORAGE_KEY = 'mitch_user_policy';
+const LEGACY_POLICY_STORAGE_KEY = ASKMI_STORAGE_KEYS.walletPolicy;
+const POLICY_STORAGE_ID = ASKMI_STORAGE_KEYS.policyManifestDocument;
 
 // Default Policy for the PoC (Now persistent)
 const DEFAULT_POLICY: PolicyManifest = DEMO_POLICY;
 
 function sanitizeIdentityActorLabel(actor: string | undefined): string {
-    const fallback = 'Unknown actor';
-    const raw = (actor ?? '').trim();
-    if (!raw) return fallback;
+  const fallback = 'Unknown actor';
+  const raw = (actor ?? '').trim();
+  if (!raw) return fallback;
 
-    try {
-        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) {
-            const parsed = new URL(raw);
-            return parsed.hostname.substring(0, 80) || fallback;
-        }
-    } catch {
-        // Fall through to conservative string cleanup.
+  try {
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) {
+      const parsed = new URL(raw);
+      return parsed.hostname.substring(0, 80) || fallback;
     }
+  } catch {
+    // Fall through to conservative string cleanup.
+  }
 
-    const withoutQuery = raw.replace(/[?#].*$/, '');
-    const withoutPath = withoutQuery.includes('/') && withoutQuery.includes('.')
-        ? withoutQuery.split('/')[0]
-        : withoutQuery;
-    return (withoutPath.trim() || fallback).substring(0, 80);
+  const withoutQuery = raw.replace(/[?#].*$/, '');
+  const withoutPath =
+    withoutQuery.includes('/') && withoutQuery.includes('.')
+      ? withoutQuery.split('/')[0]
+      : withoutQuery;
+  return (withoutPath.trim() || fallback).substring(0, 80);
 }
 
 function mapRiskLevel(riskLevel: TrackingPoint['riskLevel']): IdentitySeverity {
-    if (riskLevel === 'HIGH') return 'critical';
-    if (riskLevel === 'MEDIUM') return 'warning';
-    return 'info';
+  if (riskLevel === 'HIGH') return 'critical';
+  if (riskLevel === 'MEDIUM') return 'warning';
+  return 'info';
 }
 
 function mapPersistence(tracker: TrackingPoint): IdentityPersistence {
-    const persistences = tracker.dataExposed.map(d => d.persistence);
-    if (persistences.includes('CLOUD')) return 'cloud';
-    if (persistences.includes('DEVICE')) return 'device';
-    if (persistences.includes('SESSION')) return 'session';
-    return 'unknown';
+  const persistences = tracker.dataExposed.map((d) => d.persistence);
+  if (persistences.includes('CLOUD')) return 'cloud';
+  if (persistences.includes('DEVICE')) return 'device';
+  if (persistences.includes('SESSION')) return 'session';
+  return 'unknown';
 }
 
 function mapLinkability(tracker: TrackingPoint): IdentityLinkability {
-    const linkable = tracker.dataExposed.filter(d => d.linkable);
-    if (linkable.length === 0) return 'none';
-    if (linkable.some(d => d.persistence === 'CLOUD')) return 'cross_context';
-    if (linkable.some(d => d.persistence === 'DEVICE')) return 'cross_session';
-    return 'session';
+  const linkable = tracker.dataExposed.filter((d) => d.linkable);
+  if (linkable.length === 0) return 'none';
+  if (linkable.some((d) => d.persistence === 'CLOUD')) return 'cross_context';
+  if (linkable.some((d) => d.persistence === 'DEVICE')) return 'cross_session';
+  return 'session';
 }
 
 function mapTrackingPointToIdentityMetadata(
-    decisionId: string,
-    verifierDid: string | undefined,
-    tracker: TrackingPoint
+  decisionId: string,
+  verifierDid: string | undefined,
+  tracker: TrackingPoint
 ): IdentityFirewallMetadata {
-    const base = {
-        decision_id: decisionId,
-        ...(verifierDid ? { verifier_did: verifierDid } : {}),
-        actor_label: sanitizeIdentityActorLabel(tracker.actor),
-        persistence: mapPersistence(tracker),
-        linkability: mapLinkability(tracker),
-        severity: mapRiskLevel(tracker.riskLevel),
-        blocked: false as const,
-        source: 'privacy_audit_service' as const,
-    };
+  const base = {
+    decision_id: decisionId,
+    ...(verifierDid ? { verifier_did: verifierDid } : {}),
+    actor_label: sanitizeIdentityActorLabel(tracker.actor),
+    persistence: mapPersistence(tracker),
+    linkability: mapLinkability(tracker),
+    severity: mapRiskLevel(tracker.riskLevel),
+    blocked: false as const,
+    source: 'privacy_audit_service' as const,
+  };
 
-    switch (tracker.layer) {
-        case 'BROWSER':
-            return {
-                ...base,
-                access_type: 'browser_api',
-                surface: 'navigator.userAgent',
-                field_class: 'fingerprint',
-            };
-        case 'NETWORK':
-            return {
-                ...base,
-                access_type: 'network_metadata',
-                surface: 'network',
-                field_class: 'metadata',
-            };
-        case 'OS':
-            return {
-                ...base,
-                access_type: 'fingerprinting_signal',
-                surface: 'unknown',
-                field_class: 'fingerprint',
-            };
-        case 'SDK':
-        case 'SERVER':
-            return {
-                ...base,
-                access_type: 'tracker_domain',
-                surface: 'unknown',
-                field_class: 'tracking',
-            };
-    }
+  switch (tracker.layer) {
+    case 'BROWSER':
+      return {
+        ...base,
+        access_type: 'browser_api',
+        surface: 'navigator.userAgent',
+        field_class: 'fingerprint',
+      };
+    case 'NETWORK':
+      return {
+        ...base,
+        access_type: 'network_metadata',
+        surface: 'network',
+        field_class: 'metadata',
+      };
+    case 'OS':
+      return {
+        ...base,
+        access_type: 'fingerprinting_signal',
+        surface: 'unknown',
+        field_class: 'fingerprint',
+      };
+    case 'SDK':
+    case 'SERVER':
+      return {
+        ...base,
+        access_type: 'tracker_domain',
+        surface: 'unknown',
+        field_class: 'tracking',
+      };
+  }
 }
 
 const SEED_CREDENTIAL = {
-    id: 'vc-age-789',
-    issuer: 'did:example:gov-issuer',
-    type: ['VerifiableCredential', 'AgeCredential'],
-    issuedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    claims: ['birthDate', 'age'],
-    renderMethod: [
-        {
-            id: 'http://localhost:3005/templates/age-credential.svg',
-            type: 'TemplateRenderMethod',
-            format: 'svg-mustache'
-        }
-    ],
-    payload: {
-        birthDate: '2000-01-01',
-        age: 24 // Raw PII in Secure Storage (demo only)
-    }
+  id: 'vc-age-789',
+  issuer: 'did:example:gov-issuer',
+  type: ['VerifiableCredential', 'AgeCredential'],
+  issuedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  claims: ['birthDate', 'age'],
+  renderMethod: [
+    {
+      id: 'http://localhost:3005/templates/age-credential.svg',
+      type: 'TemplateRenderMethod',
+      format: 'svg-mustache',
+    },
+  ],
+  payload: {
+    birthDate: '2000-01-01',
+    age: 24, // Raw PII in Secure Storage (demo only)
+  },
 };
 
 const MALICIOUS_CREDENTIAL = {
-    id: 'vc-fake-999',
-    issuer: 'did:example:malicious-hacker',
-    type: ['VerifiableCredential', 'AgeCredential'],
-    issuedAt: new Date().toISOString(),
-    claims: ['age'],
-    payload: {
-        age: 25
-    }
+  id: 'vc-fake-999',
+  issuer: 'did:example:malicious-hacker',
+  type: ['VerifiableCredential', 'AgeCredential'],
+  issuedAt: new Date().toISOString(),
+  claims: ['age'],
+  payload: {
+    age: 25,
+  },
 };
 
 const EMPLOYMENT_CREDENTIAL = {
-    id: 'vc-emp-456',
-    issuer: 'did:example:st-mary-hospital',
-    type: ['VerifiableCredential', 'EmploymentCredential'],
-    issuedAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
-    claims: ['employer', 'role', 'licenseId'],
-    payload: {
-        employer: 'St. Mary Hospital',
-        role: 'Surgeon',
-        licenseId: 'MED-998877'
-    }
+  id: 'vc-emp-456',
+  issuer: 'did:example:st-mary-hospital',
+  type: ['VerifiableCredential', 'EmploymentCredential'],
+  issuedAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
+  claims: ['employer', 'role', 'licenseId'],
+  payload: {
+    employer: 'St. Mary Hospital',
+    role: 'Surgeon',
+    licenseId: 'MED-998877',
+  },
 };
 
 // EHDS Sample Credentials defined here for seeding
 const EHDS_PATIENT_SUMMARY = {
-    id: 'vc-ehds-summary-001',
-    issuer: 'did:example:ehealth-authority',
-    type: ['VerifiableCredential', 'HealthRecord', 'PatientSummary'], // Polymorphic types
-    issuedAt: new Date().toISOString(),
-    claims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
-    payload: {
-        resourceType: 'PatientSummary',
-        status: 'final',
-        effectiveDateTime: new Date().toISOString(),
-        performer: { display: 'Seven Bridges Genomics', reference: 'did:example:ehealth-authority' },
-        content: {
-            bloodGroup: 'A+',
-            allergies: [
-                { code: '91936005', display: 'Penicillin', criticality: 'high' },
-                { code: '227493005', display: 'Cashew nuts', criticality: 'low' }
-            ],
-            activeProblems: ['Asthma'],
-            emergencyContacts: [{ relation: 'Mother', phone: '+49-151-555-0100' }]
-        }
-    }
+  id: 'vc-ehds-summary-001',
+  issuer: 'did:example:ehealth-authority',
+  type: ['VerifiableCredential', 'HealthRecord', 'PatientSummary'], // Polymorphic types
+  issuedAt: new Date().toISOString(),
+  claims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
+  payload: {
+    resourceType: 'PatientSummary',
+    status: 'final',
+    effectiveDateTime: new Date().toISOString(),
+    performer: { display: 'Seven Bridges Genomics', reference: 'did:example:ehealth-authority' },
+    content: {
+      bloodGroup: 'A+',
+      allergies: [
+        { code: '91936005', display: 'Penicillin', criticality: 'high' },
+        { code: '227493005', display: 'Cashew nuts', criticality: 'low' },
+      ],
+      activeProblems: ['Asthma'],
+      emergencyContacts: [{ relation: 'Mother', phone: '+49-151-555-0100' }],
+    },
+  },
 };
 
 const EHDS_PRESCRIPTION = {
-    id: 'vc-ehds-rx-999',
-    issuer: 'did:example:ehealth-authority',
-    type: ['VerifiableCredential', 'HealthRecord', 'Prescription'],
-    issuedAt: new Date().toISOString(),
-    claims: ['medication', 'dosageInstruction', 'refillsRemaining'],
-    payload: {
-        resourceType: 'Prescription',
-        status: 'final',
-        effectiveDateTime: new Date().toISOString(),
-        performer: { display: 'Dr. House', reference: 'did:example:st-mary-hospital' },
-        content: {
-            medication: { code: '372665008', display: 'Amoxicillin 500mg' },
-            dosageInstruction: 'Take 1 tablet every 8 hours for 7 days',
-            quantity: 21,
-            refillsRemaining: 0
-        }
-    }
+  id: 'vc-ehds-rx-999',
+  issuer: 'did:example:ehealth-authority',
+  type: ['VerifiableCredential', 'HealthRecord', 'Prescription'],
+  issuedAt: new Date().toISOString(),
+  claims: ['medication', 'dosageInstruction', 'refillsRemaining'],
+  payload: {
+    resourceType: 'Prescription',
+    status: 'final',
+    effectiveDateTime: new Date().toISOString(),
+    performer: { display: 'Dr. House', reference: 'did:example:st-mary-hospital' },
+    content: {
+      medication: { code: '372665008', display: 'Amoxicillin 500mg' },
+      dosageInstruction: 'Take 1 tablet every 8 hours for 7 days',
+      quantity: 21,
+      refillsRemaining: 0,
+    },
+  },
 };
 // End T-30 definitions
 
 // ISO 18013-5 mdoc mDL Seed Credential
 // Stored as IssuerSigned nameSpaces (pre-built CBOR, no real MSO signature for demo)
 const MDOC_MDL_CREDENTIAL = {
-    id: 'mdoc-mdl-001',
-    issuer: 'did:example:gov-transport',
-    docType: 'org.iso.18013.5.1.mDL',
-    claims: ['family_name', 'given_name', 'birth_date', 'age_over_18', 'age_over_21', 'issuing_country'],
+  id: 'mdoc-mdl-001',
+  issuer: 'did:example:gov-transport',
+  docType: 'org.iso.18013.5.1.mDL',
+  claims: [
+    'family_name',
+    'given_name',
+    'birth_date',
+    'age_over_18',
+    'age_over_21',
+    'issuing_country',
+  ],
 };
 
 // ... (other imports)
 
 // DID Resolution Cache
 // Map<DID, { key: CryptoKey, expires: number }>
-const keyCache = new Map<string, { key: CryptoKey, expires: number }>();
+const keyCache = new Map<string, { key: CryptoKey; expires: number }>();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 
 // Node-safe localStorage shim for non-browser environments (validation script)
 const localStoreShim: Storage = (() => {
-    try {
-        if (typeof localStorage !== 'undefined') return localStorage;
-    } catch (_: unknown) { /* no localStorage — fallback to in-memory */ }
-    const mem = new Map<string, string>();
-    return {
-        getItem: (k: string) => (mem.has(k) ? mem.get(k)! : null),
-        setItem: (k: string, v: string) => { mem.set(k, v); },
-        removeItem: (k: string) => { mem.delete(k); },
-        clear: () => { mem.clear(); },
-        key: (i: number) => Array.from(mem.keys())[i] ?? null,
-        get length() { return mem.size; }
-    } as unknown as Storage;
+  try {
+    if (typeof localStorage !== 'undefined') return localStorage;
+  } catch (_: unknown) {
+    /* no localStorage — fallback to in-memory */
+  }
+  const mem = new Map<string, string>();
+  return {
+    getItem: (k: string) => (mem.has(k) ? mem.get(k)! : null),
+    setItem: (k: string, v: string) => {
+      mem.set(k, v);
+    },
+    removeItem: (k: string) => {
+      mem.delete(k);
+    },
+    clear: () => {
+      mem.clear();
+    },
+    key: (i: number) => Array.from(mem.keys())[i] ?? null,
+    get length() {
+      return mem.size;
+    },
+  } as unknown as Storage;
 })();
 
 // Helper for typed crypto access
 const getSubtle = () => (globalThis.crypto?.subtle ?? crypto.subtle) as SubtleCrypto;
 
 function constantTimeCompare(a: string, b: string): boolean {
-    if (a.length !== b.length) return false;
-    let result = 0;
-    for (let i = 0; i < a.length; i++) {
-        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
-    return result === 0;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 // Map a JWK to a WebCrypto import algorithm (Phase 0 minimal)
 function mapJwkToAlgorithm(jwk: JsonWebKey): AlgorithmIdentifier | RsaHashedImportParams {
-    if (jwk.kty === 'RSA') {
-        const hash = jwk.alg && jwk.alg.toUpperCase().includes('256') ? 'SHA-256' : 'SHA-256';
-        return { name: 'RSA-OAEP', hash };
-    }
-    throw new Error(`UNSUPPORTED_EPHEMERAL_KEY: Expected RSA JWK for ephemeral_key, got kty=${jwk.kty || 'unknown'}`);
+  if (jwk.kty === 'RSA') {
+    const hash = jwk.alg && jwk.alg.toUpperCase().includes('256') ? 'SHA-256' : 'SHA-256';
+    return { name: 'RSA-OAEP', hash };
+  }
+  throw new Error(
+    `UNSUPPORTED_EPHEMERAL_KEY: Expected RSA JWK for ephemeral_key, got kty=${jwk.kty || 'unknown'}`
+  );
 }
 
 /**
  * Fetch Verifier Public Key (Now with Real Universal Resolver)
  */
 async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
-    // 1. Check Cache
-    const cached = keyCache.get(did);
-    if (cached && cached.expires > Date.now()) {
-        return cached.key;
-    }
+  // 1. Check Cache
+  const cached = keyCache.get(did);
+  if (cached && cached.expires > Date.now()) {
+    return cached.key;
+  }
 
-    // 2. Resolve (Real Resolver from shared-crypto)
-    // Supports did:web (HTTPS) and did:mitch (Demo)
-    const didDocument = await resolveDID(did);
+  // 2. Resolve (Real Resolver from shared-crypto)
+  // Supports did:web (HTTPS) and did:askmi (Demo)
+  const didDocument = await resolveDID(did);
 
-    // 3. Extract Key (First Verification Method)
-    const vm = didDocument.verificationMethod?.[0];
-    if (!vm || !vm.publicKeyJwk) {
-        throw new Error(`DID_DOCUMENT_INVALID: Missing publicKeyJwk in ${did}`);
-    }
+  // 3. Extract Key (First Verification Method)
+  const vm = didDocument.verificationMethod?.[0];
+  if (!vm || !vm.publicKeyJwk) {
+    throw new Error(`DID_DOCUMENT_INVALID: Missing publicKeyJwk in ${did}`);
+  }
 
-    // 4. Import Key (WebCrypto)
-    // Detect algorithm from JWK (RSA/EC)
-    const algorithm = detectKeyAlgorithm(vm.publicKeyJwk as JsonWebKey);
+  // 4. Import Key (WebCrypto)
+  // Detect algorithm from JWK (RSA/EC)
+  const algorithm = detectKeyAlgorithm(vm.publicKeyJwk as JsonWebKey);
 
-    // For encryption, we need RSA-OAEP (or EC-ECDH in future)
-    const algoName = (typeof algorithm === 'string') ? algorithm : algorithm.name;
+  // For encryption, we need RSA-OAEP (or EC-ECDH in future)
+  const algoName = typeof algorithm === 'string' ? algorithm : algorithm.name;
 
-    if (algoName === 'RSA-OAEP' && (vm.publicKeyJwk as JsonWebKey).kty !== 'RSA') {
-        // Sanity check
-        throw new Error('KEY_TYPE_MISMATCH: Expected RSA JWK for RSA-OAEP algorithm');
-    }
+  if (algoName === 'RSA-OAEP' && (vm.publicKeyJwk as JsonWebKey).kty !== 'RSA') {
+    // Sanity check
+    throw new Error('KEY_TYPE_MISMATCH: Expected RSA JWK for RSA-OAEP algorithm');
+  }
 
-    const key = await getSubtle().importKey(
-        'jwk',
-        vm.publicKeyJwk,
-        algorithm,
-        true,
-        ['encrypt', 'wrapKey'] // Verifier keys are for Encryption (confidentiality)
-    );
+  const key = await getSubtle().importKey(
+    'jwk',
+    vm.publicKeyJwk,
+    algorithm,
+    true,
+    ['encrypt', 'wrapKey'] // Verifier keys are for Encryption (confidentiality)
+  );
 
-    // 5. Update Cache
-    keyCache.set(did, { key, expires: Date.now() + CACHE_TTL_MS });
-    console.log(`🔑 Cached public key for ${did} (expires in ${CACHE_TTL_MS / 60000} min)`);
+  // 5. Update Cache
+  keyCache.set(did, { key, expires: Date.now() + CACHE_TTL_MS });
+  console.log(`🔑 Cached public key for ${did} (expires in ${CACHE_TTL_MS / 60000} min)`);
 
-    return key;
+  return key;
 }
 
 export class WalletService {
-    private storage: SecureStorage | null = null;
-    private auditLog: AuditLog;
-    private policyEngine: PolicyEngine | null = null;
-    private policyPublicKey: CryptoKey | null = null;
-    private policyPrivateKey: CryptoKey | null = null; // Identity Private Key (Phase 0)
-    private initialized = false;
-    private initPromise: Promise<void> | null = null;
+  private storage: SecureStorage | null = null;
+  private auditLog: AuditLog;
+  private policyEngine: PolicyEngine | null = null;
+  private policyPublicKey: CryptoKey | null = null;
+  private policyPrivateKey: CryptoKey | null = null; // Identity Private Key (Phase 0)
+  private policyManifest: PolicyManifest | null = null;
+  private initialized = false;
+  private initPromise: Promise<void> | null = null;
 
-    constructor() {
-        this.auditLog = new AuditLog('user-wallet-001');
-    }
+  constructor() {
+    this.auditLog = new AuditLog('user-wallet-001');
+  }
 
-    async initialize(pin: string, saltString: string = "random-salt-per-user-v1"): Promise<void> {
-        if (this.initialized) return;
-        if (this.initPromise) return this.initPromise;
+  async initialize(pin: string, saltString: string = 'random-salt-per-user-v1'): Promise<void> {
+    if (this.initialized) return;
+    if (this.initPromise) return this.initPromise;
 
-        this.initPromise = (async () => {
-            let retried = false;
-            const run = async (): Promise<void> => {
-                let step = 'start';
-                const formatError = (err: unknown) => {
-                    if (err instanceof Error) return `${err.name}: ${err.message}`;
-                    return String(err);
-                };
-                try {
-                    // Secure Storage & Key Persistence
-                    console.log('🔐 Initializing Wallet with Secure Storage...');
-
-                    // 1. Derive Master Key from PIN (PBKDF2)
-                    // In prod, salt should be random (loaded from local storage) and stored.
-                    step = 'deriveMasterKey';
-                    const salt = new TextEncoder().encode(saltString);
-                    const masterKey = await deriveKeyFromPassword(pin, salt);
-
-                    // 2. Initialize Encrypted Storage
-                    step = 'initSecureStorage';
-                    this.storage = await SecureStorage.init(masterKey);
-
-                    // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
-                    step = 'initAuditKeys';
-                    const AUDIT_KEY_STORAGE_ID = '__mitch_audit_keys_v1';
-                    // Try to load persisted audit keys
-                    try {
-                        const storedAuditKeys = await this.storage!.load<{ created: string }>(AUDIT_KEY_STORAGE_ID);
-                        if (storedAuditKeys) {
-                            // Keys exist in storage — regenerate from same session
-                            // Note: WebCrypto non-extractable keys can't be serialized.
-                            // For PoC, we generate fresh keys but persist a marker.
-                            // Production would use key wrapping (wrapKey/unwrapKey).
-                            console.log('📦 Audit key marker found in storage (generating session keys)');
-                        }
-                    } catch (_: unknown) {
-                        // Storage error or first run — will generate fresh keys
-                    }
-
-                    const auditKeys = await generateKeyPair();
-                    this.auditLog.setAuditKeys(auditKeys.privateKey, auditKeys.publicKey);
-
-                    // Persist audit key marker (for future key-wrapping implementation)
-                    try {
-                        await this.storage!.save(AUDIT_KEY_STORAGE_ID, { created: new Date().toISOString() }, {
-                            issuer: 'did:mitch:self',
-                            type: ['SystemKey', 'AuditKey'],
-                            claims: ['created'],
-                            issuedAt: new Date().toISOString()
-                        });
-                    } catch (_: unknown) {
-                        console.warn('⚠️ Failed to persist audit key marker');
-                    }
-
-
-                    // 3. Identity Keys (Phase 0 -> T-31: Hardware-Bound)
-                    const _IDENTITY_KEY_ID = 'identity-keys-v1';
-
-                    // Check if a hardware identity key is already registered
-                    const hasHardwareIdentity = await WebAuthnService.isIdentityRegistered();
-                    
-                    if (hasHardwareIdentity) {
-                        console.log('🛡️ Hardware-bound Identity Key detected (LoA High)');
-                        this.policyPublicKey = null; // We use the HW key for signing
-                    } else {
-                        console.log('✨ Creating SESSION-SCOPED Identity Keypair (RAM only)...');
-                        const keys = await globalThis.crypto.subtle.generateKey(
-                            { name: 'ECDSA', namedCurve: 'P-256' },
-                            false, // extractable: false
-                            ['sign', 'verify']
-                        );
-                        this.policyPrivateKey = keys.privateKey;
-                        this.policyPublicKey = keys.publicKey;
-                        console.warn('⚠️ Phase-0: Using software identity keys. Upgrade to HW-binding for LoA High.');
-                    }
-
-                    // Initialize Policy Engine
-                    step = 'initPolicyEngine';
-                    this.policyEngine = new PolicyEngine(async (capsule: DecisionCapsule) => {
-                        const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
-                        const payload = canonicalStringify(toSign);
-
-                        if (await WebAuthnService.isIdentityRegistered()) {
-                            // Use Hardware Key
-                            const signature = await WebAuthnService.signWithIdentityKey(payload);
-                            // WebAuthn signature is already base64, but PolicyEngine expects hex or similar?
-                            // Actually WalletService.generatePresentation converts hex back to bytes.
-                            // I'll return it in a format that works.
-                            // For simplicity in this PoC, I'll return the base64-encoded signature.
-                            return signature;
-                        } else {
-                            // Use Software Key
-                            if (!this.policyPrivateKey) throw new Error("Identity Key not initialized");
-                            return signData(payload, this.policyPrivateKey);
-                        }
-                    });
-
-                    step = 'seedCredentials';
-                    this.initialized = true;
-                    await this.ensureSeeded();
-                    step = 'initPolicy';
-                    this.ensurePolicyInitialized();
-                } catch (err) {
-                    throw new Error(`INIT_FAILED@${step}: ${formatError(err)}`);
-                }
-            };
-
-            try {
-                await run();
-            } catch (err) {
-                if (!retried) {
-                    retried = true;
-                    console.warn('[WalletService] Init failed. Resetting storage and retrying...', err);
-                    try {
-                        if (typeof (SecureStorage as unknown as { reset?: () => Promise<void> }).reset === 'function') {
-                            await (SecureStorage as unknown as { reset: () => Promise<void> }).reset();
-                        }
-                    } catch (resetErr) {
-                        console.warn('[WalletService] Storage reset failed. Retrying without reset...', resetErr);
-                    }
-                    await run();
-                    return;
-                }
-                throw err;
-            }
-        })();
-
+    this.initPromise = (async () => {
+      let retried = false;
+      const run = async (): Promise<void> => {
+        let step = 'start';
+        const formatError = (err: unknown) => {
+          if (err instanceof Error) return `${err.name}: ${err.message}`;
+          return String(err);
+        };
         try {
-            await this.initPromise;
-        } finally {
-            this.initPromise = null;
-        }
-    }
-
-    private ensurePolicyInitialized() {
-        const existing = localStoreShim.getItem(POLICY_STORAGE_KEY);
-        if (!existing) {
-            this.savePolicy(DEFAULT_POLICY);
-        } else {
-            // Migration Logic
-            try {
-                const p = JSON.parse(existing);
-                const currentVer = parseFloat(p.version || '1.0');
-                const newVer = parseFloat(DEFAULT_POLICY.version);
-                if (currentVer < newVer) {
-                    console.log(`Migrating Policy from ${currentVer} to ${newVer}`);
-                    this.savePolicy(DEFAULT_POLICY);
-                }
-            } catch {
-                this.savePolicy(DEFAULT_POLICY);
-            }
-        }
-    }
-
-    getPolicy(): PolicyManifest {
-        const raw = localStoreShim.getItem(POLICY_STORAGE_KEY);
-        if (!raw) return DEFAULT_POLICY;
-
-        const stored = JSON.parse(raw) as PolicyManifest;
-
-        // Safe Policy Migration: Merge new rules, don't overwrite user preferences
-        if (stored.version !== DEFAULT_POLICY.version) {
-            console.log(`[WalletService] Policy version mismatch (${stored.version} → ${DEFAULT_POLICY.version}). Merging...`);
-
-            // 1. Keep user's existing rules
-            const userRuleIds = new Set(stored.rules.map(r => r.id));
-
-            // 2. Add new default rules that user doesn't have
-            const newRules = DEFAULT_POLICY.rules.filter(r => !userRuleIds.has(r.id));
-            if (newRules.length > 0) {
-                console.log(`[WalletService] Adding ${newRules.length} new rules: ${newRules.map(r => r.id).join(', ')}`);
-            }
-
-            // 3. Add new trusted issuers
-            const userIssuerDids = new Set(stored.trustedIssuers.map(i => i.did));
-            const newIssuers = DEFAULT_POLICY.trustedIssuers.filter(i => !userIssuerDids.has(i.did));
-
-            // 4. Merge: User rules + New rules, User issuers + New issuers
-            const mergedPolicy: PolicyManifest = {
-                ...stored,
-                version: DEFAULT_POLICY.version, // Upgrade version
-                rules: [...stored.rules, ...newRules],
-                trustedIssuers: [...stored.trustedIssuers, ...newIssuers],
-                globalSettings: { ...DEFAULT_POLICY.globalSettings, ...stored.globalSettings }
-            };
-
-            localStoreShim.setItem(POLICY_STORAGE_KEY, JSON.stringify(mergedPolicy));
-            return mergedPolicy;
-        }
-
-        return stored;
-    }
-
-    savePolicy(policy: PolicyManifest) {
-        localStoreShim.setItem(POLICY_STORAGE_KEY, JSON.stringify(policy));
-    }
-
-    private async ensureSeeded() {
-        if (!this.storage) throw new Error('Storage not ready');
-        const metas = await this.storage.getAllMetadata();
-
-        // 1. Initial Seed (Ensure Core Credential exists)
-        const seedMeta = metas.find(m => m.id === SEED_CREDENTIAL.id);
-        if (!seedMeta) {
-            console.log('Seeding initial minimized credentials...');
-            await this.storage.save(SEED_CREDENTIAL.id, SEED_CREDENTIAL.payload, {
-                issuer: SEED_CREDENTIAL.issuer,
-                type: SEED_CREDENTIAL.type,
-                claims: SEED_CREDENTIAL.claims,
-                issuedAt: SEED_CREDENTIAL.issuedAt
-            });
-        } else {
-            try {
-                const existing = await this.storage.load<Record<string, unknown>>(SEED_CREDENTIAL.id);
-                if (existing && !('birthDate' in existing)) {
-                    await this.storage.save(SEED_CREDENTIAL.id, SEED_CREDENTIAL.payload, {
-                        issuer: SEED_CREDENTIAL.issuer,
-                        type: SEED_CREDENTIAL.type,
-                        claims: SEED_CREDENTIAL.claims,
-                        issuedAt: SEED_CREDENTIAL.issuedAt
-                    });
-                    console.log('Updated age credential to include birthDate for ZKP predicates.');
-                }
-            } catch (e) {
-                // If decryption failed, let init retry/reset handle it.
-                console.warn('Seed check failed for age credential.', e);
-            }
-        }
-
-        // 2. Progressive Seeding
-        if (!metas.find(m => m.id === EMPLOYMENT_CREDENTIAL.id)) {
-            console.log('Seeding Employment Credential...');
-            await this.storage.save(EMPLOYMENT_CREDENTIAL.id, EMPLOYMENT_CREDENTIAL.payload, {
-                issuer: EMPLOYMENT_CREDENTIAL.issuer,
-                type: EMPLOYMENT_CREDENTIAL.type,
-                claims: EMPLOYMENT_CREDENTIAL.claims,
-                issuedAt: EMPLOYMENT_CREDENTIAL.issuedAt
-            });
-        }
-
-        // 3. EHDS Credentials (If missing)
-        if (!metas.find(m => m.id === EHDS_PATIENT_SUMMARY.id)) {
-            console.log('Seeding EHDS Patient Summary...');
-            const summaryPayload = { ...EHDS_PATIENT_SUMMARY.payload, ...EHDS_PATIENT_SUMMARY.payload.content };
-            await this.storage.save(EHDS_PATIENT_SUMMARY.id, summaryPayload, {
-                issuer: EHDS_PATIENT_SUMMARY.issuer,
-                type: EHDS_PATIENT_SUMMARY.type,
-                claims: EHDS_PATIENT_SUMMARY.claims,
-                issuedAt: EHDS_PATIENT_SUMMARY.issuedAt
-            });
-        }
-
-        if (!metas.find(m => m.id === EHDS_PRESCRIPTION.id)) {
-            console.log('Seeding EHDS Prescription...');
-            const rxPayload = { ...EHDS_PRESCRIPTION.payload, ...EHDS_PRESCRIPTION.payload.content };
-            await this.storage.save(EHDS_PRESCRIPTION.id, rxPayload, {
-                issuer: EHDS_PRESCRIPTION.issuer,
-                type: EHDS_PRESCRIPTION.type,
-                claims: EHDS_PRESCRIPTION.claims,
-                issuedAt: EHDS_PRESCRIPTION.issuedAt
-            });
-        }
-
-        // 4. mdoc mDL Credential (ISO 18013-5)
-        if (!metas.find(m => m.id === MDOC_MDL_CREDENTIAL.id)) {
-            console.log('Seeding mdoc mDL Credential...');
-            const mdocItems = [
-                { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'family_name', elementValue: 'Mustermann' },
-                { digestID: 1, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'given_name', elementValue: 'Erika' },
-                { digestID: 2, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'birth_date', elementValue: '1990-05-15' },
-                { digestID: 3, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'age_over_18', elementValue: true },
-                { digestID: 4, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'age_over_21', elementValue: true },
-                { digestID: 5, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'issuing_country', elementValue: 'DE' },
-            ];
-            const mdocCbor = mdocEncode({
-                nameSpaces: new Map([['org.iso.18013.5.1', mdocItems]]),
-            });
-            const mdocPayload = {
-                _mdoc: true,
-                docType: MDOC_MDL_CREDENTIAL.docType,
-                cborBase64: uint8ArrayToBase64(mdocCbor),
-            };
-            await this.storage.save(MDOC_MDL_CREDENTIAL.id, mdocPayload, {
-                issuer: MDOC_MDL_CREDENTIAL.issuer,
-                type: ['VerifiableCredential', MDOC_MDL_CREDENTIAL.docType],
-                issuedAt: new Date().toISOString(),
-                claims: MDOC_MDL_CREDENTIAL.claims,
-                format: 'mso_mdoc',
-            });
-        }
-    }
-
-    async seedMalicious() {
-        if (!this.storage) throw new Error('Storage not ready');
-        await this.storage.save(MALICIOUS_CREDENTIAL.id, MALICIOUS_CREDENTIAL.payload, {
-            issuer: MALICIOUS_CREDENTIAL.issuer,
-            type: MALICIOUS_CREDENTIAL.type,
-            claims: MALICIOUS_CREDENTIAL.claims,
-            issuedAt: MALICIOUS_CREDENTIAL.issuedAt
-        });
-    }
-
-    /**
-     * Stress Test - Corrupt a credential in storage to test integrity detection.
-     */
-    async corruptCredential() {
-        if (!this.storage) throw new Error('Storage not ready');
-        // Corrupt the 'vc-age-789' entry in the underlying storage (simulated bypass)
-        (this.storage as unknown as { corruptEntry: (id: string) => void }).corruptEntry(SEED_CREDENTIAL.id);
-    }
-
-    /**
-     * Stress Test - Evaluate against 500 complex rules.
-     */
-    async evaluateAgainstExplosion(request: VerifierRequest, context: EvaluationContext): Promise<PolicyEvaluationResult> {
-        if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
-
-        const credentials = await this.storage.getAllMetadata();
-        const basePolicy = this.getPolicy();
-
-        const explodedRules = Array.from({ length: 500 }).map((_, i) => ({
-            id: `rule-explosion-${i}`,
-            verifierPattern: `service-${i}.com`,
-            allowedClaims: ['email'],
-            priority: 1
-        }));
-
-        const stormPolicy: PolicyManifest = {
-            ...basePolicy,
-            rules: [...basePolicy.rules, ...explodedRules]
-        };
-
-        return this.policyEngine.evaluate(request, context, credentials, stormPolicy);
-    }
-
-    async splitMasterKey(): Promise<string[]> {
-        // In a real app, we'd get the actual master key bits.
-        // For the PoC, we use a placeholder that represents the entropy.
-        const mockMasterKey = "mitch-master-entropy-v1-highly-sensitive";
-        return RecoveryService.splitMasterKey(mockMasterKey);
-    }
-
-    async recoverFromFragments(fragments: string[]): Promise<void> {
-        const key = await RecoveryService.recover(fragments);
-        console.log(`✅ Wallet Recovered! Key: ${key.substring(0, 5)}...`);
-        // In prod, this would re-initialize SecureStorage
-    }
-
-    async evaluateRequest(request: VerifierRequest, context: EvaluationContext): Promise<PolicyEvaluationResult> {
-        if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
-
-        const credentials = await this.storage.getAllMetadata();
-
-        return this.policyEngine.evaluate(
-            request,
-            context,
-            credentials,
-            this.getPolicy()
-        );
-    }
-
-    /**
-     * Verify the entire audit log chain integrity live.
-     */
-    async verifyAuditChain(): Promise<{ valid: boolean; error?: string }> {
-        return this.auditLog.verifyChain();
-    }
-
-    async parseDeepLinkRequest(url: string): Promise<VerifierRequest | null> {
-        try {
-            const parsed = new URL(url);
-            if (parsed.protocol !== 'mitch:') return null;
-
-            const verifierDid = parsed.searchParams.get('verifier') || 'did:mitch:unknown';
-            const nonce = parsed.searchParams.get('nonce') || crypto.randomUUID();
-            const pubKeyB64 = parsed.searchParams.get('pub');
-
-            const req: VerifierRequest = {
-                verifierId: verifierDid,
-                nonce,
-                requirements: [{
-                    credentialType: 'VerifiableCredential',
-                    requestedClaims: ['age'],
-                    requestedProvenClaims: ['age >= 18']
-                }]
-            };
-
-            if (pubKeyB64) {
-                // T-88: Hydrate Ephemeral Key
-                try {
-                    const jwk = JSON.parse(atob(pubKeyB64));
-                    // Use helper to import safely
-                    const alg = mapJwkToAlgorithm(jwk);
-                    const key = await getSubtle().importKey(
-                        'jwk',
-                        jwk,
-                        alg,
-                        true,
-                        ['encrypt', 'wrapKey']
-                    );
-                    req.ephemeralResponseKey = key;
-                    console.log('⚡ Hydrated Ephemeral Key from Deep Link');
-                } catch (e) {
-                    console.warn('Failed to hydrate ephemeral key from URL', e);
-                }
-            }
-
-            return req;
-        } catch (e) {
-            console.error('Deep Link Parse Error', e);
-            return null;
-        }
-    }
-
-    async generatePresentation(
-        capsule: DecisionCapsule,
-        agentTargetPubKey?: CryptoKey // Force encryption to this key (Lufthansa) instead of DID resolution
-    ): Promise<{ encryptedVp: string, auditLog: string[] }> {
-        if (!this.storage) throw new Error('Wallet locked');
-        const logs: string[] = [];
-
-        // 1. Validate Capsule Integrity
-        if (!capsule.decision_id || !capsule.nonce) {
-            throw new Error('SECURITY ALERT: Invalid Decision Capsule. Replay Attack Possible.');
-        }
-
-        const verifierDID = capsule.verifier_did;
-        if (!verifierDID) throw new Error('SECURITY ALERT: Capsule not bound to a verifier.');
-
-        if (capsule.audience && capsule.audience !== 'mitch-wallet-pwa') {
-            throw new Error(`SECURITY ALERT: Capsule intended for different app (${capsule.audience}).`);
-        }
-
-        // Identity Signature Verification (Phase 0)
-        if (!capsule.wallet_attestation) {
-            throw new Error('SECURITY ALERT: Capsule contains no attestation (Unsigned).');
-        }
-        if (!this.policyPublicKey) {
-            throw new Error('Wallet not initialized properly (Missing Policy Key).');
-        }
-
-        const { wallet_attestation, ...toVerify } = capsule;
-        const payload = canonicalStringify(toVerify);
-        const signatureBytes = new Uint8Array(
-            wallet_attestation.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
-        );
-
-        const validSignature = await crypto.subtle.verify(
-            { name: 'ECDSA', hash: { name: 'SHA-256' } },
-            this.policyPublicKey,
-            signatureBytes,
-            new TextEncoder().encode(payload)
-        );
-
-        if (!validSignature) {
-            throw new Error('SECURITY ALERT: Capsule signature verification FAILED. Policy Decision may be forged.');
-        }
-        logs.push('✅ Capsule Signature Verified (Signed by Identity Key)');
-
-        logs.push(`✅ Capsule Integrity Verified (Ref: ${capsule.decision_id} -> ${verifierDID})`);
-
-        if (agentTargetPubKey) {
-            logs.push(`🤖 AUTOMATION FIREWALL: Encrypting for Target, not Requestor.`);
-        }
-
-        // Cryptographic Presence Binding
-        if (capsule.requires_presence) {
-            logs.push('👤 Biometric Presence Required. Triggering WebAuthn Ceremony...');
-            const presenceProof = await WebAuthnService.provePresence(capsule.decision_id);
-            capsule.presence_proof = presenceProof;
-            logs.push('✅ WebAuthn Signature Bound to Decision ID');
-        }
-
-        // 2. Generate Ephemeral Proof Key (Asymmetric ECDSA)
-        const proofKeys = await generateKeyPair();
-        const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
-
-        await this.auditLog.append('KEY_CREATED', 'ephemeral-proof-key', {
-            alg: 'ECDSA-P256',
-            decision_id: capsule.decision_id
-        });
-        logs.push('⚡ Ephemeral Proof Key Created (ECDSA-P256)');
-
-        // 2. Multi-VC Pipelining
-        const bundles: Array<{
-            credentialType: string;
-            disclosure: Record<string, unknown>;
-            provenClaims: Record<string, boolean>;
-            zkpProofs?: Record<string, unknown>; // Full cryptographic proofs
-            // credentialId removed to prevent discovery
-        }> = [];
-
-        // Normalize requirements (support legacy if authorized_requirements is missing)
-        const requirements = capsule.authorized_requirements || [{
-            credential_type: '*',
-            allowed_claims: capsule.allowed_claims || [],
-            proven_claims: capsule.proven_claims || [],
-            selected_credential_id: capsule.selected_credential_id,
-            issuer_trust_refs: capsule.issuer_trust_refs || []
-        }];
-
-        for (const req of requirements) {
-            const selectedId = req.selected_credential_id;
-            if (!selectedId) continue;
-
-            const credMeta = (await this.storage.getAllMetadata()).find(c => c.id === selectedId);
-            if (!credMeta) throw new Error(`Credential ${selectedId} not found.`);
-
-            // Load & Decrypt
-            let credentialData: Record<string, unknown> | null;
-            try {
-                credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
-            } catch {
-                await this.ensureSeeded();
-                credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
-            }
-
-            if (!credentialData) {
-                throw new Error(`Failed to load credential data for ${selectedId}`);
-            }
-
-            await this.auditLog.append('KEY_USED', selectedId, {
-                context: 'CREDENTIAL_DECRYPTION',
-                decision_id: capsule.decision_id,
-                requirement_type: req.credential_type
-            });
-            logs.push(`🔓 VC [${req.credential_type}] Decrypted`);
-
-            // ── mdoc credential path ────────────────────────────────────
-            if (credMeta.format === 'mso_mdoc' && credentialData._mdoc) {
-                const mdocPayload = credentialData as { _mdoc: true; docType: string; cborBase64: string };
-                const mdocClaims = this.extractMdocClaims(mdocPayload.cborBase64);
-
-                const disclosure: Record<string, unknown> = {};
-                for (const claim of req.allowed_claims) {
-                    if (mdocClaims[claim] !== undefined) disclosure[claim] = mdocClaims[claim];
-                }
-
-                bundles.push({
-                    credentialType: req.credential_type,
-                    disclosure,
-                    provenClaims: {},
-                    zkpProofs: {},
-                });
-
-                logs.push(`📄 mdoc [${mdocPayload.docType}] selective disclosure: ${Object.keys(disclosure).join(', ')}`);
-
-                await this.auditLog.append('VP_GENERATED', selectedId, {
-                    context: 'MDOC_PRESENTATION',
-                    decision_id: capsule.decision_id,
-                    claims_shared: Object.keys(disclosure),
-                    claims_requested: req.allowed_claims,
-                });
-                continue;
-            }
-
-            // ── SD-JWT credential path (default) ────────────────────────
-            // Selective Disclosure & ZKP
-            const disclosure: Record<string, unknown> = {};
-            const provenClaims: Record<string, boolean> = {};
-            const zkpProofs: Record<string, unknown> = {};
-
-            for (const claim of req.allowed_claims) {
-                if (credentialData[claim] !== undefined) disclosure[claim] = credentialData[claim];
-            }
-
-            for (const predicate of req.proven_claims) {
-                if (predicate.startsWith('age >=')) {
-                    // Upgrade to ZKP Predicate Engine
-                    const matches = predicate.match(/age >= (\d+)/);
-                    const ageLimit = matches ? parseInt(matches[1], 10) : 18;
-
-                    const predicateTimestamp = new Date().toISOString();
-                    const predReq: PredicateRequest = {
-                        verifierDid: verifierDID,
-                        nonce: capsule.nonce || `nonce-${Date.now()}`,
-                        purpose: 'Age Verification',
-                        timestamp: predicateTimestamp,
-                        predicates: [CommonPredicates.ageAtLeast(ageLimit)]
-                    };
-
-                    const signFn = async (d: string) => signData(d, proofKeys.privateKey);
-
-                    try {
-                        const rawSubject =
-                            (credentialData as Record<string, unknown>).credentialSubject &&
-                                typeof (credentialData as Record<string, unknown>).credentialSubject === 'object'
-                                ? {
-                                    ...((credentialData as Record<string, unknown>)
-                                        .credentialSubject as Record<string, unknown>)
-                                }
-                                : { ...(credentialData as Record<string, unknown>) };
-
-                        if (typeof rawSubject.dateOfBirth !== 'string') {
-                            if (typeof rawSubject.birthDate === 'string') {
-                                rawSubject.dateOfBirth = rawSubject.birthDate;
-                            } else if (typeof rawSubject.birth_date === 'string') {
-                                rawSubject.dateOfBirth = rawSubject.birth_date;
-                            }
-                        }
-
-                        const predicateCredential = { credentialSubject: rawSubject };
-                        const result = await evaluatePredicates(predicateCredential, predReq, signFn);
-
-                        zkpProofs[predicate] = {
-                            ...result,
-                            publicKeyJwk: proofPublicJWK
-                        };
-
-                        if (result.proof.allPassed) {
-                            provenClaims[predicate] = true;
-                            logs.push('[ZKP] Proof generated: ' + result.proof.decisionId + ' (' + result.proof.binding.requestHash.substring(0, 8) + '...)');
-                        } else {
-                            provenClaims[predicate] = false;
-                            logs.push('[ZKP] Proof failed: ' + (result.proof.evaluations[0]?.reasonCode ?? 'UNKNOWN'));
-                        }
-                    } catch (e) {
-                        console.error('ZKP Evaluation Error:', e);
-                        provenClaims[predicate] = false;
-                        logs.push('[ZKP] Error: ' + String(e));
-                    }
-                }
-            }
-
-            bundles.push({
-                credentialType: req.credential_type,
-                disclosure,
-                provenClaims,
-                zkpProofs
-                // credentialId intentionally omitted to prevent discovery
-            });
-        }
-
-        logs.push(`✅ Presentation Bundle Prepared (${bundles.length} VCs)`);
-
-        // Log what was shared (Data Transparency Foundation)
-        await this.auditLog.append('VP_GENERATED', capsule.decision_id, {
-            decision_id: capsule.decision_id,
-            verifier_did: verifierDID,
-            credential_types: bundles.map(b => b.credentialType),
-            claims_shared: bundles.flatMap(b => Object.keys(b.disclosure)),
-            claims_requested: requirements.flatMap(r => r.requested_claims ?? []),
-            proven_claims: bundles.flatMap(b =>
-                Object.keys(b.provenClaims).filter(k => b.provenClaims[k])
-            ),
-            used_zkp: bundles.some(b => Object.keys(b.zkpProofs || {}).length > 0),
-        });
-
-        const vpPayload = {
-            metadata: {
-                type: 'VerifiablePresentationBundle',
-                decision_id: capsule.decision_id,
-                timestamp: Date.now(),
-                // Replay Protection (Short Lived)
-                validUntil: Date.now() + 60000,
-                nonce: capsule.nonce,
-                // Issuer references are now opaque (from authorized_requirements)
-                issuer_trust_refs: requirements.flatMap(r => r.issuer_trust_refs || [])
-            },
-            presentations: bundles.map(b => ({
-                type: b.credentialType,
-                disclosure: b.disclosure,
-                proven_claims: b.provenClaims,
-                zkp_proofs: b.zkpProofs // Include proofs in VP
-            }))
-        };
-
-        // 4. Sign the Payload
-        const payloadString = canonicalStringify(vpPayload);
-        const signature = await globalThis.crypto.subtle.sign(
-            { name: 'ECDSA', hash: { name: 'SHA-256' } },
-            proofKeys.privateKey,
-            new TextEncoder().encode(payloadString)
-        );
-        const signatureHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-        // 5. Create Proof Artifact (Structure must match VerifierSDK expectations)
-        const proofArtifact = {
-            vp: vpPayload,  // SDK expects 'vp', not 'bundle'
-            proof: {
-                alg: 'ES256',
-                signature: signatureHex,
-                public_key: proofPublicJWK,
-                presence_proof: capsule.presence_proof
-            }
-        };
-
-        // 6. Encrypt for Verifier (Isolate Automated Actors)
-        const ephemeralKey = await EphemeralKey.create();
-
-        let targetPubKey: CryptoKey;
-        const transportDid = verifierDID.startsWith('did:') ? verifierDID : 'did:mitch:verifier-liquor-store';
-        if (transportDid !== verifierDID) {
-            logs.push(`⚠️ Non-DID verifier id (${verifierDID}). Using demo DID for encryption.`);
-        }
-        if (agentTargetPubKey) {
-            // Key Injection Protection (MITM Check)
-            // Note: Keys are opaque handles in WebCrypto. We export to JWK for inspection.
-            // We use a constant-time comparison helper to prevent timing side-channels.
-            const officialKey = await fetchVerifierPublicKey(transportDid);
-            const providedJWK = await getSubtle().exportKey('jwk', agentTargetPubKey);
-            const officialJWK = await getSubtle().exportKey('jwk', officialKey);
-
-            const nMatch = constantTimeCompare(providedJWK.n || '', officialJWK.n || '');
-            const eMatch = constantTimeCompare(providedJWK.e || '', officialJWK.e || '');
-
-            if (!nMatch || !eMatch) {
-                logs.push(`⚠️ SECURITY ALERT: Actor provided a FAKE Key for ${verifierDID}! Blocking.`);
-                throw new Error('MITM ATTACK DETECTED: The provided encryption key does not belong to the target identity.');
-            }
-
-            logs.push(`✅ Key Binding Verified: Actor provided the correct key for ${transportDid}.`);
-            targetPubKey = agentTargetPubKey;
-        } else if (capsule.ephemeral_key) {
-            // T-88: Ephemeral Session Mode (Zero-Backend)
-            logs.push('⚡ Using Ephemeral Session Key from Decision Capsule.');
-
-            try {
-                const alg = mapJwkToAlgorithm(capsule.ephemeral_key as JsonWebKey);
-                targetPubKey = await getSubtle().importKey(
-                    'jwk',
-                    capsule.ephemeral_key,
-                    alg,
-                    true,
-                    ['encrypt', 'wrapKey']
-                );
-            } catch (e) {
-                throw new Error(`EPHEMERAL_KEY_IMPORT_FAILED: ${(e as Error).message}`);
-            }
-        } else {
-            // Standard Mode: We resolve the DID to get the key.
-            targetPubKey = await fetchVerifierPublicKey(transportDid);
-        }
-
-        await this.auditLog.append('KEY_CREATED', 'ephemeral-session-key', {
-            alg: 'AES-GCM-256',
-            decision_id: capsule.decision_id
-        });
-        logs.push('🔐 Ephemeral Session Key Created (AES-GCM-256)');
-
-        const aad = new TextEncoder().encode(
-            canonicalStringify({
-                decision_id: capsule.decision_id,
-                nonce: capsule.nonce,
-                verifier_did: verifierDID
-            })
-        );
-
-        const ciphertext = await ephemeralKey.encrypt(JSON.stringify(proofArtifact), aad);
-        const encryptedKey = await ephemeralKey.sealToRecipient(targetPubKey);
-
-        const transportPackage = JSON.stringify({
-            ciphertext,
-            aad_context: {
-                decision_id: capsule.decision_id,
-                nonce: capsule.nonce,
-                verifier_did: verifierDID
-            },
-            recipient: {
-                header: { kid: `${verifierDID}#key-1` },
-                encrypted_key: encryptedKey
-            }
-        });
-
-        // 7. Crypto-Shredding (Double Shred)
-        ephemeralKey.shred();
-        (proofKeys as unknown as { privateKey: CryptoKey | null }).privateKey = null;
-
-        await this.auditLog.append('KEY_DESTROYED', 'ephemeral-session-key', {
-            decision_id: capsule.decision_id,
-            verified: true,
-            reason: 'Session terminal'
-        });
-        await this.auditLog.append('KEY_DESTROYED', 'ephemeral-proof-key', {
-            decision_id: capsule.decision_id,
-            verified: true,
-            reason: 'Presentation complete'
-        });
-
-        logs.push('♻️ Ephemeral key references dropped (best-effort). Non-extractable keys used.');
-        logs.push('✅ VP Bundle Signed & Encrypted');
-
-        return { encryptedVp: transportPackage, auditLog: logs };
-    }
-
-    /**
-     * Store a credential received from an OID4VCI issuer.
-     * Call after parsing the JWT credential response from POST /credential.
-     */
-    async addIssuedCredential(
-        id: string,
-        subject: Record<string, unknown>,
-        issuerDid: string,
-        renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
-    ): Promise<void> {
-        await this.ensureSeeded();
-        if (!this.storage) throw new Error('Wallet locked');
-        const meta: StoredCredentialMetadata = {
-            id,
-            issuer: issuerDid,
-            type: ['VerifiableCredential', 'AgeCredential'],
-            issuedAt: new Date().toISOString(),
-            claims: Object.keys(subject),
-            renderMethod
-        };
-        await this.storage.save(id, subject, meta);
-        await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
-    }
-
-    /**
-     * Store an mdoc credential (ISO 18013-5) received via OID4VCI.
-     *
-     * The credential is stored as a JSON-serializable wrapper containing
-     * the raw CBOR bytes (base64-encoded), docType, and extracted claims.
-     * Format is tagged as 'mso_mdoc' in metadata.
-     */
-    async addMdocCredential(
-        id: string,
-        mdocCborBytes: Uint8Array,
-        docType: string,
-        issuerDid: string,
-        claimNames: string[]
-    ): Promise<void> {
-        await this.ensureSeeded();
-        if (!this.storage) throw new Error('Wallet locked');
-
-        // Store as JSON wrapper with base64-encoded CBOR for SecureStorage compatibility
-        const payload = {
-            _mdoc: true,
-            docType,
-            cborBase64: uint8ArrayToBase64(mdocCborBytes),
-        };
-
-        const meta: StoredCredentialMetadata = {
-            id,
-            issuer: issuerDid,
-            type: ['VerifiableCredential', docType],
-            issuedAt: new Date().toISOString(),
-            claims: claimNames,
-            format: 'mso_mdoc',
-        };
-
-        await this.storage.save(id, payload, meta);
-        await this.auditLog.append('KEY_USED', id, {
-            context: 'MDOC_ISSUANCE',
-            issuer: issuerDid,
-            docType,
-        });
-    }
-
-    /**
-     * Record PII-minimal Identity Firewall transparency events for a proof flow.
-     */
-    async recordIdentityFirewallEvents(
-        decisionId: string | undefined,
-        verifierDid: string | undefined,
-        trackers: TrackingPoint[]
-    ): Promise<AuditLogEntry[]> {
-        if (!decisionId) return [];
-
-        const entries: AuditLogEntry[] = [];
-        for (const tracker of trackers) {
-            const metadata = mapTrackingPointToIdentityMetadata(decisionId, verifierDid, tracker);
-            const entry = await this.auditLog.append(
-                'IDENTITY_ACCESS_DETECTED',
-                `identity-firewall:${metadata.access_type}`,
-                metadata as unknown as Record<string, unknown>
+          // Secure Storage & Key Persistence
+          console.log('🔐 Initializing Wallet with Secure Storage...');
+
+          // 1. Derive Master Key from PIN (PBKDF2)
+          // In prod, salt should be random (loaded from local storage) and stored.
+          step = 'deriveMasterKey';
+          const salt = new TextEncoder().encode(saltString);
+          const masterKey = await deriveKeyFromPassword(pin, salt);
+
+          // 2. Initialize Encrypted Storage
+          step = 'initSecureStorage';
+          this.storage = await SecureStorage.init(masterKey);
+
+          // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
+          step = 'initAuditKeys';
+          const AUDIT_KEY_STORAGE_ID = '__mitch_audit_keys_v1';
+          // Try to load persisted audit keys
+          try {
+            const storedAuditKeys = await this.storage!.load<{ created: string }>(
+              AUDIT_KEY_STORAGE_ID
             );
-            entries.push(entry);
-        }
-
-        return entries;
-    }
-
-    /**
-     * Get recent logs for the UI.
-     */
-    getRecentAuditLogs(limit: number = 5): AuditLogEntry[] {
-        return this.auditLog.getRecentEntries(limit);
-    }
-
-    /**
-     * Export a signed report of all wallet activities.
-     * This is the "Beweislast-Umkehr" (Reverse Onus of Proof) artifact.
-     */
-    async exportAuditReport(): Promise<AuditLogExport> {
-        return this.auditLog.exportReport();
-    }
-
-    async syncAuditToL2() {
-        return this.auditLog.syncToL2();
-    }
-
-    /**
-     * Register a hardware-bound identity key (LoA High).
-     */
-    async registerIdentityKey(): Promise<void> {
-        await WebAuthnService.registerIdentityKey();
-        console.log('✅ Hardware-bound Identity Key registered.');
-        // Re-initialize policy engine to use the new key
-        this.initialized = false;
-        await this.initialize("123456"); // Reuse pin for demo
-    }
-
-    /**
-     * Get the persistent identity public key for device engagement.
-     */
-    getIdentityPublicKey(): CryptoKey | null {
-        const auditLogInternal = this.auditLog as unknown as { publicKey?: CryptoKey };
-        return auditLogInternal.publicKey || null;
-    }
-
-    /**
-     * Log a successful presentation transmission with compliance metadata.
-     */
-    async logVpSent(decisionId: string, metadata: Record<string, unknown>) {
-        await this.auditLog.append('VP_SENT', decisionId, metadata);
-    }
-
-    /**
-     * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
-     */
-    async generateProximityResponse(
-        credId: string,
-        requestedElements: { ns: string, element: string }[],
-        sessionTranscript: import('@mitch/mdoc').SessionTranscript
-    ): Promise<Uint8Array> {
-        if (!this.storage) throw new Error('Wallet locked');
-
-        const credData = await this.storage.load<{ _mdoc: true, docType: string, cborBase64: string }>(credId);
-        if (!credData?._mdoc) throw new Error('Not an mdoc credential');
-
-        const cborBytes = base64ToUint8Array(credData.cborBase64);
-        const mdoc = mdocDecodeMdoc<any>(cborBytes);
-
-        // 1. Filter elements (Selective Disclosure)
-        const issuerNamespaces = mdoc.get('nameSpaces') as Map<string, any[]>;
-        const filteredNamespaces = new Map<string, any[]>();
-
-        for (const req of requestedElements) {
-            const items = issuerNamespaces.get(req.ns);
-            if (!items) continue;
-
-            if (!filteredNamespaces.has(req.ns)) filteredNamespaces.set(req.ns, []);
-            const item = items.find(i => (i instanceof Map ? i.get('elementIdentifier') : i.elementIdentifier) === req.element);
-            if (item) filteredNamespaces.get(req.ns)!.push(item);
-        }
-
-        // 2. Device Authentication (DeviceSigned)
-        // For PoC, we use COSE_Sign1 with the identity key.
-        // In real mDL, this would be a separate DeviceKey.
-        const mso = mdoc.get('issuerAuth'); // Simplified for PoC
-
-        // Placeholder for real DeviceAuth creation
-        const deviceAuth: import('@mitch/mdoc').DeviceAuth = {
-            deviceSignature: new Uint8Array([0xde, 0xad, 0xbe, 0xef]) // Mock signature
-        };
-
-        const deviceSigned: import('@mitch/mdoc').DeviceSigned = {
-            nameSpaces: new Map(),
-            deviceAuth
-        };
-
-        const document: import('@mitch/mdoc').MdocDocument = {
-            docType: credData.docType,
-            issuerSigned: {
-                nameSpaces: filteredNamespaces,
-                issuerAuth: mdoc.get('issuerAuth')
-            },
-            deviceSigned
-        };
-
-        const responseCbor = (await import('@mitch/mdoc')).buildDeviceResponse([document]);
-
-        await this.auditLog.append('VP_SENT', credId, {
-            context: 'PROXIMITY_PRESENTATION',
-            docType: credData.docType,
-            claims_shared: requestedElements.map(e => e.element),
-            status: 'SUCCESS'
-        });
-
-        return responseCbor;
-    }
-
-    /**
-     * Request the erasure of personal data from a Relying Party (CIR 2024/2982 I9).
-     * This is a wallet-initiated flow that sends an authenticated deletion request.
-     */
-    async requestDataErasure(decisionId: string): Promise<{ success: boolean; message: string }> {
-        // 1. Find the transaction in the audit log
-        const entries = this.auditLog.getRecentEntries(100);
-        const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
-        
-        if (!vpSent) throw new Error('Transaction not found in audit log');
-        
-        const verifierId = vpSent.verifierId;
-        const erasureEndpoint = vpSent.metadata?.erasure_endpoint as string | undefined;
-
-        if (!erasureEndpoint) {
-            throw new Error(`Verifier ${verifierId} does not support automated erasure requests.`);
-        }
-
-        // 2. Prepare the authenticated erasure request
-        // In a real EUDI Wallet, this would be an OID4VP flow where the wallet is the requester.
-        // For this PoC, we simulate the signed request.
-        const erasureRequest = {
-            type: 'erasure_request',
-            decision_id: decisionId,
-            timestamp: new Date().toISOString(),
-            purpose: 'Data Erasure Request under GDPR Article 17',
-            verifier_id: verifierId,
-            transaction_type: 'data_erasure'
-        };
-
-        const content = canonicalStringify(erasureRequest);
-
-        // Sign with the persistent identity key
-        const { proofToken } = await this.signData({
-            type: 'ProofOfExistence',
-            hash: await sha256(content),
-            hashAlg: 'SHA-256',
-            description: `Data Erasure Request for decision ${decisionId}`,
-            mediaType: 'application/json',
-            createdAt: new Date().toISOString(),
-            byteLength: new TextEncoder().encode(content).length
-        });
-
-        console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
-        
-        // 3. Simulate POST to the verifier's erasure endpoint
-        // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
-
-        await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
-            verifier_id: verifierId,
-            endpoint: erasureEndpoint,
-            status: 'SENT'
-        });
-
-        return { 
-            success: true, 
-            message: `Erasure request for ${verifierId} has been sent successfully.` 
-        };
-    }
-
-    /**
-     * Report a suspicious Relying Party to the Supervisory Authority (CIR 2024/2982 Art. 7).
-     */
-    async reportRelyingParty(decisionId: string, reason: string): Promise<{ success: boolean; message: string }> {
-        const entries = this.auditLog.getRecentEntries(100);
-        const vpSent = entries.find(e => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId);
-        
-        const verifierId = vpSent?.verifierId || 'unknown';
-        const reportEndpoint = vpSent?.metadata?.report_endpoint as string | undefined || 'https://authority.eudi.eu/report';
-
-        const report = {
-            type: 'suspicious_rp_report',
-            decision_id: decisionId,
-            verifier_id: verifierId,
-            reason,
-            timestamp: new Date().toISOString(),
-            metadata: vpSent?.metadata
-        };
-
-        const content = canonicalStringify(report);
-        const { proofToken } = await this.signData({
-            type: 'ProofOfExistence',
-            hash: await sha256(content),
-            hashAlg: 'SHA-256',
-            description: `Suspicious RP Report: ${verifierId}`,
-            mediaType: 'application/json',
-            createdAt: new Date().toISOString(),
-            byteLength: new TextEncoder().encode(content).length
-        });
-
-        console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
-
-        await this.auditLog.append('REPORT_SENT', decisionId, {
-            verifier_id: verifierId,
-            reason,
-            endpoint: reportEndpoint
-        });
-
-        return { 
-            success: true, 
-            message: `Report for ${verifierId} has been submitted to the authorities.` 
-        };
-    }
-
-    /**
-     * Handle Recovery Actions triggered by Policy Denial
-     */
-    async handleAction(action: import('@askmi/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {
-        console.log(`[Action Handler] Processing: ${action.type}`);
-
-        switch (action.type) {
-            case 'LOAD_CREDENTIAL':
-                // Simulate launching OID4VCI (dependency)
-                console.log(`[OID4VCI] Launching wizard for target: ${action.target}`);
-                return { success: true, message: 'OID4VCI Wizard Started' };
-
-            case 'OVERRIDE_WITH_CONSENT':
-                // In a real app, this would grant temporary permission
-                console.log(`[Override] User accepted risk for action: ${action.id}`);
-                await this.auditLog.append('POLICY_EVALUATED', action.id, {
-                    result: 'OVERRIDE',
-                    context: 'USER_CONSENT_GRANTED'
-                });
-                return { success: true, message: 'Policy Override Granted' };
-
-            case 'CONTACT_VERIFIER':
-                console.log(`[Contact] Opening support channel for ${action.target}`);
-                // window.open('mailto:support@verifier.com');
-                return { success: true, message: 'Support Channel Opened' };
-
-            case 'LEARN_MORE':
-                console.log(`[Learn] Navigating to: ${action.target}`);
-                // window.open(action.target, '_blank');
-                return { success: true, message: 'Documentation Opened' };
-
-            case 'REPORT_ISSUE':
-                console.log('[Report] Logging issue to support queue.');
-                return { success: true, message: 'Issue Reported' };
-
-            default:
-                console.warn(`[Handler] Unknown action type: ${action.type}`);
-                return { success: false, message: 'Action not realized' };
-        }
-    }
-
-    /**
-     * Add a credential to the wallet (persisted encrypted in SecureStorage).
-     */
-    async addCredential(
-        id: string,
-        payload: Record<string, unknown>,
-        metadata: { issuer: string; type: string[]; claims: string[]; issuedAt: string }
-    ): Promise<void> {
-        if (!this.storage) throw new Error('Wallet locked');
-        await this.storage.save(id, payload, metadata);
-    }
-
-    /**
-     * Delete a credential from the wallet.
-     * Returns true if the credential existed and was removed, false otherwise.
-     */
-    async deleteCredential(id: string): Promise<boolean> {
-        if (!this.storage) throw new Error('Wallet locked');
-        return this.storage.delete(id);
-    }
-
-    /**
-     * Get all credential metadata (without decrypting payloads).
-     */
-    async getCredentials(): Promise<StoredCredentialMetadata[]> {
-        if (!this.storage) throw new Error('Wallet locked');
-        return this.storage.getAllMetadata();
-    }
-
-    /**
-     * Load a specific credential's decrypted payload.
-     */
-    async loadCredential<T = Record<string, unknown>>(id: string): Promise<T | null> {
-        if (!this.storage) throw new Error('Wallet locked');
-        return this.storage.load<T>(id);
-    }
-
-    /**
-     * Extract claims from an mdoc credential's CBOR payload.
-     * Flattens all namespace elements into a single Record for
-     * compatibility with the existing selective disclosure pipeline.
-     */
-    private extractMdocClaims(cborBase64: string): Record<string, unknown> {
-        const cborBytes = base64ToUint8Array(cborBase64);
-        const decoded = mdocDecodeMdoc<Map<string, unknown>>(cborBytes);
-
-        const claims: Record<string, unknown> = {};
-
-        // mdoc stores data in nameSpaces → IssuerSignedItem[]
-        // We flatten all namespace elements into a single claims map
-        const nameSpaces = decoded.get('nameSpaces') as Map<string, unknown[]> | undefined;
-        if (nameSpaces instanceof Map) {
-            for (const [_ns, items] of nameSpaces) {
-                if (!Array.isArray(items)) continue;
-                for (const item of items) {
-                    if (item instanceof Map) {
-                        const id = item.get('elementIdentifier') as string;
-                        const value = item.get('elementValue');
-                        if (id) claims[id] = value;
-                    } else if (item && typeof item === 'object') {
-                        const obj = item as Record<string, unknown>;
-                        if (obj.elementIdentifier) {
-                            claims[obj.elementIdentifier as string] = obj.elementValue;
-                        }
-                    }
-                }
+            if (storedAuditKeys) {
+              // Keys exist in storage — regenerate from same session
+              // Note: WebCrypto non-extractable keys can't be serialized.
+              // For PoC, we generate fresh keys but persist a marker.
+              // Production would use key wrapping (wrapKey/unwrapKey).
+              console.log('📦 Audit key marker found in storage (generating session keys)');
             }
+          } catch (_: unknown) {
+            // Storage error or first run — will generate fresh keys
+          }
+
+          const auditKeys = await generateKeyPair();
+          this.auditLog.setAuditKeys(auditKeys.privateKey, auditKeys.publicKey);
+
+          // Persist audit key marker (for future key-wrapping implementation)
+          try {
+            await this.storage!.save(
+              AUDIT_KEY_STORAGE_ID,
+              { created: new Date().toISOString() },
+              {
+                issuer: 'did:askmi:self',
+                type: ['SystemKey', 'AuditKey'],
+                claims: ['created'],
+                issuedAt: new Date().toISOString(),
+              }
+            );
+          } catch (_: unknown) {
+            console.warn('⚠️ Failed to persist audit key marker');
+          }
+
+          // 3. Identity Keys (Phase 0 -> T-31: Hardware-Bound)
+          const _IDENTITY_KEY_ID = 'identity-keys-v1';
+
+          // Check if a hardware identity key is already registered
+          const hasHardwareIdentity = await WebAuthnService.isIdentityRegistered();
+
+          if (hasHardwareIdentity) {
+            console.log('🛡️ Hardware-bound Identity Key detected (LoA High)');
+            this.policyPublicKey = null; // We use the HW key for signing
+          } else {
+            console.log('✨ Creating SESSION-SCOPED Identity Keypair (RAM only)...');
+            const keys = await globalThis.crypto.subtle.generateKey(
+              { name: 'ECDSA', namedCurve: 'P-256' },
+              false, // extractable: false
+              ['sign', 'verify']
+            );
+            this.policyPrivateKey = keys.privateKey;
+            this.policyPublicKey = keys.publicKey;
+            console.warn(
+              '⚠️ Phase-0: Using software identity keys. Upgrade to HW-binding for LoA High.'
+            );
+          }
+
+          // Initialize Policy Engine
+          step = 'initPolicyEngine';
+          this.policyEngine = new PolicyEngine(async (capsule: DecisionCapsule) => {
+            const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
+            const payload = canonicalStringify(toSign);
+
+            if (await WebAuthnService.isIdentityRegistered()) {
+              // Use Hardware Key
+              const signature = await WebAuthnService.signWithIdentityKey(payload);
+              // WebAuthn signature is already base64, but PolicyEngine expects hex or similar?
+              // Actually WalletService.generatePresentation converts hex back to bytes.
+              // I'll return it in a format that works.
+              // For simplicity in this PoC, I'll return the base64-encoded signature.
+              return signature;
+            } else {
+              // Use Software Key
+              if (!this.policyPrivateKey) throw new Error('Identity Key not initialized');
+              return signData(payload, this.policyPrivateKey);
+            }
+          });
+
+          step = 'seedCredentials';
+          this.initialized = true;
+          await this.ensureSeeded();
+          step = 'initPolicy';
+          await this.ensurePolicyInitialized();
+        } catch (err) {
+          throw new Error(`INIT_FAILED@${step}: ${formatError(err)}`);
+        }
+      };
+
+      try {
+        await run();
+      } catch (err) {
+        if (!retried) {
+          retried = true;
+          console.warn('[WalletService] Init failed. Resetting storage and retrying...', err);
+          try {
+            if (
+              typeof (SecureStorage as unknown as { reset?: () => Promise<void> }).reset ===
+              'function'
+            ) {
+              await (SecureStorage as unknown as { reset: () => Promise<void> }).reset();
+            }
+          } catch (resetErr) {
+            console.warn(
+              '[WalletService] Storage reset failed. Retrying without reset...',
+              resetErr
+            );
+          }
+          await run();
+          return;
+        }
+        throw err;
+      }
+    })();
+
+    try {
+      await this.initPromise;
+    } finally {
+      this.initPromise = null;
+    }
+  }
+
+  private async ensurePolicyInitialized() {
+    if (!this.storage) throw new Error('Storage not ready');
+
+    let stored = await this.storage.load<PolicyManifest>(POLICY_STORAGE_ID);
+    const legacyPolicy = this.loadLegacyPolicy();
+    if (legacyPolicy) {
+      if (!stored) stored = legacyPolicy;
+      localStoreShim.removeItem(LEGACY_POLICY_STORAGE_KEY);
+    }
+    const policy = this.normalizePolicy(stored ?? DEFAULT_POLICY);
+    this.policyManifest = policy;
+    await this.persistPolicy(policy);
+  }
+
+  private loadLegacyPolicy(): PolicyManifest | null {
+    const existing = localStoreShim.getItem(LEGACY_POLICY_STORAGE_KEY);
+    if (!existing) return null;
+
+    try {
+      return JSON.parse(existing) as PolicyManifest;
+    } catch {
+      localStoreShim.removeItem(LEGACY_POLICY_STORAGE_KEY);
+      return null;
+    }
+  }
+
+  private normalizePolicy(stored: PolicyManifest): PolicyManifest {
+    const currentVer = parseFloat(stored.version || '1.0');
+    const newVer = parseFloat(DEFAULT_POLICY.version);
+    if (currentVer < newVer) {
+      console.log(`Migrating Policy from ${currentVer} to ${newVer}`);
+      return DEFAULT_POLICY;
+    }
+
+    // Safe Policy Migration: Merge new rules, don't overwrite user preferences
+    if (stored.version !== DEFAULT_POLICY.version) {
+      console.log(
+        `[WalletService] Policy version mismatch (${stored.version} → ${DEFAULT_POLICY.version}). Merging...`
+      );
+
+      // 1. Keep user's existing rules
+      const userRuleIds = new Set(stored.rules.map((r) => r.id));
+
+      // 2. Add new default rules that user doesn't have
+      const newRules = DEFAULT_POLICY.rules.filter((r) => !userRuleIds.has(r.id));
+      if (newRules.length > 0) {
+        console.log(
+          `[WalletService] Adding ${newRules.length} new rules: ${newRules.map((r) => r.id).join(', ')}`
+        );
+      }
+
+      // 3. Add new trusted issuers
+      const userIssuerDids = new Set(stored.trustedIssuers.map((i) => i.did));
+      const newIssuers = DEFAULT_POLICY.trustedIssuers.filter((i) => !userIssuerDids.has(i.did));
+
+      // 4. Merge: User rules + New rules, User issuers + New issuers
+      const mergedPolicy: PolicyManifest = {
+        ...stored,
+        version: DEFAULT_POLICY.version, // Upgrade version
+        rules: [...stored.rules, ...newRules],
+        trustedIssuers: [...stored.trustedIssuers, ...newIssuers],
+        globalSettings: { ...DEFAULT_POLICY.globalSettings, ...stored.globalSettings },
+      };
+
+      return mergedPolicy;
+    }
+
+    return stored;
+  }
+
+  private async persistPolicy(policy: PolicyManifest): Promise<void> {
+    if (!this.storage) throw new Error('Storage not ready');
+    await this.storage.save(POLICY_STORAGE_ID, policy, {
+      issuer: 'did:askmi:self',
+      type: ['SystemPolicy', 'PolicyManifest'],
+      claims: ['rules', 'trustedIssuers', 'globalSettings'],
+      issuedAt: new Date().toISOString(),
+    });
+  }
+
+  getPolicy(): PolicyManifest {
+    return this.policyManifest ?? DEFAULT_POLICY;
+  }
+
+  savePolicy(policy: PolicyManifest) {
+    this.policyManifest = policy;
+    if (!this.storage) return;
+    void this.persistPolicy(policy).catch((err) => {
+      console.error('[WalletService] Failed to persist policy manifest', err);
+    });
+  }
+
+  private async ensureSeeded() {
+    if (!this.storage) throw new Error('Storage not ready');
+    const metas = await this.storage.getAllMetadata();
+
+    // 1. Initial Seed (Ensure Core Credential exists)
+    const seedMeta = metas.find((m) => m.id === SEED_CREDENTIAL.id);
+    if (!seedMeta) {
+      console.log('Seeding initial minimized credentials...');
+      await this.storage.save(SEED_CREDENTIAL.id, SEED_CREDENTIAL.payload, {
+        issuer: SEED_CREDENTIAL.issuer,
+        type: SEED_CREDENTIAL.type,
+        claims: SEED_CREDENTIAL.claims,
+        issuedAt: SEED_CREDENTIAL.issuedAt,
+      });
+    } else {
+      try {
+        const existing = await this.storage.load<Record<string, unknown>>(SEED_CREDENTIAL.id);
+        if (existing && !('birthDate' in existing)) {
+          await this.storage.save(SEED_CREDENTIAL.id, SEED_CREDENTIAL.payload, {
+            issuer: SEED_CREDENTIAL.issuer,
+            type: SEED_CREDENTIAL.type,
+            claims: SEED_CREDENTIAL.claims,
+            issuedAt: SEED_CREDENTIAL.issuedAt,
+          });
+          console.log('Updated age credential to include birthDate for ZKP predicates.');
+        }
+      } catch (e) {
+        // If decryption failed, let init retry/reset handle it.
+        console.warn('Seed check failed for age credential.', e);
+      }
+    }
+
+    // 2. Progressive Seeding
+    if (!metas.find((m) => m.id === EMPLOYMENT_CREDENTIAL.id)) {
+      console.log('Seeding Employment Credential...');
+      await this.storage.save(EMPLOYMENT_CREDENTIAL.id, EMPLOYMENT_CREDENTIAL.payload, {
+        issuer: EMPLOYMENT_CREDENTIAL.issuer,
+        type: EMPLOYMENT_CREDENTIAL.type,
+        claims: EMPLOYMENT_CREDENTIAL.claims,
+        issuedAt: EMPLOYMENT_CREDENTIAL.issuedAt,
+      });
+    }
+
+    // 3. EHDS Credentials (If missing)
+    if (!metas.find((m) => m.id === EHDS_PATIENT_SUMMARY.id)) {
+      console.log('Seeding EHDS Patient Summary...');
+      const summaryPayload = {
+        ...EHDS_PATIENT_SUMMARY.payload,
+        ...EHDS_PATIENT_SUMMARY.payload.content,
+      };
+      await this.storage.save(EHDS_PATIENT_SUMMARY.id, summaryPayload, {
+        issuer: EHDS_PATIENT_SUMMARY.issuer,
+        type: EHDS_PATIENT_SUMMARY.type,
+        claims: EHDS_PATIENT_SUMMARY.claims,
+        issuedAt: EHDS_PATIENT_SUMMARY.issuedAt,
+      });
+    }
+
+    if (!metas.find((m) => m.id === EHDS_PRESCRIPTION.id)) {
+      console.log('Seeding EHDS Prescription...');
+      const rxPayload = { ...EHDS_PRESCRIPTION.payload, ...EHDS_PRESCRIPTION.payload.content };
+      await this.storage.save(EHDS_PRESCRIPTION.id, rxPayload, {
+        issuer: EHDS_PRESCRIPTION.issuer,
+        type: EHDS_PRESCRIPTION.type,
+        claims: EHDS_PRESCRIPTION.claims,
+        issuedAt: EHDS_PRESCRIPTION.issuedAt,
+      });
+    }
+
+    // 4. mdoc mDL Credential (ISO 18013-5)
+    if (!metas.find((m) => m.id === MDOC_MDL_CREDENTIAL.id)) {
+      console.log('Seeding mdoc mDL Credential...');
+      const mdocItems = [
+        {
+          digestID: 0,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'family_name',
+          elementValue: 'Mustermann',
+        },
+        {
+          digestID: 1,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'given_name',
+          elementValue: 'Erika',
+        },
+        {
+          digestID: 2,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'birth_date',
+          elementValue: '1990-05-15',
+        },
+        {
+          digestID: 3,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'age_over_18',
+          elementValue: true,
+        },
+        {
+          digestID: 4,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'age_over_21',
+          elementValue: true,
+        },
+        {
+          digestID: 5,
+          random: crypto.getRandomValues(new Uint8Array(16)),
+          elementIdentifier: 'issuing_country',
+          elementValue: 'DE',
+        },
+      ];
+      const mdocCbor = mdocEncode({
+        nameSpaces: new Map([['org.iso.18013.5.1', mdocItems]]),
+      });
+      const mdocPayload = {
+        _mdoc: true,
+        docType: MDOC_MDL_CREDENTIAL.docType,
+        cborBase64: uint8ArrayToBase64(mdocCbor),
+      };
+      await this.storage.save(MDOC_MDL_CREDENTIAL.id, mdocPayload, {
+        issuer: MDOC_MDL_CREDENTIAL.issuer,
+        type: ['VerifiableCredential', MDOC_MDL_CREDENTIAL.docType],
+        issuedAt: new Date().toISOString(),
+        claims: MDOC_MDL_CREDENTIAL.claims,
+        format: 'mso_mdoc',
+      });
+    }
+  }
+
+  async seedMalicious() {
+    if (!this.storage) throw new Error('Storage not ready');
+    await this.storage.save(MALICIOUS_CREDENTIAL.id, MALICIOUS_CREDENTIAL.payload, {
+      issuer: MALICIOUS_CREDENTIAL.issuer,
+      type: MALICIOUS_CREDENTIAL.type,
+      claims: MALICIOUS_CREDENTIAL.claims,
+      issuedAt: MALICIOUS_CREDENTIAL.issuedAt,
+    });
+  }
+
+  /**
+   * Stress Test - Corrupt a credential in storage to test integrity detection.
+   */
+  async corruptCredential() {
+    if (!this.storage) throw new Error('Storage not ready');
+    // Corrupt the 'vc-age-789' entry in the underlying storage (simulated bypass)
+    (this.storage as unknown as { corruptEntry: (id: string) => void }).corruptEntry(
+      SEED_CREDENTIAL.id
+    );
+  }
+
+  /**
+   * Stress Test - Evaluate against 500 complex rules.
+   */
+  async evaluateAgainstExplosion(
+    request: VerifierRequest,
+    context: EvaluationContext
+  ): Promise<PolicyEvaluationResult> {
+    if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
+
+    const credentials = await this.storage.getAllMetadata();
+    const basePolicy = this.getPolicy();
+
+    const explodedRules = Array.from({ length: 500 }).map((_, i) => ({
+      id: `rule-explosion-${i}`,
+      verifierPattern: `service-${i}.com`,
+      allowedClaims: ['email'],
+      priority: 1,
+    }));
+
+    const stormPolicy: PolicyManifest = {
+      ...basePolicy,
+      rules: [...basePolicy.rules, ...explodedRules],
+    };
+
+    return this.policyEngine.evaluate(request, context, credentials, stormPolicy);
+  }
+
+  async splitMasterKey(): Promise<string[]> {
+    // In a real app, we'd get the actual master key bits.
+    // For the PoC, we use a placeholder that represents the entropy.
+    const mockMasterKey = 'mitch-master-entropy-v1-highly-sensitive';
+    return RecoveryService.splitMasterKey(mockMasterKey);
+  }
+
+  async recoverFromFragments(fragments: string[]): Promise<void> {
+    const key = await RecoveryService.recover(fragments);
+    console.log(`✅ Wallet Recovered! Key: ${key.substring(0, 5)}...`);
+    // In prod, this would re-initialize SecureStorage
+  }
+
+  async evaluateRequest(
+    request: VerifierRequest,
+    context: EvaluationContext
+  ): Promise<PolicyEvaluationResult> {
+    if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
+
+    const credentials = await this.storage.getAllMetadata();
+
+    return this.policyEngine.evaluate(request, context, credentials, this.getPolicy());
+  }
+
+  /**
+   * Verify the entire audit log chain integrity live.
+   */
+  async verifyAuditChain(): Promise<{ valid: boolean; error?: string }> {
+    return this.auditLog.verifyChain();
+  }
+
+  async parseDeepLinkRequest(url: string): Promise<VerifierRequest | null> {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'mitch:') return null;
+
+      const verifierDid = parsed.searchParams.get('verifier') || 'did:askmi:unknown';
+      const nonce = parsed.searchParams.get('nonce') || crypto.randomUUID();
+      const pubKeyB64 = parsed.searchParams.get('pub');
+
+      const req: VerifierRequest = {
+        verifierId: verifierDid,
+        nonce,
+        requirements: [
+          {
+            credentialType: 'VerifiableCredential',
+            requestedClaims: ['age'],
+            requestedProvenClaims: ['age >= 18'],
+          },
+        ],
+      };
+
+      if (pubKeyB64) {
+        // T-88: Hydrate Ephemeral Key
+        try {
+          const jwk = JSON.parse(atob(pubKeyB64));
+          // Use helper to import safely
+          const alg = mapJwkToAlgorithm(jwk);
+          const key = await getSubtle().importKey('jwk', jwk, alg, true, ['encrypt', 'wrapKey']);
+          req.ephemeralResponseKey = key;
+          console.log('⚡ Hydrated Ephemeral Key from Deep Link');
+        } catch (e) {
+          console.warn('Failed to hydrate ephemeral key from URL', e);
+        }
+      }
+
+      return req;
+    } catch (e) {
+      console.error('Deep Link Parse Error', e);
+      return null;
+    }
+  }
+
+  async generatePresentation(
+    capsule: DecisionCapsule,
+    agentTargetPubKey?: CryptoKey // Force encryption to this key (Lufthansa) instead of DID resolution
+  ): Promise<{ encryptedVp: string; auditLog: string[] }> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const logs: string[] = [];
+
+    // 1. Validate Capsule Integrity
+    if (!capsule.decision_id || !capsule.nonce) {
+      throw new Error('SECURITY ALERT: Invalid Decision Capsule. Replay Attack Possible.');
+    }
+
+    const verifierDID = capsule.verifier_did;
+    if (!verifierDID) throw new Error('SECURITY ALERT: Capsule not bound to a verifier.');
+
+    if (capsule.audience && capsule.audience !== 'askmi-wallet-pwa') {
+      throw new Error(`SECURITY ALERT: Capsule intended for different app (${capsule.audience}).`);
+    }
+
+    // Identity Signature Verification (Phase 0)
+    if (!capsule.wallet_attestation) {
+      throw new Error('SECURITY ALERT: Capsule contains no attestation (Unsigned).');
+    }
+    if (!this.policyPublicKey) {
+      throw new Error('Wallet not initialized properly (Missing Policy Key).');
+    }
+
+    const { wallet_attestation, ...toVerify } = capsule;
+    const payload = canonicalStringify(toVerify);
+    const signatureBytes = new Uint8Array(
+      wallet_attestation.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+    );
+
+    const validSignature = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: { name: 'SHA-256' } },
+      this.policyPublicKey,
+      signatureBytes,
+      new TextEncoder().encode(payload)
+    );
+
+    if (!validSignature) {
+      throw new Error(
+        'SECURITY ALERT: Capsule signature verification FAILED. Policy Decision may be forged.'
+      );
+    }
+    logs.push('✅ Capsule Signature Verified (Signed by Identity Key)');
+
+    logs.push(`✅ Capsule Integrity Verified (Ref: ${capsule.decision_id} -> ${verifierDID})`);
+
+    if (agentTargetPubKey) {
+      logs.push(`🤖 AUTOMATION FIREWALL: Encrypting for Target, not Requestor.`);
+    }
+
+    // Cryptographic Presence Binding
+    if (capsule.requires_presence) {
+      logs.push('👤 Biometric Presence Required. Triggering WebAuthn Ceremony...');
+      const presenceProof = await WebAuthnService.provePresence(capsule.decision_id);
+      capsule.presence_proof = presenceProof;
+      logs.push('✅ WebAuthn Signature Bound to Decision ID');
+    }
+
+    // 2. Generate Ephemeral Proof Key (Asymmetric ECDSA)
+    const proofKeys = await generateKeyPair();
+    const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
+
+    await this.auditLog.append('KEY_CREATED', 'ephemeral-proof-key', {
+      alg: 'ECDSA-P256',
+      decision_id: capsule.decision_id,
+    });
+    logs.push('⚡ Ephemeral Proof Key Created (ECDSA-P256)');
+
+    // 2. Multi-VC Pipelining
+    const bundles: Array<{
+      credentialType: string;
+      disclosure: Record<string, unknown>;
+      provenClaims: Record<string, boolean>;
+      zkpProofs?: Record<string, unknown>; // Full cryptographic proofs
+      // credentialId removed to prevent discovery
+    }> = [];
+
+    // Normalize requirements (support legacy if authorized_requirements is missing)
+    const requirements = capsule.authorized_requirements || [
+      {
+        credential_type: '*',
+        allowed_claims: capsule.allowed_claims || [],
+        proven_claims: capsule.proven_claims || [],
+        selected_credential_id: capsule.selected_credential_id,
+        issuer_trust_refs: capsule.issuer_trust_refs || [],
+      },
+    ];
+
+    for (const req of requirements) {
+      const selectedId = req.selected_credential_id;
+      if (!selectedId) continue;
+
+      const credMeta = (await this.storage.getAllMetadata()).find((c) => c.id === selectedId);
+      if (!credMeta) throw new Error(`Credential ${selectedId} not found.`);
+
+      // Load & Decrypt
+      let credentialData: Record<string, unknown> | null;
+      try {
+        credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
+      } catch {
+        await this.ensureSeeded();
+        credentialData = await this.storage.load<Record<string, unknown>>(selectedId);
+      }
+
+      if (!credentialData) {
+        throw new Error(`Failed to load credential data for ${selectedId}`);
+      }
+
+      await this.auditLog.append('KEY_USED', selectedId, {
+        context: 'CREDENTIAL_DECRYPTION',
+        decision_id: capsule.decision_id,
+        requirement_type: req.credential_type,
+      });
+      logs.push(`🔓 VC [${req.credential_type}] Decrypted`);
+
+      // ── mdoc credential path ────────────────────────────────────
+      if (credMeta.format === 'mso_mdoc' && credentialData._mdoc) {
+        const mdocPayload = credentialData as { _mdoc: true; docType: string; cborBase64: string };
+        const mdocClaims = this.extractMdocClaims(mdocPayload.cborBase64);
+
+        const disclosure: Record<string, unknown> = {};
+        for (const claim of req.allowed_claims) {
+          if (mdocClaims[claim] !== undefined) disclosure[claim] = mdocClaims[claim];
         }
 
-        return claims;
-    }
+        bundles.push({
+          credentialType: req.credential_type,
+          disclosure,
+          provenClaims: {},
+          zkpProofs: {},
+        });
 
-    /**
-     * Get raw encrypted document for a credential (test/debug only).
-     */
-    async getRawCredentialDocument(id: string) {
-        if (!this.storage) throw new Error('Wallet locked');
-        return this.storage.getRawDocument(id);
-    }
-
-    /**
-     * Sign arbitrary data (e.g., document hashes) using the persistent Identity Key.
-     * This differs from ephemeral VP signing - these signatures are meant to persist.
-     * 
-     * NOTE: This returns a "Compact-like proof token" (not RFC7515 JWS).
-     * For production, implement proper ES256 JWS with base64url encoding.
-     */
-    async signData(payload: ProofOfExistence): Promise<{ proofToken: string, auditLog: string[] }> {
-        if (!this.storage) throw new Error('Wallet locked');
-
-        // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
-        // TODO: Separate identity signing key from audit key (see security review)
-        const auditLogInternal = this.auditLog as unknown as { privateKey?: CryptoKey; publicKey?: CryptoKey };
-        const auditKeys = auditLogInternal.privateKey ?
-            { privateKey: auditLogInternal.privateKey, publicKey: auditLogInternal.publicKey } :
-            null;
-
-        if (!auditKeys?.privateKey) throw new Error('Identity keys not available');
-
-        const logs: string[] = [];
-        const content = canonicalStringify(payload);
-
-        // Sign with ECDSA
-        const signature = await crypto.subtle.sign(
-            { name: 'ECDSA', hash: { name: 'SHA-256' } },
-            auditKeys.privateKey,
-            new TextEncoder().encode(content)
+        logs.push(
+          `📄 mdoc [${mdocPayload.docType}] selective disclosure: ${Object.keys(disclosure).join(', ')}`
         );
 
-        const signatureHex = Array.from(new Uint8Array(signature))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-
-        // Create Proof Token (Compact-like format, NOT RFC7515 JWS)
-        // Format: base64(header).base64(payload).hex(signature)
-        // Note: Uses standard Base64, not Base64URL; signature is hex, not base64url(r|s)
-        const header = canonicalStringify({ alg: 'ES256-PoC', kid: 'did:mitch:user-wallet-001#audit-key' });
-        const protectedHeader = btoa(header);
-        const encodedPayload = btoa(content);
-
-        const proofToken = `${protectedHeader}.${encodedPayload}.${signatureHex}`;
-
-        await this.auditLog.append('KEY_USED', payload.hash, {
-            context: 'DOCUMENT_SIGNING',
-            description: payload.description,
-            type: payload.mediaType
+        await this.auditLog.append('VP_GENERATED', selectedId, {
+          context: 'MDOC_PRESENTATION',
+          decision_id: capsule.decision_id,
+          claims_shared: Object.keys(disclosure),
+          claims_requested: req.allowed_claims,
         });
+        continue;
+      }
 
-        logs.push(`✅ Document Signed: ${payload.description}`);
-        logs.push(`📝 Hash: ${payload.hash.substring(0, 8)}...`);
-        logs.push('🔑 Key: Persistent Identity Key');
-        logs.push('⚠️  PoC Token Format (not RFC7515 JWS)');
+      // ── SD-JWT credential path (default) ────────────────────────
+      // Selective Disclosure & ZKP
+      const disclosure: Record<string, unknown> = {};
+      const provenClaims: Record<string, boolean> = {};
+      const zkpProofs: Record<string, unknown> = {};
 
-        return { proofToken, auditLog: logs };
+      for (const claim of req.allowed_claims) {
+        if (credentialData[claim] !== undefined) disclosure[claim] = credentialData[claim];
+      }
+
+      for (const predicate of req.proven_claims) {
+        if (predicate.startsWith('age >=')) {
+          // Upgrade to ZKP Predicate Engine
+          const matches = predicate.match(/age >= (\d+)/);
+          const ageLimit = matches ? parseInt(matches[1], 10) : 18;
+
+          const predicateTimestamp = new Date().toISOString();
+          const predReq: PredicateRequest = {
+            verifierDid: verifierDID,
+            nonce: capsule.nonce || `nonce-${Date.now()}`,
+            purpose: 'Age Verification',
+            timestamp: predicateTimestamp,
+            predicates: [CommonPredicates.ageAtLeast(ageLimit)],
+          };
+
+          const signFn = async (d: string) => signData(d, proofKeys.privateKey);
+
+          try {
+            const rawSubject =
+              (credentialData as Record<string, unknown>).credentialSubject &&
+              typeof (credentialData as Record<string, unknown>).credentialSubject === 'object'
+                ? {
+                    ...((credentialData as Record<string, unknown>).credentialSubject as Record<
+                      string,
+                      unknown
+                    >),
+                  }
+                : { ...(credentialData as Record<string, unknown>) };
+
+            if (typeof rawSubject.dateOfBirth !== 'string') {
+              if (typeof rawSubject.birthDate === 'string') {
+                rawSubject.dateOfBirth = rawSubject.birthDate;
+              } else if (typeof rawSubject.birth_date === 'string') {
+                rawSubject.dateOfBirth = rawSubject.birth_date;
+              }
+            }
+
+            const predicateCredential = { credentialSubject: rawSubject };
+            const result = await evaluatePredicates(predicateCredential, predReq, signFn);
+
+            zkpProofs[predicate] = {
+              ...result,
+              publicKeyJwk: proofPublicJWK,
+            };
+
+            if (result.proof.allPassed) {
+              provenClaims[predicate] = true;
+              logs.push(
+                '[ZKP] Proof generated: ' +
+                  result.proof.decisionId +
+                  ' (' +
+                  result.proof.binding.requestHash.substring(0, 8) +
+                  '...)'
+              );
+            } else {
+              provenClaims[predicate] = false;
+              logs.push(
+                '[ZKP] Proof failed: ' + (result.proof.evaluations[0]?.reasonCode ?? 'UNKNOWN')
+              );
+            }
+          } catch (e) {
+            console.error('ZKP Evaluation Error:', e);
+            provenClaims[predicate] = false;
+            logs.push('[ZKP] Error: ' + String(e));
+          }
+        }
+      }
+
+      bundles.push({
+        credentialType: req.credential_type,
+        disclosure,
+        provenClaims,
+        zkpProofs,
+        // credentialId intentionally omitted to prevent discovery
+      });
     }
+
+    logs.push(`✅ Presentation Bundle Prepared (${bundles.length} VCs)`);
+
+    // Log what was shared (Data Transparency Foundation)
+    await this.auditLog.append('VP_GENERATED', capsule.decision_id, {
+      decision_id: capsule.decision_id,
+      verifier_did: verifierDID,
+      credential_types: bundles.map((b) => b.credentialType),
+      claims_shared: bundles.flatMap((b) => Object.keys(b.disclosure)),
+      claims_requested: requirements.flatMap((r) => r.requested_claims ?? []),
+      proven_claims: bundles.flatMap((b) =>
+        Object.keys(b.provenClaims).filter((k) => b.provenClaims[k])
+      ),
+      used_zkp: bundles.some((b) => Object.keys(b.zkpProofs || {}).length > 0),
+    });
+
+    const vpPayload = {
+      metadata: {
+        type: 'VerifiablePresentationBundle',
+        decision_id: capsule.decision_id,
+        timestamp: Date.now(),
+        // Replay Protection (Short Lived)
+        validUntil: Date.now() + 60000,
+        nonce: capsule.nonce,
+        // Issuer references are now opaque (from authorized_requirements)
+        issuer_trust_refs: requirements.flatMap((r) => r.issuer_trust_refs || []),
+      },
+      presentations: bundles.map((b) => ({
+        type: b.credentialType,
+        disclosure: b.disclosure,
+        proven_claims: b.provenClaims,
+        zkp_proofs: b.zkpProofs, // Include proofs in VP
+      })),
+    };
+
+    // 4. Sign the Payload
+    const payloadString = canonicalStringify(vpPayload);
+    const signature = await globalThis.crypto.subtle.sign(
+      { name: 'ECDSA', hash: { name: 'SHA-256' } },
+      proofKeys.privateKey,
+      new TextEncoder().encode(payloadString)
+    );
+    const signatureHex = Array.from(new Uint8Array(signature))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // 5. Create Proof Artifact (Structure must match VerifierSDK expectations)
+    const proofArtifact = {
+      vp: vpPayload, // SDK expects 'vp', not 'bundle'
+      proof: {
+        alg: 'ES256',
+        signature: signatureHex,
+        public_key: proofPublicJWK,
+        presence_proof: capsule.presence_proof,
+      },
+    };
+
+    // 6. Encrypt for Verifier (Isolate Automated Actors)
+    const ephemeralKey = await EphemeralKey.create();
+
+    let targetPubKey: CryptoKey;
+    const transportDid = verifierDID.startsWith('did:')
+      ? verifierDID
+      : 'did:askmi:verifier-liquor-store';
+    if (transportDid !== verifierDID) {
+      logs.push(`⚠️ Non-DID verifier id (${verifierDID}). Using demo DID for encryption.`);
+    }
+    if (agentTargetPubKey) {
+      // Key Injection Protection (MITM Check)
+      // Note: Keys are opaque handles in WebCrypto. We export to JWK for inspection.
+      // We use a constant-time comparison helper to prevent timing side-channels.
+      const officialKey = await fetchVerifierPublicKey(transportDid);
+      const providedJWK = await getSubtle().exportKey('jwk', agentTargetPubKey);
+      const officialJWK = await getSubtle().exportKey('jwk', officialKey);
+
+      const nMatch = constantTimeCompare(providedJWK.n || '', officialJWK.n || '');
+      const eMatch = constantTimeCompare(providedJWK.e || '', officialJWK.e || '');
+
+      if (!nMatch || !eMatch) {
+        logs.push(`⚠️ SECURITY ALERT: Actor provided a FAKE Key for ${verifierDID}! Blocking.`);
+        throw new Error(
+          'MITM ATTACK DETECTED: The provided encryption key does not belong to the target identity.'
+        );
+      }
+
+      logs.push(`✅ Key Binding Verified: Actor provided the correct key for ${transportDid}.`);
+      targetPubKey = agentTargetPubKey;
+    } else if (capsule.ephemeral_key) {
+      // T-88: Ephemeral Session Mode (Zero-Backend)
+      logs.push('⚡ Using Ephemeral Session Key from Decision Capsule.');
+
+      try {
+        const alg = mapJwkToAlgorithm(capsule.ephemeral_key as JsonWebKey);
+        targetPubKey = await getSubtle().importKey('jwk', capsule.ephemeral_key, alg, true, [
+          'encrypt',
+          'wrapKey',
+        ]);
+      } catch (e) {
+        throw new Error(`EPHEMERAL_KEY_IMPORT_FAILED: ${(e as Error).message}`);
+      }
+    } else {
+      // Standard Mode: We resolve the DID to get the key.
+      targetPubKey = await fetchVerifierPublicKey(transportDid);
+    }
+
+    await this.auditLog.append('KEY_CREATED', 'ephemeral-session-key', {
+      alg: 'AES-GCM-256',
+      decision_id: capsule.decision_id,
+    });
+    logs.push('🔐 Ephemeral Session Key Created (AES-GCM-256)');
+
+    const aad = new TextEncoder().encode(
+      canonicalStringify({
+        decision_id: capsule.decision_id,
+        nonce: capsule.nonce,
+        verifier_did: verifierDID,
+      })
+    );
+
+    const ciphertext = await ephemeralKey.encrypt(JSON.stringify(proofArtifact), aad);
+    const encryptedKey = await ephemeralKey.sealToRecipient(targetPubKey);
+
+    const transportPackage = JSON.stringify({
+      ciphertext,
+      aad_context: {
+        decision_id: capsule.decision_id,
+        nonce: capsule.nonce,
+        verifier_did: verifierDID,
+      },
+      recipient: {
+        header: { kid: `${verifierDID}#key-1` },
+        encrypted_key: encryptedKey,
+      },
+    });
+
+    // 7. Crypto-Shredding (Double Shred)
+    ephemeralKey.shred();
+    (proofKeys as unknown as { privateKey: CryptoKey | null }).privateKey = null;
+
+    await this.auditLog.append('KEY_DESTROYED', 'ephemeral-session-key', {
+      decision_id: capsule.decision_id,
+      verified: true,
+      reason: 'Session terminal',
+    });
+    await this.auditLog.append('KEY_DESTROYED', 'ephemeral-proof-key', {
+      decision_id: capsule.decision_id,
+      verified: true,
+      reason: 'Presentation complete',
+    });
+
+    logs.push('♻️ Ephemeral key references dropped (best-effort). Non-extractable keys used.');
+    logs.push('✅ VP Bundle Signed & Encrypted');
+
+    return { encryptedVp: transportPackage, auditLog: logs };
+  }
+
+  /**
+   * Store a credential received from an OID4VCI issuer.
+   * Call after parsing the JWT credential response from POST /credential.
+   */
+  async addIssuedCredential(
+    id: string,
+    subject: Record<string, unknown>,
+    issuerDid: string,
+    renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
+  ): Promise<void> {
+    await this.ensureSeeded();
+    if (!this.storage) throw new Error('Wallet locked');
+    const meta: StoredCredentialMetadata = {
+      id,
+      issuer: issuerDid,
+      type: ['VerifiableCredential', 'AgeCredential'],
+      issuedAt: new Date().toISOString(),
+      claims: Object.keys(subject),
+      renderMethod,
+    };
+    await this.storage.save(id, subject, meta);
+    await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
+  }
+
+  /**
+   * Store an mdoc credential (ISO 18013-5) received via OID4VCI.
+   *
+   * The credential is stored as a JSON-serializable wrapper containing
+   * the raw CBOR bytes (base64-encoded), docType, and extracted claims.
+   * Format is tagged as 'mso_mdoc' in metadata.
+   */
+  async addMdocCredential(
+    id: string,
+    mdocCborBytes: Uint8Array,
+    docType: string,
+    issuerDid: string,
+    claimNames: string[]
+  ): Promise<void> {
+    await this.ensureSeeded();
+    if (!this.storage) throw new Error('Wallet locked');
+
+    // Store as JSON wrapper with base64-encoded CBOR for SecureStorage compatibility
+    const payload = {
+      _mdoc: true,
+      docType,
+      cborBase64: uint8ArrayToBase64(mdocCborBytes),
+    };
+
+    const meta: StoredCredentialMetadata = {
+      id,
+      issuer: issuerDid,
+      type: ['VerifiableCredential', docType],
+      issuedAt: new Date().toISOString(),
+      claims: claimNames,
+      format: 'mso_mdoc',
+    };
+
+    await this.storage.save(id, payload, meta);
+    await this.auditLog.append('KEY_USED', id, {
+      context: 'MDOC_ISSUANCE',
+      issuer: issuerDid,
+      docType,
+    });
+  }
+
+  /**
+   * Record PII-minimal Identity Firewall transparency events for a proof flow.
+   */
+  async recordIdentityFirewallEvents(
+    decisionId: string | undefined,
+    verifierDid: string | undefined,
+    trackers: TrackingPoint[]
+  ): Promise<AuditLogEntry[]> {
+    if (!decisionId) return [];
+
+    const entries: AuditLogEntry[] = [];
+    for (const tracker of trackers) {
+      const metadata = mapTrackingPointToIdentityMetadata(decisionId, verifierDid, tracker);
+      const entry = await this.auditLog.append(
+        'IDENTITY_ACCESS_DETECTED',
+        `identity-firewall:${metadata.access_type}`,
+        metadata as unknown as Record<string, unknown>
+      );
+      entries.push(entry);
+    }
+
+    return entries;
+  }
+
+  /**
+   * Get recent logs for the UI.
+   */
+  getRecentAuditLogs(limit: number = 5): AuditLogEntry[] {
+    return this.auditLog.getRecentEntries(limit);
+  }
+
+  /**
+   * Export a signed report of all wallet activities.
+   * This is the "Beweislast-Umkehr" (Reverse Onus of Proof) artifact.
+   */
+  async exportAuditReport(): Promise<AuditLogExport> {
+    return this.auditLog.exportReport();
+  }
+
+  async syncAuditToL2() {
+    return this.auditLog.syncToL2();
+  }
+
+  /**
+   * Register a hardware-bound identity key (LoA High).
+   */
+  async registerIdentityKey(): Promise<void> {
+    await WebAuthnService.registerIdentityKey();
+    console.log('✅ Hardware-bound Identity Key registered.');
+    // Re-initialize policy engine to use the new key
+    this.initialized = false;
+    await this.initialize('123456'); // Reuse pin for demo
+  }
+
+  /**
+   * Get the persistent identity public key for device engagement.
+   */
+  getIdentityPublicKey(): CryptoKey | null {
+    const auditLogInternal = this.auditLog as unknown as { publicKey?: CryptoKey };
+    return auditLogInternal.publicKey || null;
+  }
+
+  /**
+   * Log a successful presentation transmission with compliance metadata.
+   */
+  async logVpSent(decisionId: string, metadata: Record<string, unknown>) {
+    await this.auditLog.append('VP_SENT', decisionId, metadata);
+  }
+
+  /**
+   * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
+   */
+  async generateProximityResponse(
+    credId: string,
+    requestedElements: { ns: string; element: string }[],
+    sessionTranscript: import('@askmi/mdoc').SessionTranscript
+  ): Promise<Uint8Array> {
+    if (!this.storage) throw new Error('Wallet locked');
+
+    const credData = await this.storage.load<{ _mdoc: true; docType: string; cborBase64: string }>(
+      credId
+    );
+    if (!credData?._mdoc) throw new Error('Not an mdoc credential');
+
+    const cborBytes = base64ToUint8Array(credData.cborBase64);
+    const mdoc = mdocDecodeMdoc<any>(cborBytes);
+
+    // 1. Filter elements (Selective Disclosure)
+    const issuerNamespaces = mdoc.get('nameSpaces') as Map<string, any[]>;
+    const filteredNamespaces = new Map<string, any[]>();
+
+    for (const req of requestedElements) {
+      const items = issuerNamespaces.get(req.ns);
+      if (!items) continue;
+
+      if (!filteredNamespaces.has(req.ns)) filteredNamespaces.set(req.ns, []);
+      const item = items.find(
+        (i) => (i instanceof Map ? i.get('elementIdentifier') : i.elementIdentifier) === req.element
+      );
+      if (item) filteredNamespaces.get(req.ns)!.push(item);
+    }
+
+    // 2. Device Authentication (DeviceSigned)
+    // For PoC, we use COSE_Sign1 with the identity key.
+    // In real mDL, this would be a separate DeviceKey.
+    const mso = mdoc.get('issuerAuth'); // Simplified for PoC
+
+    // Placeholder for real DeviceAuth creation
+    const deviceAuth: import('@askmi/mdoc').DeviceAuth = {
+      deviceSignature: new Uint8Array([0xde, 0xad, 0xbe, 0xef]), // Mock signature
+    };
+
+    const deviceSigned: import('@askmi/mdoc').DeviceSigned = {
+      nameSpaces: new Map(),
+      deviceAuth,
+    };
+
+    const document: import('@askmi/mdoc').MdocDocument = {
+      docType: credData.docType,
+      issuerSigned: {
+        nameSpaces: filteredNamespaces,
+        issuerAuth: mdoc.get('issuerAuth'),
+      },
+      deviceSigned,
+    };
+
+    const responseCbor = (await import('@askmi/mdoc')).buildDeviceResponse([document]);
+
+    await this.auditLog.append('VP_SENT', credId, {
+      context: 'PROXIMITY_PRESENTATION',
+      docType: credData.docType,
+      claims_shared: requestedElements.map((e) => e.element),
+      status: 'SUCCESS',
+    });
+
+    return responseCbor;
+  }
+
+  /**
+   * Request the erasure of personal data from a Relying Party (CIR 2024/2982 I9).
+   * This is a wallet-initiated flow that sends an authenticated deletion request.
+   */
+  async requestDataErasure(decisionId: string): Promise<{ success: boolean; message: string }> {
+    // 1. Find the transaction in the audit log
+    const entries = this.auditLog.getRecentEntries(100);
+    const vpSent = entries.find(
+      (e) => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId
+    );
+
+    if (!vpSent) throw new Error('Transaction not found in audit log');
+
+    const verifierId = vpSent.verifierId;
+    const erasureEndpoint = vpSent.metadata?.erasure_endpoint as string | undefined;
+
+    if (!erasureEndpoint) {
+      throw new Error(`Verifier ${verifierId} does not support automated erasure requests.`);
+    }
+
+    // 2. Prepare the authenticated erasure request
+    // In a real EUDI Wallet, this would be an OID4VP flow where the wallet is the requester.
+    // For this PoC, we simulate the signed request.
+    const erasureRequest = {
+      type: 'erasure_request',
+      decision_id: decisionId,
+      timestamp: new Date().toISOString(),
+      purpose: 'Data Erasure Request under GDPR Article 17',
+      verifier_id: verifierId,
+      transaction_type: 'data_erasure',
+    };
+
+    const content = canonicalStringify(erasureRequest);
+
+    // Sign with the persistent identity key
+    const { proofToken } = await this.signData({
+      type: 'ProofOfExistence',
+      hash: await sha256(content),
+      hashAlg: 'SHA-256',
+      description: `Data Erasure Request for decision ${decisionId}`,
+      mediaType: 'application/json',
+      createdAt: new Date().toISOString(),
+      byteLength: new TextEncoder().encode(content).length,
+    });
+
+    console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
+
+    // 3. Simulate POST to the verifier's erasure endpoint
+    // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
+
+    await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
+      verifier_id: verifierId,
+      endpoint: erasureEndpoint,
+      status: 'SENT',
+    });
+
+    return {
+      success: true,
+      message: `Erasure request for ${verifierId} has been sent successfully.`,
+    };
+  }
+
+  /**
+   * Report a suspicious Relying Party to the Supervisory Authority (CIR 2024/2982 Art. 7).
+   */
+  async reportRelyingParty(
+    decisionId: string,
+    reason: string
+  ): Promise<{ success: boolean; message: string }> {
+    const entries = this.auditLog.getRecentEntries(100);
+    const vpSent = entries.find(
+      (e) => e.action === 'VP_SENT' && e.metadata?.decision_id === decisionId
+    );
+
+    const verifierId = vpSent?.verifierId || 'unknown';
+    const reportEndpoint =
+      (vpSent?.metadata?.report_endpoint as string | undefined) ||
+      'https://authority.eudi.eu/report';
+
+    const report = {
+      type: 'suspicious_rp_report',
+      decision_id: decisionId,
+      verifier_id: verifierId,
+      reason,
+      timestamp: new Date().toISOString(),
+      metadata: vpSent?.metadata,
+    };
+
+    const content = canonicalStringify(report);
+    const { proofToken } = await this.signData({
+      type: 'ProofOfExistence',
+      hash: await sha256(content),
+      hashAlg: 'SHA-256',
+      description: `Suspicious RP Report: ${verifierId}`,
+      mediaType: 'application/json',
+      createdAt: new Date().toISOString(),
+      byteLength: new TextEncoder().encode(content).length,
+    });
+
+    console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
+
+    await this.auditLog.append('REPORT_SENT', decisionId, {
+      verifier_id: verifierId,
+      reason,
+      endpoint: reportEndpoint,
+    });
+
+    return {
+      success: true,
+      message: `Report for ${verifierId} has been submitted to the authorities.`,
+    };
+  }
+
+  /**
+   * Handle Recovery Actions triggered by Policy Denial
+   */
+  async handleAction(
+    action: import('@askmi/shared-types').DenialAction
+  ): Promise<{ success: boolean; message: string }> {
+    console.log(`[Action Handler] Processing: ${action.type}`);
+
+    switch (action.type) {
+      case 'LOAD_CREDENTIAL':
+        // Simulate launching OID4VCI (dependency)
+        console.log(`[OID4VCI] Launching wizard for target: ${action.target}`);
+        return { success: true, message: 'OID4VCI Wizard Started' };
+
+      case 'OVERRIDE_WITH_CONSENT':
+        // In a real app, this would grant temporary permission
+        console.log(`[Override] User accepted risk for action: ${action.id}`);
+        await this.auditLog.append('POLICY_EVALUATED', action.id, {
+          result: 'OVERRIDE',
+          context: 'USER_CONSENT_GRANTED',
+        });
+        return { success: true, message: 'Policy Override Granted' };
+
+      case 'CONTACT_VERIFIER':
+        console.log(`[Contact] Opening support channel for ${action.target}`);
+        // window.open('mailto:support@verifier.com');
+        return { success: true, message: 'Support Channel Opened' };
+
+      case 'LEARN_MORE':
+        console.log(`[Learn] Navigating to: ${action.target}`);
+        // window.open(action.target, '_blank');
+        return { success: true, message: 'Documentation Opened' };
+
+      case 'REPORT_ISSUE':
+        console.log('[Report] Logging issue to support queue.');
+        return { success: true, message: 'Issue Reported' };
+
+      default:
+        console.warn(`[Handler] Unknown action type: ${action.type}`);
+        return { success: false, message: 'Action not realized' };
+    }
+  }
+
+  /**
+   * Add a credential to the wallet (persisted encrypted in SecureStorage).
+   */
+  async addCredential(
+    id: string,
+    payload: Record<string, unknown>,
+    metadata: { issuer: string; type: string[]; claims: string[]; issuedAt: string }
+  ): Promise<void> {
+    if (!this.storage) throw new Error('Wallet locked');
+    await this.storage.save(id, payload, metadata);
+  }
+
+  /**
+   * Delete a credential from the wallet.
+   * Returns true if the credential existed and was removed, false otherwise.
+   */
+  async deleteCredential(id: string): Promise<boolean> {
+    if (!this.storage) throw new Error('Wallet locked');
+    return this.storage.delete(id);
+  }
+
+  /**
+   * Get all credential metadata (without decrypting payloads).
+   */
+  async getCredentials(): Promise<StoredCredentialMetadata[]> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const metadata = await this.storage.getAllMetadata();
+    return metadata.filter((item) => item.id !== POLICY_STORAGE_ID);
+  }
+
+  /**
+   * Load a specific credential's decrypted payload.
+   */
+  async loadCredential<T = Record<string, unknown>>(id: string): Promise<T | null> {
+    if (!this.storage) throw new Error('Wallet locked');
+    return this.storage.load<T>(id);
+  }
+
+  /**
+   * Extract claims from an mdoc credential's CBOR payload.
+   * Flattens all namespace elements into a single Record for
+   * compatibility with the existing selective disclosure pipeline.
+   */
+  private extractMdocClaims(cborBase64: string): Record<string, unknown> {
+    const cborBytes = base64ToUint8Array(cborBase64);
+    const decoded = mdocDecodeMdoc<Map<string, unknown>>(cborBytes);
+
+    const claims: Record<string, unknown> = {};
+
+    // mdoc stores data in nameSpaces → IssuerSignedItem[]
+    // We flatten all namespace elements into a single claims map
+    const nameSpaces = decoded.get('nameSpaces') as Map<string, unknown[]> | undefined;
+    if (nameSpaces instanceof Map) {
+      for (const [_ns, items] of nameSpaces) {
+        if (!Array.isArray(items)) continue;
+        for (const item of items) {
+          if (item instanceof Map) {
+            const id = item.get('elementIdentifier') as string;
+            const value = item.get('elementValue');
+            if (id) claims[id] = value;
+          } else if (item && typeof item === 'object') {
+            const obj = item as Record<string, unknown>;
+            if (obj.elementIdentifier) {
+              claims[obj.elementIdentifier as string] = obj.elementValue;
+            }
+          }
+        }
+      }
+    }
+
+    return claims;
+  }
+
+  /**
+   * Get raw encrypted document for a credential (test/debug only).
+   */
+  async getRawCredentialDocument(id: string) {
+    if (!this.storage) throw new Error('Wallet locked');
+    return this.storage.getRawDocument(id);
+  }
+
+  /**
+   * Sign arbitrary data (e.g., document hashes) using the persistent Identity Key.
+   * This differs from ephemeral VP signing - these signatures are meant to persist.
+   *
+   * NOTE: This returns a "Compact-like proof token" (not RFC7515 JWS).
+   * For production, implement proper ES256 JWS with base64url encoding.
+   */
+  async signData(payload: ProofOfExistence): Promise<{ proofToken: string; auditLog: string[] }> {
+    if (!this.storage) throw new Error('Wallet locked');
+
+    // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
+    // TODO: Separate identity signing key from audit key (see security review)
+    const auditLogInternal = this.auditLog as unknown as {
+      privateKey?: CryptoKey;
+      publicKey?: CryptoKey;
+    };
+    const auditKeys = auditLogInternal.privateKey
+      ? { privateKey: auditLogInternal.privateKey, publicKey: auditLogInternal.publicKey }
+      : null;
+
+    if (!auditKeys?.privateKey) throw new Error('Identity keys not available');
+
+    const logs: string[] = [];
+    const content = canonicalStringify(payload);
+
+    // Sign with ECDSA
+    const signature = await crypto.subtle.sign(
+      { name: 'ECDSA', hash: { name: 'SHA-256' } },
+      auditKeys.privateKey,
+      new TextEncoder().encode(content)
+    );
+
+    const signatureHex = Array.from(new Uint8Array(signature))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    // Create Proof Token (Compact-like format, NOT RFC7515 JWS)
+    // Format: base64(header).base64(payload).hex(signature)
+    // Note: Uses standard Base64, not Base64URL; signature is hex, not base64url(r|s)
+    const header = canonicalStringify({
+      alg: 'ES256-PoC',
+      kid: 'did:askmi:user-wallet-001#audit-key',
+    });
+    const protectedHeader = btoa(header);
+    const encodedPayload = btoa(content);
+
+    const proofToken = `${protectedHeader}.${encodedPayload}.${signatureHex}`;
+
+    await this.auditLog.append('KEY_USED', payload.hash, {
+      context: 'DOCUMENT_SIGNING',
+      description: payload.description,
+      type: payload.mediaType,
+    });
+
+    logs.push(`✅ Document Signed: ${payload.description}`);
+    logs.push(`📝 Hash: ${payload.hash.substring(0, 8)}...`);
+    logs.push('🔑 Key: Persistent Identity Key');
+    logs.push('⚠️  PoC Token Format (not RFC7515 JWS)');
+
+    return { proofToken, auditLog: logs };
+  }
 }
-
-

@@ -9,7 +9,7 @@ export * from './storage';
 
 
 /**
- * Audit-Grade Tamper-evident Log for miTch.
+ * Audit-Grade Tamper-evident Log for AskMI.
  * 
  * Implements H1-H5 Hardening:
  * - H1: Canonical JSON stringification for stable hashing
@@ -265,7 +265,7 @@ export class AuditLog {
         const report: AuditLogExport = {
             version: '2.0',
             exportedAt: new Date().toISOString(),
-            owner: `did:mitch:${this.walletId}`,
+            owner: `did:askmi:${this.walletId}`,
             entries: [...this.entries],
             chainIntegrity: {
                 valid: integrity.valid,

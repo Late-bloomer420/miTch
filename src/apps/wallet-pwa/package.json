@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/wallet-pwa",
+    "name": "@askmi/wallet-pwa",
     "version": "0.1.0",
     "type": "module",
     "scripts": {
@@ -9,13 +9,13 @@
         "test": "vitest run --configLoader runner --no-cache --pool threads --maxWorkers 1 --no-file-parallelism"
     },
     "dependencies": {
-        "@mitch/audit-log": "workspace:*",
-        "@mitch/data-flow": "workspace:*",
-        "@mitch/mdoc": "workspace:*",
-        "@mitch/oid4vp": "workspace:*",
-        "@mitch/policy-engine": "workspace:*",
-        "@mitch/predicates": "workspace:*",
-        "@mitch/secure-storage": "workspace:*",
+        "@askmi/audit-log": "workspace:*",
+        "@askmi/data-flow": "workspace:*",
+        "@askmi/mdoc": "workspace:*",
+        "@askmi/oid4vp": "workspace:*",
+        "@askmi/policy-engine": "workspace:*",
+        "@askmi/predicates": "workspace:*",
+        "@askmi/secure-storage": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*",
         "mustache": "^4.2.0",

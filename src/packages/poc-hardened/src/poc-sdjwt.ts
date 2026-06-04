@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *   miTch PoC — SD-JWT Credential Flow (End-to-End)
+ *   AskMI PoC — SD-JWT Credential Flow (End-to-End)
  * ══════════════════════════════════════════════════════════════
  *
  *   Demonstrates the full credential lifecycle:
@@ -64,7 +64,7 @@ function fail(text: string): void {
 // ─── Main PoC Flow ───────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  header("miTch PoC — SD-JWT Credential Flow");
+  header("AskMI PoC — SD-JWT Credential Flow");
 
   // ─── Setup ───────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ async function main(): Promise<void> {
   const holder = generateHolderKey();
   detail("Holder key: generated (Ed25519)");
 
-  const statusList = new StatusListPublisher(1024, "https://mitch.example/status");
+  const statusList = new StatusListPublisher(1024, "https://AskMI.example/status");
   detail(`Status list: ${statusList.url} (capacity: 1024)`);
 
   result("Keys and infrastructure ready");

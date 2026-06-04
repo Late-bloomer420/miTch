@@ -18,7 +18,7 @@ EUDI-CIR und DSGVO verlangen, dass auch automatisierte Entscheidungen (AI) unter
 - **Model C**: AI darf nur innerhalb des Tokens agieren; Full-Wallet- oder per-Action-Human-Approval werden explizit abgelehnt (Skalierbarkeit + Sicherheit)
 
 **Technische Umsetzung:**
-- `@mitch/policy-engine` erweitert um `generateScopedDelegationToken`
+- `@askmi/policy-engine` erweitert um `generateScopedDelegationToken`
 - `@askmi/shared-crypto` signiert Token mit ephemerem Key + sofortigem $0x00-Shredding nach Use-Count
 - AI-Inference läuft im Browser (WebAssembly / ONNX) – niemals Cloud
 

@@ -100,21 +100,21 @@
 
 | Package | Tests |
 |---|---|
-| @mitch/policy-engine | 252 |
+| @askmi/policy-engine | 252 |
 | @askmi/shared-crypto | 108 |
-| @mitch/poc-hardened | 73 |
-| @mitch/integration-tests | 37 |
-| @mitch/oid4vp | 22 |
+| @askmi/poc-hardened | 73 |
+| @askmi/integration-tests | 37 |
+| @askmi/oid4vp | 22 |
 | @askmi/revocation-statuslist | 26 |
-| @mitch/webauthn-verifier | 19 |
-| @mitch/oid4vp-verifier | 11 |
-| @mitch/anchor-service | 12 |
-| @mitch/verifier-sdk | 9 |
-| @mitch/secure-storage | 9 |
+| @askmi/webauthn-verifier | 19 |
+| @askmi/oid4vp-verifier | 11 |
+| @askmi/anchor-service | 12 |
+| @askmi/verifier-sdk | 9 |
+| @askmi/secure-storage | 9 |
 | verifier-backend | 9 |
-| @mitch/audit-log | 7 |
-| @mitch/verifier-browser | 5 |
-| @mitch/oid4vci | 3 |
+| @askmi/audit-log | 7 |
+| @askmi/verifier-browser | 5 |
+| @askmi/oid4vci | 3 |
 | **GESAMT** | **639** |
 
 **Vorher:** 190+ Tests, 34/34 Tasks

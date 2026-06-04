@@ -4,13 +4,13 @@
   "validUntil": "2027-01-01T00:00:00Z",
   "issuers": [
     "did:web:localhost%3A3005",
-    "did:web:issuer.mitch.demo",
-    "https://issuer.mitch.demo",
+    "did:web:issuer.askmi.demo",
+    "https://issuer.askmi.demo",
     "did:example:gov-issuer"
   ],
   "verifiers": [
-    "did:mitch:verifier-liquor-store",
-    "did:web:verifier.mitch.demo",
-    "did:mitch:verifier-health-er"
+    "did:askmi:verifier-liquor-store",
+    "did:web:verifier.askmi.demo",
+    "did:askmi:verifier-health-er"
   ]
 }

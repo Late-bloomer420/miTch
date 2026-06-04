@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-miTch is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — ZK-style credential verification with crypto-shredding, fail-closed policy engine, GDPR Art. 25 + eIDAS 2.0 / EUDI compatible. TypeScript monorepo with pnpm workspaces.
+AskMI is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — ZK-style credential verification with crypto-shredding, fail-closed policy engine, GDPR Art. 25 + eIDAS 2.0 / EUDI compatible. TypeScript monorepo with pnpm workspaces.
 
 ## Commands
 
@@ -19,7 +19,7 @@ pnpm build
 pnpm test
 
 # Run tests for a single package
-pnpm --filter @mitch/policy-engine test
+pnpm --filter @askmi/policy-engine test
 
 # Run a single test file
 cd src/packages/policy-engine && npx vitest run src/__tests__/engine.test.ts
@@ -40,8 +40,8 @@ pnpm format
 ### Core packages
 
 - **policy-engine** — The central "Privacy Firewall" / ZKQF. Evaluates disclosure requests → ALLOW/DENY/PROMPT verdicts. Contains: engine.ts (main evaluator), kpi.ts, rate-limiter.ts, proof-fatigue.ts, jurisdiction.ts, config-profiles.ts, allow-assertion.ts
-- **shared-crypto** — Published as `@askmi/shared-crypto`. All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
-- **shared-types** — Published as `@askmi/shared-types`. Central type definitions shared across all packages
+- **shared-crypto** — `@askmi/shared-crypto`. All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
+- **shared-types** — `@askmi/shared-types`. Central type definitions shared across all packages
 - **layer-resolver** — Resolves trust layers and credential schemas
 - **data-flow** — Transaction transparency and audit grouping
 
@@ -57,7 +57,7 @@ pnpm format
 ### Infrastructure packages
 
 - **anchor-service** — Merkle batch anchoring + L2 provider stubs
-- **revocation-statuslist** — Published as `@askmi/revocation-statuslist`. StatusList2021, multi-source resolver
+- **revocation-statuslist** — `@askmi/revocation-statuslist`. StatusList2021, multi-source resolver
 - **secure-storage** — IndexedDB-backed encrypted storage (uses fake-indexeddb in tests)
 - **secure-memory** — Memory-safe credential handling
 - **audit-log** — Immutable audit trail
@@ -80,7 +80,7 @@ pnpm format
 - **Test framework:** Vitest. Some packages use `environment: 'node'`, wallet-pwa uses `environment: 'jsdom'` with setup files for IndexedDB mocking.
 - **No breaking changes** to public package APIs without explicit approval.
 - **policy-engine index.ts** has many exports — check for naming conflicts when adding new modules.
-- **npm scope reality:** miTch is the project name. Only the three published packages above use `@askmi/*`; do not perform a blanket `@mitch/*` rename.
+- **npm scope reality:** AskMI is the active project/package brand. All workspace packages use the `@askmi/*` scope; new packages must stay on that scope.
 - **Repo truth sources:** Read `docs/DOCS_CANON.md` before updating status, backlog, QA evidence, session history, or agent-facing instructions.
 
 ## Testing Notes
@@ -88,7 +88,7 @@ pnpm format
 - Tests include `src/__tests__/` directories within each package
 - wallet-pwa tests require setup mocks: `fake-indexeddb/auto`, `document.elementFromPoint` stub, `getAll`/`getAllKeys`/`clear` for SecureStorage
 - secure-storage tests use `fake-indexeddb/auto` via setup file
-- Run `MITCH_TEST_MODE=1` for test-mode-specific behavior
+- Run `ASKMI_TEST_MODE=1` for test-mode-specific behavior
 
 ## CI
 

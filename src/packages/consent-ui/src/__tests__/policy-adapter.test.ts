@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { fromPolicyDecision } from '../policy-adapter';
-import type { Decision, DisclosureRequest } from '@mitch/policy-engine';
+import type { Decision, DisclosureRequest } from '@askmi/policy-engine';
 
 const baseRequest: DisclosureRequest = {
     requestId: 'req-1',
-    verifierDid: 'did:mitch:verifier-liquor-store',
+    verifierDid: 'did:askmi:verifier-liquor-store',
     purpose: 'Age Verification',
     requestedClaims: ['age', 'name'],
     requestedPredicates: [

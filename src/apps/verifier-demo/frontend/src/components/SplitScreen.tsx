@@ -32,7 +32,7 @@ export function SplitScreen({ backendUrl }: SplitScreenProps) {
                 padding: '14px 24px', borderBottom: '1px solid #1a1a1a', flexShrink: 0,
             }}>
                 <div style={{ fontWeight: 700, fontSize: 16 }}>
-                    🔐 miTch — Proof, not Person
+                    🔐 AskMI — Proof, not Person
                 </div>
                 <select
                     value={selectedId}

@@ -49,7 +49,7 @@ describe('DataFlowService', () => {
         metadata: {
           decision_id: DEC_ID,
           claims_shared: ['age', 'birthDate'],
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
           credential_types: ['AgeCredential'],
           proven_claims: ['age >= 18'],
           used_zkp: true,
@@ -66,7 +66,7 @@ describe('DataFlowService', () => {
         action: 'VP_GENERATED',
         metadata: {
           decision_id: DEC_ID,
-          verifier_did: 'did:mitch:verifier-liquor-store',
+          verifier_did: 'did:askmi:verifier-liquor-store',
           claims_shared: [],
           credential_types: [],
           proven_claims: [],
@@ -75,7 +75,7 @@ describe('DataFlowService', () => {
       }),
     ];
     const txns = service.buildTransactions(entries);
-    expect(txns[0].verifierId).toBe('did:mitch:verifier-liquor-store');
+    expect(txns[0].verifierId).toBe('did:askmi:verifier-liquor-store');
   });
 
   it('extracts provenClaims and usedZKP', () => {
@@ -87,7 +87,7 @@ describe('DataFlowService', () => {
           claims_shared: ['age'],
           proven_claims: ['age >= 18', 'age >= 21'],
           credential_types: ['AgeCredential'],
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
           used_zkp: true,
         },
       }),
@@ -160,7 +160,7 @@ describe('DataFlowService', () => {
         action: 'VP_GENERATED',
         metadata: {
           decision_id: DEC_ID,
-          verifier_did: 'did:mitch:verifier-liquor-store',
+          verifier_did: 'did:askmi:verifier-liquor-store',
           claims_shared: [],
           credential_types: [],
           proven_claims: [],
@@ -221,7 +221,7 @@ describe('DataFlowService', () => {
           credential_types: ['AgeCredential'],
           proven_claims: [],
           used_zkp: false,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
         },
       }),
     ];
@@ -241,7 +241,7 @@ describe('DataFlowService', () => {
           credential_types: ['AgeCredential'],
           proven_claims: [],
           used_zkp: false,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
         },
       }),
     ];
@@ -259,7 +259,7 @@ describe('DataFlowService', () => {
           credential_types: ['AgeCredential'],
           proven_claims: [],
           used_zkp: false,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
         },
       }),
     ];
@@ -289,7 +289,7 @@ describe('DataFlowService', () => {
           credential_types: ['AgeCredential'],
           proven_claims: [],
           used_zkp: false,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
         },
       }),
     ];
@@ -308,7 +308,7 @@ describe('DataFlowService', () => {
           credential_types: ['AgeCredential'],
           proven_claims: [],
           used_zkp: false,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
         },
       }),
     ];
@@ -334,7 +334,7 @@ describe('DataFlowService', () => {
         action: 'IDENTITY_ACCESS_DETECTED',
         metadata: {
           decision_id: DEC_ID,
-          verifier_did: 'did:mitch:verifier-test',
+          verifier_did: 'did:askmi:verifier-test',
           access_type: 'browser_api',
           surface: 'navigator.userAgent',
           actor_label: 'Google Chrome',

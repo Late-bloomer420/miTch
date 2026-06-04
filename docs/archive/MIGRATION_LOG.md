@@ -156,7 +156,7 @@ Commit: 48c0518 - "docs(readme): create comprehensive project README"
 
 ### Phase 7: Layer-Resolver Package (Commit 7)
 ```bash
-# New package: @mitch/layer-resolver
+# New package: @askmi/layer-resolver
 ✅ ProtectionLayer enum (WELT=0, GRUNDVERSORGUNG=1, VULNERABLE=2)
 ✅ getInheritedLayers() function
 ✅ includesLayer() function
@@ -343,7 +343,7 @@ Original folders:           ~260 MB (untouched, safe to delete after validation)
 2. **Verify Package Resolution:**
    ```bash
    pnpm list --depth 0
-   # Should show all @mitch/* packages
+   # Should show all @askmi/* packages
    ```
 
 3. **Test Apps:**
@@ -450,7 +450,7 @@ rm -rf miTch/
 - [ ] pnpm build successful
 - [ ] pnpm test passes
 - [ ] wallet-pwa runs (pnpm dev:wallet)
-- [ ] All @mitch/* packages resolve
+- [ ] All @askmi/* packages resolve
 - [ ] Documentation links work
 - [ ] No broken imports
 
@@ -483,7 +483,7 @@ rm -rf miTch/
 - ❌ mi(T)ch → ✅ miTch
 - ❌ mi-t-ch → ✅ miTch
 
-**Package Scope:** `@mitch/*` (lowercase, as per npm convention)
+**Package Scope:** `@askmi/*` (lowercase, as per npm convention)
 
 **Folder Name:** `miTch/` (mixed case)
 
@@ -524,7 +524,7 @@ rm -rf miTch/
 | **Files Migrated** | ~450 code + docs |
 | **Lines Added** | ~30,000+ |
 | **Git Commits** | 7 (atomic) |
-| **Packages Created** | 1 new (@mitch/layer-resolver) |
+| **Packages Created** | 1 new (@askmi/layer-resolver) |
 | **Documentation Pages** | 115 |
 | **Git Histories Preserved** | 4 bundles |
 | **Data Loss** | **0 bytes** ✅ |

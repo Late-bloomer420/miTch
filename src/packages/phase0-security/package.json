@@ -1,20 +1,23 @@
 {
-    "name": "@mitch/phase0-security",
-    "version": "0.1.0",
-    "description": "Phase-0 Security Hardening: Local Audit Log, Verifier Direct Protocol, and Compliance Checking",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "type": "module",
-    "scripts": {
-        "build": "tsc -p tsconfig.build.json",
-        "test": "vitest run"
-    },
-    "devDependencies": {
-        "@types/node": "^20.0.0",
-        "fake-indexeddb": "^6.2.5",
-        "typescript": "^5.0.0",
-        "vitest": "^4.1.8"
-    },
-    "author": "miTch Core Team",
-    "license": "UNLICENSED"
+  "name": "@askmi/phase0-security",
+  "version": "0.1.0",
+  "description": "Phase-0 Security Hardening: Local Audit Log, Verifier Direct Protocol, and Compliance Checking",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@askmi/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "fake-indexeddb": "^6.2.5",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.8"
+  },
+  "author": "AskMI Core Team",
+  "license": "UNLICENSED"
 }

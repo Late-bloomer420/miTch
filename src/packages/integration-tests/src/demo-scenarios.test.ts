@@ -1,7 +1,7 @@
 /**
  * D-01 — Demo E2E Scenarios
  *
- * Four complete flows proving the full miTch stack works end-to-end:
+ * Four complete flows proving the full AskMI stack works end-to-end:
  *   1. Liquor Store     — ALLOW (age ZKP + pairwise DID + key shredding)
  *   2. Hospital Login   — PROMPT → consent → ALLOW (multi-VC)
  *   3. EHDS Emergency   — PROMPT + biometric required (PatientSummary)
@@ -11,15 +11,15 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PolicyEngine } from '@mitch/policy-engine';
+import { PolicyEngine } from '@askmi/policy-engine';
 import { generatePairwiseDID } from '@askmi/shared-crypto';
-import { buildVPToken } from '@mitch/oid4vp';
+import { buildVPToken } from '@askmi/oid4vp';
 import type {
   PolicyManifest,
   VerifierRequest,
   StoredCredentialMetadata,
 } from '@askmi/shared-types';
-import type { EvaluationContext } from '@mitch/policy-engine';
+import type { EvaluationContext } from '@askmi/policy-engine';
 
 // ─── Shared Fixtures ──────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@ import { OID4VCIIssuer } from '../src/index';
 import { BatchCredentialRequest } from '../src/types';
 
 describe('OID4VCI Batch Issuance (§7)', () => {
-    const mockDid = 'did:mitch:issuer-test';
+    const mockDid = 'did:askmi:issuer-test';
     const mockKey = { kty: 'OKP', crv: 'Ed25519', x: 'mock', d: 'mock' } as JsonWebKey;
     const issuer = new OID4VCIIssuer(mockDid, mockKey);
 

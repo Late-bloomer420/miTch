@@ -160,7 +160,7 @@ if (WebAuthn.isAvailable() && WebAuthn.isPlatformAuthenticatorAvailable()) {
 ## Change Log
 
 - 2026-02-16: Initial decision (ACCEPTED)
-- 2026-02-16: Implementation started (@mitch/webauthn-verifier)
+- 2026-02-16: Implementation started (@askmi/webauthn-verifier)
 
 ## Next Steps
 

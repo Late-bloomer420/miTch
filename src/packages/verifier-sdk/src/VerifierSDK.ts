@@ -45,7 +45,7 @@ export interface VerifierConfig {
 }
 
 /**
- * miTch Verifier SDK
+ * AskMI Verifier SDK
  * Enables "Privacy-by-Default" verification with strict security boundaries.
  */
 export class VerifierSDK {

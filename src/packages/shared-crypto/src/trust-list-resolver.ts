@@ -46,17 +46,18 @@ export class EUDITrustListResolver {
         this.cacheTtlMs = options?.cacheTtlMs ?? 24 * 60 * 60 * 1000; // 24 hours
         this.gracePeriodMsLowRisk = options?.gracePeriodMsLowRisk ?? 4 * 60 * 60 * 1000; // 4 hours
         const envUrl = this.readEnvTslUrl();
-        this.tslUrl = envUrl || 'https://trust.mitch.demo/v1/eudi-lotl.json';
+        this.tslUrl = envUrl || 'https://trust.askmi.demo/v1/eudi-lotl.json';
     }
 
     private readEnvTslUrl(): string | undefined {
         // Vite/browser-safe env access
-        const viaImportMeta = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.MITCH_TSL_URL;
+        const importMetaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+        const viaImportMeta = importMetaEnv?.ASKMI_TSL_URL ?? importMetaEnv?.MITCH_TSL_URL;
         if (viaImportMeta && viaImportMeta.trim()) return viaImportMeta.trim();
 
         // Node-safe fallback (without crashing browser where `process` is undefined)
         const maybeProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
-        const viaProcess = maybeProcess?.env?.MITCH_TSL_URL;
+        const viaProcess = maybeProcess?.env?.ASKMI_TSL_URL ?? maybeProcess?.env?.MITCH_TSL_URL;
         if (viaProcess && viaProcess.trim()) return viaProcess.trim();
 
         return undefined;

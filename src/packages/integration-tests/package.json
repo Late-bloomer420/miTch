@@ -1,22 +1,22 @@
 {
-  "name": "@mitch/integration-tests",
+  "name": "@askmi/integration-tests",
   "version": "0.1.0",
-  "description": "End-to-end integration tests across all miTch packages",
+  "description": "End-to-end integration tests across all AskMI packages",
   "type": "module",
   "scripts": {
     "test": "vitest run",
     "test:e2e": "vitest run --testNamePattern=E2E"
   },
   "dependencies": {
-    "@mitch/eid-issuer-connector": "workspace:*",
-    "@mitch/layer-resolver": "workspace:*",
-    "@mitch/mock-issuer": "workspace:*",
-    "@mitch/oid4vp": "workspace:*",
-    "@mitch/policy-engine": "workspace:*",
+    "@askmi/eid-issuer-connector": "workspace:*",
+    "@askmi/layer-resolver": "workspace:*",
+    "@askmi/mock-issuer": "workspace:*",
+    "@askmi/oid4vp": "workspace:*",
+    "@askmi/policy-engine": "workspace:*",
     "@askmi/revocation-statuslist": "workspace:*",
     "@askmi/shared-crypto": "workspace:*",
     "@askmi/shared-types": "workspace:*",
-    "@mitch/webauthn-verifier": "workspace:*"
+    "@askmi/webauthn-verifier": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

@@ -5,12 +5,12 @@ As AI Agents (e.g., AutoGPT, Gemini) begin performing tasks for users (booking f
 *   **Current State**: Users copy-paste their Passport Number into the chat context.
 *   **Risk**: The AI (or its provider) now permanently stores this PII in its training data/context window. Profiling becomes inevitable.
 
-## 2. The Solution: miTch as the "Identity Firewall"
-miTch intervenes in the Agent-API loop. The AI Agent never sees the raw PII. It only sees an **Opaque Authorization Token**.
+## 2. The Solution: AskMI as the "Identity Firewall"
+AskMI intervenes in the Agent-API loop. The AI Agent never sees the raw PII. It only sees an **Opaque Authorization Token**.
 
 ### 2.1 Concept: Carrier Pigeon Protocol
 1.  **Agent**: "I need your Passport to book Lufthansa Flight LH404."
-2.  **miTch**: "I will not give YOU the passport. I will give you a **Sealed Envelope** (Verifiable Presentation) addressed ONLY to Lufthansa."
+2.  **AskMI**: "I will not give YOU the passport. I will give you a **Sealed Envelope** (Verifiable Presentation) addressed ONLY to Lufthansa."
 3.  **Agent**: Takes the envelope and sends it to Lufthansa API.
 4.  **Lufthansa**: Opens envelope, verifies age/nationality, issues ticket.
 5.  **Agent**: Sees "Ticket Issued" but never saw "Passport Number".
@@ -26,15 +26,15 @@ miTch intervenes in the Agent-API loop. The AI Agent never sees the raw PII. It 
 ```mermaid
 sequenceDiagram
     participant Agent as AI Assistant
-    participant miTch as Wallet Firewall
+    participant AskMI as Wallet Firewall
     participant Airline as Verifier (Lufthansa)
 
-    Agent->>miTch: Request(Intent="Book Flight", Target="Lufthansa")
-    miTch->>User: "Allow Bot to send Passport to Lufthansa?"
-    User->>miTch: Approve (Biometric)
-    miTch->>miTch: Generate VP(Passport)
-    miTch->>miTch: Encrypt VP with Lufthansa_PubKey
-    miTch->>Agent: Return EncryptedBlob
+    Agent->>AskMI: Request(Intent="Book Flight", Target="Lufthansa")
+    AskMI->>User: "Allow Bot to send Passport to Lufthansa?"
+    User->>AskMI: Approve (Biometric)
+    AskMI->>AskMI: Generate VP(Passport)
+    AskMI->>AskMI: Encrypt VP with Lufthansa_PubKey
+    AskMI->>Agent: Return EncryptedBlob
     Agent->>Airline: API_Call(TicketRequest, Proof=EncryptedBlob)
     Airline->>Airline: Decrypt & Verify
     Airline-->>Agent: 200 OK (Ticket)

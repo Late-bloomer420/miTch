@@ -32,6 +32,9 @@ jobs:
       - name: 📚 Install dependencies
         run: pnpm install
 
+      - name: 🔎 Active rebrand guard
+        run: pnpm guard:rebrand
+
       - name: 🏗️ Build all packages
         run: pnpm build
 
@@ -60,7 +63,7 @@ jobs:
       - run: pnpm build
 
       - name: 🛡️ Validate Layer Enforcement
-        run: pnpm --filter @mitch/policy-engine test -- --run e2e-liquor-store.test.ts
+        run: pnpm --filter @askmi/policy-engine test -- --run e2e-liquor-store.test.ts
 
   security-audit:
     name: Dependency Security Audit

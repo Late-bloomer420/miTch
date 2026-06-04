@@ -123,7 +123,7 @@ export function WalletPanel({ scenario, backendUrl, onPresented }: WalletPanelPr
                     {scenario.blocked.length > 0 && (
                         <>
                             <div style={{ fontSize: 11, color: '#555', marginTop: 8, marginBottom: 4 }}>
-                                Not shared (withheld by miTch):
+                                Not shared (withheld by AskMI):
                             </div>
                             {scenario.blocked.map((field) => (
                                 <div key={field} style={{ fontSize: 11, color: '#444', fontFamily: 'monospace', marginBottom: 2 }}>

@@ -1,5 +1,5 @@
 /**
- * @mitch/predicates - Type Definitions
+ * @askmi/predicates - Type Definitions
  * 
  * Re-exports from @askmi/shared-types to ensure canonical definitions are used.
  */

@@ -19,7 +19,7 @@ EUDI-CIR Art. 14 und DSGVO Art. 32 + 25 verlangen zusätzlichen Schutz für „b
 
 **Technische Umsetzung:**
 - `@askmi/shared-crypto` erweitert um `encryptClaimLevel(claim, sensitivity)`
-- `@mitch/policy-engine` fügt neue Regel `claim_encryption_score` hinzu
+- `@askmi/policy-engine` fügt neue Regel `claim_encryption_score` hinzu
 - Fail-Closed: Bei fehlendem Key oder schwachem Storage → gesamte Session DENY
 
 ## Alternatives Considered

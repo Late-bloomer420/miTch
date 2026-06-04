@@ -1,6 +1,6 @@
 /**
- * @package @mitch/mock-issuer
- * @description Mock Government Issuer for testing miTch credential flows
+ * @package @askmi/mock-issuer
+ * @description Mock Government Issuer for testing AskMI credential flows
  *
  * Implements SD-JWT-inspired credential issuance for MVP testing.
  * Uses JOSE for JWT signing with ES256 algorithm.

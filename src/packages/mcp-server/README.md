@@ -1,8 +1,8 @@
-# @mitch/mcp-server
+# @askmi/mcp-server
 
 > **Status:** Experimental / Frozen Stub (v0.1)
 
-This package exposes the miTch policy engine as a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. It allows LLM agents (like Claude Desktop) to request disclosure evaluations without giving them access to raw credentials or keys.
+This package exposes the AskMI policy engine as a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. It allows LLM agents (like Claude Desktop) to request disclosure evaluations without giving them access to raw credentials or keys.
 
 ## Features
 
@@ -15,13 +15,13 @@ This package exposes the miTch policy engine as a [Model Context Protocol (MCP)]
 The server is currently in a **frozen stub phase**. While the architecture is defined, most tools are stubs returning `DENY` with a `NOT_IMPLEMENTED` reason. This is a deliberate design choice to prevent the accidental creation of valid decisions without a fully authorized policy source.
 
 ### Implemented Tools
-- `mitch_evaluate_disclosure`: Evaluates a verifier request against the local policy engine.
+- `askmi_evaluate_disclosure`: Evaluates a verifier request against the local policy engine.
 
 ### Planned Tools (See `docs/mcp-server-architecture.md`)
-- `mitch_verify_presentation`
-- `mitch_check_status`
-- `mitch_list_policies`
-- `mitch_get_decision`
+- `askmi_verify_presentation`
+- `askmi_check_status`
+- `askmi_list_policies`
+- `askmi_get_decision`
 - ...and more.
 
 ## Usage
@@ -32,9 +32,9 @@ Add the following to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "mitch": {
+    "AskMI": {
       "command": "node",
-      "args": ["/path/to/mitch/src/packages/mcp-server/dist/index.js"]
+      "args": ["/path/to/AskMI/src/packages/mcp-server/dist/index.js"]
     }
   }
 }
@@ -51,8 +51,8 @@ npx @modelcontextprotocol/inspector dist/index.js
 
 ## Security & Privacy
 - **Transport:** Currently supports `stdio` for local process communication.
-- **Data Minimization:** Raw credentials never leave the miTch boundary.
-- **Audit:** Every call is logged to the local `@mitch/audit-log`.
+- **Data Minimization:** Raw credentials never leave the AskMI boundary.
+- **Audit:** Every call is logged to the local `@askmi/audit-log`.
 
 ## Architecture
 For the full design rationale, tool inventory, and security considerations, see [docs/mcp-server-architecture.md](../../../docs/mcp-server-architecture.md).

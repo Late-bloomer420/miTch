@@ -19,7 +19,7 @@ EUDI-CIR und ISO 18013-5 verlangen Offline-Proofs ohne Linkability oder PII-Leak
 - **Blind Provider Enforcement**: miTch-Proxy sieht nur die Issuance, niemals den späteren Offline-Proof
 
 **Technische Umsetzung:**
-- `@mitch/wallet-core` erweitert um `issueMdoc(claims)` + `verifyOfflineMdoc()`
+- `@askmi/wallet-core` erweitert um `issueMdoc(claims)` + `verifyOfflineMdoc()`
 - `@askmi/shared-crypto` nutzt CBOR + COSE für mdoc (parallel zu SD-JWT)
 - Fail-Closed: Bei fehlendem Offline-Consent → gesamter Batch DENY
 

@@ -236,7 +236,7 @@ class ReputationFirstStrategy implements ICredentialSelectionStrategy { ... }
 | # | Criterion | Measurement | Status |
 |---|-----------|-------------|--------|
 | 1 | **WalletService LOC** | < 200 LOC (orchestration only) | â¬œ Pending |
-| 2 | **Unit Tests without IndexedDB** | All `@mitch/secure-storage` tests run with InMemoryAdapter | â¬œ Pending |
+| 2 | **Unit Tests without IndexedDB** | All `@askmi/secure-storage` tests run with InMemoryAdapter | â¬œ Pending |
 | 3 | **Second Storage Adapter Exists** | `InMemoryStorageAdapter` implemented and tested | â¬œ Pending |
 | 4 | **Policy Selection Swappable** | `ICredentialSelectionStrategy` interface defined; injectable | â¬œ Pending |
 | 5 | **Public API Stability** | No breaking changes to `WalletService` public methods | âœ… Verified |

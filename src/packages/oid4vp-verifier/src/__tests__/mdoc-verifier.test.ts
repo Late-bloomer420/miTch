@@ -19,7 +19,7 @@ import {
   type MobileSecurityObject,
   type SessionTranscript,
   type ValidityInfo,
-} from '@mitch/mdoc';
+} from '@askmi/mdoc';
 
 // ─── Key Setup ───────────────────────────────────────────────────────
 

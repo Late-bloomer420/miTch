@@ -1,7 +1,7 @@
 /**
  * Public domain model for the embeddable consent surface.
  *
- * Decoupled at runtime from @mitch/policy-engine (the adapter in policy-adapter.ts
+ * Decoupled at runtime from @askmi/policy-engine (the adapter in policy-adapter.ts
  * maps a Decision + DisclosureRequest into a ConsentRequest). The model below is
  * intentionally minimal so the component can be embedded in any verifier UI.
  */

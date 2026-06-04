@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/util
+ * @module @askmi/mdoc/util
  *
  * Shared utilities for the mdoc package.
  */

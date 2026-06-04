@@ -3,7 +3,7 @@
 ## "Trust Another Bank's Check Without Holding Another Bank's Data"
 
 > Not implementation-ready. Concept and design only.
-> Verifier-side integration via `@mitch/verifier-sdk`. Companion business case:
+> Verifier-side integration via `@askmi/verifier-sdk`. Companion business case:
 > `01_business_case_fintech_kyc.md`.
 
 ---
@@ -59,7 +59,7 @@ the proof to the requesting verifier's DID and a fresh nonce, so it cannot be re
 
 The bank that performed the original KYC issues an SD-JWT Verifiable Credential over OID4VCI.
 
-- Issuance: `@mitch/oid4vci` (wallet-side), bank acts as issuer.
+- Issuance: `@askmi/oid4vci` (wallet-side), bank acts as issuer.
 - Claims: `kyc_completed_at`, `aml_risk_band`, `sanctions_screened_at`, `pep_screened_at`,
   `residency_jurisdiction`, `birthDate`.
 - Advantage: the regulated entity that owns the liability remains the issuer of record.
@@ -98,7 +98,7 @@ PredicateClause  path=credentialSubject.sanctionsClear op=eq   type=boolean valu
 PredicateClause  path=credentialSubject.residency      op=eq   type=string  value=EU
 ```
 
-The policy engine (`@mitch/policy-engine`) applies fail-closed checks before any proof is built:
+The policy engine (`@askmi/policy-engine`) applies fail-closed checks before any proof is built:
 freshness, issuer trust, revocation, jurisdiction. If all clauses pass → the wallet emits a
 signed `DecisionProofPayload`. If not → a deny code, never a partial disclosure.
 
@@ -125,7 +125,7 @@ signed `DecisionProofPayload`. If not → a deny code, never a partial disclosur
 ## Verifier Integration (Relying-Party Side)
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const sdk = new VerifierSDK({
   verifierDid: 'did:web:neobank-b.example',
@@ -186,17 +186,17 @@ The verifier stores **only** the WORM receipt (hashed binding + booleans), not c
 
 | Package                        | Role in this module                                        |
 | ------------------------------ | ---------------------------------------------------------- |
-| `@mitch/policy-engine`         | Fail-closed evaluation; `jurisdiction.ts`, `geo-scope.ts`  |
-| `@mitch/predicates`            | DSL evaluation (`gte`, `in`, `eq`) over bank credential    |
+| `@askmi/policy-engine`         | Fail-closed evaluation; `jurisdiction.ts`, `geo-scope.ts`  |
+| `@askmi/predicates`            | DSL evaluation (`gte`, `in`, `eq`) over bank credential    |
 | `@askmi/shared-types`          | `PredicateRequest`, `DecisionProofPayload` shapes          |
 | `@askmi/shared-crypto`         | Pairwise DID per verifier; ECDSA proof; PQC migration path |
-| `@mitch/oid4vci`               | Bank-issued SD-JWT VC issuance                             |
-| `@mitch/oid4vp`                | Presentation flow                                          |
-| `@mitch/verifier-sdk`          | Relying-party verification + replay-check hook             |
+| `@askmi/oid4vci`               | Bank-issued SD-JWT VC issuance                             |
+| `@askmi/oid4vp`                | Presentation flow                                          |
+| `@askmi/verifier-sdk`          | Relying-party verification + replay-check hook             |
 | `@askmi/revocation-statuslist` | Fail-closed if KYC credential is revoked                   |
-| `@mitch/audit-log`             | WORM receipts for supervisory inspection                   |
+| `@askmi/audit-log`             | WORM receipts for supervisory inspection                   |
 
-Relevant deny codes (`@mitch/policy-engine` → `deny-reason-codes.ts`):
+Relevant deny codes (`@askmi/policy-engine` → `deny-reason-codes.ts`):
 `DENY_CREDENTIAL_TOO_OLD`, `DENY_CREDENTIAL_REVOKED`, `DENY_UNTRUSTED_ISSUER`,
 `DENY_JURISDICTION_INCOMPATIBLE`, `DENY_BINDING_NONCE_REPLAY`, `DENY_STATUS_SOURCE_UNAVAILABLE`.
 

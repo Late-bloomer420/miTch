@@ -1,5 +1,5 @@
 {
-  "name": "@mitch/poc-hardened",
+  "name": "@askmi/poc-hardened",
   "version": "0.0.1",
   "description": "Hardened PoC - security-focused verification service with KPI tooling",
   "main": "dist/server.js",

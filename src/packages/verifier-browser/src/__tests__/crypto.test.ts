@@ -136,7 +136,7 @@ describe('importPublicKeyJWK error paths', () => {
 describe('verifySignature', () => {
     it('returns true for valid ECDSA-SHA256 signature', async () => {
         const kp = await generateEphemeralKeyPair();
-        const data = new TextEncoder().encode('hello miTch');
+        const data = new TextEncoder().encode('hello AskMI');
         const sig = new Uint8Array(
             await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, kp.privateKey, data)
         );
