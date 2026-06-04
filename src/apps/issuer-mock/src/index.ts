@@ -93,6 +93,25 @@ app.get('/.well-known/jwks.json', async (req, res) => {
     });
 });
 
+app.get('/status-list/1', (req, res) => {
+    const bitstring = new Uint8Array(64);
+    bitstring[5] = 0b00100000; // StatusList2021 index 42 is revoked (MSB-first)
+
+    res.json({
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        id: `http://localhost:${PORT}/status-list/1`,
+        type: ['VerifiableCredential', 'StatusList2021Credential'],
+        issuer: ISSUER_DID,
+        issuanceDate: new Date().toISOString(),
+        credentialSubject: {
+            id: `http://localhost:${PORT}/status-list/1#list`,
+            type: 'StatusList2021',
+            statusPurpose: 'revocation',
+            encodedList: Buffer.from(bitstring).toString('base64'),
+        },
+    });
+});
+
 // mdoc (ISO 18013-5) Credential Issuance Endpoint
 app.post('/credential/mdoc', async (req, res) => {
     if (!issuerKeys) {

@@ -31,6 +31,7 @@ export const app: Express = express();
 // Initialize Trust List Resolver
 const MITCH_TSL_URL = process.env.MITCH_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json';
 trustListResolver.setUrl(MITCH_TSL_URL);
+const ISSUER_BASE_URL = process.env.ISSUER_BASE_URL || 'http://localhost:3005';
 
 const isTestMode = process.env.MITCH_TEST_MODE === '1';
 /**
@@ -181,7 +182,7 @@ app.post('/wallet-present', async (req, res) => {
         const issuerKeys = await globalThis.crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
         const holderKeys = await globalThis.crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
         const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
-        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({ request, issuerPrivateKey: issuerKeys.privateKey, holderKeyPair: holderKeys, claims, vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential', issuerDid: 'https://issuer.mitch.demo', revoked: scenarioId === 'revoked' });
+        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({ request, issuerPrivateKey: issuerKeys.privateKey, holderKeyPair: holderKeys, claims, vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential', issuerDid: 'https://issuer.mitch.demo', revoked: scenarioId === 'revoked', statusListUri: `${ISSUER_BASE_URL}/status-list/1` });
         const validation = await validateSDJWTPresentation({ vpTokenString, presentationSubmission, request, issuerPublicKey: issuerKeys.publicKey, checkRevocation: true, checkTrust: true });
         const { consentReceipt } = buildSessionCleanup({ request, disclosedClaims: validation.disclosedClaims ?? disclosedClaims, outcome: validation.ok ? 'SUCCESS' : 'DENIED' });
         if (validation.ok) {

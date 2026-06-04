@@ -5,6 +5,7 @@
   "issuers": [
     "did:web:localhost%3A3005",
     "did:web:issuer.mitch.demo",
+    "https://issuer.mitch.demo",
     "did:example:gov-issuer"
   ],
   "verifiers": [
