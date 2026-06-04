@@ -67,3 +67,7 @@ pnpm lint
   now stores the policy manifest in `SecureStorage`, migrates the legacy
   `localStorage` value once, removes it, and hides the system policy document
   from the credential list.
+- 2026-06-04: Added active-code rebrand guard to CI. `pnpm guard:rebrand`
+  scans `src`, `.github`, and root config files for stale `@mitch/*`,
+  `did:mitch`, `mitch.demo`, and `MitchPolicyEvaluator` references while
+  leaving historical docs/evidence out of scope.

@@ -108,3 +108,32 @@ encrypted storage boundary.
 - `pnpm --filter @askmi/wallet-pwa build` — pass
 - `pnpm lint` — pass, 10/10 Turbo tasks
 - `pnpm test` — pass, 45/45 Turbo tasks
+
+## Follow-Up Slice — Active Rebrand Guard
+
+The first constants/contracts pass used a manual active-code scan. That guard is
+now reproducible in CI.
+
+### What Changed
+
+- Added `scripts/guard-active-rebrand.mjs`.
+- Added root script `pnpm guard:rebrand`.
+- Added the guard as an early `Build & Test` CI step after dependency install.
+- Scoped the guard to active code/config only:
+  - `src`
+  - `.github`
+  - `package.json`
+  - `pnpm-workspace.yaml`
+  - `turbo.json`
+- Kept historical docs and dated QA evidence out of scope.
+
+### Blocked Patterns
+
+- `@mitch/`
+- `did:mitch`
+- `mitch.demo`
+- `MitchPolicyEvaluator`
+
+### Verification
+
+- `pnpm guard:rebrand` — pass
