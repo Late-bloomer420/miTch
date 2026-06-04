@@ -5,6 +5,18 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./test-helpers": {
+      "types": "./dist/test-helpers.d.ts",
+      "import": "./dist/test-helpers.js",
+      "default": "./dist/test-helpers.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run"

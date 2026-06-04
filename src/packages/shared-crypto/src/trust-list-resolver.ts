@@ -3,7 +3,7 @@
  * Handles dynamic lookup and validation of trusted issuers and verifiers.
  */
 
-import { RiskTier } from '@askmi/revocation-statuslist/src/types';
+import { RiskTier } from '@askmi/revocation-statuslist';
 import { verifyData } from './signing';
 import { canonicalStringify } from './hashing';
 

@@ -18,13 +18,19 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
-import type { StatusListEntry, StatusListCredential } from '@askmi/revocation-statuslist';
+import type { StatusListCredential } from '@askmi/revocation-statuslist';
+import {
+  makeStatusListEntry as makeEntry,
+  makeStatusListCredential as makeStatusListCredentialShell,
+} from '@askmi/revocation-statuslist/test-helpers';
 import { DIDResolver, DIDResolutionError } from '@askmi/shared-crypto';
 import { PolicyEngine, ReasonCode } from '@askmi/policy-engine';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 import type { EvaluationContext } from '@askmi/policy-engine';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
+// Status-list entry/credential fixtures come from the shared builders (S2-05);
+// the bitstring encoding stays local so revocation semantics are unchanged.
 
 function makeEncodedList(revokedIndices: number[], byteCount = 4): string {
   const bytes = new Uint8Array(byteCount);
@@ -39,29 +45,7 @@ function makeEncodedList(revokedIndices: number[], byteCount = 4): string {
 }
 
 function makeStatusListCredential(revokedIndices: number[] = []): StatusListCredential {
-  return {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    id: 'https://example.com/status-list/1',
-    type: ['VerifiableCredential', 'StatusList2021Credential'],
-    issuer: 'did:example:issuer',
-    issuanceDate: new Date().toISOString(),
-    credentialSubject: {
-      id: 'https://example.com/status-list/1#list',
-      type: 'StatusList2021',
-      statusPurpose: 'revocation',
-      encodedList: makeEncodedList(revokedIndices),
-    },
-  };
-}
-
-function makeEntry(index = 0, url = 'https://example.com/status-list/1'): StatusListEntry {
-  return {
-    id: `${url}#${index}`,
-    type: 'StatusList2021Entry',
-    statusPurpose: 'revocation',
-    statusListIndex: String(index),
-    statusListCredential: url,
-  };
+  return makeStatusListCredentialShell({ encodedList: makeEncodedList(revokedIndices) });
 }
 
 function mockFetchFail(): typeof fetch {

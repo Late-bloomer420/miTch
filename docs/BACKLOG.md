@@ -27,7 +27,7 @@ Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
 | S2-02 | ✅ | ✅ | Wallet Policy Manifest nicht mehr im Klartext-`localStorage` speichern | Aktive Policy liegt in `SecureStorage`; Legacy-Key wird einmalig migriert und entfernt; Systemdokument erscheint nicht in `getCredentials()` |
 | S2-03 | ✅ | ✅ | Active-code Rebrand Guard in CI | `src`, `.github`, Root Configs brechen bei `@mitch/*`, `did:mitch`, `mitch.demo`, `MitchPolicyEvaluator` |
 | S2-04 | 🟡 P1 | ⏳ | Demo-Scenario-Fixtures prüfen/extrahieren | Claims/Scenario IDs werden wiederverwendet, ohne UX-Copy unnötig zu verallgemeinern |
-| S2-05 | 🟢 P2 | ⏳ | Trust-/StatusList-Test-Fixtures als Testhelper | Zweite Runtime-Testfläche kann dieselben Builder ohne Copy/Paste nutzen |
+| S2-05 | ✅ | ✅ | Trust-/StatusList-Test-Fixtures als Testhelper | `@askmi/revocation-statuslist/test-helpers` exportiert `makeStatusListEntry`/`makeStatusListCredential`; `revocation-statuslist`-Tests und `@askmi/integration-tests` nutzen sie ohne Copy/Paste; Bitstring-Encoding bleibt pro Aufrufer lokal (kein geändertes Revocation-Verhalten) |
 
 ---
 
