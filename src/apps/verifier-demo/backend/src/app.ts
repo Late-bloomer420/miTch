@@ -268,7 +268,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         const zkpProof = (firstPres?.zkp_proofs)?.[agePredicateId];
         let isVerified = false;
         if (zkpProof) {
-            const expectedRequest: PredicateRequest = { verifierDid: 'did:mitch:verifier-liquor-store', nonce: zkpProof.binding.nonce, purpose: 'Age Verification', timestamp: zkpProof.evaluatedAt, predicates: [CommonPredicates.ageAtLeast(18)] };
+            const expectedRequest: PredicateRequest = { verifierDid: 'did:mitch:verifier-liquor-store', nonce: zkpProof.proof.binding.nonce, purpose: 'Age Verification', timestamp: zkpProof.proof.evaluatedAt, predicates: [CommonPredicates.ageAtLeast(18)] };
             const allowedHashes = await buildAllowedPredicateSet(expectedRequest.predicates as Predicate[]);
             const verifyFn = async (data: string, sig: string) => {
                 const key = await globalThis.crypto.subtle.importKey('jwk', zkpProof.publicKeyJwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);
@@ -287,6 +287,10 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
             res.status(403).json({ ok: false, error: 'AGE_NOT_VERIFIED' });
         }
     } catch (e: unknown) {
+        console.warn(
+            '[Verifier] /present verification failed:',
+            e instanceof Error ? `${e.name}: ${e.message}` : String(e)
+        );
         lastVerificationStatus = 'FAILED';
         res.status(400).json({ ok: false, error: 'VERIFICATION_FAILED' });
     }

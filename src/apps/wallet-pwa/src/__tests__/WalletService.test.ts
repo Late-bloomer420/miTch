@@ -64,6 +64,40 @@ describe('WalletService — Credential Store / Retrieve', () => {
     expect(result).toHaveProperty('verdict');
     expect(Array.isArray(result.reasonCodes)).toBe(true);
   });
+
+  it('generates an age predicate proof from the seeded birthDate alias', async () => {
+    const verifierKeys = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: 'SHA-256',
+      },
+      true,
+      ['encrypt', 'wrapKey', 'decrypt', 'unwrapKey']
+    );
+
+    const result = await wallet.evaluateRequest(
+      {
+        verifierId: 'did:mitch:verifier-liquor-store',
+        nonce: crypto.randomUUID(),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+        origin: 'http://localhost:3004',
+        serviceEndpoint: 'http://localhost:3004/present',
+        ephemeralResponseKey: verifierKeys.publicKey,
+      },
+      { userAgent: 'test-agent', timestamp: Date.now() }
+    );
+
+    expect(result.verdict).toBe('ALLOW');
+    expect(result.decisionCapsule).toBeDefined();
+
+    const { auditLog } = await wallet.generatePresentation(result.decisionCapsule!);
+
+    expect(auditLog.some(line => line.includes('[ZKP] Proof generated'))).toBe(true);
+    expect(auditLog.some(line => line.includes('[ZKP] Proof failed'))).toBe(false);
+  });
 });
 
 describe('WalletService — AES-256-GCM Encryption Roundtrip', () => {

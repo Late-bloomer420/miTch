@@ -830,6 +830,16 @@ export class WalletService {
             logs.push('✅ WebAuthn Signature Bound to Decision ID');
         }
 
+        // 2. Generate Ephemeral Proof Key (Asymmetric ECDSA)
+        const proofKeys = await generateKeyPair();
+        const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
+
+        await this.auditLog.append('KEY_CREATED', 'ephemeral-proof-key', {
+            alg: 'ECDSA-P256',
+            decision_id: capsule.decision_id
+        });
+        logs.push('⚡ Ephemeral Proof Key Created (ECDSA-P256)');
+
         // 2. Multi-VC Pipelining
         const bundles: Array<{
             credentialType: string;
@@ -928,19 +938,33 @@ export class WalletService {
                         predicates: [CommonPredicates.ageAtLeast(ageLimit)]
                     };
 
-                    // Identity Key Signature (ECDSA P-256)
-                    if (!this.policyPrivateKey) throw new Error('Identity Key missing');
-                    const signFn = async (d: string) => signData(d, this.policyPrivateKey!);
+                    const signFn = async (d: string) => signData(d, proofKeys.privateKey);
 
                     try {
-                        const predicateCredential = (credentialData as Record<string, unknown>).credentialSubject
-                            ? (credentialData as Record<string, unknown>)
-                            : { credentialSubject: credentialData };
+                        const rawSubject =
+                            (credentialData as Record<string, unknown>).credentialSubject &&
+                                typeof (credentialData as Record<string, unknown>).credentialSubject === 'object'
+                                ? {
+                                    ...((credentialData as Record<string, unknown>)
+                                        .credentialSubject as Record<string, unknown>)
+                                }
+                                : { ...(credentialData as Record<string, unknown>) };
+
+                        if (typeof rawSubject.dateOfBirth !== 'string') {
+                            if (typeof rawSubject.birthDate === 'string') {
+                                rawSubject.dateOfBirth = rawSubject.birthDate;
+                            } else if (typeof rawSubject.birth_date === 'string') {
+                                rawSubject.dateOfBirth = rawSubject.birth_date;
+                            }
+                        }
+
+                        const predicateCredential = { credentialSubject: rawSubject };
                         const result = await evaluatePredicates(predicateCredential, predReq, signFn);
 
-                        // Phase 0: do not expose key material in proofs
-
-                        zkpProofs[predicate] = result;
+                        zkpProofs[predicate] = {
+                            ...result,
+                            publicKeyJwk: proofPublicJWK
+                        };
 
                         if (result.proof.allPassed) {
                             provenClaims[predicate] = true;
@@ -980,16 +1004,6 @@ export class WalletService {
             ),
             used_zkp: bundles.some(b => Object.keys(b.zkpProofs || {}).length > 0),
         });
-
-        // 3. Generate Ephemeral Proof Key (Asymmetric ECDSA)
-        const proofKeys = await generateKeyPair();
-        const proofPublicJWK = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
-
-        await this.auditLog.append('KEY_CREATED', 'ephemeral-proof-key', {
-            alg: 'ECDSA-P256',
-            decision_id: capsule.decision_id
-        });
-        logs.push('⚡ Ephemeral Proof Key Created (ECDSA-P256)');
 
         const vpPayload = {
             metadata: {
@@ -1608,6 +1622,5 @@ export class WalletService {
         return { proofToken, auditLog: logs };
     }
 }
-
 
 

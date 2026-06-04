@@ -1,16 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
+import { CommonPredicates, evaluatePredicates } from '@mitch/predicates';
+import { signData } from '@mitch/shared-crypto';
+
+const mocks = vi.hoisted(() => ({
+    verifierResult: {
+        vp: {
+            presentations: [{ proven_claims: { 'age >= 18': true } }],
+            metadata: { issuer_trust_refs: ['did:example:issuer'] }
+        },
+        proof: { public_key_alg: 'mock' }
+    } as {
+        vp: {
+            presentations: Array<Record<string, unknown>>;
+            metadata: Record<string, unknown>;
+        };
+        proof: Record<string, unknown>;
+    }
+}));
 
 vi.mock('@mitch/verifier-sdk', () => ({
     VerifierSDK: class {
         async verifyPresentation() {
-            return {
-                vp: {
-                    presentations: [{ proven_claims: { 'age >= 18': true } }],
-                    metadata: { issuer_trust_refs: ['did:example:issuer'] }
-                },
-                proof: { public_key_alg: 'mock' }
-            };
+            return mocks.verifierResult;
         }
     }
 }));
@@ -20,6 +32,10 @@ beforeEach(() => {
     process.env.MITCH_TEST_MODE = '1';
     delete process.env.TRUST_PROXY;
     delete process.env.TRUST_PROXY_HOPS;
+    mocks.verifierResult.vp = {
+        presentations: [{ proven_claims: { 'age >= 18': true } }],
+        metadata: { issuer_trust_refs: ['did:example:issuer'] }
+    };
 });
 
 describe('POST /present rate-limit headers', () => {
@@ -52,5 +68,45 @@ describe('POST /present rate-limit headers', () => {
         const res = await request(app).post('/present').send({}).expect(403);
         expect(res.body.ok).toBe(false);
         expect(res.body.error).toBe('AGE_NOT_VERIFIED');
+    });
+
+    it('accepts a current PredicateResult proof with nested proof.binding', async () => {
+        const proofKeys = await globalThis.crypto.subtle.generateKey(
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['sign', 'verify']
+        );
+        const publicKeyJwk = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
+        const predicateRequest = {
+            verifierDid: 'did:mitch:verifier-liquor-store',
+            nonce: 'nonce-current-predicate-shape',
+            purpose: 'Age Verification',
+            timestamp: new Date().toISOString(),
+            predicates: [CommonPredicates.ageAtLeast(18)]
+        };
+        const predicateResult = await evaluatePredicates(
+            { credentialSubject: { dateOfBirth: '2000-01-01' } },
+            predicateRequest,
+            (data) => signData(data, proofKeys.privateKey)
+        );
+
+        mocks.verifierResult.vp = {
+            presentations: [
+                {
+                    zkp_proofs: {
+                        'age >= 18': {
+                            ...predicateResult,
+                            publicKeyJwk
+                        }
+                    }
+                }
+            ],
+            metadata: { issuer_trust_refs: ['did:example:issuer'] }
+        };
+
+        const { app } = await import('./app');
+        const res = await request(app).post('/present').send({}).expect(200);
+        expect(res.body.ok).toBe(true);
+        expect(res.body.message).toContain('Welcome!');
     });
 });
