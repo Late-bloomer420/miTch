@@ -88,8 +88,17 @@ Passed locally:
   before diagnosing source code. Stale build artifacts can still reference old
   package scopes.
 
-## Remaining Follow-Up
+## Follow-Up — Done
 
-The next useful hardening step is to promote the five-scenario matrix into an
-automated smoke test, so this evidence does not depend on manual PowerShell
-reruns.
+The five-scenario matrix is now an automated smoke test, so this evidence no
+longer depends on manual PowerShell reruns:
+
+- `src/apps/verifier-demo/backend/src/__tests__/wallet-present.smoke.test.ts`
+
+It drives `/wallet-present` for all five scenarios and asserts both sides of the
+selective-disclosure guarantee per scenario (requested claims disclosed,
+sensitive claims withheld), plus fail-closed `403 REVOKED` for the revoked case.
+Trust-list and StatusList2021 lookups are mocked, so the test runs offline with
+no local issuer/verifier services.
+
+Run: `pnpm --filter verifier-backend test -- wallet-present.smoke`
