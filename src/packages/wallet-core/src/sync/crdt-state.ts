@@ -1,5 +1,5 @@
 /**
- * @module @mitch/wallet-core/sync/crdt-state
+ * @module @askmi/wallet-core/sync/crdt-state
  *
  * CRDT G-Counter state for multi-device ad budget synchronisation.
  *

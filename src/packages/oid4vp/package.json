@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/oid4vp",
+    "name": "@askmi/oid4vp",
     "version": "0.1.0",
     "description": "OpenID for Verifiable Presentations 1.0 — Wallet-side implementation",
     "main": "dist/index.js",

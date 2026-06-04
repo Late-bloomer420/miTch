@@ -5,7 +5,7 @@
  * 
  * Implements:
  * - did:web resolution (Production-Standard, HTTPS)
- * - did:mitch resolution (Demo Backend)
+ * - did:askmi resolution (Demo Backend)
  * - did:peer:0 resolution (U-02: Inline, no network — Spec 111)
  * - Verification key extraction from DID Documents
  * - Configurable TTL cache with fail-closed semantics
@@ -106,7 +106,7 @@ export class DIDResolver {
 
         if (did.startsWith('did:web:')) {
             document = await this.resolveDidWeb(did);
-        } else if (did.startsWith('did:mitch:')) {
+        } else if (did.startsWith('did:askmi:')) {
             document = await this.resolveDidMitch(did);
         } else if (did.startsWith('did:peer:0z')) {
             // U-02: Inline resolution — no network needed, public key is embedded

@@ -1,7 +1,7 @@
 # T-29: Multi-Credential Pipelining & SD-JWT Hardening
 
 ## 1. Objective
-Expand the miTch presentation layer to support atomic proofs involving multiple, heterogeneous Verifiable Credentials (VCs). Implement a hardened "Selective Disclosure" mechanism inspired by SD-JWT (IETF) to allow granular field-level disclosure alongside ZKP predicates.
+Expand the AskMI presentation layer to support atomic proofs involving multiple, heterogeneous Verifiable Credentials (VCs). Implement a hardened "Selective Disclosure" mechanism inspired by SD-JWT (IETF) to allow granular field-level disclosure alongside ZKP predicates.
 
 ## 2. The Multi-VC Challenge
 In a real-world scenario (e.g., EHDS - European Health Data Space), a single presentation request might require:

@@ -1,5 +1,5 @@
 /**
- * @mitch/predicates - Canonical Hashing
+ * @askmi/predicates - Canonical Hashing
  * 
  * Hash computation for predicates and requests.
  * Uses WebCrypto (async) with Node.js crypto fallback (sync).

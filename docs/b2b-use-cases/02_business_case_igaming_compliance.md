@@ -2,7 +2,7 @@
 
 Stand: 2026-05-23
 Vertical: Licensed sports betting · Online casinos · Operators under GlüStV / UKGC / ADM / DGOJ
-Status: Concept (verifier-side integration via `@mitch/verifier-sdk`)
+Status: Concept (verifier-side integration via `@askmi/verifier-sdk`)
 
 ## 1) Positioning
 
@@ -34,8 +34,8 @@ For each registration and high-risk action:
 deposit_limit_remaining_gte=<stake>`) with purpose.
 2. The wallet evaluates against authoritative credentials and local policy (fail-closed).
 3. For high-value transactions, the policy engine requires a WebAuthn step-up
-   (`@mitch/webauthn-verifier`) before a fresh proof is emitted.
-4. The operator verifies via `@mitch/verifier-sdk` and stores a WORM receipt. A player who enters
+   (`@askmi/webauthn-verifier`) before a fresh proof is emitted.
+4. The operator verifies via `@askmi/verifier-sdk` and stores a WORM receipt. A player who enters
    self-exclusion has their credential revoked → instant `DENY_CREDENTIAL_REVOKED` at every operator.
 
 ## 4) Why now

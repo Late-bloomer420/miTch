@@ -1,6 +1,6 @@
-# @mitch/policy-engine
+# @askmi/policy-engine
 
-Core logic for the miTch Identity Wallet ("Wallet as a Lawyer").  
+Core logic for the AskMI Identity Wallet ("Wallet as a Lawyer").
 Evaluates Verifier Requests against User Policy before any data is shared.
 
 ## Features
@@ -14,7 +14,7 @@ Evaluates Verifier Requests against User Policy before any data is shared.
 ## Usage
 
 ```typescript
-import { PolicyEngine } from '@mitch/policy-engine';
+import { PolicyEngine } from '@askmi/policy-engine';
 import { type VerifierRequest, type PolicyManifest } from '@askmi/shared-types';
 
 const engine = new PolicyEngine();

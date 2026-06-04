@@ -1,5 +1,5 @@
 # Wallet PWA Dockerfile
-# Based on miTch 100% Compliance Architecture
+# Based on AskMI 100% Compliance Architecture
 
 FROM node:20-alpine AS builder
 
@@ -17,7 +17,7 @@ COPY src/apps/wallet-pwa ./src/apps/wallet-pwa
 
 # Prune and Build
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter "@mitch/wallet-pwa" build
+RUN pnpm --filter "@askmi/wallet-pwa" build
 
 # Production Image: Serve static files via Nginx for high performance/sovereignty
 FROM nginx:alpine

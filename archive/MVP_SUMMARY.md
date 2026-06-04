@@ -17,7 +17,7 @@
 - **Status:** ACCEPTED
 
 ### SCHRITT 2: Mock Issuer Package ✅
-📦 **Package:** `@mitch/mock-issuer` (18th package)
+📦 **Package:** `@askmi/mock-issuer` (18th package)
 
 **Features:**
 - ✅ ES256 Keypair Generation (Elliptic Curve)

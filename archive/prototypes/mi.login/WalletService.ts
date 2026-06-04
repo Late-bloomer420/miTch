@@ -1,9 +1,9 @@
 import {
     PolicyEngine,
     type EvaluationContext
-} from '@mitch/policy-engine';
-import { SecureStorage } from '@mitch/secure-storage';
-import { AuditLog } from '@mitch/audit-log';
+} from '@askmi/policy-engine';
+import { SecureStorage } from '@askmi/secure-storage';
+import { AuditLog } from '@askmi/audit-log';
 import {
     PolicyManifest,
     VerifierRequest,
@@ -29,7 +29,7 @@ import {
     evaluatePredicates,
     CommonPredicates,
     type PredicateRequest
-} from '@mitch/predicates';
+} from '@askmi/predicates';
 
 const POLICY_STORAGE_KEY = 'mitch_user_policy';
 

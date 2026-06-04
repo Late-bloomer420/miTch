@@ -3,7 +3,7 @@
 ## "Verify the Certificate and the License — Not the Contracts or the Person"
 
 > Not implementation-ready. Concept and design only.
-> Verifier-side integration via `@mitch/verifier-sdk`; in-person via `@mitch/mdoc`
+> Verifier-side integration via `@askmi/verifier-sdk`; in-person via `@askmi/mdoc`
 > (ISO 18013-5). Companion business case: `03_business_case_supply_chain_credentials.md`.
 
 ---
@@ -62,20 +62,20 @@ its jurisdiction recognition.
 
 ### Path A — Accredited-body audit credential
 
-An accredited body (TÜV, DEKRA, BSI) issues an audit/certification VC over `@mitch/oid4vci`
+An accredited body (TÜV, DEKRA, BSI) issues an audit/certification VC over `@askmi/oid4vci`
 (`iso_27001_valid`, `iso_14001_valid`, `audit_date`, `cbam_co2_per_tonne`). Only accredited
 issuers are on the policy trust list; others → `DENY_UNTRUSTED_ISSUER`.
 
 ### Path B — Professional license credential (mdoc)
 
-A chamber / licensing authority issues a license as an ISO 18013-5 mdoc (`@mitch/mdoc`) so it can
+A chamber / licensing authority issues a license as an ISO 18013-5 mdoc (`@askmi/mdoc`) so it can
 be presented by NFC tap at a site gate, offline if needed. Suspension revokes it via
 `@askmi/revocation-statuslist`.
 
 ### Path C — Tier-2 rollup attestation
 
 A Tier-1 supplier presents an anchored proof that _its_ Tier-2 holds a valid certificate, without
-exposing the Tier-1→Tier-2 contract. Multi-year chains are anchored via `@mitch/anchor-service`
+exposing the Tier-1→Tier-2 contract. Multi-year chains are anchored via `@askmi/anchor-service`
 for non-repudiation.
 
 ---
@@ -91,7 +91,7 @@ nonce:       <random>
 purpose:     "Supplier qualification — CSRD evidence"
 ```
 
-The policy engine (`@mitch/policy-engine`) evaluates fail-closed:
+The policy engine (`@askmi/policy-engine`) evaluates fail-closed:
 
 ```
 PredicateClause path=cert.iso27001.valid     op=eq  type=boolean value=true
@@ -127,7 +127,7 @@ PredicateClause path=screening.forcedLabour  op=eq  type=boolean value=true
 ## Verifier Integration
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const sdk = new VerifierSDK({
   verifierDid: 'did:web:oem-buyer.example',
@@ -152,7 +152,7 @@ app.post('/supplier/qualify', async (req, res) => {
 });
 ```
 
-For on-site worker checks, the same proof is carried as an `@mitch/mdoc` presentation over NFC and
+For on-site worker checks, the same proof is carried as an `@askmi/mdoc` presentation over NFC and
 verified by a handheld reader — no name, no ID number, decision in seconds.
 
 ---
@@ -186,14 +186,14 @@ verified by a handheld reader — no name, no ID number, decision in seconds.
 
 | Package                        | Role in this module                                  |
 | ------------------------------ | ---------------------------------------------------- |
-| `@mitch/policy-engine`         | Fail-closed eval; `jurisdiction.ts` recognition      |
-| `@mitch/predicates`            | Certificate / license DSL (`eq`, `gte`, `exists`)    |
-| `@mitch/oid4vci`               | Accredited-body credential issuance                  |
-| `@mitch/mdoc`                  | ISO 18013-5 license for NFC site-access tap          |
-| `@mitch/anchor-service`        | Merkle anchoring of multi-year audit chains          |
+| `@askmi/policy-engine`         | Fail-closed eval; `jurisdiction.ts` recognition      |
+| `@askmi/predicates`            | Certificate / license DSL (`eq`, `gte`, `exists`)    |
+| `@askmi/oid4vci`               | Accredited-body credential issuance                  |
+| `@askmi/mdoc`                  | ISO 18013-5 license for NFC site-access tap          |
+| `@askmi/anchor-service`        | Merkle anchoring of multi-year audit chains          |
 | `@askmi/revocation-statuslist` | Withdrawn certificate / suspended license revocation |
-| `@mitch/verifier-sdk`          | Buyer-side verification + replay-check               |
-| `@mitch/audit-log`             | WORM receipts as CSRD/CSDDD evidence                 |
+| `@askmi/verifier-sdk`          | Buyer-side verification + replay-check               |
+| `@askmi/audit-log`             | WORM receipts as CSRD/CSDDD evidence                 |
 
 Relevant deny codes: `DENY_CREDENTIAL_TOO_OLD`, `DENY_UNTRUSTED_ISSUER`,
 `DENY_JURISDICTION_INCOMPATIBLE`, `DENY_CREDENTIAL_REVOKED`, `DENY_BINDING_NONCE_REPLAY`.

@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/mso
+ * @module @askmi/mdoc/mso
  *
  * ISO 18013-5 §8.2.2.1 — MSO Digest Verification.
  *

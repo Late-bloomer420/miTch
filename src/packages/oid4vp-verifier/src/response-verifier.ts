@@ -2,8 +2,8 @@
  * OID4VP Verifier — Response validation
  */
 
-import type { AuthorizationResponse, PresentationDefinition, ValidationResult } from '@mitch/oid4vp';
-import { validateSubmission, parseVPToken } from '@mitch/oid4vp';
+import type { AuthorizationResponse, PresentationDefinition, ValidationResult } from '@askmi/oid4vp';
+import { validateSubmission, parseVPToken } from '@askmi/oid4vp';
 
 // ─── Nonce Store (in-memory, replace with persistent store in prod) ─
 

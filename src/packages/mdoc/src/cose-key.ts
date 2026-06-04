@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/cose-key
+ * @module @askmi/mdoc/cose-key
  *
  * COSE_Key import for ISO 18013-5 device key verification.
  * Supports EC2 (P-256) keys per RFC 9052 §7.1.

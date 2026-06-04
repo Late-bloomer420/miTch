@@ -1,8 +1,8 @@
-# @mitch/consent-ui
+# @askmi/consent-ui
 
 Embeddable, framework-agnostic **consent surface** for verifiers.
 
-Renders the disclosure boundary from the marketing brief — _requested · allowed · withheld_ — as a custom element any verifier can drop into any page (or host as a static file on any computer). Wired to the real `@mitch/policy-engine` types: maps a `DisclosureRequest` + `Decision` into the on-screen surface and produces a hash-linked `ConsentReceipt` compatible with `DecisionCapsule` conventions.
+Renders the disclosure boundary from the marketing brief — _requested · allowed · withheld_ — as a custom element any verifier can drop into any page (or host as a static file on any computer). Wired to the real `@askmi/policy-engine` types: maps a `DisclosureRequest` + `Decision` into the on-screen surface and produces a hash-linked `ConsentReceipt` compatible with `DecisionCapsule` conventions.
 
 ## Properties
 
@@ -16,8 +16,8 @@ Renders the disclosure boundary from the marketing brief — _requested · allow
 ## Usage
 
 ```ts
-import { defineConsentElement, fromPolicyDecision } from '@mitch/consent-ui';
-import type { DisclosureRequest, Decision } from '@mitch/policy-engine';
+import { defineConsentElement, fromPolicyDecision } from '@askmi/consent-ui';
+import type { DisclosureRequest, Decision } from '@askmi/policy-engine';
 
 defineConsentElement(); // registers <mitch-consent>
 
@@ -67,14 +67,14 @@ Property setters: `request`, `theme`, `strings`.
 After building the package, open `demo/index.html` from any static server:
 
 ```bash
-pnpm --filter @mitch/consent-ui build
+pnpm --filter @askmi/consent-ui build
 # then serve the package directory and open /demo/index.html
 ```
 
 ## Tests
 
 ```bash
-pnpm --filter @mitch/consent-ui test
+pnpm --filter @askmi/consent-ui test
 ```
 
 Runs Vitest under jsdom: render safety, fail-closed defaults, toggle behavior, event payloads, malformed-request handling, XSS-resistance of text rendering, German strings.

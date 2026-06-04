@@ -1,5 +1,5 @@
 /**
- * @mitch/wallet-core
+ * @askmi/wallet-core
  *
  * Core wallet-side modules: sync, budget management, and service facade.
  */
@@ -28,6 +28,6 @@ export {
 export * from './ICredentialRepository';
 export * from './EncryptedCredentialRepository';
 export * from './IPolicyEvaluator';
-export * from './MitchPolicyEvaluator';
+export * from './AskmiPolicyEvaluator';
 export * from './IPresentationManager';
 export * from './WalletService';

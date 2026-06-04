@@ -16,7 +16,7 @@ import {
 // ─── ML-DSA signing ───────────────────────────────────────────────────────────
 
 describe('ML-DSA-44', () => {
-    const msg = new TextEncoder().encode('miTch PQC test — Guten Morgen');
+    const msg = new TextEncoder().encode('AskMI PQC test — Guten Morgen');
 
     it('keygen returns correct key sizes', () => {
         const kp = mlDSA44.keygen();

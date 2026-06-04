@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/oid4vp-verifier",
+    "name": "@askmi/oid4vp-verifier",
     "version": "0.1.0",
     "description": "OpenID for Verifiable Presentations 1.0 — Verifier-side implementation",
     "main": "dist/index.js",
@@ -9,8 +9,8 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/mdoc": "workspace:*",
-        "@mitch/oid4vp": "workspace:*"
+        "@askmi/mdoc": "workspace:*",
+        "@askmi/oid4vp": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^25.3.5",

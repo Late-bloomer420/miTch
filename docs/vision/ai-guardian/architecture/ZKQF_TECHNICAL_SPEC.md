@@ -1,7 +1,7 @@
 # Technical Spec: ZK-Query Firewall (ZKQF) Expansion
 
 ## 1. Objective
-To extend the existing `@mitch/policy-engine` to handle **Real-Time Data Minimization** for AI training sets. The goal is to transform raw SD-JWT claims into anonymized feature vectors before they reach the consumer.
+To extend the existing `@askmi/policy-engine` to handle **Real-Time Data Minimization** for AI training sets. The goal is to transform raw SD-JWT claims into anonymized feature vectors before they reach the consumer.
 
 ## 2. Architectural Extensions
 
@@ -24,7 +24,7 @@ Extend `PolicyManifest` to include `transformationRules`:
 }
 ```
 
-## 3. Implementation Steps in `@mitch/policy-engine`
+## 3. Implementation Steps in `@askmi/policy-engine`
 
 1.  **Context Enhancement:** Update `EvaluationContext` to carry a `transformationMap`.
 2.  **Rule Processor:** Add a new handler in `engine.ts` that checks for the `transform` key in a matched policy.

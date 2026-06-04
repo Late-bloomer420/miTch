@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/benchmarks",
+    "name": "@askmi/benchmarks",
     "version": "0.0.1",
     "private": true,
     "type": "module",
@@ -8,7 +8,7 @@
         "bench:cold": "tsx src/cold_path_benchmark.ts"
     },
     "dependencies": {
-        "@mitch/audit-log": "workspace:*",
+        "@askmi/audit-log": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },

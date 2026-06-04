@@ -1,5 +1,5 @@
 /**
- * @module @mitch/policy-engine
+ * @module @askmi/policy-engine
  * 
  * Privacy Firewall / Zero-Knowledge Query Firewall (ZKQF)
  * 
@@ -36,7 +36,7 @@ import {
     getMinimumLayerForData,
     includesLayer,
     getLayerName
-} from '@mitch/layer-resolver';
+} from '@askmi/layer-resolver';
 import { generatePairwiseDID, sha256, canonicalStringify } from '@askmi/shared-crypto';
 
 /**
@@ -438,7 +438,7 @@ export class PolicyEngine {
     /**
      * Purpose-Binding / Contextual Integrity (opt-in, fail-closed).
      *
-     * miTch does not bind purpose globally — that would break every existing
+     * AskMI does not bind purpose globally — that would break every existing
      * policy. Where a policy opts in (rule.allowedPurposes, or the policy-wide
      * globalSettings.requirePurposeBinding), the engine denies any request whose
      * declared purpose is not explicitly permitted. This is the constraint that
@@ -719,7 +719,7 @@ export class PolicyEngine {
                 verifier_did: request.verifierId,
                 authorized_requirements: authorizedRequirements,
                 nonce: request.nonce || crypto.randomUUID(), // Propagate Verifier Nonce or generate internal one
-                audience: 'mitch-wallet-pwa',
+                audience: 'askmi-wallet-pwa',
                 issued_at: new Date().toISOString(),
                 risk_level: verdict === 'ALLOW' ? 'LOW' : 'MEDIUM',
                 requires_presence: reasonCodes.includes(ReasonCode.PRESENCE_REQUIRED),

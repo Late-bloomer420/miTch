@@ -1,7 +1,7 @@
 # 110 — eID Issuer Simulator: Fidelity Constraints
 
 **Status:** Active (Phase 5 Pilot)
-**Package:** `@mitch/eid-issuer-connector`
+**Package:** `@askmi/eid-issuer-connector`
 **Author:** miTch G-05
 
 ---

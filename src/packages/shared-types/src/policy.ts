@@ -4,7 +4,7 @@
  * Policy Engine Type Definitions
  * 
  * Defines the data structures for policy rules, verifier requests,
- * decision capsules, and evaluation results used throughout the miTch system.
+ * decision capsules, and evaluation results used throughout the AskMI system.
  */
 
 /**

@@ -90,7 +90,7 @@ const server = createServer(async (req, res) => {
       res,
       200,
       {
-        service: "miTch verifier",
+        service: "AskMI verifier",
         endpoints: ["GET /", "GET /health", "GET /dashboard", "GET /metrics", "GET /metrics.csv", "GET /kpi", "GET /audit/verify", "GET /metrics/reset (ALLOW_DEV_RESET=1)", "GET /test-request (LOCAL_TEST_KEYS=1)", "POST /verify", "POST /override", "POST /adjudicate"],
       },
       correlationId
@@ -116,8 +116,8 @@ const server = createServer(async (req, res) => {
     const securityScore = Number(k.security_profile_score ?? 0);
 
     const modeledBaselineCost = Number(process.env.BASELINE_COST_PER_VERIFICATION_EUR ?? 0.12);
-    const mitchCost = Number(k.estimated_cost_per_verification_eur ?? 0);
-    const costSavingPerVerification = Math.max(0, modeledBaselineCost - mitchCost);
+    const AskMICost = Number(k.estimated_cost_per_verification_eur ?? 0);
+    const costSavingPerVerification = Math.max(0, modeledBaselineCost - AskMICost);
     const costSavingRate = modeledBaselineCost > 0 ? costSavingPerVerification / modeledBaselineCost : 0;
 
     const issuerCurrent = Number(process.env.DIRECT_PARTNER_ISSUER_CURRENT ?? 0);
@@ -148,7 +148,7 @@ const server = createServer(async (req, res) => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>miTch Dashboard</title>
+  <title>AskMI Dashboard</title>
   <style>
     :root{--bg:#0b1020;--panel:#111832;--line:#2a3358;--muted:#9aa6cc;--txt:#f5f7ff;--ok:#36d399;--warn:#fbbf24;--bad:#f87171;--accent:#7aa2ff}
     *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 10% 0%, #182347 0%, #0b1020 55%);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
@@ -176,7 +176,7 @@ const server = createServer(async (req, res) => {
 <div class="wrap">
   <div class="head">
     <div>
-      <h1 style="margin:0 0 4px 0;font-size:26px">miTch Pilot Dashboard</h1>
+      <h1 style="margin:0 0 4px 0;font-size:26px">AskMI Pilot Dashboard</h1>
       <div class="muted">Started ${m.startedAt} · Fokus: Security + Adoption ohne Overload</div>
     </div>
     <div class="chip">Security Score ${securityScore}/100</div>
@@ -185,7 +185,7 @@ const server = createServer(async (req, res) => {
   <div class="grid kpis">
     <div class="card"><div class="k">Verification Success</div><div class="v">${percent(successRate)}</div><div class="muted">Ziel ≥ 99%</div></div>
     <div class="card"><div class="k">Replay Block Rate</div><div class="v">${percent(replayBlockRate)}</div><div class="muted">Ziel 100%</div></div>
-    <div class="card"><div class="k">Kosten / Verifikation</div><div class="v">${euro(mitchCost)}</div><div class="muted">Modelled Baseline ${euro(modeledBaselineCost)}</div></div>
+    <div class="card"><div class="k">Kosten / Verifikation</div><div class="v">${euro(AskMICost)}</div><div class="muted">Modelled Baseline ${euro(modeledBaselineCost)}</div></div>
     <div class="card"><div class="k">Ersparnis ggü. Baseline</div><div class="v">${percent(costSavingRate)}</div><div class="muted">${euro(costSavingPerVerification)} pro Check</div></div>
   </div>
 
@@ -231,7 +231,7 @@ const server = createServer(async (req, res) => {
       <table>
         <thead><tr><th>Option</th><th>Go-live</th><th>Data-Min</th><th>Audit</th></tr></thead>
         <tbody>
-          <tr><td><b>miTch</b></td><td class="pill-ok">Schnell</td><td class="pill-ok">Hoch</td><td class="pill-ok">Hoch</td></tr>
+          <tr><td><b>AskMI</b></td><td class="pill-ok">Schnell</td><td class="pill-ok">Hoch</td><td class="pill-ok">Hoch</td></tr>
           <tr><td>KYC Suite (breit)</td><td class="pill-warn">Mittel</td><td class="pill-warn">Mittel</td><td class="pill-ok">Hoch</td></tr>
           <tr><td>AV Spezialist</td><td class="pill-ok">Schnell</td><td class="pill-warn">Mittel</td><td class="pill-warn">Mittel</td></tr>
           <tr><td>Inhouse Build</td><td class="pill-bad">Langsam</td><td class="pill-warn">Variabel</td><td class="pill-warn">Variabel</td></tr>
@@ -410,5 +410,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`miTch verifier listening on http://localhost:${PORT}`);
+  console.log(`AskMI verifier listening on http://localhost:${PORT}`);
 });

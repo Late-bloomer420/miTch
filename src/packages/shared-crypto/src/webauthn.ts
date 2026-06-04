@@ -40,10 +40,10 @@ export interface PresenceProof {
 
 // ── Passkey-Storage (IndexedDB — persistiert, kein PII, nur Metadaten) ──────────────
 
-const PASSKEY_DB_NAME = 'mitch_passkey_db';
+const PASSKEY_DB_NAME = 'askmi_passkey_db';
 const PASSKEY_STORE_NAME = 'passkeys';
-const PASSKEY_STORAGE_KEY = 'mitch_passkey_registration';
-const IDENTITY_KEY_STORAGE_KEY = 'mitch_identity_key_registration';
+const PASSKEY_STORAGE_KEY = 'askmi_passkey_registration';
+const IDENTITY_KEY_STORAGE_KEY = 'askmi_identity_key_registration';
 
 function getPasskeyDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -183,7 +183,7 @@ class SoftwareFallback {
       canonicalStringify({
         challenge: decisionId,
         timestamp: Date.now(),
-        origin: typeof location !== 'undefined' ? location.origin : 'mitch-wallet',
+        origin: typeof location !== 'undefined' ? location.origin : 'AskMI-wallet',
       })
     );
     const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keys.privateKey, payload);
@@ -210,15 +210,15 @@ export class WebAuthnService {
     rpId: string = typeof location !== 'undefined' ? location.hostname : 'localhost'
   ): Promise<PasskeyRegistration> {
     if (!isWebAuthnAvailable()) {
-      return this.registerPasskey('mitch-identity-key', rpId);
+      return this.registerPasskey('AskMI-identity-key', rpId);
     }
 
-    const userId = 'mitch-identity-key-v1';
+    const userId = 'AskMI-identity-key-v1';
     const userIdBuffer = new TextEncoder().encode(userId).buffer;
 
     const createOptions: PublicKeyCredentialCreationOptions = {
-      rp: { name: 'miTch Identity', id: rpId },
-      user: { id: userIdBuffer, name: userId, displayName: 'miTch Identity Key' },
+      rp: { name: 'AskMI Identity', id: rpId },
+      user: { id: userIdBuffer, name: userId, displayName: 'AskMI Identity Key' },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
@@ -299,10 +299,10 @@ export class WebAuthnService {
    *
    * rpId: Muss zum Hostname passen.
    *   - localhost → 'localhost'
-   *   - mitch.app → 'mitch.app'
+   *   - AskMI.app → 'AskMI.app'
    */
   static async registerPasskey(
-    userId: string = 'mitch-wallet-user',
+    userId: string = 'AskMI-wallet-user',
     rpId: string = typeof location !== 'undefined' ? location.hostname : 'localhost'
   ): Promise<PasskeyRegistration> {
 
@@ -320,13 +320,13 @@ export class WebAuthnService {
 
     const createOptions: PublicKeyCredentialCreationOptions = {
       rp: {
-        name: 'miTch Personal Trust Hub',
+        name: 'AskMI Personal Trust Hub',
         id: rpId,
       },
       user: {
         id: userIdBuffer,
         name: userId,
-        displayName: 'miTch Wallet',
+        displayName: 'AskMI Wallet',
       },
       // Wir bevorzugen ES256 (ECDSA P-256), Fallback RS256
       pubKeyCredParams: [
@@ -395,7 +395,7 @@ export class WebAuthnService {
 
     // Check Cache if timeout is configured
     if (timeoutMinutes > 0) {
-      const cachedSessionRaw = sessionStorage.getItem('mitch_webauthn_session');
+      const cachedSessionRaw = sessionStorage.getItem('askmi_webauthn_session');
       if (cachedSessionRaw) {
         try {
           const cachedSession = JSON.parse(cachedSessionRaw);
@@ -412,11 +412,11 @@ export class WebAuthnService {
             };
           } else {
             console.log(`[WebAuthn] 🕰️ Cached session expired (${ageMinutes.toFixed(1)}m > ${timeoutMinutes}m). Asking again.`);
-            sessionStorage.removeItem('mitch_webauthn_session');
+            sessionStorage.removeItem('askmi_webauthn_session');
           }
         } catch (_e) {
           // invalid cache
-          sessionStorage.removeItem('mitch_webauthn_session');
+          sessionStorage.removeItem('askmi_webauthn_session');
         }
       }
     }
@@ -488,7 +488,7 @@ export class WebAuthnService {
 
     // Save to session cache
     if (timeoutMinutes > 0) {
-      sessionStorage.setItem('mitch_webauthn_session', JSON.stringify({
+      sessionStorage.setItem('askmi_webauthn_session', JSON.stringify({
         ...proof,
         timestamp: Date.now()
       }));

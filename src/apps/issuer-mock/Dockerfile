@@ -1,5 +1,5 @@
 # Mock Issuer Dockerfile
-# Based on miTch 100% Compliance Architecture
+# Based on AskMI 100% Compliance Architecture
 
 FROM node:20-alpine AS builder
 
@@ -17,7 +17,7 @@ COPY src/apps/issuer-mock ./src/apps/issuer-mock
 
 # Prune and Build
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter "@mitch/issuer-mock" build
+RUN pnpm --filter "@askmi/issuer-mock" build
 
 # Production Image
 FROM node:20-alpine

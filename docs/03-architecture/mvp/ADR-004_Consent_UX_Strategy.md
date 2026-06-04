@@ -18,7 +18,7 @@ EUDI-CIR und DSGVO Art. 7 + 25 verlangen nachweisbare, granular steuerbare Zusti
 - Kein Consent-Tracking auf Serverseite (Blind Provider)
 
 **Technische Umsetzung:**
-- `@mitch/wallet-core` rendert dynamisches Consent-Screen aus Policy-Engine
+- `@askmi/wallet-core` rendert dynamisches Consent-Screen aus Policy-Engine
 - SD-JWT-Payload wird erst nach User-Confirm + WebAuthn generiert
 - Ephemere Schlüssel + Crypto-Shredding direkt nach Bestätigung
 

@@ -1,4 +1,4 @@
-# miTch Phase-0 Security Implementation
+# AskMI Phase-0 Security Implementation
 
 **STATUS:** ✅ Production-ready architecture for maximum privacy & security
 
@@ -9,7 +9,7 @@
 ### ACTION ITEMS COMPLETED:
 
 1. ✅ **Local Audit-Log** (Hash-Chain, IndexedDB)
-2. ✅ **Verifier-Direct Protocol** (removes miTch server from presentation flow)
+2. ✅ **Verifier-Direct Protocol** (removes AskMI server from presentation flow)
 3. ✅ **eIDAS 2.0 Compliance Checker** (automated regulatory validation)
 4. ✅ **Advanced Security Hardening** (defense against nation-states, Google/Apple, AI)
 
@@ -23,7 +23,7 @@
 └─────────┘                              └──────────┘
                                          (Liquor Store)
 
-miTch Server Traffic: 0 requests
+AskMI Server Traffic: 0 requests
 PII in Network: 0 bytes (ZK-Proof only)
 Server-Side Logs: EMPTY (structural non-existence)
 ```
@@ -45,7 +45,7 @@ Server-Side Logs: EMPTY (structural non-existence)
 
 ## 📜 Compliance Matrix
 
-| Regulation | Requirement | miTch Implementation | Status |
+| Regulation | Requirement | AskMI Implementation | Status |
 |------------|-------------|----------------------|--------|
 | **eIDAS 2.0 Art. 6a(5)** | Wallet audit-log accessible to user | `LocalAuditLog.exportForUser()` | ✅ PASS |
 | **DSGVO Art. 17** | Right to erasure | `LocalAuditLog.deleteAll()` | ✅ PASS |
@@ -85,12 +85,12 @@ await auditLog.append({
 });
 ```
 
-### 2. Verifier Generates Request (NO miTch server)
+### 2. Verifier Generates Request (NO AskMI server)
 
 ```typescript
 import { VerifierDirectClient } from './VerifierDirectProtocol';
 
-const verifier = new VerifierDirectClient('did:mitch:verifier-liquor-store');
+const verifier = new VerifierDirectClient('did:askmi:verifier-liquor-store');
 await verifier.initialize();
 
 // Generate QR-code (locally, no server)
@@ -99,7 +99,7 @@ const deepLink = await verifier.generateRequest(
   'https://liquor-store.com/api/verify'
 );
 
-// deepLink: "mitch://present?request=eyJ..." (signed JWT)
+// deepLink: "AskMI://present?request=eyJ..." (signed JWT)
 ```
 
 ### 3. Wallet Processes Request (NO server fetch)
@@ -198,9 +198,9 @@ const isHuman = await protection.analyzeBehavior(userEvents);
 
 ---
 
-## 📈 Comparison: miTch vs. Existing Solutions
+## 📈 Comparison: AskMI vs. Existing Solutions
 
-| Feature | Microsoft Entra | Lissi Wallet | Trinsic | miTch Phase-0 |
+| Feature | Microsoft Entra | Lissi Wallet | Trinsic | AskMI Phase-0 |
 |---------|-----------------|--------------|---------|---------------|
 | **Verifier-Direct** | ❌ Server relay | ✅ Yes | ⚠️ Partial | ✅ **True P2P** |
 | **Local Audit-Log** | ❌ Server-side | ⚠️ Limited | ❌ Server-side | ✅ **Hash-chain** |
@@ -211,17 +211,17 @@ const isHuman = await protection.analyzeBehavior(userEvents);
 
 ---
 
-## 🔬 What Makes miTch Different?
+## 🔬 What Makes AskMI Different?
 
 ### 1. **TRUE Structural Non-Existence**
 
 **Others:**
 ```
-Wallet → miTch Server → Verifier
+Wallet → AskMI Server → Verifier
          ↑ (logs: user X presented to verifier Y)
 ```
 
-**miTch Phase-0:**
+**AskMI Phase-0:**
 ```
 Wallet ──────────────→ Verifier
          (no server, zero logs)
@@ -231,26 +231,26 @@ Wallet ──────────────→ Verifier
 
 **Others:** Server-side logs (DSGVO Data Controller obligations)
 
-**miTch:** Local hash-chain (user controls export/deletion)
+**AskMI:** Local hash-chain (user controls export/deletion)
 
 ### 3. **KI-Resilienz by Design**
 
 **Others:** No protection against AI automation
 
-**miTch:** Behavioral biometrics + rate limiting + Proof-of-Humanity
+**AskMI:** Behavioral biometrics + rate limiting + Proof-of-Humanity
 
 ### 4. **Defense Against Platform Vendors**
 
 **Others:** Trust Apple/Google Keychain
 
-**miTch:** Split-key OR user-derived keys (bypasses OS)
+**AskMI:** Split-key OR user-derived keys (bypasses OS)
 
 ---
 
 ## 📋 Files Included
 
 ```
-mitch-phase0-security/
+AskMI-phase0-security/
 ├── LocalAuditLog.ts                    # Hash-chain audit-log (eIDAS 2.0)
 ├── VerifierDirectProtocol.ts           # P2P presentation (no server)
 ├── EIDASComplianceChecker.ts           # Automated compliance audit
@@ -310,7 +310,7 @@ mitch-phase0-security/
 
 ## 🌟 Why This Matters
 
-**miTch is the ONLY SSI wallet that:**
+**AskMI is the ONLY SSI wallet that:**
 - ✅ Structurally CANNOT log user presentations (architectural guarantee)
 - ✅ Gives users FULL custody of audit-logs (eIDAS 2.0 compliant)
 - ✅ Resists AI automation (Proof-of-Humanity gates)

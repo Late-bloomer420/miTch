@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/mdoc-builder
+ * @module @askmi/mdoc/mdoc-builder
  *
  * ISO 18013-5 mdoc Document Builder — Issuance Pipeline.
  *

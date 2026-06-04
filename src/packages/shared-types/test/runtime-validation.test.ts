@@ -255,7 +255,7 @@ describe('AuditEventType — all event types are valid strings', () => {
     it('IdentityFirewallMetadata supports PII-minimal MVP event shape', () => {
         const metadata: IdentityFirewallMetadata = {
             decision_id: 'decision-identity-001',
-            verifier_did: 'did:mitch:verifier-test',
+            verifier_did: 'did:askmi:verifier-test',
             access_type: 'browser_api',
             surface: 'navigator.userAgent',
             actor_label: 'Google Chrome',

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import { ProtectionLayer } from '@mitch/layer-resolver';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const makeCredential = (overrides: Partial<StoredCredentialMetadata> = {}): StoredCredentialMetadata => ({

@@ -11,7 +11,7 @@ export interface ShredProof {
 }
 
 /**
- * EphemeralKey: Crypto-Shredding Wrapper for miTch
+ * EphemeralKey: Crypto-Shredding Wrapper for AskMI
  *
  * Guarantees:
  * ✅ Key is zeroed IMMEDIATELY after use

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildAuthorizationRequest, encodeAuthorizationRequest } from '../request-builder';
 import { verifyAuthorizationResponse, satisfiesConstraints } from '../response-verifier';
-import type { PresentationDefinition, AuthorizationResponse } from '@mitch/oid4vp';
+import type { PresentationDefinition, AuthorizationResponse } from '@askmi/oid4vp';
 
 const DEFINITION: PresentationDefinition = {
     id: 'age-pd',

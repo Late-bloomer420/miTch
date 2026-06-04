@@ -1,5 +1,5 @@
 /**
- * @module @mitch/policy-engine/audit-export-schema
+ * @module @askmi/policy-engine/audit-export-schema
  *
  * Formal Audit Export Schema for external auditor handoff.
  * Aligned with METADATA_BUDGET_V1 — no PII, no stable cross-RP correlators.

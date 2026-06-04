@@ -64,15 +64,15 @@ importers:
 
   src/apps/issuer-mock:
     dependencies:
+      '@askmi/mdoc':
+        specifier: workspace:*
+        version: link:../../packages/mdoc
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../../packages/shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@mitch/mdoc':
-        specifier: workspace:*
-        version: link:../../packages/mdoc
       cors:
         specifier: ^2.8.5
         version: 2.8.6
@@ -101,7 +101,7 @@ importers:
 
   src/apps/verifier-demo:
     dependencies:
-      '@mitch/verifier-sdk':
+      '@askmi/verifier-sdk':
         specifier: workspace:*
         version: link:../../packages/verifier-sdk
       express:
@@ -113,19 +113,19 @@ importers:
 
   src/apps/verifier-demo/backend:
     dependencies:
+      '@askmi/oid4vp':
+        specifier: workspace:*
+        version: link:../../../packages/oid4vp
+      '@askmi/predicates':
+        specifier: workspace:*
+        version: link:../../../packages/predicates
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../../../packages/shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../../../packages/shared-types
-      '@mitch/oid4vp':
-        specifier: workspace:*
-        version: link:../../../packages/oid4vp
-      '@mitch/predicates':
-        specifier: workspace:*
-        version: link:../../../packages/predicates
-      '@mitch/verifier-sdk':
+      '@askmi/verifier-sdk':
         specifier: workspace:*
         version: link:../../../packages/verifier-sdk
       cors:
@@ -196,33 +196,33 @@ importers:
 
   src/apps/wallet-pwa:
     dependencies:
+      '@askmi/audit-log':
+        specifier: workspace:*
+        version: link:../../packages/audit-log
+      '@askmi/data-flow':
+        specifier: workspace:*
+        version: link:../../packages/data-flow
+      '@askmi/mdoc':
+        specifier: workspace:*
+        version: link:../../packages/mdoc
+      '@askmi/oid4vp':
+        specifier: workspace:*
+        version: link:../../packages/oid4vp
+      '@askmi/policy-engine':
+        specifier: workspace:*
+        version: link:../../packages/policy-engine
+      '@askmi/predicates':
+        specifier: workspace:*
+        version: link:../../packages/predicates
+      '@askmi/secure-storage':
+        specifier: workspace:*
+        version: link:../../packages/secure-storage
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../../packages/shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@mitch/audit-log':
-        specifier: workspace:*
-        version: link:../../packages/audit-log
-      '@mitch/data-flow':
-        specifier: workspace:*
-        version: link:../../packages/data-flow
-      '@mitch/mdoc':
-        specifier: workspace:*
-        version: link:../../packages/mdoc
-      '@mitch/oid4vp':
-        specifier: workspace:*
-        version: link:../../packages/oid4vp
-      '@mitch/policy-engine':
-        specifier: workspace:*
-        version: link:../../packages/policy-engine
-      '@mitch/predicates':
-        specifier: workspace:*
-        version: link:../../packages/predicates
-      '@mitch/secure-storage':
-        specifier: workspace:*
-        version: link:../../packages/secure-storage
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -310,15 +310,15 @@ importers:
 
   src/packages/benchmarks:
     dependencies:
+      '@askmi/audit-log':
+        specifier: workspace:*
+        version: link:../audit-log
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/audit-log':
-        specifier: workspace:*
-        version: link:../audit-log
     devDependencies:
       '@types/node':
         specifier: ^20.11.0
@@ -332,7 +332,7 @@ importers:
 
   src/packages/consent-ui:
     dependencies:
-      '@mitch/policy-engine':
+      '@askmi/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
     devDependencies:
@@ -370,13 +370,13 @@ importers:
 
   src/packages/demo-liquor-store:
     dependencies:
-      '@mitch/layer-resolver':
+      '@askmi/layer-resolver':
         specifier: workspace:*
         version: link:../layer-resolver
-      '@mitch/mock-issuer':
+      '@askmi/mock-issuer':
         specifier: workspace:*
         version: link:../mock-issuer
-      '@mitch/policy-engine':
+      '@askmi/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
       chalk:
@@ -411,6 +411,21 @@ importers:
 
   src/packages/integration-tests:
     dependencies:
+      '@askmi/eid-issuer-connector':
+        specifier: workspace:*
+        version: link:../eid-issuer-connector
+      '@askmi/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
+      '@askmi/mock-issuer':
+        specifier: workspace:*
+        version: link:../mock-issuer
+      '@askmi/oid4vp':
+        specifier: workspace:*
+        version: link:../oid4vp
+      '@askmi/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
       '@askmi/revocation-statuslist':
         specifier: workspace:*
         version: link:../revocation-statuslist
@@ -420,22 +435,7 @@ importers:
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/eid-issuer-connector':
-        specifier: workspace:*
-        version: link:../eid-issuer-connector
-      '@mitch/layer-resolver':
-        specifier: workspace:*
-        version: link:../layer-resolver
-      '@mitch/mock-issuer':
-        specifier: workspace:*
-        version: link:../mock-issuer
-      '@mitch/oid4vp':
-        specifier: workspace:*
-        version: link:../oid4vp
-      '@mitch/policy-engine':
-        specifier: workspace:*
-        version: link:../policy-engine
-      '@mitch/webauthn-verifier':
+      '@askmi/webauthn-verifier':
         specifier: workspace:*
         version: link:../webauthn-verifier
     devDependencies:
@@ -460,12 +460,12 @@ importers:
 
   src/packages/mcp-server:
     dependencies:
+      '@askmi/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/policy-engine':
-        specifier: workspace:*
-        version: link:../policy-engine
       '@modelcontextprotocol/sdk':
         specifier: ^1.10.0
         version: 1.29.0(zod@3.25.76)
@@ -523,15 +523,15 @@ importers:
 
   src/packages/oid4vci:
     dependencies:
+      '@askmi/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/policy-engine':
-        specifier: workspace:*
-        version: link:../policy-engine
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -567,10 +567,10 @@ importers:
 
   src/packages/oid4vp-verifier:
     dependencies:
-      '@mitch/mdoc':
+      '@askmi/mdoc':
         specifier: workspace:*
         version: link:../mdoc
-      '@mitch/oid4vp':
+      '@askmi/oid4vp':
         specifier: workspace:*
         version: link:../oid4vp
     devDependencies:
@@ -620,23 +620,23 @@ importers:
 
   src/packages/policy-engine:
     dependencies:
+      '@askmi/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
+      '@askmi/predicates':
+        specifier: workspace:*
+        version: link:../predicates
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/layer-resolver':
-        specifier: workspace:*
-        version: link:../layer-resolver
-      '@mitch/predicates':
-        specifier: workspace:*
-        version: link:../predicates
       '@noble/hashes':
         specifier: ^2.0.1
         version: 2.0.1
     devDependencies:
-      '@mitch/mock-issuer':
+      '@askmi/mock-issuer':
         specifier: workspace:*
         version: link:../mock-issuer
       '@types/node':
@@ -804,15 +804,15 @@ importers:
 
   src/packages/verifier-sdk:
     dependencies:
+      '@askmi/predicates':
+        specifier: workspace:*
+        version: link:../predicates
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/predicates':
-        specifier: workspace:*
-        version: link:../predicates
     devDependencies:
       rimraf:
         specifier: ^5.0.0
@@ -826,21 +826,21 @@ importers:
 
   src/packages/wallet-core:
     dependencies:
+      '@askmi/audit-log':
+        specifier: workspace:*
+        version: link:../audit-log
+      '@askmi/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+      '@askmi/secure-storage':
+        specifier: workspace:*
+        version: link:../secure-storage
       '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@mitch/audit-log':
-        specifier: workspace:*
-        version: link:../audit-log
-      '@mitch/policy-engine':
-        specifier: workspace:*
-        version: link:../policy-engine
-      '@mitch/secure-storage':
-        specifier: workspace:*
-        version: link:../secure-storage
     devDependencies:
       '@types/node':
         specifier: ^20.0.0

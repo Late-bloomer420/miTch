@@ -12,9 +12,9 @@ Based on the current miTch implementation, the following primitives form the bac
 
 | Primitive | Package | Role in AI-Guardian |
 |-----------|---------|----------------------|
-| **ZKQF (Zero-Knowledge Query Firewall)** | `@mitch/policy-engine` | Filters incoming data to ensure only the absolute minimum required attributes (e.g., non-PII features) reach the training process. |
-| **Crypto-Shredding & ShredProof** | `@mitch/secure-memory` | Ensures that data is only usable during a specific training/inference window. Generates a mathematical proof that the decryption key was destroyed. |
-| **Tamper-Evident Audit (H1-H5)** | `@mitch/audit-log` | Creates a non-repudiable log of every training data point used, anchored to an L2 blockchain. |
+| **ZKQF (Zero-Knowledge Query Firewall)** | `@askmi/policy-engine` | Filters incoming data to ensure only the absolute minimum required attributes (e.g., non-PII features) reach the training process. |
+| **Crypto-Shredding & ShredProof** | `@askmi/secure-memory` | Ensures that data is only usable during a specific training/inference window. Generates a mathematical proof that the decryption key was destroyed. |
+| **Tamper-Evident Audit (H1-H5)** | `@askmi/audit-log` | Creates a non-repudiable log of every training data point used, anchored to an L2 blockchain. |
 | **Post-Quantum Cryptography (PQC)** | `@askmi/shared-crypto` | Future-proofs the audit trail and data signatures against the long-term threat of quantum decryption (Harvest Now, Decrypt Later). |
 
 ## 3. The Lifecycle: "Proof-of-Privacy" Pipeline

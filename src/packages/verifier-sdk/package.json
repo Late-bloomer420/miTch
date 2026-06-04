@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/verifier-sdk",
+    "name": "@askmi/verifier-sdk",
     "version": "0.1.0",
     "type": "module",
     "main": "./dist/index.js",
@@ -19,7 +19,7 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/predicates": "workspace:*",
+        "@askmi/predicates": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },

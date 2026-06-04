@@ -1,7 +1,7 @@
 import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@askmi/shared-types';
-import { DataFlowService } from '@mitch/data-flow';
-import type { DataFlowTransaction, IdentityFirewallAccess } from '@mitch/data-flow';
-import type { ConsentReceipt } from '@mitch/oid4vp';
+import { DataFlowService } from '@askmi/data-flow';
+import type { DataFlowTransaction, IdentityFirewallAccess } from '@askmi/data-flow';
+import type { ConsentReceipt } from '@askmi/oid4vp';
 import type { PrivacyConsent } from '../services/PrivacyAuditService';
 
 const dataFlowService = new DataFlowService();

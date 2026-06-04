@@ -1,5 +1,5 @@
 /**
- * @package @mitch/webauthn-verifier
+ * @package @askmi/webauthn-verifier
  * @description Native WebAuthn verification for hardware-backed security
  *
  * Implements WebAuthn authentication verification with:

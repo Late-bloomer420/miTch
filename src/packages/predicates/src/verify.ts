@@ -1,5 +1,5 @@
 /**
- * @mitch/predicates - Verifier-Side Validation
+ * @askmi/predicates - Verifier-Side Validation
  * 
  * Validates predicate results received from the wallet.
  * Checks for tampering, replay attacks, and policy violations.

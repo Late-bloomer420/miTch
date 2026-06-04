@@ -1,7 +1,7 @@
 # T-30: European Health Data Space (EHDS) Blueprint
 
 ## 1. Objective
-Implement a reference architecture for the secure, patient-controlled sharing of health data (e.g., Patient Summary, ePrescription) using the miTch Wallet stack. This blueprint explicitly targets the cross-border interoperability requirements of the EHDS regulation.
+Implement a reference architecture for the secure, patient-controlled sharing of health data (e.g., Patient Summary, ePrescription) using the AskMI Wallet stack. This blueprint explicitly targets the cross-border interoperability requirements of the EHDS regulation.
 
 ## 2. Key Requirements (EHDS)
 
@@ -22,7 +22,7 @@ A Verifiable Credential containing minimal emergency data:
 interface PatientSummaryVC {
     type: ["VerifiableCredential", "PatientSummaryCredential"],
     credentialSubject: {
-        id: "did:mitch:patient-123",
+        id: "did:askmi:patient-123",
         allergies: ["Penicillin", "Peanuts"],
         medications: ["Metformin 500mg"],
         implantableDevices: [],

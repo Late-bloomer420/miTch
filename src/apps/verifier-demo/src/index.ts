@@ -1,6 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const app = express();
 const port = 3001;
@@ -19,14 +19,14 @@ let lastVerificationStatus: 'WAITING' | 'VERIFIED' | 'FAILED' = 'WAITING';
 let verifierKeys: CryptoKeyPair | null = null;
 
 /**
- * miTch Pilot Verifier Endpoints
+ * AskMI Pilot Verifier Endpoints
  */
 
 // 1. Get current status (for the frontend polling)
 app.get('/status', (req, res) => {
     res.json({
         status: lastVerificationStatus,
-        verifierDid: 'did:mitch:verifier-liquor-store'
+        verifierDid: 'did:askmi:verifier-liquor-store'
     });
 });
 
@@ -51,7 +51,7 @@ app.post('/present', presentLimiter, async (req, res) => {
 
         const sdk = new VerifierSDK({
             privateKey: verifierKeys!.privateKey,
-            verifierDid: 'did:mitch:verifier-liquor-store'
+            verifierDid: 'did:askmi:verifier-liquor-store'
         });
 
         // The Magic: SDK handles unwrapping, AAD re-binding, and Decryption
@@ -84,6 +84,6 @@ app.post('/reset', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚀 miTch Pilot Verifier listening at http://localhost:${port}`);
+    console.log(`🚀 AskMI Pilot Verifier listening at http://localhost:${port}`);
     console.log(`👉 Waiting for Wallet presentations on /present`);
 });

@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/cose
+ * @module @askmi/mdoc/cose
  *
  * Minimal COSE_Sign1 implementation for mdoc issuer/device authentication.
  * Implements RFC 9052 §4.3–4.4 (COSE Single Signer Data Object).

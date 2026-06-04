@@ -1,7 +1,7 @@
 import { 
     PolicyEngine, 
     type EvaluationContext 
-} from '@mitch/policy-engine';
+} from '@askmi/policy-engine';
 import { 
     PolicyManifest, 
     VerifierRequest, 
@@ -11,12 +11,12 @@ import {
 import type { IPolicyEvaluator } from './IPolicyEvaluator';
 
 /**
- * Concrete implementation of IPolicyEvaluator using @mitch/policy-engine.
+ * Concrete implementation of IPolicyEvaluator using @askmi/policy-engine.
  */
-export class MitchPolicyEvaluator implements IPolicyEvaluator {
+export class AskmiPolicyEvaluator implements IPolicyEvaluator {
     private engine: PolicyEngine;
     private storage: Storage;
-    private readonly STORAGE_KEY = 'mitch_user_policy';
+    private readonly STORAGE_KEY = 'askmi_user_policy';
 
     constructor(engine: PolicyEngine, storage: Storage) {
         this.engine = engine;

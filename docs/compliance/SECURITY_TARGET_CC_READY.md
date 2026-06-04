@@ -14,7 +14,7 @@ This document serves as the formal **Security Target (ST)** according to Common 
 | :--- | :--- | :--- |
 | **User Authentication** | WebAuthn Hardware Binding | `@askmi/shared-crypto/webauthn.ts` |
 | **Data Integrity** | ECDSA (P-256) & COSE Sign1 | `@askmi/shared-crypto/signing.ts` |
-| **Confidentiality** | AES-256-GCM Encryption | `@mitch/secure-storage` |
+| **Confidentiality** | AES-256-GCM Encryption | `@askmi/secure-storage` |
 | **Privacy (Minimization)** | SD-JWT Selective Disclosure | `@askmi/shared-crypto/sd-jwt-vc.ts` |
 | **Unlinkability** | Pairwise Ephemeral DIDs | `@askmi/shared-crypto/pairwise-did.ts` |
 | **Revocation Check** | W3C StatusList2021 | `@askmi/revocation-statuslist` |

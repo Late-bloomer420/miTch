@@ -8,7 +8,7 @@
 import { 
     buildDeviceEngagement, 
     createEngagementUri 
-} from '@mitch/mdoc';
+} from '@askmi/mdoc';
 
 export interface ProximitySession {
     engagementUri: string;

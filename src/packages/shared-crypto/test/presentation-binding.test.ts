@@ -16,7 +16,7 @@ import {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-const AUDIENCE = 'did:mitch:verifier-liquor-store';
+const AUDIENCE = 'did:askmi:verifier-liquor-store';
 const NOW = 1709510400000; // Fixed timestamp for deterministic tests
 
 function makeRequest(overrides: Partial<PresentationRequest> = {}): PresentationRequest {
@@ -103,7 +103,7 @@ describe('BindingNonceStore', () => {
 
     test('wrong audience → DENY', () => {
         const { nonce } = store.issue(AUDIENCE, NOW);
-        const result = store.consume('did:mitch:evil-verifier', nonce, NOW);
+        const result = store.consume('did:askmi:evil-verifier', nonce, NOW);
         expect(result).toEqual({ ok: false, code: DENY_BINDING_NONCE_UNKNOWN });
     });
 
@@ -141,7 +141,7 @@ describe('computeRequestHash', () => {
     test('different audience → different hash', async () => {
         const req1 = makeRequest();
         const req2 = makeRequest({
-            rp: { id: 'liquor-store', audience: 'did:mitch:other' },
+            rp: { id: 'liquor-store', audience: 'did:askmi:other' },
         });
         expect(await computeRequestHash(req1)).not.toBe(await computeRequestHash(req2));
     });
@@ -201,9 +201,9 @@ describe('validateBinding', () => {
 
     test('wrong audience → DENY', async () => {
         const req = await makeSignedRequest({
-            rp: { id: 'liquor-store', audience: 'did:mitch:evil' },
+            rp: { id: 'liquor-store', audience: 'did:askmi:evil' },
         });
-        store.register('did:mitch:evil', req.binding.nonce, NOW + 300_000, NOW);
+        store.register('did:askmi:evil', req.binding.nonce, NOW + 300_000, NOW);
 
         const result = await validateBinding(req, store, AUDIENCE, NOW);
         expect(result).toEqual({ ok: false, code: DENY_BINDING_AUDIENCE_MISMATCH });

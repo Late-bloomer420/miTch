@@ -15,7 +15,7 @@ ambulance, hospital and insurer, clinician and pharmacy, data holder and researc
 - The requesting party receives only the **permission / eligibility proof** it needs
   (`insurance_active`, `practitioner_credentialed`, `consent_primary_use`, `hdab_permit_present`).
 - Consent boundaries (primary vs. secondary use), break-glass, and single-use prescriptions are
-  enforced fail-closed by `@mitch/policy-engine`, with a WORM audit trail for Art. 31 export.
+  enforced fail-closed by `@askmi/policy-engine`, with a WORM audit trail for Art. 31 export.
 
 ## 2) Problem
 
@@ -36,7 +36,7 @@ practitioner_credentialed AND consent_primary_use.scope=treatment`).
    geo-scope, and break-glass — fail-closed.
 3. Single-use artefacts (ePrescription) are bound to a nullifier; a second redemption fails with
    `DENY_CREDENTIAL_DISPENSED`.
-4. Emergency access uses a WebAuthn step-up (`@mitch/webauthn-verifier`); the grant is logged as
+4. Emergency access uses a WebAuthn step-up (`@askmi/webauthn-verifier`); the grant is logged as
    `ALLOW_BREAK_GLASS_ACTIVATED` and the patient is notified.
 
 ## 4) Why now

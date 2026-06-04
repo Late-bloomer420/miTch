@@ -4,7 +4,7 @@ import { eventLabel } from './labels';
 
 function extractVerifierLabel(did: string | null): string {
   if (!did) return 'Unbekannter Verifier';
-  // did:mitch:verifier-liquor-store → Liquor Store
+  // did:askmi:verifier-liquor-store → Liquor Store
   const parts = did.split(':');
   const last = parts[parts.length - 1];
   return last

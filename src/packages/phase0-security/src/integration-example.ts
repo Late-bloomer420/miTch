@@ -66,7 +66,7 @@ export async function demonstrateSecurePresentation() {
     // 6. Simulate Presentation
     const vp = {
         type: ['VerifiablePresentation'],
-        holder: 'did:mitch:user-1',
+        holder: 'did:askmi:user-1',
         verifiableCredential: [{ type: ['AgeCredential'] }]
     };
 

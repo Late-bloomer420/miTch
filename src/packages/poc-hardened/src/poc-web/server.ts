@@ -1,5 +1,5 @@
 /**
- * PoC Web Demo Server — Full miTch Demo with Audit & Transparency
+ * PoC Web Demo Server — Full AskMI Demo with Audit & Transparency
  */
 
 import { createServer, IncomingMessage, ServerResponse } from "http";
@@ -49,7 +49,7 @@ function sha256(data: string): string {
 function initState(): void {
   issuerKey = generateIssuerKey("eid-austria-key-1");
   holderKeys = generateHolderKey();
-  statusList = new StatusListPublisher(1024, "https://mitch.example/status");
+  statusList = new StatusListPublisher(1024, "https://AskMI.example/status");
   auditChain = new AuditChain();
   keyManager = new EphemeralKeyManager();
   ropaStore = new ROPAStore();
@@ -68,7 +68,7 @@ function initState(): void {
   });
   ropaStore.registerActivity({
     activity: "credential_issuance",
-    controller: { entity: "miTch Issuer", purpose: "Credential creation", legalBasis: "GDPR Art. 6(1)(a)" },
+    controller: { entity: "AskMI Issuer", purpose: "Credential creation", legalBasis: "GDPR Art. 6(1)(a)" },
     dataCategories: ["identity_predicates"],
     recipientCategories: ["user_wallet"],
     retentionPolicy: "crypto_shredded_immediately",
@@ -317,7 +317,7 @@ function handleAudit(): object {
 }
 
 function handleTransparency(): object {
-  return generateTransparencyReport("miTch PoC Demo", "privacy@mitch.example");
+  return generateTransparencyReport("AskMI PoC Demo", "privacy@AskMI.example");
 }
 
 function handleReset(): object {
@@ -409,5 +409,5 @@ const PORT = Number(process.env.PORT ?? 3210);
 const HOST = process.env.HOST ?? "0.0.0.0";
 const server = createServer(handler);
 server.listen(PORT, HOST, () => {
-  console.log(`\n  🦀 miTch PoC Demo running at http://localhost:${PORT}\n`);
+  console.log(`\n  🦀 AskMI PoC Demo running at http://localhost:${PORT}\n`);
 });

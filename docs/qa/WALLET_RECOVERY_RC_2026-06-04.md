@@ -55,7 +55,7 @@ Local gates completed before the commit:
 
 | Gate | Result |
 |---|---|
-| `pnpm --filter @mitch/wallet-pwa test` | PASS, 92 tests |
+| `pnpm --filter @askmi/wallet-pwa test` | PASS, 92 tests |
 | `pnpm --filter verifier-backend test` | PASS, 78 tests |
 | `pnpm build` | PASS, 30/30 tasks |
 | `pnpm test` | PASS, 45/45 tasks |

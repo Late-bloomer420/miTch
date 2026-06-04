@@ -15,7 +15,7 @@
 - **Libraries:** jose ^5.2.0 for ES256 signing
 
 ### 2. Mock Issuer Package
-- ✅ Package created: `@mitch/mock-issuer`
+- ✅ Package created: `@askmi/mock-issuer`
 - ✅ Functionality:
   - ES256 keypair generation (Elliptic Curve)
   - JWT credential issuance with JOSE library
@@ -66,14 +66,14 @@
 
 | Package | Build | Tests | Status |
 |---------|-------|-------|--------|
-| @mitch/mock-issuer | ✅ | 14/14 ✅ | READY |
-| @mitch/policy-engine | ✅ | 42/42 ✅ | READY |
-| @mitch/layer-resolver | ✅ | N/A | READY |
+| @askmi/mock-issuer | ✅ | 14/14 ✅ | READY |
+| @askmi/policy-engine | ✅ | 42/42 ✅ | READY |
+| @askmi/layer-resolver | ✅ | N/A | READY |
 | @askmi/shared-types | ✅ | N/A | READY |
 | All other packages | ✅ | Various | READY |
 
 **Total packages:** 18 (up from 17)
-**New package:** @mitch/mock-issuer
+**New package:** @askmi/mock-issuer
 
 ---
 

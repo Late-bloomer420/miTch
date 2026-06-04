@@ -1,5 +1,5 @@
 # Verifier Backend Dockerfile
-# Based on miTch 100% Compliance Architecture
+# Based on AskMI 100% Compliance Architecture
 
 FROM node:20-alpine AS builder
 
@@ -31,7 +31,7 @@ COPY --from=builder /app/node_modules ./node_modules
 # Default Environment
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV MITCH_TRUST_MODE=live
+ENV ASKMI_TRUST_MODE=live
 
 EXPOSE 3000
 

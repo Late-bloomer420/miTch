@@ -69,8 +69,8 @@ vi.mock('@askmi/shared-crypto', async () => {
   };
 });
 
-vi.mock('@mitch/oid4vp', async () => {
-  const actual = await vi.importActual<typeof import('@mitch/oid4vp')>('@mitch/oid4vp');
+vi.mock('@askmi/oid4vp', async () => {
+  const actual = await vi.importActual<typeof import('@askmi/oid4vp')>('@askmi/oid4vp');
   return {
     ...actual,
     buildSDJWTPresentation: buildSDJWTPresentationMock,
@@ -98,7 +98,7 @@ function makePromptResult(verdict: PolicyEvaluationResult['verdict']): PolicyEva
       verdict,
       request_hash: 'req-hash',
       policy_hash: 'policy-hash',
-      verifier_did: 'did:mitch:verifier-liquor-store',
+      verifier_did: 'did:askmi:verifier-liquor-store',
       authorized_requirements: [
         {
           credential_type: 'AgeCredential',
@@ -140,7 +140,7 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
           JSON.stringify({
             authRequest: {
               response_type: 'vp_token',
-              client_id: 'did:mitch:verifier-liquor-store',
+              client_id: 'did:askmi:verifier-liquor-store',
               redirect_uri: 'https://verifier.test/direct_post',
               nonce: 'nonce-1',
               presentation_definition: {
@@ -178,7 +178,7 @@ beforeEach(() => {
 describe('G-03 — Wallet App', () => {
   it('renders the wallet title', () => {
     render(<App />);
-    expect(screen.getByText('miTch')).toBeInTheDocument();
+    expect(screen.getByText('AskMI')).toBeInTheDocument();
   });
 
   it('renders credential card with Age Credential', async () => {
@@ -211,7 +211,7 @@ describe('G-03 — Wallet App', () => {
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
     );
 
     render(<App />);
@@ -229,7 +229,7 @@ describe('G-03 — Wallet App', () => {
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:mitch:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
     );
     buildSDJWTPresentationMock.mockResolvedValue({
       vpTokenString: 'vp-token',
@@ -245,7 +245,7 @@ describe('G-03 — Wallet App', () => {
             JSON.stringify({
               authRequest: {
                 response_type: 'vp_token',
-                client_id: 'did:mitch:verifier-liquor-store',
+                client_id: 'did:askmi:verifier-liquor-store',
                 redirect_uri: 'https://verifier.test/direct_post',
                 nonce: 'nonce-1',
                 presentation_definition: {

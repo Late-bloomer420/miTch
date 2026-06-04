@@ -48,7 +48,7 @@ Phase 2 successfully implements production-ready infrastructure for miTch, inclu
 
 ### 2. WebAuthn Native Verifier ✅
 
-**Package:** `@mitch/webauthn-verifier` (Package #19)
+**Package:** `@askmi/webauthn-verifier` (Package #19)
 
 **Implementation:**
 - Challenge generation with 5-minute expiry
@@ -85,7 +85,7 @@ Phase 2 successfully implements production-ready infrastructure for miTch, inclu
 
 ### 3. Interactive Demo Package ✅
 
-**Package:** `@mitch/demo-liquor-store` (Package #20)
+**Package:** `@askmi/demo-liquor-store` (Package #20)
 
 **Implementation:**
 - Step-by-step visual execution
@@ -151,8 +151,8 @@ Cache Hit Rate: 70% (14/20 cached)
 ```
 
 **New Packages Built:**
-- 19. @mitch/webauthn-verifier ✅
-- 20. @mitch/demo-liquor-store ✅
+- 19. @askmi/webauthn-verifier ✅
+- 20. @askmi/demo-liquor-store ✅
 
 ### Test Status
 
@@ -398,8 +398,8 @@ fi
 
 ### Code
 - [x] CI/CD pipeline (.github/workflows/ci.yml)
-- [x] WebAuthn verifier (@mitch/webauthn-verifier)
-- [x] Demo package (@mitch/demo-liquor-store)
+- [x] WebAuthn verifier (@askmi/webauthn-verifier)
+- [x] Demo package (@askmi/demo-liquor-store)
 - [x] All packages building (20/20)
 - [x] All tests passing (54/54)
 

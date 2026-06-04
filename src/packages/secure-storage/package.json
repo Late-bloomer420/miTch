@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/secure-storage",
+    "name": "@askmi/secure-storage",
     "version": "0.0.1",
     "type": "module",
     "main": "./dist/index.js",

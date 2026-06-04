@@ -1,5 +1,5 @@
 /**
- * @package @mitch/eid-issuer-connector
+ * @package @askmi/eid-issuer-connector
  * @description Types for German eID issuer integration
  */
 

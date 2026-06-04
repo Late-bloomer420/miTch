@@ -24,12 +24,12 @@ Health checks:
 
 The local EUDI LOTL fixture now includes the runtime issuer URI used by the demo:
 
-- `https://issuer.mitch.demo`
+- `https://issuer.askmi.demo`
 
 Before this fix, all five `/wallet-present` scenarios failed with:
 
 ```text
-ENTITY_NOT_IN_TSL: https://issuer.mitch.demo
+ENTITY_NOT_IN_TSL: https://issuer.askmi.demo
 ```
 
 ### Revocation Fixture
@@ -71,14 +71,14 @@ Direct resolver check:
 
 Passed locally:
 
-- `pnpm --filter @mitch/oid4vp test` -> 86 tests
-- `pnpm --filter @mitch/issuer-mock test` -> no tests, pass-with-no-tests
-- `pnpm --filter @mitch/wallet-pwa test` -> 92 tests
+- `pnpm --filter @askmi/oid4vp test` -> 86 tests
+- `pnpm --filter @askmi/issuer-mock test` -> no tests, pass-with-no-tests
+- `pnpm --filter @askmi/wallet-pwa test` -> 92 tests
 - `pnpm --filter verifier-backend test` -> 78 tests
-- `pnpm --filter @mitch/oid4vp build`
-- `pnpm --filter @mitch/verifier-sdk build`
+- `pnpm --filter @askmi/oid4vp build`
+- `pnpm --filter @askmi/verifier-sdk build`
 - `pnpm --filter verifier-backend build`
-- `pnpm --filter @mitch/wallet-pwa build`
+- `pnpm --filter @askmi/wallet-pwa build`
 
 ## Operational Notes
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>miTch — DPIA & GDPR Compliance Framework</title>
+<title>AskMI — DPIA & GDPR Compliance Framework</title>
 <style>
   :root {
     --bg: #0a0e17; --surface: #131a2b; --surface2: #1a2340; --border: #2a3555;
@@ -60,7 +60,7 @@
 <a href="/" class="back">← Back to Demo</a>
 
 <h1>📋 Data Protection Impact Assessment</h1>
-<p class="subtitle">GDPR Article 35 — miTch Identity Verification Infrastructure</p>
+<p class="subtitle">GDPR Article 35 — AskMI Identity Verification Infrastructure</p>
 
 <div style="margin-bottom:1.5rem">
   <span class="badge badge-green">✅ Art. 25 Privacy by Design</span>
@@ -76,14 +76,14 @@
 <h2>1. Description of Processing</h2>
 
 <h3>1.1 What We Do</h3>
-<p>miTch provides <strong>privacy-preserving identity verification</strong>. Users prove attributes about themselves (e.g., "I am over 18") without revealing the underlying personal data (e.g., their birthdate).</p>
+<p>AskMI provides <strong>privacy-preserving identity verification</strong>. Users prove attributes about themselves (e.g., "I am over 18") without revealing the underlying personal data (e.g., their birthdate).</p>
 
 <h3>1.2 Roles</h3>
 <table>
   <tr><th>Role</th><th>Entity</th><th>Responsibility</th></tr>
   <tr><td><strong>Data Subject</strong></td><td>User (Holder)</td><td>Controls all disclosure decisions via wallet on their device</td></tr>
   <tr><td><strong>Data Controller</strong></td><td>Verifier (e.g., shop, health portal)</td><td>Requests specific claims, processes verification result</td></tr>
-  <tr><td><strong>Data Processor</strong></td><td>miTch Infrastructure</td><td>Facilitates verification without accessing personal data</td></tr>
+  <tr><td><strong>Data Processor</strong></td><td>AskMI Infrastructure</td><td>Facilitates verification without accessing personal data</td></tr>
   <tr><td><strong>Issuer</strong></td><td>State Provider (e.g., eID Austria)</td><td>Signs credentials based on verified identity</td></tr>
 </table>
 
@@ -113,9 +113,9 @@
   <li><strong>Financial services:</strong> KYC regulations require identity verification</li>
 </ul>
 
-<h3>2.2 Why miTch Is Proportionate</h3>
+<h3>2.2 Why AskMI Is Proportionate</h3>
 <table>
-  <tr><th>Traditional Approach</th><th>miTch Approach</th></tr>
+  <tr><th>Traditional Approach</th><th>AskMI Approach</th></tr>
   <tr><td>Upload photo ID → name, birthdate, address, photo collected</td><td>Prove <code>over_18: true</code> → one boolean, nothing else</td></tr>
   <tr><td>Data stored in verifier's database → breach risk</td><td>No data stored → nothing to breach</td></tr>
   <tr><td>Identity provider tracks every verification</td><td>Issuer doesn't know when/where credentials are used</td></tr>
@@ -258,7 +258,7 @@
 </table>
 
 <!-- SECTION 6 -->
-<h2>6. What miTch Structurally Cannot Do</h2>
+<h2>6. What AskMI Structurally Cannot Do</h2>
 
 <div class="card">
   <p>These are not policy promises — they are <strong>architectural guarantees</strong>:</p>
@@ -270,26 +270,26 @@
     <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
     <li>🚫 <strong>Cannot distinguish declined from missing</strong> — identical responses by design</li>
   </ul>
-  <p class="dim" style="margin-top:0.8rem"><em>"miTch works not because it knows everything — but because it structurally cannot know anything."</em></p>
+  <p class="dim" style="margin-top:0.8rem"><em>"AskMI works not because it knows everything — but because it structurally cannot know anything."</em></p>
 </div>
 
 <!-- SECTION 7 -->
 <h2>7. Conclusion</h2>
 
-<p>This Data Protection Impact Assessment confirms that miTch's identity verification processing is <strong>compliant with GDPR Articles 5, 6, 7, 13, 15, 17, 20, 25, 30, 32, and 35</strong>.</p>
+<p>This Data Protection Impact Assessment confirms that AskMI's identity verification processing is <strong>compliant with GDPR Articles 5, 6, 7, 13, 15, 17, 20, 25, 30, 32, and 35</strong>.</p>
 
 <p>The processing is <strong>necessary</strong> (legal requirements for identity verification), <strong>proportionate</strong> (only boolean predicates, not raw identity data), and <strong>safeguarded</strong> (crypto-shredding, selective disclosure, tamper-evident audit, metadata minimization).</p>
 
-<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides strong technical guarantees for the right to erasure (Art. 17): crypto-shredding produces cryptographic proof that the decryption key was destroyed on the miTch side, rendering miTch-held ciphertext permanently unrecoverable — rather than relying on deletion promises. This attests to wallet-/miTch-side erasure and to minimization of what a verifier receives; it does not attest to what a relying party does with data disclosed to it out-of-band.</p>
+<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides strong technical guarantees for the right to erasure (Art. 17): crypto-shredding produces cryptographic proof that the decryption key was destroyed on the AskMI side, rendering AskMI-held ciphertext permanently unrecoverable — rather than relying on deletion promises. This attests to wallet-/AskMI-side erasure and to minimization of what a verifier receives; it does not attest to what a relying party does with data disclosed to it out-of-band.</p>
 
 <div class="card" style="text-align:center; margin-top:2rem">
-  <p style="font-size:1.1rem; font-weight:600">miTch — The Forgetting Layer</p>
+  <p style="font-size:1.1rem; font-weight:600">AskMI — The Forgetting Layer</p>
   <p class="dim">User-Sovereign Identity & Authorization Infrastructure</p>
   <p class="dim" style="margin-top:0.5rem">DPIA Version 1.0 — February 2026</p>
 </div>
 
 <div class="footer">
-  miTch Project • GDPR Compliant by Architecture • <a href="/" style="color:var(--accent)">Back to Demo</a>
+  AskMI Project • GDPR Compliant by Architecture • <a href="/" style="color:var(--accent)">Back to Demo</a>
 </div>
 
 </div>

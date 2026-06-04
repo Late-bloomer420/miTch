@@ -3,13 +3,13 @@ import {
     LegacyDecisionProof,
     legacyToDSL,
 } from '@askmi/shared-types';
-import { evaluatePredicates, hashRequest } from '@mitch/predicates';
+import { evaluatePredicates, hashRequest } from '@askmi/predicates';
 
 /**
  * T-51: Edge-First Predicate Evaluator
  * 
  * REFACTORED (T-60):
- * This class now acts as a Facade/Adapter over the new @mitch/predicates engine.
+ * This class now acts as a Facade/Adapter over the new @askmi/predicates engine.
  * It maintains backward compatibility with the Legacy Constraint Model while using
  * the robust DSL engine internally.
  */
@@ -17,7 +17,7 @@ export class PredicateEvaluator {
 
     /**
      * Execute logic on raw data WITHOUT exposing it.
-     * Evaluates using @mitch/predicates DSL engine.
+     * Evaluates using @askmi/predicates DSL engine.
      * 
      * @param userData - Raw PII from Secure Storage
      * @param request - Legacy constraint-based request

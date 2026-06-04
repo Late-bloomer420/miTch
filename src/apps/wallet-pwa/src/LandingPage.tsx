@@ -50,9 +50,9 @@ export function LandingPage({ onLaunchDemo }: LandingPageProps) {
   return (
     <main className="landing-page">
       <header className="landing-header">
-        <a className="landing-brand" href="/" aria-label="miTch home">
+        <a className="landing-brand" href="/" aria-label="AskMI home">
           <span className="landing-brand-mark">m</span>
-          <span>miTch</span>
+          <span>AskMI</span>
         </a>
         <nav className="landing-nav" aria-label="Primary navigation">
           <a href="#platform">Platform</a>
@@ -68,7 +68,7 @@ export function LandingPage({ onLaunchDemo }: LandingPageProps) {
         <div className="hero-copy">
           <h1>Verify the fact. Forget the data.</h1>
           <p>
-            miTch is the privacy firewall for digital identity teams. Let wallets prove
+            AskMI is the privacy firewall for digital identity teams. Let wallets prove
             eligibility, role, age, or access rights while raw personal data stays off your
             servers.
           </p>
@@ -97,7 +97,7 @@ export function LandingPage({ onLaunchDemo }: LandingPageProps) {
           </dl>
         </div>
 
-        <div className="proof-console" aria-label="miTch proof flow preview">
+        <div className="proof-console" aria-label="AskMI proof flow preview">
           <div className="console-topbar">
             <span>Decision capsule</span>
             <strong>fail-closed</strong>

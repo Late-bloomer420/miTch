@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { AuditLogEntry } from '@askmi/shared-types';
-import { DataFlowService, summarizeTransaction } from '@mitch/data-flow';
-import type { DataFlowTransaction } from '@mitch/data-flow';
+import { DataFlowService, summarizeTransaction } from '@askmi/data-flow';
+import type { DataFlowTransaction } from '@askmi/data-flow';
 import { translateClaim } from '../utils/i18n';
 
 interface DataFlowPanelProps {

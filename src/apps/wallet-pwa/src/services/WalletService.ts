@@ -1,9 +1,9 @@
 import {
     PolicyEngine,
     type EvaluationContext
-} from '@mitch/policy-engine';
-import { SecureStorage } from '@mitch/secure-storage';
-import { AuditLog } from '@mitch/audit-log';
+} from '@askmi/policy-engine';
+import { SecureStorage } from '@askmi/secure-storage';
+import { AuditLog } from '@askmi/audit-log';
 import {
     PolicyManifest,
     VerifierRequest,
@@ -31,14 +31,14 @@ import {
 } from '@askmi/shared-crypto';
 
 
-import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@mitch/mdoc';
+import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
 import { DEMO_POLICY } from '../data/DemoPolicy';
 import { ProofOfExistence } from './DocumentService';
 import {
     evaluatePredicates,
     CommonPredicates,
     type PredicateRequest
-} from '@mitch/predicates';
+} from '@askmi/predicates';
 import type { TrackingPoint } from './PrivacyAuditService';
 
 // ─── mdoc base64 helpers ──────────────────────────────────────────────────
@@ -55,7 +55,7 @@ function base64ToUint8Array(base64: string): Uint8Array {
     return bytes;
 }
 
-const POLICY_STORAGE_KEY = 'mitch_user_policy';
+const POLICY_STORAGE_KEY = 'askmi_user_policy';
 
 // Default Policy for the PoC (Now persistent)
 const DEFAULT_POLICY: PolicyManifest = DEMO_POLICY;
@@ -304,7 +304,7 @@ async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
     }
 
     // 2. Resolve (Real Resolver from shared-crypto)
-    // Supports did:web (HTTPS) and did:mitch (Demo)
+    // Supports did:web (HTTPS) and did:askmi (Demo)
     const didDocument = await resolveDID(did);
 
     // 3. Extract Key (First Verification Method)
@@ -402,7 +402,7 @@ export class WalletService {
                     // Persist audit key marker (for future key-wrapping implementation)
                     try {
                         await this.storage!.save(AUDIT_KEY_STORAGE_ID, { created: new Date().toISOString() }, {
-                            issuer: 'did:mitch:self',
+                            issuer: 'did:askmi:self',
                             type: ['SystemKey', 'AuditKey'],
                             claims: ['created'],
                             issuedAt: new Date().toISOString()
@@ -730,7 +730,7 @@ export class WalletService {
             const parsed = new URL(url);
             if (parsed.protocol !== 'mitch:') return null;
 
-            const verifierDid = parsed.searchParams.get('verifier') || 'did:mitch:unknown';
+            const verifierDid = parsed.searchParams.get('verifier') || 'did:askmi:unknown';
             const nonce = parsed.searchParams.get('nonce') || crypto.randomUUID();
             const pubKeyB64 = parsed.searchParams.get('pub');
 
@@ -786,7 +786,7 @@ export class WalletService {
         const verifierDID = capsule.verifier_did;
         if (!verifierDID) throw new Error('SECURITY ALERT: Capsule not bound to a verifier.');
 
-        if (capsule.audience && capsule.audience !== 'mitch-wallet-pwa') {
+        if (capsule.audience && capsule.audience !== 'askmi-wallet-pwa') {
             throw new Error(`SECURITY ALERT: Capsule intended for different app (${capsule.audience}).`);
         }
 
@@ -1048,7 +1048,7 @@ export class WalletService {
         const ephemeralKey = await EphemeralKey.create();
 
         let targetPubKey: CryptoKey;
-        const transportDid = verifierDID.startsWith('did:') ? verifierDID : 'did:mitch:verifier-liquor-store';
+        const transportDid = verifierDID.startsWith('did:') ? verifierDID : 'did:askmi:verifier-liquor-store';
         if (transportDid !== verifierDID) {
             logs.push(`⚠️ Non-DID verifier id (${verifierDID}). Using demo DID for encryption.`);
         }
@@ -1282,7 +1282,7 @@ export class WalletService {
     async generateProximityResponse(
         credId: string,
         requestedElements: { ns: string, element: string }[],
-        sessionTranscript: import('@mitch/mdoc').SessionTranscript
+        sessionTranscript: import('@askmi/mdoc').SessionTranscript
     ): Promise<Uint8Array> {
         if (!this.storage) throw new Error('Wallet locked');
 
@@ -1311,16 +1311,16 @@ export class WalletService {
         const mso = mdoc.get('issuerAuth'); // Simplified for PoC
 
         // Placeholder for real DeviceAuth creation
-        const deviceAuth: import('@mitch/mdoc').DeviceAuth = {
+        const deviceAuth: import('@askmi/mdoc').DeviceAuth = {
             deviceSignature: new Uint8Array([0xde, 0xad, 0xbe, 0xef]) // Mock signature
         };
 
-        const deviceSigned: import('@mitch/mdoc').DeviceSigned = {
+        const deviceSigned: import('@askmi/mdoc').DeviceSigned = {
             nameSpaces: new Map(),
             deviceAuth
         };
 
-        const document: import('@mitch/mdoc').MdocDocument = {
+        const document: import('@askmi/mdoc').MdocDocument = {
             docType: credData.docType,
             issuerSigned: {
                 nameSpaces: filteredNamespaces,
@@ -1329,7 +1329,7 @@ export class WalletService {
             deviceSigned
         };
 
-        const responseCbor = (await import('@mitch/mdoc')).buildDeviceResponse([document]);
+        const responseCbor = (await import('@askmi/mdoc')).buildDeviceResponse([document]);
 
         await this.auditLog.append('VP_SENT', credId, {
             context: 'PROXIMITY_PRESENTATION',
@@ -1602,7 +1602,7 @@ export class WalletService {
         // Create Proof Token (Compact-like format, NOT RFC7515 JWS)
         // Format: base64(header).base64(payload).hex(signature)
         // Note: Uses standard Base64, not Base64URL; signature is hex, not base64url(r|s)
-        const header = canonicalStringify({ alg: 'ES256-PoC', kid: 'did:mitch:user-wallet-001#audit-key' });
+        const header = canonicalStringify({ alg: 'ES256-PoC', kid: 'did:askmi:user-wallet-001#audit-key' });
         const protectedHeader = btoa(header);
         const encodedPayload = btoa(content);
 
@@ -1622,5 +1622,4 @@ export class WalletService {
         return { proofToken, auditLog: logs };
     }
 }
-
 

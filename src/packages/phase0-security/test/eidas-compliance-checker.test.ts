@@ -7,7 +7,7 @@ describe('EIDASComplianceChecker', () => {
   let checker: EIDASComplianceChecker;
 
   beforeEach(async () => {
-    indexedDB.deleteDatabase('mitch-audit-log');
+    indexedDB.deleteDatabase('askmi-audit-log');
     auditLog = new LocalAuditLog();
     await auditLog.initialize();
     checker = new EIDASComplianceChecker(auditLog);
@@ -112,7 +112,7 @@ describe('EIDASComplianceChecker', () => {
       await auditLog.append({
         type: 'CREDENTIAL_ISSUED',
         timestamp: Date.now(),
-        details: { issuer: 'did:mitch:issuer' },
+        details: { issuer: 'did:askmi:issuer' },
       });
 
       const report = await checker.runFullAudit();

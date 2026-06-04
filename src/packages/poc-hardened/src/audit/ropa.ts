@@ -3,7 +3,7 @@
  * 
  * Aggregate-only processing records.
  * Tracks WHAT categories of processing happened, not WHO.
- * Required for any data controller deploying miTch.
+ * Required for any data controller deploying AskMI.
  */
 
 // ─── Types ───────────────────────────────────────────────────────

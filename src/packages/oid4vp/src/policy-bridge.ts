@@ -1,7 +1,7 @@
 /**
  * OID4VP ↔ Policy Engine Bridge
  *
- * Connects an OID4VP Authorization Request to the miTch policy-engine
+ * Connects an OID4VP Authorization Request to the AskMI policy-engine
  * consent flow. This is the integration point where:
  * 1. An incoming OID4VP request is parsed + validated
  * 2. The request is converted to a VerifierRequest for policy evaluation

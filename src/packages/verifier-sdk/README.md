@@ -1,6 +1,6 @@
-# @mitch/verifier-sdk
+# @askmi/verifier-sdk
 
-The **miTch Verifier SDK** enables any relying party (verifier) to cryptographically verify presentations from a miTch Wallet.
+The **AskMI Verifier SDK** enables any relying party (verifier) to cryptographically verify presentations from a AskMI Wallet.
 
 ## Features
 
@@ -12,13 +12,13 @@ The **miTch Verifier SDK** enables any relying party (verifier) to cryptographic
 ## Installation
 
 ```bash
-pnpm add @mitch/verifier-sdk
+pnpm add @askmi/verifier-sdk
 ```
 
 ## Usage
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 import { getMyPrivateKey } from './secrets';
 
 const sdk = new VerifierSDK({

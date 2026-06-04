@@ -2,7 +2,7 @@
  * Transparency Report — GDPR Art. 13/14
  * 
  * Machine-readable transparency information.
- * Used by the landing page to show users exactly what miTch does and doesn't do.
+ * Used by the landing page to show users exactly what AskMI does and doesn't do.
  */
 
 export interface TransparencyReport {
@@ -35,7 +35,7 @@ export interface TransparencyReport {
     right: string;
     gdprArticle: string;
     howToExercise: string;
-    mitchImplementation: string;
+    AskMIImplementation: string;
   }[];
   
   technicalSafeguards: {
@@ -110,31 +110,31 @@ export function generateTransparencyReport(controllerName: string, controllerCon
         right: "Right of access",
         gdprArticle: "Art. 15",
         howToExercise: "Open your wallet — all your data is there",
-        mitchImplementation: "All data stored locally on user's device. Full visibility in wallet UI.",
+        AskMIImplementation: "All data stored locally on user's device. Full visibility in wallet UI.",
       },
       {
         right: "Right to erasure",
         gdprArticle: "Art. 17",
         howToExercise: "Delete credential in wallet, or it auto-destructs via crypto-shredding",
-        mitchImplementation: "Crypto-shredding: encryption key destroyed = data mathematically irrecoverable. Exceeds Art. 17 requirements.",
+        AskMIImplementation: "Crypto-shredding: encryption key destroyed = data mathematically irrecoverable. Exceeds Art. 17 requirements.",
       },
       {
         right: "Right to data portability",
         gdprArticle: "Art. 20",
         howToExercise: "Export consent receipts from wallet (JSON/PDF)",
-        mitchImplementation: "One-tap export of all consent history in standard format.",
+        AskMIImplementation: "One-tap export of all consent history in standard format.",
       },
       {
         right: "Right to withdraw consent",
         gdprArticle: "Art. 7(3)",
         howToExercise: "Revoke any consent in the wallet's consent log",
-        mitchImplementation: "Per-verifier consent revocation. Remembered approvals can be revoked anytime.",
+        AskMIImplementation: "Per-verifier consent revocation. Remembered approvals can be revoked anytime.",
       },
       {
         right: "Right to object",
         gdprArticle: "Art. 21",
         howToExercise: "Decline any verification request, block specific verifiers",
-        mitchImplementation: "Every request shows equal-weight Approve/Decline. Verifier blocking available.",
+        AskMIImplementation: "Every request shows equal-weight Approve/Decline. Verifier blocking available.",
       },
     ],
     
@@ -147,7 +147,7 @@ export function generateTransparencyReport(controllerName: string, controllerCon
       { measure: "StatusList2021 revocation", description: "Revocation via public bitstring. Issuer can't tell which credential was checked." },
       { measure: "Identical decline responses", description: "Declined and missing credentials produce identical responses. Verifier can't distinguish." },
       { measure: "Tamper-evident audit chain", description: "All actions logged in hash-chain. Tampering breaks the chain and is detectable." },
-      { measure: "No server-side PII storage", description: "miTch infrastructure stores zero personal data. All PII stays on user's device." },
+      { measure: "No server-side PII storage", description: "AskMI infrastructure stores zero personal data. All PII stays on user's device." },
     ],
   };
 }

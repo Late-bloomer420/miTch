@@ -1,4 +1,4 @@
-import type { ConsentReceipt } from '@mitch/oid4vp';
+import type { ConsentReceipt } from '@askmi/oid4vp';
 
 export interface StoredConsentReceiptEntry {
   receipt: ConsentReceipt;

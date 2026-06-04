@@ -1,5 +1,5 @@
 /**
- * @module @mitch/verifier-sdk/ad-nullifier-store
+ * @module @askmi/verifier-sdk/ad-nullifier-store
  *
  * NullifierStore interface and implementations for ad-tech frequency capping.
  *

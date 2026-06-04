@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/phase0-security",
+    "name": "@askmi/phase0-security",
     "version": "0.1.0",
     "description": "Phase-0 Security Hardening: Local Audit Log, Verifier Direct Protocol, and Compliance Checking",
     "main": "dist/index.js",
@@ -15,6 +15,6 @@
         "typescript": "^5.0.0",
         "vitest": "^4.1.8"
     },
-    "author": "miTch Core Team",
+    "author": "AskMI Core Team",
     "license": "UNLICENSED"
 }

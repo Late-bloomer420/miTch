@@ -139,11 +139,11 @@ export const SCENARIO_LABELS: Record<string, string> = {
 };
 
 export const SCENARIO_VCT: Record<string, string> = {
-    'liquor-store': 'https://mitch.demo/vct/age-credential',
-    'doctor-login': 'https://mitch.demo/vct/professional-identity',
-    'ehds-er': 'https://mitch.demo/vct/patient-summary',
-    'pharmacy': 'https://mitch.demo/vct/prescription',
-    'revoked': 'https://mitch.demo/vct/age-credential',
+    'liquor-store': 'https://askmi.demo/vct/age-credential',
+    'doctor-login': 'https://askmi.demo/vct/professional-identity',
+    'ehds-er': 'https://askmi.demo/vct/patient-summary',
+    'pharmacy': 'https://askmi.demo/vct/prescription',
+    'revoked': 'https://askmi.demo/vct/age-credential',
 };
 
 // ─── W-01: Authorization Request Builder ─────────────────────────────────────

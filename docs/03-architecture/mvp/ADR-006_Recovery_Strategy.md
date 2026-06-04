@@ -19,7 +19,7 @@ Device-Verlust oder -Wechsel ist der einzige reale Break für Human-in-the-Loop 
 - Kein zentraler Recovery-Code oder Server-seitiger Seed
 
 **Technische Umsetzung:**
-- `@mitch/secure-memory` erweitert um `exportRootKey` + `importSharded`
+- `@askmi/secure-memory` erweitert um `exportRootKey` + `importSharded`
 - Policy-Engine blockt jede Recovery ohne explizite WebAuthn + User-Confirm
 - Ephemere pairwise DIDs werden nach Recovery neu generiert (Unlinkability bleibt)
 

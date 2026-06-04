@@ -55,7 +55,7 @@ released.
 
 ### Path A — Patient summary / insurance credential
 
-The source system (ELGA-style, or a national patient-summary service over `@mitch/oid4vci`)
+The source system (ELGA-style, or a national patient-summary service over `@askmi/oid4vci`)
 issues SD-JWT VCs for insurance status and consent state. Selective disclosure
 (`@askmi/shared-crypto`) exposes only the requested claim.
 
@@ -83,7 +83,7 @@ nonce:       <random>
 purpose:     "Treatment eligibility check"
 ```
 
-The policy engine (`@mitch/policy-engine`) evaluates EHDS rules fail-closed:
+The policy engine (`@askmi/policy-engine`) evaluates EHDS rules fail-closed:
 
 ```
 PredicateClause path=insurance.active            op=eq     type=boolean value=true
@@ -94,9 +94,9 @@ geoScope        eu-only                                  → DENY_GEO_SCOPE_VIOL
 
 - Secondary use: `denySecondaryUse` → `DENY_SECONDARY_USE_DENIED`; missing permit →
   `DENY_HDAB_PERMIT_REQUIRED` (mapped in `49_EHDS_Compliance_Map.md`).
-- ePrescription: bound to a single-use nullifier (`@mitch/predicates` → `nullifier.ts`); second
+- ePrescription: bound to a single-use nullifier (`@askmi/predicates` → `nullifier.ts`); second
   redemption → `DENY_CREDENTIAL_DISPENSED`.
-- Emergency: WebAuthn step-up (`@mitch/webauthn-verifier`) → grant logged as
+- Emergency: WebAuthn step-up (`@askmi/webauthn-verifier`) → grant logged as
   `ALLOW_BREAK_GLASS_ACTIVATED`, patient notified.
 
 ---
@@ -120,7 +120,7 @@ geoScope        eu-only                                  → DENY_GEO_SCOPE_VIOL
 ## Verifier Integration (Requesting-System Side)
 
 ```typescript
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 
 const sdk = new VerifierSDK({
   verifierDid: 'did:de:insurer.example',
@@ -181,14 +181,14 @@ app.post('/eligibility/verify', async (req, res) => {
 
 | Package                        | Role in this module                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------- |
-| `@mitch/policy-engine`         | EHDS rules: `denySecondaryUse`, `requiresHdabPermit`, geo-scope, break-glass |
-| `@mitch/webauthn-verifier`     | Break-glass / emergency step-up                                              |
-| `@mitch/predicates`            | Permission DSL; single-use `nullifier.ts` (Art. 14)                          |
+| `@askmi/policy-engine`         | EHDS rules: `denySecondaryUse`, `requiresHdabPermit`, geo-scope, break-glass |
+| `@askmi/webauthn-verifier`     | Break-glass / emergency step-up                                              |
+| `@askmi/predicates`            | Permission DSL; single-use `nullifier.ts` (Art. 14)                          |
 | `@askmi/shared-crypto`         | SD-JWT VP, selective disclosure                                              |
-| `@mitch/audit-log`             | WORM trail + Art. 31 export                                                  |
+| `@askmi/audit-log`             | WORM trail + Art. 31 export                                                  |
 | `@askmi/revocation-statuslist` | Practitioner-suspension revocation                                           |
-| `@mitch/verifier-sdk`          | Requesting-system verification + replay-check                                |
-| `@mitch/anchor-service`        | Long-horizon audit anchoring (multi-year retention)                          |
+| `@askmi/verifier-sdk`          | Requesting-system verification + replay-check                                |
+| `@askmi/anchor-service`        | Long-horizon audit anchoring (multi-year retention)                          |
 
 Relevant deny codes: `DENY_HDAB_PERMIT_REQUIRED`, `DENY_SECONDARY_USE_DENIED`,
 `DENY_GEO_SCOPE_VIOLATION`, `DENY_CREDENTIAL_DISPENSED`, `ALLOW_BREAK_GLASS_ACTIVATED`,

@@ -1,5 +1,5 @@
 {
-  "name": "@mitch/eid-issuer-connector",
+  "name": "@askmi/eid-issuer-connector",
   "version": "0.1.0",
   "description": "Connector for German eID issuers (AusweisApp2, eIDAS nodes)",
   "type": "module",

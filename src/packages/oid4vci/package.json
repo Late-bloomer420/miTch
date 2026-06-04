@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/oid4vci",
+    "name": "@askmi/oid4vci",
     "version": "0.1.0",
     "description": "OID4VCI Issuer Service (Privacy-First)",
     "main": "dist/index.js",
@@ -9,7 +9,7 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/policy-engine": "workspace:*",
+        "@askmi/policy-engine": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*",
         "zod": "^3.22.4"

@@ -15,8 +15,8 @@ import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
 import {
   MockGovernmentIssuer,
   createAgeProofPresentation,
-} from '@mitch/mock-issuer';
-import { ProtectionLayer, getMinimumLayerForData, includesLayer } from '@mitch/layer-resolver';
+} from '@askmi/mock-issuer';
+import { ProtectionLayer, getMinimumLayerForData, includesLayer } from '@askmi/layer-resolver';
 import type {
   PolicyManifest,
   VerifierRequest,

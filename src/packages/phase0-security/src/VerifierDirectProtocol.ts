@@ -2,14 +2,14 @@
  * Verifier-Direct Protocol (Phase-0 Security)
  * 
  * Implements the "Blind Convener" architecture where the wallet communicates
- * directly with the Verifier, bypassing any miTch server relay.
+ * directly with the Verifier, bypassing any AskMI server relay.
  * 
  * Features:
- * - Direct deep link generation (mitch://present?...)
+ * - Direct deep link generation (askmi://present?...)
  * - Direct HTTP POST of VP to Verifier (Structural Non-Existence of Relay)
  */
 
-export const DIRECT_VERIFIER_DID = 'did:mitch:verifier-liquor-store';
+export const DIRECT_VERIFIER_DID = 'did:askmi:verifier-liquor-store';
 
 export interface DirectSession {
     sessionId: string;
@@ -41,7 +41,7 @@ export class VerifierDirectProtocol {
 
         return {
             sessionId,
-            deepLink: `mitch://present?${params.toString()}`,
+            deepLink: `askmi://present?${params.toString()}`,
             verifierEndpoint: `${this.verifierBaseUrl}/present/${sessionId}`
         };
     }

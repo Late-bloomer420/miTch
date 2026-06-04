@@ -10,8 +10,8 @@ import {
 describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {
     let verifierKeysA: CryptoKeyPair;
     let verifierKeysB: CryptoKeyPair;
-    const DID_A = 'did:mitch:verifier:A';
-    const DID_B = 'did:mitch:verifier:B';
+    const DID_A = 'did:askmi:verifier:A';
+    const DID_B = 'did:askmi:verifier:B';
 
     beforeAll(async () => {
         // RSA-OAEP keys for verifiers
@@ -84,7 +84,7 @@ describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {
         };
 
         // Attack: Tamper with verifier_did in context to point somewhere else
-        pkg.aad_context.verifier_did = 'did:mitch:evil-verifier';
+        pkg.aad_context.verifier_did = 'did:askmi:evil-verifier';
 
         await expect(sdkA.verifyPresentation(JSON.stringify(pkg)))
             .rejects.toThrow(/addressed to .* verifier|AAD Binding Violation/i);

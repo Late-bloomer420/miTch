@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/cbor
+ * @module @askmi/mdoc/cbor
  *
  * Minimal CBOR codec wrapper for mdoc document encoding.
  * Uses cborg for RFC 8949 compliant encode/decode.

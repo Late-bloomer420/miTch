@@ -1,6 +1,6 @@
-# @mitch/verifier-browser
+# @askmi/verifier-browser
 
-> **Browser-Only Verifier SDK** for miTch Identity Infrastructure  
+> **Browser-Only Verifier SDK** for AskMI Identity Infrastructure
 > Zero-Backend Integration for SMEs (Static HTML Pages)
 
 ## 🎯 Purpose
@@ -22,14 +22,14 @@ Enable small businesses (liquor stores, pharmacies, etc.) to verify credentials 
 ### Option 1: NPM (for bundled apps)
 
 ```bash
-npm install @mitch/verifier-browser
+npm install @askmi/verifier-browser
 ```
 
 ### Option 2: CDN (for static HTML)
 
 ```html
 <script type="module">
-  import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@mitch/verifier-browser/dist/index.js';
+  import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@askmi/verifier-browser/dist/index.js';
   // ... your code ...
 </script>
 ```
@@ -41,7 +41,7 @@ npm install @mitch/verifier-browser
 ### Basic Age Verification
 
 ```typescript
-import { BrowserVerifier } from '@mitch/verifier-browser';
+import { BrowserVerifier } from '@askmi/verifier-browser';
 
 // 1. Initialize verifier
 const verifier = new BrowserVerifier({
@@ -81,10 +81,10 @@ if (result.success && result.provenClaims?.["age >= 18"]) {
 <body>
   <h1>Please verify your age</h1>
   <div id="qrcode"></div>
-  <p id="status">Scan QR code with miTch Wallet...</p>
+  <p id="status">Scan QR code with AskMI Wallet...</p>
 
   <script type="module">
-    import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@mitch/verifier-browser/dist/index.js';
+    import { BrowserVerifier } from 'https://cdn.jsdelivr.net/npm/@askmi/verifier-browser/dist/index.js';
 
     const verifier = new BrowserVerifier({
       verifierName: "Joe's Liquor Store",
@@ -229,9 +229,9 @@ Browser Verifier:
 
 ### GDPR Art. 25 (Privacy by Design)
 
-✅ **Data Minimization:** Only ZKP predicates transmitted (`age >= 18`), not raw birthdate  
-✅ **Structural Non-Existence:** No PII reaches verifier (proofs only)  
-✅ **Purpose Limitation:** Session-specific keys (cannot be reused)  
+✅ **Data Minimization:** Only ZKP predicates transmitted (`age >= 18`), not raw birthdate
+✅ **Structural Non-Existence:** No PII reaches verifier (proofs only)
+✅ **Purpose Limitation:** Session-specific keys (cannot be reused)
 ✅ **Storage Limitation:** Keys shredded after 5 minutes or page refresh
 
 ### Verifier Liability
@@ -300,15 +300,15 @@ npm test
 
 ## 📄 License
 
-MIT License (same as miTch core)
+MIT License (same as AskMI core)
 
 ---
 
 ## 🆘 Support
 
-- **Documentation:** https://docs.mitch.id
-- **Issues:** https://github.com/mitch-id/mitch/issues
-- **Email:** support@mitch.id
+- **Documentation:** https://docs.AskMI.id
+- **Issues:** https://github.com/AskMI-id/AskMI/issues
+- **Email:** support@AskMI.id
 
 ---
 
@@ -319,7 +319,7 @@ Built with:
 - **QRCode.js** (QR code generation)
 - **TypeScript** (type safety)
 
-Developed as part of the **miTch Sovereign Identity Infrastructure** project.
+Developed as part of the **AskMI Sovereign Identity Infrastructure** project.
 
 ---
 

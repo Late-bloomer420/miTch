@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/validity
+ * @module @askmi/mdoc/validity
  *
  * ISO 18013-5 §8.2.2.1 — MSO Validity and DocType verification.
  *

@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/policy-engine",
+    "name": "@askmi/policy-engine",
     "version": "0.0.1",
     "type": "module",
     "main": "./dist/index.js",
@@ -22,13 +22,13 @@
     },
     "dependencies": {
         "@noble/hashes": "^2.0.1",
-        "@mitch/layer-resolver": "workspace:*",
-        "@mitch/predicates": "workspace:*",
+        "@askmi/layer-resolver": "workspace:*",
+        "@askmi/predicates": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
-        "@mitch/mock-issuer": "workspace:*",
+        "@askmi/mock-issuer": "workspace:*",
         "@types/node": "^20.0.0",
         "rimraf": "^5.0.0",
         "typescript": "^5.0.0",

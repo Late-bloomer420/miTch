@@ -11,7 +11,7 @@ import { app } from '../app';
 import {
     buildSDJWTPresentation,
     SCENARIO_VCT,
-} from '@mitch/oid4vp';
+} from '@askmi/oid4vp';
 import { statusResolver, trustListResolver } from '@askmi/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -22,8 +22,8 @@ const MOCK_TSL = {
     id: 'test-tsl',
     version: '1.0.0',
     validUntil: '2030-01-01T00:00:00Z',
-    issuers: ['https://issuer.mitch.demo'],
-    verifiers: ['did:mitch:verifier-liquor-store']
+    issuers: ['https://issuer.askmi.demo'],
+    verifiers: ['did:askmi:verifier-liquor-store']
 };
 
 async function generateKeyPair(): Promise<CryptoKeyPair> {
@@ -42,7 +42,7 @@ describe('/oid4vp-present endpoint', () => {
 
     beforeAll(async () => {
         // Set test mode to avoid file I/O for verifier keys
-        process.env.MITCH_TEST_MODE = '1';
+        process.env.ASKMI_TEST_MODE = '1';
         issuerKeys = await generateKeyPair();
         holderKeys = await generateKeyPair();
 
@@ -103,8 +103,8 @@ describe('/oid4vp-present endpoint', () => {
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,
             claims: AGE_CLAIMS,
-            vct: SCENARIO_VCT['liquor-store'] ?? 'https://mitch.demo/vct/age-credential',
-            issuerDid: 'https://issuer.mitch.demo',
+            vct: SCENARIO_VCT['liquor-store'] ?? 'https://askmi.demo/vct/age-credential',
+            issuerDid: 'https://issuer.askmi.demo',
             revoked: false,
         });
 
@@ -169,8 +169,8 @@ describe('/oid4vp-present endpoint', () => {
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,
             claims: { age: 24 },
-            vct: SCENARIO_VCT['revoked'] ?? 'https://mitch.demo/vct/age-credential',
-            issuerDid: 'https://issuer.mitch.demo',
+            vct: SCENARIO_VCT['revoked'] ?? 'https://askmi.demo/vct/age-credential',
+            issuerDid: 'https://issuer.askmi.demo',
             revoked: true,
         });
 
@@ -206,8 +206,8 @@ describe('/oid4vp-present endpoint', () => {
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,
             claims: doctorClaims,
-            vct: SCENARIO_VCT['doctor-login'] ?? 'https://mitch.demo/vct/professional-credential',
-            issuerDid: 'https://issuer.mitch.demo',
+            vct: SCENARIO_VCT['doctor-login'] ?? 'https://askmi.demo/vct/professional-credential',
+            issuerDid: 'https://issuer.askmi.demo',
             revoked: false,
         });
 
@@ -260,8 +260,8 @@ describe('/oid4vp-present endpoint', () => {
             issuerPrivateKey: issuerKeys.privateKey,
             holderKeyPair: holderKeys,
             claims: AGE_CLAIMS,
-            vct: SCENARIO_VCT['liquor-store'] ?? 'https://mitch.demo/vct/age-credential',
-            issuerDid: 'https://issuer.mitch.demo',
+            vct: SCENARIO_VCT['liquor-store'] ?? 'https://askmi.demo/vct/age-credential',
+            issuerDid: 'https://issuer.askmi.demo',
             revoked: false,
         });
 

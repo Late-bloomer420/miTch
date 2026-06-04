@@ -1,5 +1,5 @@
 {
-  "name": "@mitch/webauthn-verifier",
+  "name": "@askmi/webauthn-verifier",
   "version": "0.1.0",
   "description": "Native WebAuthn verification for hardware-backed security",
   "type": "module",

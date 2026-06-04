@@ -55,14 +55,14 @@ Naming-Konvention: `mitch_{verb}_{object}` (snake_case, Service-Prefix).
 | Tool | Typ | Annotations | Zweck |
 |---|---|---|---|
 | `mitch_evaluate_disclosure` | core | `readOnlyHint: false`, `idempotentHint: true`, `destructiveHint: false`, `openWorldHint: false` | Verifier-Request + Policy + Context → DecisionCapsule. Kernroute. |
-| `mitch_verify_presentation` | core | `readOnlyHint: true` | OID4VP-Response prüfen (Signatur, Nonce, Holder-Binding). Delegiert an `@mitch/oid4vp-verifier`. |
+| `mitch_verify_presentation` | core | `readOnlyHint: true` | OID4VP-Response prüfen (Signatur, Nonce, Holder-Binding). Delegiert an `@askmi/oid4vp-verifier`. |
 | `mitch_check_status` | core | `readOnlyHint: true` | Revocation/StatusList prüfen (`@askmi/revocation-statuslist`). |
 | `mitch_list_policies` | read | `readOnlyHint: true` | Aktive Policy-Manifests + Hashes auflisten. |
 | `mitch_get_policy` | read | `readOnlyHint: true` | Einzelne Policy nach `policy_hash` lesen. |
 | `mitch_get_decision` | read | `readOnlyHint: true` | DecisionCapsule per `decision_id` aus Audit-Log holen. |
 | `mitch_list_decisions` | read | `readOnlyHint: true` | Paginierte Liste vergangener Entscheidungen, mit Filter (Zeit/Verifier/Verdikt). |
 | `mitch_explain_denial` | read | `readOnlyHint: true` | Reason-Codes → menschenlesbare Erklärung (i18n, DSGVO-tauglich). |
-| `mitch_anchor_status` | read | `readOnlyHint: true` | Merkle-Anchor-Status zu einem `decision_id` (an `@mitch/anchor-service`). |
+| `mitch_anchor_status` | read | `readOnlyHint: true` | Merkle-Anchor-Status zu einem `decision_id` (an `@askmi/anchor-service`). |
 
 **Bewusst nicht exponiert (v1)**: alles, was Roh-Credentials oder
 Schlüsselmaterial berührt. Keine `get_credential`, kein `sign_*`, kein
@@ -111,7 +111,7 @@ sieht nur Verdikte und signierte Aussagen.
   Fehler ausschließlich als strukturierte Reason-Codes
   (`ERR_LOGICAL_IMPOSSIBILITY`, `ERR_FUTURE_ISSUANCE`, …).
 - **Audit-Trail bleibt lokal**: jeder Tool-Call wird im immutable Audit-Log
-  (`@mitch/audit-log`) festgehalten, der Agent erhält nur die `decision_id`.
+  (`@askmi/audit-log`) festgehalten, der Agent erhält nur die `decision_id`.
 - **Rate-Limiting auf Tool-Ebene**: nutzt den vorhandenen Rate-Limiter aus
   `policy-engine/src/rate-limiter.ts`. Per-Agent + per-Verifier-Caps.
 - **Kein stdout-Logging**: in stdio-Mode geht jedes Logging ausschließlich
@@ -125,7 +125,7 @@ Neues Workspace-Package gemäß miTch-Konvention:
 
 ```
 src/packages/mcp-server/
-├── package.json                # name: "@mitch/mcp-server", bin: "mitch-mcp"
+├── package.json                # name: "@askmi/mcp-server", bin: "mitch-mcp"
 ├── tsconfig.json
 ├── src/
 │   ├── index.ts                # Server-Entry: Transport + Tool-Registrierung
@@ -152,12 +152,12 @@ Dependencies (extern):
 - `zod` (für Input-Schemas)
 
 Dependencies (intern, workspace:*):
-- `@mitch/policy-engine`
-- `@mitch/oid4vp-verifier`
+- `@askmi/policy-engine`
+- `@askmi/oid4vp-verifier`
 - `@askmi/revocation-statuslist`
-- `@mitch/audit-log`
+- `@askmi/audit-log`
 - `@askmi/shared-types`
-- `@mitch/anchor-service` (optional, für `anchor_status`)
+- `@askmi/anchor-service` (optional, für `anchor_status`)
 
 ## 8. Test- und Release-Strategie
 

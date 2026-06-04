@@ -35,7 +35,7 @@ recovery RC remains stable and the audit-log metadata contract is reconciled.
 
 ### Task 2.1: Data Aggregation Engine
 - **Target:** `src/packages/data-flow/src/InsightAggregator.ts` (New File), `src/packages/data-flow/src/summary.ts` (Update), `src/packages/data-flow/src/index.ts` (Update)
-- **Action:** Implement the `InsightAggregator` class as a pure function that takes `AuditLogEntry[]` and returns `InsightMetrics`. Do NOT touch `@mitch/wallet-core`.
+- **Action:** Implement the `InsightAggregator` class as a pure function that takes `AuditLogEntry[]` and returns `InsightMetrics`. Do NOT touch `@askmi/wallet-core`.
 - **Acceptance Criteria:** Aggregator correctly calculates "Data Value Retained" based on non-disclosed claims and builds an exposure heatmap array.
 
 ### Task 2.2: Sovereignty Center UI Component

@@ -20,7 +20,7 @@ function makeEntry(
 
 describe('buildConsentManagerViewModel', () => {
   const request: VerifierRequest = {
-    verifierId: 'did:mitch:verifier-liquor-store',
+    verifierId: 'did:askmi:verifier-liquor-store',
     requestedClaims: ['age', 'name', 'address'],
     requestedProvenClaims: ['age >= 18'],
   };
@@ -33,7 +33,7 @@ describe('buildConsentManagerViewModel', () => {
       verdict: 'PROMPT',
       request_hash: 'req-hash',
       policy_hash: 'policy-hash',
-      verifier_did: 'did:mitch:verifier-liquor-store',
+      verifier_did: 'did:askmi:verifier-liquor-store',
       authorized_requirements: [
         {
           credential_type: 'AgeCredential',
@@ -66,7 +66,7 @@ describe('buildConsentManagerViewModel', () => {
 
   const consentReceipt = {
     id: 'consent-001',
-    verifier: 'did:mitch:verifier-liquor-store',
+    verifier: 'did:askmi:verifier-liquor-store',
     purpose: 'Age verification',
     claimsShared: ['age'],
     timestamp: '2026-05-21T10:00:01.000Z',

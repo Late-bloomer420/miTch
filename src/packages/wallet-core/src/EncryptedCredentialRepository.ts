@@ -1,9 +1,9 @@
-import { SecureStorage } from '@mitch/secure-storage';
+import { SecureStorage } from '@askmi/secure-storage';
 import type { StoredCredentialMetadata } from '@askmi/shared-types';
 import type { ICredentialRepository } from './ICredentialRepository';
 
 /**
- * Concrete implementation of ICredentialRepository using @mitch/secure-storage.
+ * Concrete implementation of ICredentialRepository using @askmi/secure-storage.
  */
 export class EncryptedCredentialRepository implements ICredentialRepository {
     constructor(private storage: SecureStorage) {}

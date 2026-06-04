@@ -1,7 +1,7 @@
 import type { DataFlowTransaction } from './types';
 
 /**
- * Plain-language summary of what miTch did for the user in a transaction.
+ * Plain-language summary of what AskMI did for the user in a transaction.
  * Derived purely from existing DataFlowTransaction fields — no speculation.
  */
 export interface TransactionSummary {

@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/secure-memory",
+    "name": "@askmi/secure-memory",
     "version": "0.0.1",
     "main": "src/ephemeral_key.ts",
     "scripts": {

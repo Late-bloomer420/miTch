@@ -15,7 +15,7 @@ beforeAll(() => {
 function makeRequest(overrides: Partial<ConsentRequest> = {}): ConsentRequest {
     return {
         requestId: 'req-1',
-        verifier: { id: 'did:mitch:verifier-x', displayName: "Joe's" },
+        verifier: { id: 'did:askmi:verifier-x', displayName: "Joe's" },
         purpose: 'Age verification',
         claims: [
             { key: 'age', policyState: 'requested' },

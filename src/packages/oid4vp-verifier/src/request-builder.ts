@@ -3,7 +3,7 @@
  */
 
 import { randomBytes } from 'crypto';
-import type { AuthorizationRequest, PresentationDefinition } from '@mitch/oid4vp';
+import type { AuthorizationRequest, PresentationDefinition } from '@askmi/oid4vp';
 
 export interface RequestBuilderOptions {
     clientId: string;

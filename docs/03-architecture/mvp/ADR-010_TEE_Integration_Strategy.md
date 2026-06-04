@@ -18,7 +18,7 @@ EUDI-CIR und BSI TR-02102 verlangen nachweisbaren Schutz des Root-Keys (Mensch =
 - **Migration Path**: Bestehende Software-Wallets können per ZKP-Proof auf TEE migrieren (kein PII-Transfer)
 
 **Technische Umsetzung:**
-- `@mitch/secure-memory` erweitert um `TEE-awareKeyStorage` (WebCrypto + platform APIs)
+- `@askmi/secure-memory` erweitert um `TEE-awareKeyStorage` (WebCrypto + platform APIs)
 - Policy-Engine prüft `isTEEProtected()` vor jeder Operation → Fail-Closed bei schwachem Storage
 - Crypto-Shredding: TEE-spezifisches Wipe (SecureElement.eraseKey)
 

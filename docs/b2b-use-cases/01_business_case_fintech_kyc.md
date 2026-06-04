@@ -2,7 +2,7 @@
 
 Stand: 2026-05-23
 Vertical: Banking · Neobanks · PSD2 AISPs · Crypto exchanges
-Status: Concept (verifier-side integration via `@mitch/verifier-sdk`)
+Status: Concept (verifier-side integration via `@askmi/verifier-sdk`)
 
 ## 1) Positioning
 
@@ -41,7 +41,7 @@ aml_risk_band ∈ {low, medium} AND jurisdiction_eq=EU`) with a stated purpose.
    bank-issued credential.
 3. The wallet returns a signed `DecisionProofPayload` — booleans + a binding to the verifier
    DID and nonce. No raw attributes leave the device.
-4. The relying party verifies the proof with `@mitch/verifier-sdk` and logs a WORM receipt
+4. The relying party verifies the proof with `@askmi/verifier-sdk` and logs a WORM receipt
    for audit. Stale or revoked source credentials fail closed (`DENY_CREDENTIAL_TOO_OLD`,
    `DENY_CREDENTIAL_REVOKED`).
 
@@ -51,7 +51,7 @@ aml_risk_band ∈ {low, medium} AND jurisdiction_eq=EU`) with a stated purpose.
 - **6AMLD + EBA/GL/2022/15:** risk-based, ongoing due diligence permits proof of a prior check
   rather than mandatory re-collection.
 - **eIDAS 2.0 / EUDIW rollout (2025–2026):** bank-issued attestations become a wallet attribute,
-  giving miTch a standards-based issuance path (`@mitch/oid4vci`, SD-JWT VC).
+  giving miTch a standards-based issuance path (`@askmi/oid4vci`, SD-JWT VC).
 - **Crypto Travel Rule (TFR):** exchanges need counterparty assurance above €1,000 without
   exchanging full customer dossiers.
 
@@ -66,8 +66,8 @@ aml_risk_band ∈ {low, medium} AND jurisdiction_eq=EU`) with a stated purpose.
 
 - Predicate set: `kyc_completed_within_24m` (mandatory), `aml_risk_band` (`in` low/medium),
   `sanctions_clear`, `jurisdiction_eq=EU`, `age_gte=18`.
-- 1 issuing-bank integration (SD-JWT VC over `@mitch/oid4vci`).
-- 2 relying-party pilots verifying via `@mitch/verifier-sdk` with replay-check hook.
+- 1 issuing-bank integration (SD-JWT VC over `@askmi/oid4vci`).
+- 2 relying-party pilots verifying via `@askmi/verifier-sdk` with replay-check hook.
 - Fail-closed deny codes + WORM receipts (PII-minimal, anti-oracle verifier messages).
 
 ## 7) Monetization options

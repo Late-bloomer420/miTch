@@ -1,12 +1,20 @@
-# miTch — Session History
+# AskMI — Session History
 
 Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener Sessions.
 
 ---
 
+### Session 16 — Full AskMI Rebrand (2026-06-04)
+- **Goal:** Complete the partial npm-scope rename into a full active workspace rebrand.
+- **Change:** Renamed all active workspace package names, imports, aliases, scripts, lockfile entries, demo trust fixtures, local `*.askmi.demo` identifiers, and app-facing product strings to AskMI / `@askmi/*`.
+- **Compatibility:** Added targeted `MITCH_*` fallback support for existing environment variables and popup bridge messages while making `ASKMI_*` the primary runtime naming.
+- **Fix:** Renamed `MitchPolicyEvaluator` to `AskmiPolicyEvaluator` and aligned the wallet audience binding to `askmi-wallet-pwa`.
+- **Validation:** `@askmi/oid4vp` tests/build, verifier backend tests/build, wallet-pwa tests/build, issuer-mock test/build, policy-engine tests, shared-crypto tests, verifier-sdk build, and mcp-server build passed locally.
+- **Deliverable:** [`docs/NPM_SCOPE_RENAME_ASKMI.md`](NPM_SCOPE_RENAME_ASKMI.md)
+
 ### Session 15 — Sprint 1A Pilot Flow Rerun (2026-06-04)
 - **Goal:** Re-ran the local issuer/verifier/wallet pilot flow as runtime truth after Sprint 0 documentation alignment.
-- **Finding:** Local EUDI LOTL fixture did not trust the runtime issuer URI `https://issuer.mitch.demo`, causing all `/wallet-present` scenarios to fail with `ENTITY_NOT_IN_TSL`.
+- **Finding:** Local EUDI LOTL fixture did not trust the runtime issuer URI `https://issuer.askmi.demo`, causing all `/wallet-present` scenarios to fail with `ENTITY_NOT_IN_TSL`.
 - **Finding:** Revoked demo credentials used the external placeholder `https://example.com/status-list/1`, causing fail-closed `STATUS_SOURCE_UNAVAILABLE` instead of a real local revocation decision.
 - **Fix:** Added the runtime issuer URI to the local LOTL fixture and added a local issuer mock StatusList2021 endpoint at `/status-list/1`.
 - **Fix:** Made the demo SD-JWT presentation builder accept a local `statusListUri`, wired by verifier backend and wallet PWA.
@@ -16,7 +24,7 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 ### Session 14 — Repo Truth Alignment & npm Scope Reality (2026-06-04)
 - **Repo hygiene:** Reconfirmed `master` as the clean integration ground. Old/local/agent-generated work should be reviewed, secret-scanned, and integrated via small targeted commits or cherry-picks, not blind merges.
 - **Second-PC rescue review:** Inspected `rescue/second-pc-2026-06-04`; kept it as rescue evidence and re-derived the useful npm scope changes fresh on current `master`.
-- **npm scope alignment:** PR #66 aligned the three published packages to npm reality: `@askmi/shared-types`, `@askmi/shared-crypto`, and `@askmi/revocation-statuslist`. All other internal `@mitch/*` packages keep their names.
+- **npm scope alignment:** PR #66 aligned the three published packages to npm reality: `@askmi/shared-types`, `@askmi/shared-crypto`, and `@askmi/revocation-statuslist`. All other internal `@askmi/*` packages keep their names.
 - **README update:** Documented that miTch remains the project name while public npm packages use `@askmi/*`.
 - **Validation:** Targeted package tests passed before PR merge; post-merge `master` checks passed: ci-security, Deploy GitHub Pages, miTch CI/CD Pipeline, and CodeQL.
 - **Sprint 0 discovery:** Started docs/current-state alignment work to resolve drift between `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, and agent-facing files.
@@ -46,7 +54,7 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 - phase0-security: IndexedDB test fixes, EIDASComplianceChecker tests (28 tests)
 - ESLint: 26 → 0 problems (unused imports, stale directives, test any-casts → precise types)
 - response-verifier tests + verifier-browser vitest config
-- fix(wallet-pwa): `@mitch/oid4vp` alias in vite.config.ts + vitest.config.ts → 39/39 turbo, 60/60 wallet-pwa tests
+- fix(wallet-pwa): `@askmi/oid4vp` alias in vite.config.ts + vitest.config.ts → 39/39 turbo, 60/60 wallet-pwa tests
 - **Deferred to REFACTORING_ROADMAP.md:** F-04 (EphemeralKey), F-07 (claim-level crypto), F-14 (key rotation), F-16 (WalletService split)
 
 #### Bekannte Altlasten

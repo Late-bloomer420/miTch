@@ -1,5 +1,5 @@
 /**
- * @module @mitch/policy-engine/deny-reason-codes
+ * @module @askmi/policy-engine/deny-reason-codes
  *
  * Anti-Oracle Deny Reason Code System
  *

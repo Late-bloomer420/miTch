@@ -14,7 +14,7 @@ export class VerifierClient {
     public async generateSession(
         _baseUrl: string = 'http://localhost:3000',
         _reason: string = 'Age Verification',
-        _verifierDid: string = 'did:mitch:verifier-liquor-store'
+        _verifierDid: string = 'did:askmi:verifier-liquor-store'
     ): Promise<VerifierSession> {
         // 1. Generate Ephemeral Key Pair (RSA-OAEP-256)
         const keyPair = await window.crypto.subtle.generateKey(

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { CommonPredicates, evaluatePredicates } from '@mitch/predicates';
+import { CommonPredicates, evaluatePredicates } from '@askmi/predicates';
 import { signData } from '@askmi/shared-crypto';
 
 const mocks = vi.hoisted(() => ({
@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
     }
 }));
 
-vi.mock('@mitch/verifier-sdk', () => ({
+vi.mock('@askmi/verifier-sdk', () => ({
     VerifierSDK: class {
         async verifyPresentation() {
             return mocks.verifierResult;
@@ -29,7 +29,7 @@ vi.mock('@mitch/verifier-sdk', () => ({
 
 beforeEach(() => {
     vi.resetModules();
-    process.env.MITCH_TEST_MODE = '1';
+    process.env.ASKMI_TEST_MODE = '1';
     delete process.env.TRUST_PROXY;
     delete process.env.TRUST_PROXY_HOPS;
     mocks.verifierResult.vp = {
@@ -78,7 +78,7 @@ describe('POST /present rate-limit headers', () => {
         );
         const publicKeyJwk = await globalThis.crypto.subtle.exportKey('jwk', proofKeys.publicKey);
         const predicateRequest = {
-            verifierDid: 'did:mitch:verifier-liquor-store',
+            verifierDid: 'did:askmi:verifier-liquor-store',
             nonce: 'nonce-current-predicate-shape',
             purpose: 'Age Verification',
             timestamp: new Date().toISOString(),

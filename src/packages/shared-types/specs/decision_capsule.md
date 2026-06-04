@@ -6,7 +6,7 @@
 
 ## 1. Introduction
 
-The **Decision Capsule** is the authoritative, cryptographically-bound output of the miTch Policy Engine. It serves as the single source of truth for what the user (or their policy) has consented to.
+The **Decision Capsule** is the authoritative, cryptographically-bound output of the AskMI Policy Engine. It serves as the single source of truth for what the user (or their policy) has consented to.
 
 ## 2. Normative Rules for Wallet Implementers
 

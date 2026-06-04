@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  miTch — E2E Demo Start Script
+#  AskMI — E2E Demo Start Script
 #  Startet alle Services parallel mit farbigem Log-Output
 #  Usage:  bash dev-demo.sh
 #  Stop:   Ctrl+C  (killt alle Child-Prozesse sauber)
@@ -29,7 +29,7 @@ PIDS=()
 
 cleanup() {
   echo ""
-  echo -e "${BOLD}${RED}⛔  Stopping all miTch services...${RESET}"
+  echo -e "${BOLD}${RED}⛔  Stopping all AskMI services...${RESET}"
   for pid in "${PIDS[@]}"; do
     if kill -0 "$pid" 2>/dev/null; then
       kill "$pid" 2>/dev/null && echo -e "   killed PID $pid"
@@ -62,7 +62,7 @@ start_service() {
 clear
 echo -e "${BOLD}${BLUE}"
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║           miTch — Personal Trust Hub                ║"
+echo "║           AskMI — Personal Trust Hub                ║"
 echo "║                  E2E Demo Mode                      ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${RESET}"
@@ -81,13 +81,13 @@ if ! command -v pnpm &>/dev/null; then
 fi
 
 # ── Services starten ─────────────────────────────────────────
-start_service "Issuer-Mock    " "$COLOR_ISSUER"           "@mitch/issuer-mock"   "3005"
+start_service "Issuer-Mock    " "$COLOR_ISSUER"           "@askmi/issuer-mock"   "3005"
 sleep 0.5
 
 start_service "Verifier-Backend" "$COLOR_VERIFIER"        "verifier-backend"     "3004"
 sleep 0.5
 
-start_service "Wallet-PWA     " "$COLOR_WALLET"           "@mitch/wallet-pwa"    "5173"
+start_service "Wallet-PWA     " "$COLOR_WALLET"           "@askmi/wallet-pwa"    "5173"
 sleep 0.5
 
 # Verifier-Frontend (optional — eigenes package.json in src/apps/verifier-demo/frontend)
@@ -130,7 +130,7 @@ wait_for_service "Wallet-PWA"       "http://localhost:5173/"       "$COLOR_WALLE
 # ── Status-Übersicht ─────────────────────────────────────────
 echo ""
 echo -e "${BOLD}${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-echo -e "${BOLD}🚀  miTch Services starting up:${RESET}"
+echo -e "${BOLD}🚀  AskMI Services starting up:${RESET}"
 echo ""
 echo -e "  ${COLOR_ISSUER}●${RESET}  Issuer-Mock        →  http://localhost:3005"
 echo -e "  ${COLOR_VERIFIER}●${RESET}  Verifier-Backend   →  http://localhost:3004"

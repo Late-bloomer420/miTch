@@ -87,7 +87,7 @@ define where QA evidence belongs or how it relates to `STATE.md`,
 
 Observed drift examples:
 
-- `MIT-10-demo-evidence.md` is dated 2026-05-25 and mentions 26 `@mitch/*`
+- `MIT-10-demo-evidence.md` is dated 2026-05-25 and mentions 26 `@askmi/*`
   packages and prebuilt `dist/`.
 - `WALLET_RECOVERY_RC_2026-06-04.md` is newer, references commit `f2a6ae1`, and
   records `pnpm test` as 45/45 tasks plus 5174/3004/3005 as canonical ports.
@@ -132,9 +132,9 @@ without an explicit separate decision.
 5. Move or clearly mark stale session task files such as `CLAUDE_TASKS.md` as
    historical if they are no longer active.
 6. Complete narrow Scope B docs cleanup for only:
-   - `@mitch/shared-types` -> `@askmi/shared-types`
-   - `@mitch/shared-crypto` -> `@askmi/shared-crypto`
-   - `@mitch/revocation-statuslist` -> `@askmi/revocation-statuslist`
+   - `@askmi/shared-types` -> `@askmi/shared-types`
+   - `@askmi/shared-crypto` -> `@askmi/shared-crypto`
+   - `@askmi/revocation-statuslist` -> `@askmi/revocation-statuslist`
 7. Add or update a short "where things go" rule:
    - operational status
    - backlog/task tracking
@@ -148,7 +148,7 @@ without an explicit separate decision.
 
 - Feature work such as Identity Firewall, Proof Randomization, or partner
   onboarding.
-- Full `@mitch/*` -> `@askmi/*` rebrand.
+- Full `@askmi/*` -> `@askmi/*` rebrand.
 - Deleting branches or old checkouts.
 - Editing private OpenClaw workspace bootstrap/reference files as part of the
   repo PR.

@@ -3,7 +3,7 @@
 **Date:** 2026-03-04  
 **Scope:** Single end-to-end pilot flow — Happy path + failure scenarios  
 **Codebase state:** consolidation branch  
-**Deny code source:** `@mitch/policy-engine/deny-reason-codes.ts` (31 codes, 4 verifier buckets)
+**Deny code source:** `@askmi/policy-engine/deny-reason-codes.ts` (31 codes, 4 verifier buckets)
 
 ---
 

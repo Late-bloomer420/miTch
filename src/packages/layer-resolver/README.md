@@ -1,12 +1,12 @@
-# @mitch/layer-resolver
+# @askmi/layer-resolver
 
 **Protection Layer Resolution and Enforcement**
 
-This package provides the core layer enumeration and utilities for miTch's layer-based protection model.
+This package provides the core layer enumeration and utilities for AskMI's layer-based protection model.
 
 ## Protection Layers
 
-miTch implements three protection layers in ascending order:
+AskMI implements three protection layers in ascending order:
 
 ### Layer 0: WELT (World) - Universal Principles
 Global rules that apply to ALL data subjects and services.
@@ -61,7 +61,7 @@ import {
   getInheritedLayers,
   includesLayer,
   getMinimumLayerForData
-} from '@mitch/layer-resolver';
+} from '@askmi/layer-resolver';
 
 // Determine required layer for data type
 const layer = getMinimumLayerForData('healthRecord');
@@ -80,8 +80,8 @@ if (includesLayer(ProtectionLayer.VULNERABLE, ProtectionLayer.GRUNDVERSORGUNG)) 
 ## Integration with Policy Engine
 
 ```typescript
-import { PolicyEngine } from '@mitch/policy-engine';
-import { ProtectionLayer, getMinimumLayerForData } from '@mitch/layer-resolver';
+import { PolicyEngine } from '@askmi/policy-engine';
+import { ProtectionLayer, getMinimumLayerForData } from '@askmi/layer-resolver';
 
 const engine = new PolicyEngine();
 
@@ -115,4 +115,4 @@ Determines minimum required layer for a given data type.
 
 ## License
 
-MIT - Part of miTch project
+MIT - Part of AskMI project

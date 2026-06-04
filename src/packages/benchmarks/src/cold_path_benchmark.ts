@@ -138,7 +138,7 @@ async function benchmarkSigning(): Promise<number> {
 
 async function runBenchmarks() {
     console.log('╔══════════════════════════════════════════════════════════════╗');
-    console.log('║       MITCH COLD-PATH BENCHMARK (ZKQF Performance Budget)    ║');
+    console.log('║       AskMI COLD-PATH BENCHMARK (ZKQF Performance Budget)    ║');
     console.log('╚══════════════════════════════════════════════════════════════╝');
     console.log('');
 

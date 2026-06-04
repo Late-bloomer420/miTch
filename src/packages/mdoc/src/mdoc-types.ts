@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc/mdoc-types
+ * @module @askmi/mdoc/mdoc-types
  *
  * ISO 18013-5 type definitions for mdoc (Mobile Document) structures.
  * Based on publicly available ISO 18013-5:2021 references and EUDI ARF.

@@ -1,5 +1,5 @@
 /**
- * @module @mitch/secure-storage
+ * @module @askmi/secure-storage
  *
  * Secure Storage Module for Verifiable Credentials
  *

@@ -8,7 +8,7 @@ import type {
     AuthorizationResponse,
     PresentationSubmission,
     VerifiablePresentation,
-} from '@mitch/oid4vp';
+} from '@askmi/oid4vp';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 

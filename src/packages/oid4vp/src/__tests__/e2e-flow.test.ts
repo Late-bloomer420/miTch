@@ -20,7 +20,7 @@ import { statusResolver } from '@askmi/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-const VERIFIER_CLIENT_ID = 'did:mitch:verifier-test';
+const VERIFIER_CLIENT_ID = 'did:askmi:verifier-test';
 const REDIRECT_URI = 'https://verifier.mitch.test/present';
 const ISSUER_DID = 'https://issuer.mitch.test';
 
@@ -290,7 +290,7 @@ describe('T-01: OID4VP E2E — Wrong Audience', () => {
         });
 
         // Validate with a DIFFERENT verifier client_id
-        const wrongRequest = { ...request, client_id: 'did:mitch:evil-verifier' };
+        const wrongRequest = { ...request, client_id: 'did:askmi:evil-verifier' };
         const validation = await validateSDJWTPresentation({
             vpTokenString,
             presentationSubmission,

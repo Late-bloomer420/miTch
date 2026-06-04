@@ -1,7 +1,7 @@
 import express, { type Express } from 'express';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
-import { VerifierSDK } from '@mitch/verifier-sdk';
+import { VerifierSDK } from '@askmi/verifier-sdk';
 import { NonceStore } from './nonce-store';
 import { FixedWindowRateLimiter } from './rate-limiter';
 import { getRequesterId } from './requester-id';
@@ -11,7 +11,7 @@ import {
     buildAllowedPredicateSet,
     type PredicateRequest,
     type Predicate
-} from '@mitch/predicates';
+} from '@askmi/predicates';
 import { verifyData } from '@askmi/shared-crypto';
 import {
     buildOID4VPRequest,
@@ -20,7 +20,7 @@ import {
     buildSessionCleanup,
     SCENARIO_VCT,
     SCENARIO_LABELS,
-} from '@mitch/oid4vp';
+} from '@askmi/oid4vp';
 import { trustListResolver } from '@askmi/shared-crypto';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
@@ -29,11 +29,11 @@ import path from 'path';
 export const app: Express = express();
 
 // Initialize Trust List Resolver
-const MITCH_TSL_URL = process.env.MITCH_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json';
-trustListResolver.setUrl(MITCH_TSL_URL);
+const ASKMI_TSL_URL = process.env.ASKMI_TSL_URL || process.env.MITCH_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json';
+trustListResolver.setUrl(ASKMI_TSL_URL);
 const ISSUER_BASE_URL = process.env.ISSUER_BASE_URL || 'http://localhost:3005';
 
-const isTestMode = process.env.MITCH_TEST_MODE === '1';
+const isTestMode = process.env.ASKMI_TEST_MODE === '1' || process.env.MITCH_TEST_MODE === '1';
 /**
  * G-12: Production-safe trust proxy configuration
  */
@@ -136,7 +136,7 @@ app.get('/status', (req, res) => {
     res.json({
         status: lastVerificationStatus,
         issuer: lastIssuer,
-        verifierDid: 'did:mitch:verifier-liquor-store',
+        verifierDid: 'did:askmi:verifier-liquor-store',
         disclosedClaims: lastDisclosedClaims,
         consentReceipt: lastConsentReceipt,
     });
@@ -152,7 +152,7 @@ app.post('/notify-scan', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.type('text/plain').send('miTch Verifier Backend OK.');
+    res.type('text/plain').send('AskMI Verifier Backend OK.');
 });
 
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
@@ -161,7 +161,7 @@ app.get('/authorize', (req, res) => {
     const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
     try {
         const { request, nonce } = buildOID4VPRequest({
-            verifierClientId: 'did:mitch:verifier-liquor-store',
+            verifierClientId: 'did:askmi:verifier-liquor-store',
             redirectUri: `${baseUrl}/oid4vp-present`,
             scenarioId,
             clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
@@ -178,16 +178,16 @@ app.post('/wallet-present', async (req, res) => {
     const scenarioId: string = (req.body as { scenarioId?: string }).scenarioId ?? 'liquor-store';
     try {
         const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
-        const { request } = buildOID4VPRequest({ verifierClientId: 'did:mitch:verifier-liquor-store', redirectUri: `${baseUrl}/present`, scenarioId, clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId });
+        const { request } = buildOID4VPRequest({ verifierClientId: 'did:askmi:verifier-liquor-store', redirectUri: `${baseUrl}/present`, scenarioId, clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId });
         const issuerKeys = await globalThis.crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
         const holderKeys = await globalThis.crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
         const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
-        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({ request, issuerPrivateKey: issuerKeys.privateKey, holderKeyPair: holderKeys, claims, vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential', issuerDid: 'https://issuer.mitch.demo', revoked: scenarioId === 'revoked', statusListUri: `${ISSUER_BASE_URL}/status-list/1` });
+        const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation({ request, issuerPrivateKey: issuerKeys.privateKey, holderKeyPair: holderKeys, claims, vct: SCENARIO_VCT[scenarioId] ?? 'https://askmi.demo/vct/age-credential', issuerDid: 'https://issuer.askmi.demo', revoked: scenarioId === 'revoked', statusListUri: `${ISSUER_BASE_URL}/status-list/1` });
         const validation = await validateSDJWTPresentation({ vpTokenString, presentationSubmission, request, issuerPublicKey: issuerKeys.publicKey, checkRevocation: true, checkTrust: true });
         const { consentReceipt } = buildSessionCleanup({ request, disclosedClaims: validation.disclosedClaims ?? disclosedClaims, outcome: validation.ok ? 'SUCCESS' : 'DENIED' });
         if (validation.ok) {
             lastVerificationStatus = 'VERIFIED';
-            lastIssuer = 'https://issuer.mitch.demo';
+            lastIssuer = 'https://issuer.askmi.demo';
             lastDisclosedClaims = validation.disclosedClaims ?? null;
             lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
             return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
@@ -210,7 +210,7 @@ app.post('/oid4vp-present', async (req, res) => {
         if (!body.issuer_jwk) return res.status(400).json({ ok: false, error: 'Missing issuer_jwk' });
         const issuerPublicKey = await globalThis.crypto.subtle.importKey('jwk', body.issuer_jwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);
         const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
-        const reconstructedRequest = { response_type: 'vp_token' as const, client_id: 'did:mitch:verifier-liquor-store', redirect_uri: `${baseUrl}/oid4vp-present`, nonce: '', presentation_definition: { id: 'reconstructed', input_descriptors: [] }, response_mode: 'direct_post' as const, state: body.state };
+        const reconstructedRequest = { response_type: 'vp_token' as const, client_id: 'did:askmi:verifier-liquor-store', redirect_uri: `${baseUrl}/oid4vp-present`, nonce: '', presentation_definition: { id: 'reconstructed', input_descriptors: [] }, response_mode: 'direct_post' as const, state: body.state };
         const vpParts = body.vp_token.split('~');
         const kbJwtPart = vpParts[vpParts.length - 1];
         if (kbJwtPart) {
@@ -224,7 +224,7 @@ app.post('/oid4vp-present', async (req, res) => {
         const { consentReceipt } = buildSessionCleanup({ request: reconstructedRequest, disclosedClaims: validation.disclosedClaims ?? {}, outcome: validation.ok ? 'SUCCESS' : 'DENIED' });
         if (validation.ok) {
             lastVerificationStatus = 'VERIFIED';
-            lastIssuer = 'https://issuer.mitch.demo';
+            lastIssuer = 'https://issuer.askmi.demo';
             lastDisclosedClaims = validation.disclosedClaims ?? null;
             lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
             return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
@@ -246,7 +246,7 @@ app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
     const keys = await getVerifierKeys();
     const publicKeyJwk = await globalThis.crypto.subtle.exportKey('jwk', keys.publicKey);
     const baseUrl = process.env.VERIFIER_BASE_URL || `${req.protocol}://${req.get('host')}`;
-    res.json({ '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'], id: 'did:mitch:verifier-liquor-store', verificationMethod: [{ id: 'did:mitch:verifier-liquor-store#key-1', type: 'JsonWebKey2020', controller: 'did:mitch:verifier-liquor-store', publicKeyJwk }], service: [{ id: 'did:mitch:verifier-liquor-store#present', type: 'VerifierService', serviceEndpoint: `${baseUrl}/present` }] });
+    res.json({ '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'], id: 'did:askmi:verifier-liquor-store', verificationMethod: [{ id: 'did:askmi:verifier-liquor-store#key-1', type: 'JsonWebKey2020', controller: 'did:askmi:verifier-liquor-store', publicKeyJwk }], service: [{ id: 'did:askmi:verifier-liquor-store#present', type: 'VerifierService', serviceEndpoint: `${baseUrl}/present` }] });
 });
 
 app.post('/present', presentRouteLimiter, async (req, res) => {
@@ -261,7 +261,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
             return res.status(429).json({ ok: false, error: 'RATE_LIMIT_EXCEEDED' });
         }
         const keys = await getVerifierKeys();
-        const sdk = new VerifierSDK({ privateKey: keys.privateKey, verifierDid: 'did:mitch:verifier-liquor-store' });
+        const sdk = new VerifierSDK({ privateKey: keys.privateKey, verifierDid: 'did:askmi:verifier-liquor-store' });
         const result = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
         const presentation = result.vp;
         const firstPres = (presentation as any).presentations?.[0];
@@ -269,7 +269,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         const zkpProof = (firstPres?.zkp_proofs)?.[agePredicateId];
         let isVerified = false;
         if (zkpProof) {
-            const expectedRequest: PredicateRequest = { verifierDid: 'did:mitch:verifier-liquor-store', nonce: zkpProof.proof.binding.nonce, purpose: 'Age Verification', timestamp: zkpProof.proof.evaluatedAt, predicates: [CommonPredicates.ageAtLeast(18)] };
+            const expectedRequest: PredicateRequest = { verifierDid: 'did:askmi:verifier-liquor-store', nonce: zkpProof.proof.binding.nonce, purpose: 'Age Verification', timestamp: zkpProof.proof.evaluatedAt, predicates: [CommonPredicates.ageAtLeast(18)] };
             const allowedHashes = await buildAllowedPredicateSet(expectedRequest.predicates as Predicate[]);
             const verifyFn = async (data: string, sig: string) => {
                 const key = await globalThis.crypto.subtle.importKey('jwk', zkpProof.publicKeyJwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);

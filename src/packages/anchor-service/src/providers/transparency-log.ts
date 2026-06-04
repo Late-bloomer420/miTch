@@ -1,5 +1,5 @@
 /**
- * @module @mitch/anchor-service/providers/transparency-log
+ * @module @askmi/anchor-service/providers/transparency-log
  *
  * G-09: L2/Blockchain anchoring stub.
  *

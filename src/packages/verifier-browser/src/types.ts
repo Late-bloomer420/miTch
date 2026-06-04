@@ -1,5 +1,5 @@
 /**
- * @module @mitch/verifier-browser/types
+ * @module @askmi/verifier-browser/types
  * 
  * Type definitions for Browser-Only Verifier SDK
  * Designed for zero-backend integration (e.g., static HTML pages)

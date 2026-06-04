@@ -23,8 +23,8 @@ const MOCK_TSL = {
     id: 'pilot-smoke-tsl',
     version: '1.0.0',
     validUntil: '2030-01-01T00:00:00Z',
-    issuers: ['https://issuer.mitch.demo'],
-    verifiers: ['did:mitch:verifier-liquor-store'],
+    issuers: ['https://issuer.askmi.demo'],
+    verifiers: ['did:askmi:verifier-liquor-store'],
 };
 
 // StatusList2021 fixture with bit index 42 set (the index demo-flow embeds for
@@ -36,7 +36,7 @@ function buildRevokedStatusList() {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         id: 'http://localhost:3005/status-list/1',
         type: ['VerifiableCredential', 'StatusList2021Credential'],
-        issuer: 'https://issuer.mitch.demo',
+        issuer: 'https://issuer.askmi.demo',
         issuanceDate: new Date().toISOString(),
         credentialSubject: {
             id: 'http://localhost:3005/status-list/1#list',
@@ -72,7 +72,7 @@ const DISCLOSURE_MATRIX: Record<string, { disclosed: string[]; withheld: string[
 describe('/wallet-present pilot flow smoke test', () => {
     beforeAll(() => {
         // Avoid file I/O for verifier keys (see app.ts getVerifierKeys).
-        process.env.MITCH_TEST_MODE = '1';
+        process.env.ASKMI_TEST_MODE = '1';
 
         // Trust-list resolver answers with the demo issuer/verifier for every scenario.
         const tslFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => MOCK_TSL });

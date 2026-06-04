@@ -1,5 +1,5 @@
 /**
- * Shared Type Definitions for miTch PoC
+ * Shared Type Definitions for AskMI PoC
  * Barrel export for all type modules
  */
 

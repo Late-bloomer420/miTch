@@ -12,21 +12,21 @@ describe('VerifierDirectClient', () => {
   let verifier: VerifierDirectClient;
 
   beforeEach(async () => {
-    verifier = new VerifierDirectClient('did:mitch:verifier-liquor-store');
+    verifier = new VerifierDirectClient('did:askmi:verifier-liquor-store');
     await verifier.initialize();
   });
 
   it('initializes without throwing', async () => {
-    const v = new VerifierDirectClient('did:mitch:test');
+    const v = new VerifierDirectClient('did:askmi:test');
     await expect(v.initialize()).resolves.toBeUndefined();
   });
 
-  it('generates a deep link with mitch:// scheme', async () => {
+  it('generates a deep link with askmi:// scheme', async () => {
     const deepLink = await verifier.generateRequest(
       ['AgeCredential'],
       'https://liquor-store.com/api/verify',
     );
-    expect(deepLink).toMatch(/^mitch:\/\/present\?request=/);
+    expect(deepLink).toMatch(/^askmi:\/\/present\?request=/);
   });
 
   it('deep link contains a JWT with 3 parts', async () => {
@@ -51,7 +51,7 @@ describe('VerifierDirectClient', () => {
     const [, encodedPayload] = jwt.split('.');
     const payload = JSON.parse(base64urlDecode(encodedPayload));
 
-    expect(payload.verifierDID).toBe('did:mitch:verifier-liquor-store');
+    expect(payload.verifierDID).toBe('did:askmi:verifier-liquor-store');
     expect(payload.credentialTypes).toEqual(['AgeCredential', 'NameCredential']);
     expect(payload.callbackURL).toBe('https://example.com/verify');
     expect(payload.challenge).toBeTruthy();
@@ -74,7 +74,7 @@ describe('VerifierDirectClient', () => {
   });
 
   it('throws if not initialized when generating request', async () => {
-    const uninit = new VerifierDirectClient('did:mitch:test');
+    const uninit = new VerifierDirectClient('did:askmi:test');
     await expect(
       uninit.generateRequest(['AgeCredential'], 'https://x.com/v'),
     ).rejects.toThrow('Verifier not initialized');
@@ -102,7 +102,7 @@ describe('WalletDirectProtocol', () => {
 
   beforeEach(async () => {
     wallet = new WalletDirectProtocol();
-    verifier = new VerifierDirectClient('did:mitch:verifier-test');
+    verifier = new VerifierDirectClient('did:askmi:verifier-test');
     await verifier.initialize();
   });
 
@@ -113,7 +113,7 @@ describe('WalletDirectProtocol', () => {
     );
 
     const request = await wallet.parseRequest(deepLink);
-    expect(request.verifierDID).toBe('did:mitch:verifier-test');
+    expect(request.verifierDID).toBe('did:askmi:verifier-test');
     expect(request.credentialTypes).toEqual(['AgeCredential']);
     expect(request.callbackURL).toBe('https://example.com/verify');
     expect(request.challenge).toBeTruthy();
@@ -121,7 +121,7 @@ describe('WalletDirectProtocol', () => {
   });
 
   it('throws for invalid deep link missing request param', async () => {
-    await expect(wallet.parseRequest('mitch://present')).rejects.toThrow(
+    await expect(wallet.parseRequest('askmi://present')).rejects.toThrow(
       'Invalid deep-link: missing request parameter',
     );
   });
@@ -141,17 +141,17 @@ describe('WalletDirectProtocol', () => {
 
     const newPayload = base64urlEncode(JSON.stringify(payload));
     const newJwt = `${header}.${newPayload}.${sig}`;
-    const newDeepLink = `mitch://present?request=${encodeURIComponent(newJwt)}`;
+    const newDeepLink = `askmi://present?request=${encodeURIComponent(newJwt)}`;
 
     await expect(wallet.parseRequest(newDeepLink)).rejects.toThrow('Request expired');
   });
 
   it('throws for request missing required fields', async () => {
-    const payload = { verifierDID: 'did:mitch:test' }; // missing most fields
+    const payload = { verifierDID: 'did:askmi:test' }; // missing most fields
     const header = base64urlEncode(JSON.stringify({ alg: 'ES256', typ: 'JWT' }));
     const body = base64urlEncode(JSON.stringify(payload));
     const jwt = `${header}.${body}.fake-sig`;
-    const deepLink = `mitch://present?request=${encodeURIComponent(jwt)}`;
+    const deepLink = `askmi://present?request=${encodeURIComponent(jwt)}`;
 
     await expect(wallet.parseRequest(deepLink)).rejects.toThrow('Invalid request: missing');
   });
@@ -216,7 +216,7 @@ describe('WalletDirectProtocol', () => {
 // ---------------------------------------------------------------------------
 describe('Verifier-Direct round-trip', () => {
   it('completes a full presentation flow', async () => {
-    const verifier = new VerifierDirectClient('did:mitch:verifier-liquor-store');
+    const verifier = new VerifierDirectClient('did:askmi:verifier-liquor-store');
     await verifier.initialize();
 
     // Step 1: Verifier creates request
@@ -224,13 +224,13 @@ describe('Verifier-Direct round-trip', () => {
       ['AgeCredential'],
       'https://liquor-store.com/api/verify',
     );
-    expect(deepLink).toContain('mitch://present');
+    expect(deepLink).toContain('askmi://present');
 
     // Step 2: Wallet parses request
     const wallet = new WalletDirectProtocol();
     const request = await wallet.parseRequest(deepLink);
 
-    expect(request.verifierDID).toBe('did:mitch:verifier-liquor-store');
+    expect(request.verifierDID).toBe('did:askmi:verifier-liquor-store');
     expect(request.credentialTypes).toContain('AgeCredential');
 
     // Step 3: Wallet creates proof

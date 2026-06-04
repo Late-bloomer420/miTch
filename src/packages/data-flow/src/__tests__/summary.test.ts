@@ -7,7 +7,7 @@ function makeTxn(overrides: Partial<DataFlowTransaction> = {}): DataFlowTransact
     transactionId: 'test-001',
     startedAt: '2026-03-18T10:00:00Z',
     completedAt: '2026-03-18T10:00:05Z',
-    verifierId: 'did:mitch:verifier-test',
+    verifierId: 'did:askmi:verifier-test',
     verifierLabel: 'Test',
     claimsShared: [],
     claimsRequested: null,

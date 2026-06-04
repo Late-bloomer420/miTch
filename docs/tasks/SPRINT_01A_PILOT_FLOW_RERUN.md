@@ -30,11 +30,11 @@ and the five scenario matrix.
 ## Findings So Far
 
 1. **Trust-list fixture drift**
-   - The runtime issuer used by the OID4VP demo is `https://issuer.mitch.demo`.
+   - The runtime issuer used by the OID4VP demo is `https://issuer.askmi.demo`.
    - The local EUDI LOTL fixture trusted `did:web:localhost%3A3005` and
-     `did:web:issuer.mitch.demo`, but not the runtime HTTPS issuer URI.
+     `did:web:issuer.askmi.demo`, but not the runtime HTTPS issuer URI.
    - Result before fix: every `/wallet-present` scenario failed with
-     `ENTITY_NOT_IN_TSL: https://issuer.mitch.demo`.
+     `ENTITY_NOT_IN_TSL: https://issuer.askmi.demo`.
 
 2. **Revocation fixture drift**
    - The revoked demo credential embedded `https://example.com/status-list/1`.

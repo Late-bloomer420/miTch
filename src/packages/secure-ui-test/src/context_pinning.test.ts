@@ -35,7 +35,7 @@ async function validateDeterministicRendering() {
                 </style>
             </head>
             <body>
-                <h1>miTch Secure UI</h1>
+                <h1>AskMI Secure UI</h1>
                 <div class="security-zone" id="zone-1">
                     <p>Confirm Crypto-Shredding of Key ID: <strong>ephemeral-key-0x123</strong></p>
                     <button class="shred-btn" id="shred-btn">SHRED NOW</button>

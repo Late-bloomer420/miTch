@@ -16,7 +16,7 @@
 | Issuance | OID4VCI (`/credential`) | ✅ | `oid4vci`, `issuer-mock` |
 | Issuance | Batch (`/batch_credential`) | 🔴 | Deferred post-MVP (CIR 2977-13) |
 | Credential format | SD-JWT VC (`vc+sd-jwt`, `_sd_alg: sha-256`) | ✅ | `shared-crypto/sd-jwt-vc.ts` |
-| Credential format | ISO/IEC 18013-5 mdoc / mDL | 🟡 | `@mitch/mdoc` codec + offline verify exist; wallet UI presentation path partial |
+| Credential format | ISO/IEC 18013-5 mdoc / mDL | 🟡 | `@askmi/mdoc` codec + offline verify exist; wallet UI presentation path partial |
 | Key binding | `kb+jwt`, `cnf.jwk` | ✅ | `createKeyBindingJWT` / `validateKeyBindingJWT` |
 | Proof of possession | DPoP (RFC 9449) + `jti` replay + `ath` | ✅ | `dpop.ts` |
 | Client auth | OAuth 2.0 Attestation-Based Client Auth | ✅ | `client-attestation.ts` |

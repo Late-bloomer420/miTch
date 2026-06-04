@@ -1,6 +1,6 @@
 # Secure UI Sandbox Tests
 
-This package contains the **SwiftShader-based** integrity tests for the miTch wallet UI (Phase 6).
+This package contains the **SwiftShader-based** integrity tests for the AskMI wallet UI (Phase 6).
 
 ## Tests
 

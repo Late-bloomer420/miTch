@@ -1,7 +1,7 @@
 {
-  "name": "@mitch/layer-resolver",
+  "name": "@askmi/layer-resolver",
   "version": "0.1.0",
-  "description": "Protection layer resolution and enforcement for miTch",
+  "description": "Protection layer resolution and enforcement for AskMI",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -25,7 +25,7 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "mitch",
+    "AskMI",
     "protection-layers",
     "policy",
     "privacy",

@@ -49,7 +49,7 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 
 ## Komponentengrenzen
 
-### 1. Policy Engine (`@mitch/policy-engine`)
+### 1. Policy Engine (`@askmi/policy-engine`)
 
 **Input:**
 - `VerifierRequest` — validiert durch Input Validation Schema (S-03) vor Übergabe
@@ -73,7 +73,7 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 
 ---
 
-### 2. Consent Store (`@mitch/secure-storage`)
+### 2. Consent Store (`@askmi/secure-storage`)
 
 **Input:**
 - Explizite Nutzer-Aktionen (UI-Buttons) — keine programmatischen Freigaben
@@ -94,7 +94,7 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 
 ---
 
-### 3. Audit Logger (`@mitch/audit-log`)
+### 3. Audit Logger (`@askmi/audit-log`)
 
 **Input:**
 - Write-only API: `log(event: AuditEvent)` — keine Löschfunktion
@@ -114,7 +114,7 @@ Jede Komponente hat eine **definierte API-Grenze**. Kein direkter Speicherzugrif
 
 ---
 
-### 4. Secure Credential Store (`@mitch/secure-storage`, Credential-Partition)
+### 4. Secure Credential Store (`@askmi/secure-storage`, Credential-Partition)
 
 **Input:**
 - `store(encryptedVC, metadata)` — vom Issuer-Flow (OID4VCI)

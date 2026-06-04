@@ -39,7 +39,7 @@ Status legend: ✅ evidence present & current · 🟡 partial / in progress · �
 | LoA "High" (hardware/TEE binding) | software-only PoC, CIR 2981-1 | 🟡 ⚠️ |
 | Common Criteria (ISO/IEC 15408) | not started, CIR 2981-2 | 🔴 ⚠️ |
 | Batch issuance | not implemented, CIR 2977-13 | 🔴 |
-| Proximity / offline (ISO 18013-5) | `@mitch/mdoc` partial, CIR 2982-18 | 🟡 |
+| Proximity / offline (ISO 18013-5) | `@askmi/mdoc` partial, CIR 2982-18 | 🟡 |
 
 ## 3. Compliance posture summary (from CIR matrix, 2026-03-06)
 

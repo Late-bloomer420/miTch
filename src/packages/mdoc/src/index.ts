@@ -1,5 +1,5 @@
 /**
- * @module @mitch/mdoc
+ * @module @askmi/mdoc
  *
  * Minimal ISO 18013-5 mdoc foundation package.
  * Provides CBOR codec, COSE Sign1, and mdoc type definitions.

@@ -1,4 +1,4 @@
-# miTch — The Forgetting Layer
+# AskMI — The Forgetting Layer
 
 > **Privacy-preserving proof mediation for digital identity.**
 > Verifiers get cryptographic proofs. Never raw data. Never PII.
@@ -14,13 +14,13 @@
 
 ---
 
-## What is miTch?
+## What is AskMI?
 
-miTch sits between identity wallets and verifiers. When a website asks "Are you 18+?", miTch ensures they get a **yes/no proof** — not your name, birthday, or address.
+AskMI sits between identity wallets and verifiers. When a website asks "Are you 18+?", AskMI ensures they get a **yes/no proof** — not your name, birthday, or address.
 
 - **Not a wallet** — works *with* EUDI wallets, not instead of them
 - **Not a blockchain** — ephemeral keys, crypto-shredding, no on-chain PII
-- **Not an identity provider** — miTch never sees or stores your identity
+- **Not an identity provider** — AskMI never sees or stores your identity
 
 **Core principle:** Fail-closed, deny-biased. If anything is ambiguous → **DENY**.
 
@@ -46,10 +46,10 @@ pnpm build      # compile all packages
 
 ## npm Packages
 
-miTch is the project name. The public npm scope is `@askmi/*` because
-`@mitch` was not available on npm.
+AskMI is the active product/package brand. All workspace packages use the
+`@askmi/*` scope.
 
-Currently published:
+Currently published on npm:
 
 - `@askmi/shared-types`
 - `@askmi/shared-crypto`
@@ -63,7 +63,7 @@ rename scope and verification notes.
 ## How It Works
 
 ```
-Issuer (eID/gov)  →  Wallet (Edge)  →  miTch Policy Engine  →  Verifier (shop/hospital)
+Issuer (eID/gov)  →  Wallet (Edge)  →  AskMI Policy Engine  →  Verifier (shop/hospital)
                                             ↓
                                      Minimal Proof Only
                                      (no PII leaves device)
@@ -87,55 +87,55 @@ pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 
 | Package | Purpose |
 |---|---|
-| `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
+| `@askmi/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
 | `@askmi/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
-| `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
+| `@askmi/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
 | `@askmi/shared-types` | Shared TypeScript types across all packages |
-| `@mitch/data-flow` | Transaction transparency · grouped audit views |
+| `@askmi/data-flow` | Transaction transparency · grouped audit views |
 
 ### Protocol
 
 | Package | Purpose |
 |---|---|
-| `@mitch/oid4vci` | OpenID for Verifiable Credential Issuance |
-| `@mitch/oid4vp` | OpenID for Verifiable Presentations + SIOPv2 |
-| `@mitch/oid4vp-verifier` | Verifier-side OID4VP request handling |
-| `@mitch/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
-| `@mitch/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
-| `@mitch/verifier-browser` | Browser-side verifier integration |
-| `@mitch/mcp-server` | MCP interface for LLM agents (Claude Desktop) |
+| `@askmi/oid4vci` | OpenID for Verifiable Credential Issuance |
+| `@askmi/oid4vp` | OpenID for Verifiable Presentations + SIOPv2 |
+| `@askmi/oid4vp-verifier` | Verifier-side OID4VP request handling |
+| `@askmi/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
+| `@askmi/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
+| `@askmi/verifier-browser` | Browser-side verifier integration |
+| `@askmi/mcp-server` | MCP interface for LLM agents (Claude Desktop) |
 
 ### Storage & Security
 
 | Package | Purpose |
 |---|---|
-| `@mitch/secure-storage` | AES-256-GCM credential store (Pluggable Adapters) |
-| `@mitch/secure-memory` | Secure in-memory key handling |
-| `@mitch/wallet-core` | Wallet logic + CRDT multi-device sync |
-| `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
-| `@mitch/audit-log` | WORM append-only audit log (GDPR Art. 32) |
+| `@askmi/secure-storage` | AES-256-GCM credential store (Pluggable Adapters) |
+| `@askmi/secure-memory` | Secure in-memory key handling |
+| `@askmi/wallet-core` | Wallet logic + CRDT multi-device sync |
+| `@askmi/webauthn-verifier` | WebAuthn step-up authentication |
+| `@askmi/audit-log` | WORM append-only audit log (GDPR Art. 32) |
 | `@askmi/revocation-statuslist` | StatusList2021 — fail-closed revocation |
-| `@mitch/anchor-service` | Merkle batch anchoring + L2 stubs |
+| `@askmi/anchor-service` | Merkle batch anchoring + L2 stubs |
 
 ### Identity & Compliance
 
 | Package | Purpose |
 |---|---|
-| `@mitch/eid-issuer-connector` | eID/ID Austria bridge for credential issuance |
-| `@mitch/layer-resolver` | DID + layer resolution |
-| `@mitch/phase0-security` | Security hardening patterns |
+| `@askmi/eid-issuer-connector` | eID/ID Austria bridge for credential issuance |
+| `@askmi/layer-resolver` | DID + layer resolution |
+| `@askmi/phase0-security` | Security hardening patterns |
 
 ### Demos & Testing
 
 | Package | Purpose |
 |---|---|
-| `@mitch/poc-hardened` | Hardened proof-of-concept (standalone demo) |
-| `@mitch/demo-liquor-store` | Age verification demo scenario |
-| `@mitch/benchmarks` | Performance benchmarks |
-| `@mitch/integration-tests` | Cross-package integration tests |
-| `@mitch/mock-issuer` | Mock credential issuer for testing |
-| `@mitch/secure-ui-test` | UI security testing |
-| `@mitch/consent-ui` | Reusable consent components and flows |
+| `@askmi/poc-hardened` | Hardened proof-of-concept (standalone demo) |
+| `@askmi/demo-liquor-store` | Age verification demo scenario |
+| `@askmi/benchmarks` | Performance benchmarks |
+| `@askmi/integration-tests` | Cross-package integration tests |
+| `@askmi/mock-issuer` | Mock credential issuer for testing |
+| `@askmi/secure-ui-test` | UI security testing |
+| `@askmi/consent-ui` | Reusable consent components and flows |
 
 **Apps:** `wallet-pwa` (React PWA) · `verifier-demo` (Express + frontend) · `issuer-mock` (OID4VCI server)
 

@@ -55,7 +55,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
   it('evaluateRequest returns a verdict with reasonCodes array', async () => {
     const result = await wallet.evaluateRequest(
       {
-        verifierId: 'did:mitch:known-verifier',
+        verifierId: 'did:askmi:known-verifier',
         nonce: crypto.randomUUID(),
         requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age'] }]
       },
@@ -79,7 +79,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
 
     const result = await wallet.evaluateRequest(
       {
-        verifierId: 'did:mitch:verifier-liquor-store',
+        verifierId: 'did:askmi:verifier-liquor-store',
         nonce: crypto.randomUUID(),
         requestedClaims: [],
         requestedProvenClaims: ['age >= 18'],
@@ -210,7 +210,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
   });
 
   it('mdoc credential payload roundtrips through addMdocCredential + loadCredential', async () => {
-    const { encode } = await import('@mitch/mdoc');
+    const { encode } = await import('@askmi/mdoc');
     const items = [
       { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'test_claim', elementValue: 42 },
     ];
@@ -273,7 +273,7 @@ describe('WalletService — Identity Firewall Audit Events', () => {
   it('returns no events when decision_id is missing', async () => {
     const entries = await wallet.recordIdentityFirewallEvents(
       undefined,
-      'did:mitch:verifier-test',
+      'did:askmi:verifier-test',
       [browserTracker]
     );
 
@@ -283,7 +283,7 @@ describe('WalletService — Identity Firewall Audit Events', () => {
   it('records PII-minimal identity firewall events', async () => {
     const entries = await wallet.recordIdentityFirewallEvents(
       'decision-identity-001',
-      'did:mitch:verifier-test',
+      'did:askmi:verifier-test',
       [browserTracker]
     );
 
@@ -291,7 +291,7 @@ describe('WalletService — Identity Firewall Audit Events', () => {
     expect(entries[0].action).toBe('IDENTITY_ACCESS_DETECTED');
     expect(entries[0].metadata).toMatchObject({
       decision_id: 'decision-identity-001',
-      verifier_did: 'did:mitch:verifier-test',
+      verifier_did: 'did:askmi:verifier-test',
       access_type: 'browser_api',
       surface: 'navigator.userAgent',
       actor_label: 'tracker.example',

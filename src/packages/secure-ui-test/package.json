@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/secure-ui-test",
+    "name": "@askmi/secure-ui-test",
     "version": "0.0.1",
     "private": true,
     "main": "./dist/index.js",

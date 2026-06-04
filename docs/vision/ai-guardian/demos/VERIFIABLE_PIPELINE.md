@@ -14,7 +14,7 @@ The demo is a "Live Monitoring Cockpit" divided into three visual zones:
 
 ### Zone 2: The Guardian SEE (Center - "The Black Box")
 - **Visual:** A secure-looking container icon.
-- **Minimization View:** Shows the `@mitch/policy-engine` in action. Names and precise IDs are "peeled off" and replaced with anonymized hashes.
+- **Minimization View:** Shows the `@askmi/policy-engine` in action. Names and precise IDs are "peeled off" and replaced with anonymized hashes.
 - **Ephemeral Timer:** A live countdown (e.g., 10 seconds) during which the AI-Training is "active". 
 - **The "Big Flash":** A visual effect when the timer hits zero, representing the `shredInternal()` call.
 
