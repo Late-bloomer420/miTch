@@ -62,10 +62,12 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     walletCredentials: [
       {
         type: 'AgeCredential (GovID)',
+        // Display values mirror ASKMI_SCENARIO_CLAIMS['doctor-login'] (age 35);
+        // birthDate is frontend-only display copy kept consistent with that age.
         issuer: 'did:example:gov-issuer',
         fields: [
-          { key: 'age',       value: '24',         blocked: false },
-          { key: 'birthDate', value: '2000-01-01', blocked: true },
+          { key: 'age',       value: '35',         blocked: false },
+          { key: 'birthDate', value: '1990-01-01', blocked: true },
         ],
       },
       {
