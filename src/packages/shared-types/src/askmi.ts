@@ -27,6 +27,7 @@ export const ASKMI_STORAGE_KEYS = {
   passkeyRegistration: 'askmi_passkey_registration',
   identityKeyRegistration: 'askmi_identity_key_registration',
   webauthnSession: 'askmi_webauthn_session',
+  policyManifestDocument: '__askmi_policy_manifest_v1',
 } as const;
 
 export const ASKMI_SCENARIO_IDS = [

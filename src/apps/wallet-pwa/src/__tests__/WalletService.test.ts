@@ -7,6 +7,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
+import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
+import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 
 // Fresh WalletService instance per test (state isolation)
@@ -44,7 +46,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
       {
         verifierId: 'did:example:test-verifier',
         nonce: crypto.randomUUID(),
-        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['birthDate'] }]
+        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['birthDate'] }],
       },
       { userAgent: 'test', timestamp: Date.now() }
     );
@@ -57,7 +59,7 @@ describe('WalletService — Credential Store / Retrieve', () => {
       {
         verifierId: 'did:askmi:known-verifier',
         nonce: crypto.randomUUID(),
-        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age'] }]
+        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age'] }],
       },
       { userAgent: 'test-agent', timestamp: Date.now() }
     );
@@ -95,8 +97,8 @@ describe('WalletService — Credential Store / Retrieve', () => {
 
     const { auditLog } = await wallet.generatePresentation(result.decisionCapsule!);
 
-    expect(auditLog.some(line => line.includes('[ZKP] Proof generated'))).toBe(true);
-    expect(auditLog.some(line => line.includes('[ZKP] Proof failed'))).toBe(false);
+    expect(auditLog.some((line) => line.includes('[ZKP] Proof generated'))).toBe(true);
+    expect(auditLog.some((line) => line.includes('[ZKP] Proof failed'))).toBe(false);
   });
 });
 
@@ -120,6 +122,11 @@ describe('WalletService — AES-256-GCM Encryption Roundtrip', () => {
 });
 
 describe('WalletService — Policy Persistence', () => {
+  beforeEach(async () => {
+    localStorage.removeItem(ASKMI_STORAGE_KEYS.walletPolicy);
+    await SecureStorage.reset();
+  });
+
   it('getPolicy returns a valid PolicyManifest after init', async () => {
     const wallet = makeWallet();
     await wallet.initialize(PIN, SALT);
@@ -141,13 +148,46 @@ describe('WalletService — Policy Persistence', () => {
       ...base,
       trustedIssuers: [
         ...base.trustedIssuers,
-        { did: 'did:example:new-issuer', name: 'Test Issuer', credentialTypes: ['TestCred'] }
-      ]
+        { did: 'did:example:new-issuer', name: 'Test Issuer', credentialTypes: ['TestCred'] },
+      ],
     };
     wallet.savePolicy(modified);
 
     const retrieved = wallet.getPolicy();
-    expect(retrieved.trustedIssuers.some(i => i.did === 'did:example:new-issuer')).toBe(true);
+    expect(retrieved.trustedIssuers.some((i) => i.did === 'did:example:new-issuer')).toBe(true);
+  });
+
+  it('stores the policy manifest outside the credential list', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const credentials = await wallet.getCredentials();
+    expect(credentials.some((c) => c.id === ASKMI_STORAGE_KEYS.policyManifestDocument)).toBe(false);
+  });
+
+  it('migrates legacy localStorage policy into secure storage', async () => {
+    const wallet = makeWallet();
+    const base = wallet.getPolicy();
+    const legacy: PolicyManifest = {
+      version: base.version,
+      rules: base.rules,
+      trustedIssuers: [
+        {
+          did: 'did:example:legacy-issuer',
+          name: 'Legacy Issuer',
+          credentialTypes: ['LegacyCred'],
+        },
+      ],
+      globalSettings: base.globalSettings,
+    };
+    localStorage.setItem(ASKMI_STORAGE_KEYS.walletPolicy, JSON.stringify(legacy));
+
+    await wallet.initialize(PIN, SALT);
+
+    expect(
+      wallet.getPolicy().trustedIssuers.some((i) => i.did === 'did:example:legacy-issuer')
+    ).toBe(true);
+    expect(localStorage.getItem(ASKMI_STORAGE_KEYS.walletPolicy)).toBeNull();
   });
 });
 
@@ -180,7 +220,7 @@ describe('WalletService — Key Splitting & Recovery', () => {
     const shares = await wallet.splitMasterKey();
     expect(Array.isArray(shares)).toBe(true);
     expect(shares.length).toBe(3);
-    shares.forEach(s => expect(typeof s).toBe('string'));
+    shares.forEach((s) => expect(typeof s).toBe('string'));
   });
 
   it('recoverFromFragments with all 3 shares succeeds (PoC is 3-of-3)', async () => {
@@ -203,7 +243,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
 
   it('mdoc mDL credential is seeded with format mso_mdoc', async () => {
     const creds = await wallet.getCredentials();
-    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    const mdoc = creds.find((c) => c.id === 'mdoc-mdl-001');
     expect(mdoc).toBeDefined();
     expect(mdoc!.format).toBe('mso_mdoc');
     expect(mdoc!.type).toContain('org.iso.18013.5.1.mDL');
@@ -212,7 +252,12 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
   it('mdoc credential payload roundtrips through addMdocCredential + loadCredential', async () => {
     const { encode } = await import('@askmi/mdoc');
     const items = [
-      { digestID: 0, random: crypto.getRandomValues(new Uint8Array(16)), elementIdentifier: 'test_claim', elementValue: 42 },
+      {
+        digestID: 0,
+        random: crypto.getRandomValues(new Uint8Array(16)),
+        elementIdentifier: 'test_claim',
+        elementValue: 42,
+      },
     ];
     const cbor = encode({ nameSpaces: new Map([['test.ns', items]]) });
 
@@ -225,7 +270,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
     );
 
     const creds = await wallet.getCredentials();
-    const meta = creds.find(c => c.id === 'mdoc-test-roundtrip');
+    const meta = creds.find((c) => c.id === 'mdoc-test-roundtrip');
     expect(meta).toBeDefined();
     expect(meta!.format).toBe('mso_mdoc');
 
@@ -238,7 +283,7 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
 
   it('mdoc claims list matches seeded elements', async () => {
     const creds = await wallet.getCredentials();
-    const mdoc = creds.find(c => c.id === 'mdoc-mdl-001');
+    const mdoc = creds.find((c) => c.id === 'mdoc-mdl-001');
     expect(mdoc!.claims).toContain('family_name');
     expect(mdoc!.claims).toContain('age_over_18');
     expect(mdoc!.claims).toContain('issuing_country');

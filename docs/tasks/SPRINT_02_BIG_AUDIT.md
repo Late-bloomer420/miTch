@@ -63,3 +63,7 @@ pnpm lint
 
 - 2026-06-04: Completed first constants/contracts slice. See
   `docs/qa/BIG_AUDIT_CONSTANTS_CONTRACTS_2026-06-04.md`.
+- 2026-06-04: Completed wallet policy storage hardening follow-up. The wallet
+  now stores the policy manifest in `SecureStorage`, migrates the legacy
+  `localStorage` value once, removes it, and hides the system policy document
+  from the credential list.

@@ -79,3 +79,32 @@ root test run passed afterwards.
   historical docs.
 - Consider moving trust-list/status-list test fixture builders into a reusable
   test helper once a second runtime test needs the same fixture shape.
+
+## Follow-Up Slice — Wallet Policy Storage
+
+The constants/contracts pass exposed one privacy-relevant storage issue in the
+wallet: the active policy manifest was still persisted as JSON in
+`localStorage`. That is not credential/key material, but it can contain user
+policy choices and trusted issuer preferences, so it should follow the wallet's
+encrypted storage boundary.
+
+### What Changed
+
+- Added a versioned policy document ID to `ASKMI_STORAGE_KEYS`.
+- Moved active wallet policy persistence to `SecureStorage`.
+- Kept legacy `askmi_user_policy` as read-once migration input only.
+- Removed the legacy `localStorage` value after successful migration.
+- Filtered the policy document out of `getCredentials()` so system documents do
+  not leak into the credential list.
+- Added tests for secure policy storage, credential-list filtering, and legacy
+  migration.
+
+### Verification
+
+- `pnpm --filter @askmi/wallet-pwa test -- WalletService.test.ts` — pass, 20
+  tests
+- `pnpm --filter @askmi/wallet-pwa test -- App.test.tsx` — pass, 7 tests
+- `pnpm --filter @askmi/shared-types build` — pass
+- `pnpm --filter @askmi/wallet-pwa build` — pass
+- `pnpm lint` — pass, 10/10 Turbo tasks
+- `pnpm test` — pass, 45/45 Turbo tasks
