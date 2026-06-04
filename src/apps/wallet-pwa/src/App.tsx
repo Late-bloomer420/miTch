@@ -675,6 +675,7 @@ function WalletApp() {
           vct: SCENARIO_VCT[scenarioId] ?? 'https://mitch.demo/vct/age-credential',
           issuerDid: 'https://issuer.mitch.demo',
           revoked: isRevoked,
+          statusListUri: 'http://localhost:3005/status-list/1',
         });
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');

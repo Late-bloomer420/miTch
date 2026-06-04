@@ -203,6 +203,8 @@ export interface BuildPresentationOpts {
     issuerDid: string;
     /** If true, embed a status claim to simulate a revoked credential */
     revoked?: boolean;
+    /** StatusList2021 credential URL used when `revoked` is true. */
+    statusListUri?: string;
 }
 
 export interface BuildPresentationResult {
@@ -261,7 +263,7 @@ export async function buildSDJWTPresentation(
     // Simulate revocation: embed status claim
     if (opts.revoked) {
         (payload as SDJWTVCPayload).status = {
-            status_list: { idx: 42, uri: 'https://example.com/status-list/1' },
+            status_list: { idx: 42, uri: opts.statusListUri ?? 'https://example.com/status-list/1' },
         };
     }
 

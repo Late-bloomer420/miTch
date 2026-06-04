@@ -4,6 +4,15 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 15 — Sprint 1A Pilot Flow Rerun (2026-06-04)
+- **Goal:** Re-ran the local issuer/verifier/wallet pilot flow as runtime truth after Sprint 0 documentation alignment.
+- **Finding:** Local EUDI LOTL fixture did not trust the runtime issuer URI `https://issuer.mitch.demo`, causing all `/wallet-present` scenarios to fail with `ENTITY_NOT_IN_TSL`.
+- **Finding:** Revoked demo credentials used the external placeholder `https://example.com/status-list/1`, causing fail-closed `STATUS_SOURCE_UNAVAILABLE` instead of a real local revocation decision.
+- **Fix:** Added the runtime issuer URI to the local LOTL fixture and added a local issuer mock StatusList2021 endpoint at `/status-list/1`.
+- **Fix:** Made the demo SD-JWT presentation builder accept a local `statusListUri`, wired by verifier backend and wallet PWA.
+- **Validation:** Five-scenario matrix now returns four positive HTTP 200 results and one revoked HTTP 403 `REVOKED`; targeted package tests and builds passed.
+- **Deliverables:** [`docs/tasks/SPRINT_01A_PILOT_FLOW_RERUN.md`](tasks/SPRINT_01A_PILOT_FLOW_RERUN.md), [`docs/qa/PILOT_FLOW_RERUN_2026-06-04.md`](qa/PILOT_FLOW_RERUN_2026-06-04.md)
+
 ### Session 14 — Repo Truth Alignment & npm Scope Reality (2026-06-04)
 - **Repo hygiene:** Reconfirmed `master` as the clean integration ground. Old/local/agent-generated work should be reviewed, secret-scanned, and integrated via small targeted commits or cherry-picks, not blind merges.
 - **Second-PC rescue review:** Inspected `rescue/second-pc-2026-06-04`; kept it as rescue evidence and re-derived the useful npm scope changes fresh on current `master`.
