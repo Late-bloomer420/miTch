@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/nonce-store
+ * @module @askmi/shared-crypto/nonce-store
  *
  * Anti-replay nonce store with TTL, audience binding, and clock-skew tolerance.
  *

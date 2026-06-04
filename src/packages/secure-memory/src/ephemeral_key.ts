@@ -1,5 +1,5 @@
 import { webcrypto, createHash } from 'node:crypto';
-import type { IEphemeralKey } from '@mitch/shared-crypto';
+import type { IEphemeralKey } from '@askmi/shared-crypto';
 
 export interface ShredProof {
     timestamp: string;
@@ -12,13 +12,13 @@ export interface ShredProof {
 
 /**
  * EphemeralKey: Crypto-Shredding Wrapper for miTch
- * 
+ *
  * Guarantees:
  * ✅ Key is zeroed IMMEDIATELY after use
  * ✅ Audit proof of shredding
  * ✅ Timeout-safe
  * ✅ Exception-safe (finally block)
- * 
+ *
  * Usage:
  * const key = EphemeralKey.generate();
  * const result = await key.use(async (k) => {

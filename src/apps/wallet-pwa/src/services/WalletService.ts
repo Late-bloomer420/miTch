@@ -16,7 +16,7 @@ import {
     IdentityPersistence,
     IdentityLinkability,
     IdentitySeverity
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import {
     EphemeralKey,
     deriveKeyFromPassword,
@@ -28,7 +28,7 @@ import {
     sha256,
     resolveDID,
     detectKeyAlgorithm
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@mitch/mdoc';
@@ -1448,7 +1448,7 @@ export class WalletService {
     /**
      * Handle Recovery Actions triggered by Policy Denial
      */
-    async handleAction(action: import('@mitch/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {
+    async handleAction(action: import('@askmi/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {
         console.log(`[Action Handler] Processing: ${action.type}`);
 
         switch (action.type) {

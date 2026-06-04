@@ -16,7 +16,7 @@
  * 3. Persist the inclusion proof for offline verification
  */
 
-import type { Hex32, AnchorRef } from '@mitch/shared-types';
+import type { Hex32, AnchorRef } from '@askmi/shared-types';
 import type { AnchorProvider } from '../types.js';
 
 export interface TransparencyLogConfig {

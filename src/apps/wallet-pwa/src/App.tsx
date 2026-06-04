@@ -8,11 +8,11 @@ import type {
   PolicyEvaluationResult,
   PolicyManifest,
   StoredCredentialMetadata,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
-import { WebAuthnService } from '@mitch/shared-crypto';
+import { WebAuthnService } from '@askmi/shared-crypto';
 import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';

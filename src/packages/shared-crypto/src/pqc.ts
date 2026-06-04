@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/pqc
+ * @module @askmi/shared-crypto/pqc
  *
  * Post-Quantum Cryptography — Spec 93 (Live Implementation)
  *

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { EscrowBackupService } from '../src/storage/escrow-backup';
-import type { AuditLogEntry } from '@mitch/shared-types';
+import type { AuditLogEntry } from '@askmi/shared-types';
 
 const makeEntry = (id: string): AuditLogEntry => ({
     id,

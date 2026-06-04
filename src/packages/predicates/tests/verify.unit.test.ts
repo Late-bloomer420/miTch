@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CommonPredicates, evaluatePredicates, verifyPredicateResult, buildAllowedPredicateSet } from '../src/index';
-import type { PredicateRequest } from '@mitch/shared-types';
+import type { PredicateRequest } from '@askmi/shared-types';
 
 describe('verifyPredicateResult (unit)', () => {
     const credential = {

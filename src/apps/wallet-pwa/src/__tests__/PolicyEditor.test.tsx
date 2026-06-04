@@ -5,7 +5,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PolicyEditor } from '../components/PolicyEditor';
-import type { PolicyManifest } from '@mitch/shared-types';
+import type { PolicyManifest } from '@askmi/shared-types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

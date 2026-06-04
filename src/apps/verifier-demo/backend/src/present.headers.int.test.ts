@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import { CommonPredicates, evaluatePredicates } from '@mitch/predicates';
-import { signData } from '@mitch/shared-crypto';
+import { signData } from '@askmi/shared-crypto';
 
 const mocks = vi.hoisted(() => ({
     verifierResult: {

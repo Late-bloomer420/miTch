@@ -20,7 +20,7 @@
         "lint": "tsc --noEmit"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*"
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^20.0.0",

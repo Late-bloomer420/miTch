@@ -10,7 +10,7 @@ import {
     PredicateRequest,
     canonicalizePredicate,
     canonicalizeRequest
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 /**
  * Deterministically stringifies an object by sorting keys.
@@ -84,7 +84,7 @@ export type {
     PredicateExpression,
     PredicateOp,
     PredicateValueType
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 export { canonicalizePredicate, canonicalizeRequest };
 

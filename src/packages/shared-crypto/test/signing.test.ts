@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { generateKeyPair } from '../src/keys';
 import { signVC, verifyVC } from '../src/signing';
-import type { AgeCredential } from '@mitch/shared-types';
+import type { AgeCredential } from '@askmi/shared-types';
 
 describe('VC Signing', () => {
     test('sign and verify VC round‑trip', async () => {

@@ -2,7 +2,7 @@ import {
     deriveKeyFromPassword,
     generateKeyPair,
     WebAuthnService
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 import { SecureStorage, BrowserIndexedDBAdapter, InMemoryStorageAdapter } from '@mitch/secure-storage';
 import { AuditLog } from '@mitch/audit-log';
 import { PolicyEngine } from '@mitch/policy-engine';
@@ -12,7 +12,7 @@ import {
     VerifierRequest, 
     PolicyEvaluationResult,
     DecisionCapsule
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import { EvaluationContext } from '@mitch/policy-engine';
 
 import { ICredentialRepository } from './ICredentialRepository';

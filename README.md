@@ -44,6 +44,22 @@ pnpm build      # compile all packages
 
 ---
 
+## npm Packages
+
+miTch is the project name. The public npm scope is `@askmi/*` because
+`@mitch` was not available on npm.
+
+Currently published:
+
+- `@askmi/shared-types`
+- `@askmi/shared-crypto`
+- `@askmi/revocation-statuslist`
+
+See [docs/NPM_SCOPE_RENAME_ASKMI.md](docs/NPM_SCOPE_RENAME_ASKMI.md) for the
+rename scope and verification notes.
+
+---
+
 ## How It Works
 
 ```
@@ -72,9 +88,9 @@ pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 | Package | Purpose |
 |---|---|
 | `@mitch/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
-| `@mitch/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
+| `@askmi/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
 | `@mitch/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
-| `@mitch/shared-types` | Shared TypeScript types across all packages |
+| `@askmi/shared-types` | Shared TypeScript types across all packages |
 | `@mitch/data-flow` | Transaction transparency · grouped audit views |
 
 ### Protocol
@@ -98,7 +114,7 @@ pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 | `@mitch/wallet-core` | Wallet logic + CRDT multi-device sync |
 | `@mitch/webauthn-verifier` | WebAuthn step-up authentication |
 | `@mitch/audit-log` | WORM append-only audit log (GDPR Art. 32) |
-| `@mitch/revocation-statuslist` | StatusList2021 — fail-closed revocation |
+| `@askmi/revocation-statuslist` | StatusList2021 — fail-closed revocation |
 | `@mitch/anchor-service` | Merkle batch anchoring + L2 stubs |
 
 ### Identity & Compliance

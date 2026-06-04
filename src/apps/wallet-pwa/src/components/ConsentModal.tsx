@@ -11,8 +11,8 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { DecisionCapsule } from '@mitch/shared-types';
-import { WebAuthnService } from '@mitch/shared-crypto';
+import { DecisionCapsule } from '@askmi/shared-types';
+import { WebAuthnService } from '@askmi/shared-crypto';
 import { SecureZone } from './SecureZone';
 import { translateReason, translateClaim } from '../utils/i18n';
 

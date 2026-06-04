@@ -1,10 +1,10 @@
 /**
  * @module @mitch/verifier-browser
- * 
+ *
  * Browser-Only Verifier SDK
  * Enables static HTML pages to perform credential verification
  * without requiring a backend server (ephemeral keys shredded on refresh)
- * 
+ *
  * Usage Example:
  * ```typescript
  * const verifier = new BrowserVerifier({
@@ -13,11 +13,11 @@
  *   requestedClaims: ["age"],
  *   requestedProvenClaims: ["age >= 18"]
  * });
- * 
+ *
  * // Generate session and show QR code
  * const session = await verifier.createSession();
  * showQRCode(session.challengeUrl);
- * 
+ *
  * // Poll for response (or use callback)
  * const result = await verifier.waitForResponse(session.sessionId);
  * if (result.success) {
@@ -42,7 +42,7 @@ import {
     decryptJWE,
 } from './crypto.js';
 
-import { DIDSignatureVerifier } from '@mitch/shared-crypto';
+import { DIDSignatureVerifier } from '@askmi/shared-crypto';
 
 /**
  * Default in-memory session storage

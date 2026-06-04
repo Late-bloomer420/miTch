@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { SecureStorage } from '../src/index';
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 // Simple IndexedDB Mock for Node Environment (if not using jsdom)
 // This is a minimal implementation to make the tests pass in a raw Node environment.

@@ -1,5 +1,5 @@
 /**
- * @package @mitch/revocation-statuslist
+ * @package @askmi/revocation-statuslist
  * @description Privacy-preserving credential revocation using W3C StatusList2021
  *
  * Key design decisions:

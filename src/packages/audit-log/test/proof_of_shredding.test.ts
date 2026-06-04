@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { AuditLog } from '../src/index';
-import { EphemeralKey, generateKeyPair } from '@mitch/shared-crypto';
+import { EphemeralKey, generateKeyPair } from '@askmi/shared-crypto';
 
 describe('Proof of Forgetting (Signed Audit Trace)', () => {
     let auditKeys: CryptoKeyPair;

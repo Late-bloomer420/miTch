@@ -17,11 +17,11 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { StatusListRevocationChecker } from '@mitch/revocation-statuslist';
-import type { StatusListEntry, StatusListCredential } from '@mitch/revocation-statuslist';
-import { DIDResolver, DIDResolutionError } from '@mitch/shared-crypto';
+import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
+import type { StatusListEntry, StatusListCredential } from '@askmi/revocation-statuslist';
+import { DIDResolver, DIDResolutionError } from '@askmi/shared-crypto';
 import { PolicyEngine, ReasonCode } from '@mitch/policy-engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 import type { EvaluationContext } from '@mitch/policy-engine';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { DataFlowPanel } from '../components/DataFlowPanel';
-import type { AuditLogEntry } from '@mitch/shared-types';
+import type { AuditLogEntry } from '@askmi/shared-types';
 
 function makeEntry(
   overrides: Partial<AuditLogEntry> & Pick<AuditLogEntry, 'action'>

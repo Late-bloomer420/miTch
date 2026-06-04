@@ -1,5 +1,5 @@
 import { SecureStorage } from '@mitch/secure-storage';
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 import type { ICredentialRepository } from './ICredentialRepository';
 
 /**

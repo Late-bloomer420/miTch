@@ -23,8 +23,8 @@
         "@mitch/audit-log": "workspace:*",
         "@mitch/policy-engine": "workspace:*",
         "@mitch/secure-storage": "workspace:*",
-        "@mitch/shared-crypto": "workspace:*",
-        "@mitch/shared-types": "workspace:*"
+        "@askmi/shared-crypto": "workspace:*",
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^20.0.0",

@@ -1,15 +1,15 @@
 /**
  * DID-based key resolver for the PoC hardened server.
- * 
- * Bridges the ResolveKey interface with @mitch/shared-crypto DIDResolver.
+ *
+ * Bridges the ResolveKey interface with @askmi/shared-crypto DIDResolver.
  * When keyId looks like a DID (starts with "did:"), resolves via DID Document.
  * Otherwise falls back to the provided fallback resolver.
- * 
+ *
  * Fail-closed: DID resolution failure = { status: "unavailable" }
  */
 
 import { ResolveKey, ResolvedKey } from './keyResolver';
-import { DIDResolver, DIDResolverOptions } from '@mitch/shared-crypto';
+import { DIDResolver, DIDResolverOptions } from '@askmi/shared-crypto';
 
 export function createDIDKeyResolver(
     fallback: ResolveKey,

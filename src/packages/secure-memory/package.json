@@ -6,7 +6,7 @@
         "test": "vitest run"
     },
     "devDependencies": {
-        "@mitch/shared-crypto": "workspace:*",
+        "@askmi/shared-crypto": "workspace:*",
         "vitest": "^4.1.8"
     }
 }

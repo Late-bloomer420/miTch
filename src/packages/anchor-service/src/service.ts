@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto'; // Use node crypto for UUID in service
-import { Hex32, AnchorSubmit, AnchorBatchReceipt } from '@mitch/shared-types';
+import { Hex32, AnchorSubmit, AnchorBatchReceipt } from '@askmi/shared-types';
 import { buildMerkleTree, getInclusionProof } from './merkle.js';
 import { AnchorServiceConfig, AnchorProvider } from './types.js';
 

@@ -13,7 +13,7 @@
  *   - deniedClaims               → hart blockiert, engine wirft DENY
  */
 
-import { PolicyManifest } from '@mitch/shared-types';
+import { PolicyManifest } from '@askmi/shared-types';
 
 export const DEMO_POLICY: PolicyManifest = {
   version: '1.2',
@@ -132,10 +132,10 @@ export const DEMO_POLICY: PolicyManifest = {
 
 // ── Type-Erweiterung für requiresPresence ────────────────────────────────────
 //
-// PolicyRule in @mitch/shared-types kennt `requiresPresence` noch nicht.
+// PolicyRule in @askmi/shared-types kennt `requiresPresence` noch nicht.
 // Bis das Feld dort offiziell ergänzt ist, kannst du den Typ lokal erweitern:
 //
-//   declare module '@mitch/shared-types' {
+//   declare module '@askmi/shared-types' {
 //     interface PolicyRule {
 //       requiresPresence?: boolean;
 //     }

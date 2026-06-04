@@ -1,4 +1,4 @@
-import type { AuditEventType } from '@mitch/shared-types';
+import type { AuditEventType } from '@askmi/shared-types';
 import type { DataFlowEvent } from './types';
 
 const LABEL_MAP: Record<AuditEventType, { label: string; category: DataFlowEvent['category'] }> = {

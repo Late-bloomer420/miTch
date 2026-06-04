@@ -5,7 +5,7 @@ import {
     generateKeyPair,
     EphemeralKey,
     canonicalStringify,
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 
 describe('Adversarial Tests: Verifier SDK Binding (V1-V3)', () => {
     let verifierKeysA: CryptoKeyPair;

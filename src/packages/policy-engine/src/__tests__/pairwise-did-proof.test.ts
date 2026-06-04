@@ -7,9 +7,9 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PolicyEngine, type EvaluationContext } from '../engine';
-import { verifyPairwiseDIDProof } from '@mitch/shared-crypto';
+import { verifyPairwiseDIDProof } from '@askmi/shared-crypto';
 import { ProtectionLayer } from '@mitch/layer-resolver';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 // ─── Shared fixtures ─────────────────────────────────────────────────────────
 

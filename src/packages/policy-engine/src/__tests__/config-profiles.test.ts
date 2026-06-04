@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getConfig, buildConfig, validateConfig, isManifestCompatible, CONFIG_PROFILES } from '../config-profiles';
-import type { PolicyManifest } from '@mitch/shared-types';
+import type { PolicyManifest } from '@askmi/shared-types';
 
 describe('CONFIG_PROFILES', () => {
     it('strict profile has allowPrompt=false', () => {

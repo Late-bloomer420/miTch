@@ -17,7 +17,7 @@
  * 3. Handle gas estimation and L1 finality confirmation
  */
 
-import type { Hex32, AnchorRef } from '@mitch/shared-types';
+import type { Hex32, AnchorRef } from '@askmi/shared-types';
 import type { AnchorProvider } from '../types.js';
 
 export interface EthereumL2Config {

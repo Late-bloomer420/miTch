@@ -24,8 +24,8 @@
         "@noble/hashes": "^2.0.1",
         "@mitch/layer-resolver": "workspace:*",
         "@mitch/predicates": "workspace:*",
-        "@mitch/shared-crypto": "workspace:*",
-        "@mitch/shared-types": "workspace:*"
+        "@askmi/shared-crypto": "workspace:*",
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "@mitch/mock-issuer": "workspace:*",

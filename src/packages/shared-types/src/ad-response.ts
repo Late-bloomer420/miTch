@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/ad-response
+ * @module @askmi/shared-types/ad-response
  *
  * Request/response types for the Ad-Tech Blind Provider verification flow.
  *

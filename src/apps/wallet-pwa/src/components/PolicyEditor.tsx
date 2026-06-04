@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { PolicyManifest, TrustedIssuer } from "@mitch/shared-types";
+import { PolicyManifest, TrustedIssuer } from "@askmi/shared-types";
 
 interface PolicyEditorProps {
     policy: PolicyManifest;

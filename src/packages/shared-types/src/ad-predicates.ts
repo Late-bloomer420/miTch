@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/ad-predicates
+ * @module @askmi/shared-types/ad-predicates
  *
  * Ad-Tech predicate types for privacy-preserving ad verification.
  *

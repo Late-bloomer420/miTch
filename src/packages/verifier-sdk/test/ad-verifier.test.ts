@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { generateNullifier } from '@mitch/predicates';
-import type { AdVerificationResponse, AdVerificationRequest } from '@mitch/shared-types';
+import type { AdVerificationResponse, AdVerificationRequest } from '@askmi/shared-types';
 import { AdTechVerifier, verifyAdResponse } from '../src/ad-verifier';
 import { InMemoryNullifierStore } from '../src/ad-nullifier-store';
 

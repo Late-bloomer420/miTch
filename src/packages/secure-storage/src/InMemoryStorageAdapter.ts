@@ -1,5 +1,5 @@
 import type { IStorageAdapter, EncryptedDocument } from './IStorageAdapter';
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 /**
  * Transient in-memory storage. 

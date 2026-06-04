@@ -160,7 +160,7 @@ export class OID4VCIIssuer {
 
     private async signCredential(_credential: unknown): Promise<string> {
         // Placeholder for actual crypto signing
-        // Should use @mitch/shared-crypto
+        // Should use @askmi/shared-crypto
         return "mock_signature_" + Date.now();
     }
 

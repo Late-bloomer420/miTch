@@ -21,7 +21,7 @@ import type {
   PolicyManifest,
   VerifierRequest,
   StoredCredentialMetadata,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 describe('E2E: Liquor Store Age Verification (Layer 1)', () => {
   let policyEngine: PolicyEngine;

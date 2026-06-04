@@ -1,5 +1,5 @@
 {
-    "name": "@mitch/shared-crypto",
+    "name": "@askmi/shared-crypto",
     "version": "0.1.0",
     "type": "module",
     "main": "./dist/index.js",
@@ -23,8 +23,8 @@
         "format": "prettier --write \"src/**/*.ts\""
     },
     "dependencies": {
-        "@mitch/revocation-statuslist": "workspace:^",
-        "@mitch/shared-types": "workspace:*",
+        "@askmi/revocation-statuslist": "workspace:^",
+        "@askmi/shared-types": "workspace:*",
         "@noble/curves": "^2.0.1",
         "@noble/hashes": "^2.0.1",
         "@noble/post-quantum": "^0.5.4",

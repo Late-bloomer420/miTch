@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/encryption
+ * @module @askmi/shared-crypto/encryption
  * 
  * AES-256-GCM Encryption Module
  * 

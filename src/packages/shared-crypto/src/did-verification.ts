@@ -1,11 +1,11 @@
 /**
- * @module @mitch/shared-crypto/did-verification
- * 
+ * @module @askmi/shared-crypto/did-verification
+ *
  * Combined DID Resolution + Signature Verification
- * 
+ *
  * Resolves a presenter's DID, extracts the verification key,
  * and verifies the presentation signature against it.
- * 
+ *
  * SECURITY: Fail-closed — any failure = DENY
  */
 
@@ -35,7 +35,7 @@ export class DIDSignatureVerifier {
 
     /**
      * Verify a JWT presentation signature against the presenter's DID-resolved key.
-     * 
+     *
      * Fail-closed: returns { verified: false } on ANY failure.
      * Never throws — all errors are captured in the result.
      */

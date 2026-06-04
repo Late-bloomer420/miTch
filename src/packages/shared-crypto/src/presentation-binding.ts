@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/presentation-binding
+ * @module @askmi/shared-crypto/presentation-binding
  *
  * Presentation request canonicalization and binding validation.
  *

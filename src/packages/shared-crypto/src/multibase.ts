@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/multibase
+ * @module @askmi/shared-crypto/multibase
  * 
  * Multibase and Multihash Utilities
  * 

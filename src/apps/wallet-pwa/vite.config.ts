@@ -12,8 +12,8 @@ export default defineConfig({
     resolve: {
         alias: {
             // Resolve workspace packages
-            '@mitch/shared-types': path.resolve(__dirname, '../../packages/shared-types/src'),
-            '@mitch/shared-crypto': path.resolve(__dirname, '../../packages/shared-crypto/src'),
+            '@askmi/shared-types': path.resolve(__dirname, '../../packages/shared-types/src'),
+            '@askmi/shared-crypto': path.resolve(__dirname, '../../packages/shared-crypto/src'),
             '@mitch/policy-engine': path.resolve(__dirname, '../../packages/policy-engine/src'),
             '@mitch/audit-log': path.resolve(__dirname, '../../packages/audit-log/src'),
             '@mitch/secure-storage': path.resolve(__dirname, '../../packages/secure-storage/src'),
@@ -27,8 +27,8 @@ export default defineConfig({
     // Optimize dependencies (avoid pre-bundling workspace packages)
     optimizeDeps: {
         exclude: [
-            '@mitch/shared-types',
-            '@mitch/shared-crypto',
+            '@askmi/shared-types',
+            '@askmi/shared-crypto',
             '@mitch/policy-engine',
             '@mitch/audit-log',
             '@mitch/secure-storage',

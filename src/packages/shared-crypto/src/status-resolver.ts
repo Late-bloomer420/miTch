@@ -1,10 +1,10 @@
 /**
  * Status List Resolver for SD-JWT VC
- * Wires @mitch/revocation-statuslist into the shared-crypto suite.
+ * Wires @askmi/revocation-statuslist into the shared-crypto suite.
  */
 
-import { StatusListRevocationChecker } from '@mitch/revocation-statuslist';
-import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@mitch/revocation-statuslist/src/types';
+import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
+import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@askmi/revocation-statuslist/src/types';
 import type { StatusClaim } from './sd-jwt-vc';
 
 /**
