@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-05-30 (Session 12 abgeschlossen: Branch/PR-Consolidation + nachfolgende PRs #43 (wallet-pwa dynamic cards, decisionId-Audit-Link) und #44 (consent-ui salvage); 98% CIR coverage)
+**Stand:** 2026-06-04 (Sprint-0-Reconciliation: PR #66 npm scope alignment merged; `docs/qa/` als Evidence-Fläche identifiziert; ältere Video-Gap-Tabellen teilweise durch Phase-1 bis Phase-4-Arbeit überholt)
 **Leitsatz:** *"Alle sind miTch."*
 
 ---
@@ -20,6 +20,14 @@
 
 Quelle für diese Sektion: Analyse der drei Referenz-Demos (Web Wallet, Unified Identity, MCP Agent Identity).
 Ziel: miTch auf **produktreife, wiederverwendbare Identity-Flows** heben (nicht nur Tech-Demo).
+
+**Sprint-0-Hinweis (2026-06-04):** Diese Sektion ist der ursprüngliche
+Delivery-Backlog aus der Video-Gap-Analyse. Einige Epics wurden danach in den
+Phasen 1-4 geschlossen und sind weiter unten als erledigt markiert. Die Zeilen
+unten bleiben als Herkunft/Nachverfolgung sichtbar, sind aber nicht automatisch
+aktuelle P0-Blocker. Aktuelle operative Evidence liegt in `STATE.md` und
+`docs/qa/`; neue Arbeit sollte als frische Sprint-Datei unter `docs/tasks/`
+geplant werden.
 
 ### EPIC G-100 — E2E Reliability & Predicate Contract Hardening
 
@@ -269,6 +277,8 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-06 | ✅ | Demo E2E Flow testen (5 Szenarien) — 1812 Tests pass |
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
 | H-08 | ✅ | Branch/PR-Consolidation (2026-05-27): alle 10 offenen PRs auf `master` aufgelöst, Branch-Sprawl 22→3. Nur net-new value gesalvaged (Trust Kit #35, B2B-Use-Cases + Agent-Skills + ADR-010 #37, MCP-Freeze-Decisions #38, Verifier fail-closed + no-PII-log #34, PII-Substring-Testfix #36, `_tmp_*` gitignore #39); stale-base PRs ohne Wert mit Begründung geschlossen (#14/#16/#17/#18/#24/#26/#27/#30). **Kein Paperclip auf master** (Pflicht erfüllt); Suite 100% grün (44/44 Tasks, 1787 Tests) |
+| H-09 | ✅ | npm scope alignment (2026-06-04): drei veröffentlichte Pakete als `@askmi/shared-types`, `@askmi/shared-crypto`, `@askmi/revocation-statuslist`; miTch bleibt Projektname, andere interne Pakete bleiben `@mitch/*`; PR #66 auf `master` gemerged |
+| H-10 | 🟡 | Sprint 0 Repo Truth Alignment: `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, `AGENTS.md`, `CLAUDE.md` und historische Session-Dateien konsolidieren |
 
 ---
 

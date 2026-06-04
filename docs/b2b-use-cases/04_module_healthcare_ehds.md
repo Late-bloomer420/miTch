@@ -57,12 +57,12 @@ released.
 
 The source system (ELGA-style, or a national patient-summary service over `@mitch/oid4vci`)
 issues SD-JWT VCs for insurance status and consent state. Selective disclosure
-(`@mitch/shared-crypto`) exposes only the requested claim.
+(`@askmi/shared-crypto`) exposes only the requested claim.
 
 ### Path B — Practitioner credential
 
 A medical chamber / registry issues a practitioner credential (`credentialed`, `specialty`,
-`jurisdiction`). Suspension revokes it via `@mitch/revocation-statuslist`.
+`jurisdiction`). Suspension revokes it via `@askmi/revocation-statuslist`.
 
 ### Path C — HDAB permit (secondary use)
 
@@ -184,9 +184,9 @@ app.post('/eligibility/verify', async (req, res) => {
 | `@mitch/policy-engine`         | EHDS rules: `denySecondaryUse`, `requiresHdabPermit`, geo-scope, break-glass |
 | `@mitch/webauthn-verifier`     | Break-glass / emergency step-up                                              |
 | `@mitch/predicates`            | Permission DSL; single-use `nullifier.ts` (Art. 14)                          |
-| `@mitch/shared-crypto`         | SD-JWT VP, selective disclosure                                              |
+| `@askmi/shared-crypto`         | SD-JWT VP, selective disclosure                                              |
 | `@mitch/audit-log`             | WORM trail + Art. 31 export                                                  |
-| `@mitch/revocation-statuslist` | Practitioner-suspension revocation                                           |
+| `@askmi/revocation-statuslist` | Practitioner-suspension revocation                                           |
 | `@mitch/verifier-sdk`          | Requesting-system verification + replay-check                                |
 | `@mitch/anchor-service`        | Long-horizon audit anchoring (multi-year retention)                          |
 

@@ -101,11 +101,11 @@
 | Package | Tests |
 |---|---|
 | @mitch/policy-engine | 252 |
-| @mitch/shared-crypto | 108 |
+| @askmi/shared-crypto | 108 |
 | @mitch/poc-hardened | 73 |
 | @mitch/integration-tests | 37 |
 | @mitch/oid4vp | 22 |
-| @mitch/revocation-statuslist | 26 |
+| @askmi/revocation-statuslist | 26 |
 | @mitch/webauthn-verifier | 19 |
 | @mitch/oid4vp-verifier | 11 |
 | @mitch/anchor-service | 12 |

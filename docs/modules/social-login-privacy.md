@@ -82,7 +82,7 @@ Platform receives: { age_gte_18: true, pseudonymous_id: "pw-...", is_real_person
 - **Unique per platform** — FlirtRadar and TikTok get different IDs
 - **Stable per platform** — same user gets same ID on repeat login (session continuity)
 - **Unlinkable** — no way to correlate IDs across platforms
-- Implementation: `@mitch/shared-crypto` → `derivePairwiseDID()`
+- Implementation: `@askmi/shared-crypto` → `derivePairwiseDID()`
 
 ### Overreaching Detection
 
@@ -152,7 +152,7 @@ A fictional dating app with low trust score (35/100) requests maximum data:
 
 | Component | Package | Status |
 |---|---|---|
-| Pairwise DID derivation | `@mitch/shared-crypto` | ✅ Implemented |
+| Pairwise DID derivation | `@askmi/shared-crypto` | ✅ Implemented |
 | `isOver18` predicate | `@mitch/predicates` | ✅ Implemented |
 | Policy Engine deny codes | `@mitch/policy-engine` | ✅ Implemented (needs social-login-specific rules) |
 | OID4VP presentation flow | `@mitch/oid4vp` | ✅ Implemented |

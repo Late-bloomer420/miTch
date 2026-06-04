@@ -1,8 +1,8 @@
 # npm Scope Rename: `@mitch/*` → `@askmi/*` (published packages)
 
 **Date:** 2026-06-04
-**Branch:** `chore/askmi-scope-rename`
-**Status:** Scope A done · Scope B deferred (see below)
+**Branch:** `chore/askmi-scope-rename` (Scope A), `docs/current-state-alignment` (Scope B)
+**Status:** Scope A done · Scope B done
 
 ## Context
 
@@ -45,9 +45,10 @@ and test correctly):
 - `tsconfig.json` path references and `vite.config.ts` / `vitest.config.mjs` aliases.
 - `pnpm-lock.yaml` (regenerated via `pnpm install --lockfile-only`).
 
-**145 source/config files + the lockfile.** The source/config diff is limited to
+**145 source/config files + the lockfile.** The source/config diff was limited to
 the three published package names and the one `shared-types` version alignment.
-Scope B documentation text is deliberately not included.
+Scope B documentation text was deliberately excluded from the first PR and
+completed later in the Sprint 0 docs alignment pass.
 
 ### Verification (evidence)
 
@@ -71,13 +72,13 @@ gitignored and must be rebuilt after switching branches (`pnpm -r build`); stale
 `dist/` output is the main way a consumer can transiently reference the old
 `@mitch/` name even after the source rename is correct.
 
-## Scope B — DEFERRED (cosmetic, not required to build/test)
+## Scope B — DONE (docs-only consistency)
 
-The following **33 documentation/Markdown files** still reference the old
-`@mitch/*` names for the three packages. They do **not** affect compilation,
-resolution, or tests, so per the agreed approach they were intentionally **left
-unchanged** for now. They should be updated when the broader documentation
-rebrand is done.
+The following documentation/Markdown files had references to the old `@mitch/*`
+names for the three published packages. They did not affect compilation,
+resolution, or tests, so they were intentionally left out of Scope A and handled
+as a narrow docs cleanup during Sprint 0. Only these three package names were
+changed; this was not a full project rebrand.
 
 ```
 README.md
@@ -115,16 +116,9 @@ docs/vision/MITCH_AI_GUARDIAN.md
 src/packages/policy-engine/README.md
 ```
 
-### How to complete Scope B later
+Verification after Scope B:
 
-```bash
-# only the three published package names, docs only:
-git grep -lE '@mitch/(shared-types|shared-crypto|revocation-statuslist)' -- '*.md' \
-  | xargs sed -i \
-      -e 's#@mitch/shared-types#@askmi/shared-types#g' \
-      -e 's#@mitch/shared-crypto#@askmi/shared-crypto#g' \
-      -e 's#@mitch/revocation-statuslist#@askmi/revocation-statuslist#g'
-```
+- `rg '@mitch/(shared-types|shared-crypto|revocation-statuslist)' . --glob '!node_modules/**' --glob '!dist/**'` returns only this historical mapping note.
 
 ## Explicitly NOT changed
 

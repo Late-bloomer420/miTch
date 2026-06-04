@@ -473,7 +473,7 @@ Umgesetzt:
 
 Validierung:
 
-- `@mitch/shared-types` TypeScript-Lint gruen.
+- `@askmi/shared-types` TypeScript-Lint gruen.
 - `shared-types/test/runtime-validation.test.ts`: 63 Tests gruen ueber direkte Vitest-Binary.
 - `data-flow` Source-Typecheck gruen ueber temporaere Source-Alias-tsconfig.
 - `data-flow` Tests: 48 Tests gruen ueber direkte Vitest-Binary mit temporaerer Alias-Config.

@@ -103,7 +103,7 @@ Credential revocation is required for:
 ## Change Log
 
 - 2026-02-16: Initial decision (ACCEPTED)
-- 2026-02-16: Implementation started (@mitch/revocation-statuslist)
+- 2026-02-16: Implementation started (@askmi/revocation-statuslist)
 
 ## Next Steps
 

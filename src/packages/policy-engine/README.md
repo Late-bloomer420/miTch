@@ -15,7 +15,7 @@ Evaluates Verifier Requests against User Policy before any data is shared.
 
 ```typescript
 import { PolicyEngine } from '@mitch/policy-engine';
-import { type VerifierRequest, type PolicyManifest } from '@mitch/shared-types';
+import { type VerifierRequest, type PolicyManifest } from '@askmi/shared-types';
 
 const engine = new PolicyEngine();
 

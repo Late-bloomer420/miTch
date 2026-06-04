@@ -47,7 +47,7 @@ interface IEphemeralKey {
 **Phase 1 (done):**
 - `ephemeral-key.ts` (Uint8Array variant) → `implements IEphemeralKey` (already conformed)
 - `ephemeral.ts` (CryptoKey variant) → `implements IEphemeralKey` + added `isShredded()` alias
-- Interface exported from `@mitch/shared-crypto`
+- Interface exported from `@askmi/shared-crypto`
 
 **Phase 2 (done):**
 - `secure-memory/ephemeral_key.ts` → `implements IEphemeralKey` + public `shred()` (delegates to internal shred with `success=false`). Existing `use()` auto-shred pattern preserved.

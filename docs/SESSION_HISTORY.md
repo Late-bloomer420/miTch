@@ -4,6 +4,15 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 14 — Repo Truth Alignment & npm Scope Reality (2026-06-04)
+- **Repo hygiene:** Reconfirmed `master` as the clean integration ground. Old/local/agent-generated work should be reviewed, secret-scanned, and integrated via small targeted commits or cherry-picks, not blind merges.
+- **Second-PC rescue review:** Inspected `rescue/second-pc-2026-06-04`; kept it as rescue evidence and re-derived the useful npm scope changes fresh on current `master`.
+- **npm scope alignment:** PR #66 aligned the three published packages to npm reality: `@askmi/shared-types`, `@askmi/shared-crypto`, and `@askmi/revocation-statuslist`. All other internal `@mitch/*` packages keep their names.
+- **README update:** Documented that miTch remains the project name while public npm packages use `@askmi/*`.
+- **Validation:** Targeted package tests passed before PR merge; post-merge `master` checks passed: ci-security, Deploy GitHub Pages, miTch CI/CD Pipeline, and CodeQL.
+- **Sprint 0 discovery:** Started docs/current-state alignment work to resolve drift between `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, and agent-facing files.
+- **Deliverables:** [`docs/NPM_SCOPE_RENAME_ASKMI.md`](NPM_SCOPE_RENAME_ASKMI.md), [`docs/tasks/SPRINT_00_REPO_TRUTH_ALIGNMENT.md`](tasks/SPRINT_00_REPO_TRUTH_ALIGNMENT.md)
+
 ### Session 13 — Production Path Finalization (2026-06-02)
 - **v1.0-RC Achievement:** Completed all 5 strategic phases for pilot readiness.
 - **Stabilization:** Normalized `dateOfBirth` monorepo-wide and fixed `AGE_NOT_VERIFIED` blockers.
@@ -15,7 +24,7 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ### Session 11 — Compliance Gap Sprint (2026-05-25)
 - **EUDI Compliance Matrix:** Updated to 94% coverage (50/53 requirements ✅).
-- **StatusList PoC:** Implemented `SDJWTStatusResolver` in `@mitch/shared-crypto` to wire `@mitch/revocation-statuslist`.
+- **StatusList PoC:** Implemented `SDJWTStatusResolver` in `@askmi/shared-crypto` to wire `@askmi/revocation-statuslist`.
 - **LoA High Readiness:** Finalized certification analysis documenting WebAuthn hardware binding (ADR-013).
 - **Deliverables:** Generated `COMPLIANCE_GAP_REPORT_MAY_2026.md` and updated `BACKLOG.md` with Pilot-Readiness gaps (Trust List, Batch Issuance).
 - **Validation:** `pnpm turbo test` green (44 tasks).

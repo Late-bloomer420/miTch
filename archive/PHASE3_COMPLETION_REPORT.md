@@ -21,7 +21,7 @@ Phase 3 implements production-critical components for credential lifecycle manag
 
 ## Implemented Components
 
-### 1. Revocation Package (@mitch/revocation-statuslist) ✅
+### 1. Revocation Package (@askmi/revocation-statuslist) ✅
 **Purpose:** W3C StatusList2021 implementation for privacy-preserving credential revocation
 
 **Features:**
@@ -300,7 +300,7 @@ const response = await eidConnector.requestIssuance(request);
 ## Deliverables Checklist
 
 ### Code
-- [x] StatusList2021 revocation (@mitch/revocation-statuslist)
+- [x] StatusList2021 revocation (@askmi/revocation-statuslist)
 - [x] eID Issuer Connector (@mitch/eid-issuer-connector)
 - [x] Integration test suite (@mitch/integration-tests)
 - [x] All packages building (23/23)

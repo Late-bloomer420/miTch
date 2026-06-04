@@ -53,8 +53,8 @@ Cache Hit Rate: 94% (16/17 cached after first build)
 #### Build Order (Dependency Graph)
 
 **Layer 0: Core Types & Crypto**
-- ✅ @mitch/shared-types (cached)
-- ✅ @mitch/shared-crypto (cached)
+- ✅ @askmi/shared-types (cached)
+- ✅ @askmi/shared-crypto (cached)
 - ✅ @mitch/layer-resolver (NEW - 366 lines, compiles clean)
 
 **Layer 1: Security & Storage**
@@ -86,7 +86,7 @@ Cache Hit Rate: 94% (16/17 cached after first build)
 ### 1. Missing Dependencies in @mitch/issuer-mock
 **Error:**
 ```
-error TS2307: Cannot find module '@mitch/shared-crypto' or its corresponding type declarations.
+error TS2307: Cannot find module '@askmi/shared-crypto' or its corresponding type declarations.
 ```
 
 **Root Cause:** package.json missing runtime dependencies
@@ -94,8 +94,8 @@ error TS2307: Cannot find module '@mitch/shared-crypto' or its corresponding typ
 ```json
 {
   "dependencies": {
-    "@mitch/shared-crypto": "workspace:*",
-    "@mitch/shared-types": "workspace:*",
+    "@askmi/shared-crypto": "workspace:*",
+    "@askmi/shared-types": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.18.0"
   },
@@ -192,8 +192,8 @@ ReferenceError: indexedDB is not defined
 #### Test Successes
 
 The following packages have passing or runnable test infrastructure:
-- ✅ @mitch/shared-types (vitest available)
-- ✅ @mitch/shared-crypto (vitest available)
+- ✅ @askmi/shared-types (vitest available)
+- ✅ @askmi/shared-crypto (vitest available)
 - ✅ @mitch/anchor-service (vitest available)
 - ✅ @mitch/predicates (vitest available)
 - ✅ @mitch/verifier-browser (vitest available)

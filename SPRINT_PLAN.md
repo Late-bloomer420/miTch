@@ -72,7 +72,7 @@ Alle innerhalb 1–2 Tagen behebbar. Reihenfolge: Abhängigkeiten zuerst, dann S
       rules: policy.rules.map(r => r.id),
   }));
   ```
-  `sha256Hash` aus `@mitch/shared-crypto/hashing` importieren (dort bereits vorhanden).
+  `sha256Hash` aus `@askmi/shared-crypto/hashing` importieren (dort bereits vorhanden).
   `createDecisionCapsule()` muss dafür `async` werden, sofern noch nicht.
 - **Aufwand:** S
 - **Abhängigkeiten:** keine

@@ -18,7 +18,7 @@ EUDI-CIR und DSGVO Art. 25 verlangen „Datenminimierung durch Design“ – das
 4. **Blind Provider Enforcement** – die Infrastruktur (miTch-Proxy) strippt automatisch jede nicht-prädikatsrelevante Metadata
 
 **Technische Umsetzung:**
-- `@mitch/shared-crypto` HKDF-Derivation pro Session
+- `@askmi/shared-crypto` HKDF-Derivation pro Session
 - `@mitch/policy-engine` prüft vor SD-JWT-Generierung: `metadata_leak_score == 0`
 - Fail-Closed: Bei jedem Metadata-Rest → DENY + Crypto-Shredding
 
@@ -34,7 +34,7 @@ EUDI-CIR und DSGVO Art. 25 verlangen „Datenminimierung durch Design“ – das
 
 ## Acceptance Evidence
 - Test-Suite mit 5 Linkability-Attack-Vektoren (Timing, Issuer-Correlation, Nullifier-Reuse)
-- Coverage-Report in `@mitch/shared-crypto`
+- Coverage-Report in `@askmi/shared-crypto`
 - Demo in `verifier-demo` (Metadata-Stripping sichtbar)
 
 ## Implementation Notes

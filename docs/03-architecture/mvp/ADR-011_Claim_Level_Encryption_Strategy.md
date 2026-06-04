@@ -18,7 +18,7 @@ EUDI-CIR Art. 14 und DSGVO Art. 32 + 25 verlangen zusätzlichen Schutz für „b
 - **Fallback**: Bei nicht-TEE-Geräten bleibt Software-Only (WebCrypto), TEE nutzt Hardware-AES
 
 **Technische Umsetzung:**
-- `@mitch/shared-crypto` erweitert um `encryptClaimLevel(claim, sensitivity)`
+- `@askmi/shared-crypto` erweitert um `encryptClaimLevel(claim, sensitivity)`
 - `@mitch/policy-engine` fügt neue Regel `claim_encryption_score` hinzu
 - Fail-Closed: Bei fehlendem Key oder schwachem Storage → gesamte Session DENY
 

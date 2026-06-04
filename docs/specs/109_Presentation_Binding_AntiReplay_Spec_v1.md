@@ -38,7 +38,7 @@ The following fields are extracted from a `PresentationRequest` and serialized i
 ### 2.2 Serialization Rules
 
 1. Build a plain object with exactly the fields above (omit absent optional fields).
-2. Serialize using `canonicalStringify()` from `@mitch/shared-crypto`:
+2. Serialize using `canonicalStringify()` from `@askmi/shared-crypto`:
    - UTF-8 encoding
    - Lexicographic key ordering (recursive)
    - No insignificant whitespace
@@ -50,7 +50,7 @@ The following fields are extracted from a `PresentationRequest` and serialized i
 ### 2.3 Determinism Guarantee
 
 Two conforming implementations given identical input MUST produce identical hash output.
-Test vectors are provided in `@mitch/shared-crypto` test suite.
+Test vectors are provided in `@askmi/shared-crypto` test suite.
 
 ---
 
