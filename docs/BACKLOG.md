@@ -16,6 +16,20 @@
 
 ---
 
+## Sprint 02 — Big Audit Follow-Ups (2026-06-04)
+
+Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
+`docs/qa/BIG_AUDIT_CONSTANTS_CONTRACTS_2026-06-04.md`.
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| S2-01 | ✅ | ✅ | Gemeinsame AskMI Runtime-/Demo-Konstanten für Identifier, Env-Namen, Storage-Keys und Scenario-VCTs | `@askmi/shared-types` exportiert die Contracts; aktive Pilot-Flows nutzen sie |
+| S2-02 | 🟡 P1 | ⏳ | Active-code Rebrand Guard in CI | `src`, `.github`, Root Configs brechen bei `@mitch/*`, `did:mitch`, `mitch.demo`, `MitchPolicyEvaluator` |
+| S2-03 | 🟡 P1 | ⏳ | Demo-Scenario-Fixtures prüfen/extrahieren | Claims/Scenario IDs werden wiederverwendet, ohne UX-Copy unnötig zu verallgemeinern |
+| S2-04 | 🟢 P2 | ⏳ | Trust-/StatusList-Test-Fixtures als Testhelper | Zweite Runtime-Testfläche kann dieselben Builder ohne Copy/Paste nutzen |
+
+---
+
 ## Video Gap Analysis → Delivery Backlog (2026-05-31)
 
 Quelle für diese Sektion: Analyse der drei Referenz-Demos (Web Wallet, Unified Identity, MCP Agent Identity).

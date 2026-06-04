@@ -9,6 +9,7 @@ import type {
   PolicyManifest,
   StoredCredentialMetadata,
 } from '@askmi/shared-types';
+import { ASKMI_DEMO } from '@askmi/shared-types';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
@@ -133,7 +134,10 @@ function WalletApp() {
   useEffect(() => {
     const handleOpenerMessage = (event: MessageEvent) => {
       // Security: Validate origin in production
-      if (event.data?.type === 'ASKMI_OID4VP_REQUEST' || event.data?.type === 'MITCH_OID4VP_REQUEST') {
+      if (
+        event.data?.type === 'ASKMI_OID4VP_REQUEST' ||
+        event.data?.type === 'MITCH_OID4VP_REQUEST'
+      ) {
         addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
         // Trigger handleIncomingOID4VP with provided data
         // For simplicity, we just reload or use the data directly
@@ -144,7 +148,7 @@ function WalletApp() {
     };
 
     window.addEventListener('message', handleOpenerMessage);
-    
+
     // Check if we ARE a popup and notify opener
     if (window.opener) {
       window.opener.postMessage({ type: 'ASKMI_WALLET_READY' }, '*');
@@ -154,8 +158,12 @@ function WalletApp() {
     return () => window.removeEventListener('message', handleOpenerMessage);
   }, []);
 
-  const handleIncomingOID4VPFromOpener = async (scenario: string, endpoint: string, verifier: string) => {
-      await handleIncomingOID4VP({ scenario, endpoint, verifier });
+  const handleIncomingOID4VPFromOpener = async (
+    scenario: string,
+    endpoint: string,
+    verifier: string
+  ) => {
+    await handleIncomingOID4VP({ scenario, endpoint, verifier });
   };
   const [incomingOID4VP] = useState<{
     scenario: string;
@@ -170,7 +178,7 @@ function WalletApp() {
       return {
         scenario,
         endpoint,
-        verifier: p.get('verifier') ?? 'did:askmi:verifier-liquor-store',
+        verifier: p.get('verifier') ?? ASKMI_DEMO.verifierDid,
       };
     } catch {
       return null;
@@ -250,9 +258,9 @@ function WalletApp() {
     setEvaluationResult(null);
     setFlashAllow(false);
 
-    addLog(`📥 Received request from: did:askmi:verifier-liquor-store`, 'info');
+    addLog(`📥 Received request from: ${ASKMI_DEMO.verifierDid}`, 'info');
     const request: VerifierRequest = {
-      verifierId: 'did:askmi:verifier-liquor-store',
+      verifierId: ASKMI_DEMO.verifierDid,
       requestedClaims: [],
       requestedProvenClaims: ['age >= 18'],
       origin: CONFIG.VERIFIER_ENDPOINT.replace(/\/present$/, ''),
@@ -674,9 +682,9 @@ function WalletApp() {
           holderKeyPair: holderKeys,
           claims,
           vct: SCENARIO_VCT[scenarioId] ?? 'https://askmi.demo/vct/age-credential',
-          issuerDid: 'https://issuer.askmi.demo',
+          issuerDid: ASKMI_DEMO.issuerUri,
           revoked: isRevoked,
-          statusListUri: 'http://localhost:3005/status-list/1',
+          statusListUri: ASKMI_DEMO.statusListUri,
         });
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
@@ -691,10 +699,10 @@ function WalletApp() {
 
       // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
       const payload = {
-          vp_token: vpTokenString,
-          presentation_submission: presentationSubmission,
-          state: authRequest.state,
-          issuer_jwk: issuerPubJwk,
+        vp_token: vpTokenString,
+        presentation_submission: presentationSubmission,
+        state: authRequest.state,
+        issuer_jwk: issuerPubJwk,
       };
       const paddedPayload = padPayload(payload);
       addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
@@ -967,7 +975,8 @@ function WalletApp() {
             <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
             <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
             <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your AskMI Wallet.
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your AskMI
+              Wallet.
             </p>
             <button
               onClick={handlePasskeyUnlock}
@@ -987,7 +996,7 @@ function WalletApp() {
               Unlock with Biometrics
             </button>
             <div style={{ marginTop: 24 }}>
-              <button 
+              <button
                 onClick={async () => {
                   await walletRef.current.initialize('123456');
                   setCurrentPolicy(walletRef.current.getPolicy());
@@ -995,7 +1004,14 @@ function WalletApp() {
                   setStatus('IDLE');
                   addLog('🔓 Fallback: Unlocked via PIN', 'warning');
                 }}
-                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  fontSize: 13,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
               >
                 Use PIN instead
               </button>

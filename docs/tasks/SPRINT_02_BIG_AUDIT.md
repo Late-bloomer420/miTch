@@ -1,7 +1,7 @@
 # Sprint 02 — Big Audit After AskMI Rebrand
 
-**Date:** 2026-06-04  
-**Status:** planned  
+**Date:** 2026-06-04
+**Status:** in progress
 **Depends on:** Full AskMI rebrand PR merged
 
 ## Goal
@@ -58,3 +58,8 @@ pnpm lint
 - Audit report under `docs/qa/`.
 - Refactoring backlog entries grouped by risk and payoff.
 - Small follow-up PRs for confirmed high-value reuse or security fixes.
+
+## Progress
+
+- 2026-06-04: Completed first constants/contracts slice. See
+  `docs/qa/BIG_AUDIT_CONSTANTS_CONTRACTS_2026-06-04.md`.

@@ -29,12 +29,13 @@ export * from './ad-preferences.js';
 export * from './ad-predicates.js';
 export * from './ad-response.js';
 export * from './verifier-trust.js';
+
+// AskMI runtime/demo constants
+export * from './askmi.js';
 /**
  * Result type for operations that can fail
  */
-export type Result<T, E = Error> =
-    | { ok: true; value: T }
-    | { ok: false; error: E };
+export type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
 /**
  * Async result
