@@ -83,6 +83,11 @@ export enum ReasonCode {
     PRESENCE_REQUIRED = 'PRESENCE_REQUIRED',
     FINGERPRINT_MISMATCH = 'FINGERPRINT_MISMATCH',
 
+    // Purpose-Binding / Contextual Integrity
+    PURPOSE_BOUND = 'PURPOSE_BOUND',
+    PURPOSE_REQUIRED = 'PURPOSE_REQUIRED',
+    PURPOSE_NOT_ALLOWED = 'PURPOSE_NOT_ALLOWED',
+
     // EHDS Compliance
     SECONDARY_USE_DENIED = 'SECONDARY_USE_DENIED',
     HDAB_PERMIT_REQUIRED = 'HDAB_PERMIT_REQUIRED',
@@ -234,6 +239,13 @@ export class PolicyEngine {
             return this.result('DENY', delegationResult, context, policy, startTime, credentials, matchedRule);
         }
 
+        // --- Purpose-Binding / Contextual Integrity (opt-in, fail-closed) ---
+        // Bind disclosure to the declared purpose BEFORE any claim/credential work.
+        const purposeDenial = this.checkPurposeBinding(request, matchedRule, policy);
+        if (purposeDenial) {
+            return this.result('DENY', purposeDenial, context, policy, startTime, credentials, matchedRule);
+        }
+
         const authorizedRequirements: Array<{
             credential_type: string;
             allowed_claims: string[];
@@ -318,6 +330,10 @@ export class PolicyEngine {
         reasonCodes.push(ReasonCode.CREDENTIAL_VALID);
         if (matchedRule.requiresTrustedIssuer) {
             reasonCodes.push(ReasonCode.TRUSTED_ISSUER);
+        }
+        // Record in the capsule that disclosure was bound to a declared purpose.
+        if (this.purposeBindingEnforced(matchedRule, policy)) {
+            reasonCodes.push(ReasonCode.PURPOSE_BOUND);
         }
 
         // 3b. EHDS Secondary Use Check
@@ -407,6 +423,57 @@ export class PolicyEngine {
         }
 
         return issues;
+    }
+
+    /**
+     * Whether purpose-binding (Contextual Integrity) is in force for this match.
+     * True if the policy globally requires it, or the matched rule declares a
+     * non-empty allowedPurposes list.
+     */
+    private purposeBindingEnforced(matchedRule: PolicyRule, policy: PolicyManifest): boolean {
+        const ruleEnforces = Array.isArray(matchedRule.allowedPurposes) && matchedRule.allowedPurposes.length > 0;
+        return policy.globalSettings?.requirePurposeBinding === true || ruleEnforces;
+    }
+
+    /**
+     * Purpose-Binding / Contextual Integrity (opt-in, fail-closed).
+     *
+     * miTch does not bind purpose globally — that would break every existing
+     * policy. Where a policy opts in (rule.allowedPurposes, or the policy-wide
+     * globalSettings.requirePurposeBinding), the engine denies any request whose
+     * declared purpose is not explicitly permitted. This is the constraint that
+     * actually binds disclosure to context rather than merely minimizing claims.
+     *
+     * Returns deny reason codes, or null if the request passes (or no opt-in).
+     */
+    private checkPurposeBinding(request: VerifierRequest, matchedRule: PolicyRule, policy: PolicyManifest): ReasonCode[] | null {
+        const globalRequire = policy.globalSettings?.requirePurposeBinding === true;
+        const allowedPurposes = matchedRule.allowedPurposes;
+        const ruleEnforces = Array.isArray(allowedPurposes) && allowedPurposes.length > 0;
+
+        // No opt-in anywhere → legacy behavior, nothing to enforce.
+        if (!globalRequire && !ruleEnforces) {
+            return null;
+        }
+
+        // Under the global switch a rule that declares no allowedPurposes cannot
+        // be allowed to fall through — fail closed.
+        if (!ruleEnforces) {
+            return [ReasonCode.PURPOSE_NOT_ALLOWED];
+        }
+
+        // Declared purpose: prefer the free-form `purpose`, fall back to the EHDS
+        // `usagePurpose` enum so existing EHDS requests keep working.
+        const declaredPurpose = (request.purpose ?? request.usagePurpose ?? '').trim();
+        if (!declaredPurpose) {
+            return [ReasonCode.PURPOSE_REQUIRED];
+        }
+
+        if (!allowedPurposes!.includes(declaredPurpose)) {
+            return [ReasonCode.PURPOSE_NOT_ALLOWED];
+        }
+
+        return null;
     }
 
     private checkDelegation(request: VerifierRequest, context: EvaluationContext, policy: PolicyManifest): string[] | null {

@@ -1,5 +1,6 @@
 import type { Decision, DisclosureRequest, Policy } from './types';
 import type { PolicyReasonCode } from './reasonCodes';
+import { sha256Hex } from './sha256-sync';
 
 export interface DecisionCapsule {
   capsuleId: string;
@@ -40,12 +41,6 @@ function stableStringify(value: unknown): string {
 
   const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) => left.localeCompare(right));
   return `{${entries.map(([key, entryValue]) => `${JSON.stringify(key)}:${stableStringify(entryValue)}`).join(',')}}`;
-}
-
-function sha256Hex(data: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
-  return createHash('sha256').update(data).digest('hex');
 }
 
 function hashRef(value: string): string {

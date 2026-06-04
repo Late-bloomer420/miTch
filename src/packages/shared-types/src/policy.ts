@@ -119,6 +119,13 @@ export interface PolicyRule {
     minimumLayer?: number;
     /** EHDS usage purpose this rule applies to (default: primaryCare) */
     usagePurpose?: UsagePurpose;
+    /**
+     * Purpose-binding (Contextual Integrity), opt-in. When set to a non-empty
+     * list, the engine fail-closed denies any request whose declared purpose
+     * (request.purpose, falling back to request.usagePurpose) is not one of
+     * these values. Leaving it undefined preserves legacy behavior (no binding).
+     */
+    allowedPurposes?: string[];
     /** EHDS: Verifier must present a valid HDAB permit for this rule */
     requiresHdabPermit?: boolean;
     /** Geographic scope restriction for this rule */
@@ -165,6 +172,14 @@ export interface GlobalPolicySettings {
     denySecondaryUse?: boolean;
     /** EHDS: Deny secondary use for specific countries (ISO 3166-1 alpha-2) */
     denySecondaryUseCountries?: string[];
+    /**
+     * Purpose-binding (Contextual Integrity), policy-wide opt-in. When true,
+     * EVERY matched rule must declare allowedPurposes AND the request must carry
+     * a matching purpose; a rule without allowedPurposes is itself denied (a
+     * policy that demands purpose-binding cannot silently fall through).
+     * Fail-closed. Defaults to undefined (off) so existing policies are unchanged.
+     */
+    requirePurposeBinding?: boolean;
     /** Time in minutes before a cached WebAuthn session expires (0 = ask every time) */
     requireConsentTimeoutMinutes?: number;
 }

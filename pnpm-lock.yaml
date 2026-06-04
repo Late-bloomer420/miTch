@@ -632,6 +632,9 @@ importers:
       '@mitch/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      '@noble/hashes':
+        specifier: ^2.0.1
+        version: 2.0.1
     devDependencies:
       '@mitch/mock-issuer':
         specifier: workspace:*
@@ -1593,6 +1596,7 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
+    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-musl@4.59.0':

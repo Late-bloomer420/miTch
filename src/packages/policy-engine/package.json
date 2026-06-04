@@ -21,6 +21,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@noble/hashes": "^2.0.1",
         "@mitch/layer-resolver": "workspace:*",
         "@mitch/predicates": "workspace:*",
         "@mitch/shared-crypto": "workspace:*",

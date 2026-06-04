@@ -280,7 +280,7 @@
 
 <p>The processing is <strong>necessary</strong> (legal requirements for identity verification), <strong>proportionate</strong> (only boolean predicates, not raw identity data), and <strong>safeguarded</strong> (crypto-shredding, selective disclosure, tamper-evident audit, metadata minimization).</p>
 
-<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides guarantees that exceed GDPR requirements — particularly for the right to erasure (Art. 17), where crypto-shredding provides mathematical proof of data destruction rather than relying on deletion promises.</p>
+<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides strong technical guarantees for the right to erasure (Art. 17): crypto-shredding produces cryptographic proof that the decryption key was destroyed on the miTch side, rendering miTch-held ciphertext permanently unrecoverable — rather than relying on deletion promises. This attests to wallet-/miTch-side erasure and to minimization of what a verifier receives; it does not attest to what a relying party does with data disclosed to it out-of-band.</p>
 
 <div class="card" style="text-align:center; margin-top:2rem">
   <p style="font-size:1.1rem; font-weight:600">miTch — The Forgetting Layer</p>
