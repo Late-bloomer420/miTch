@@ -19,7 +19,7 @@ EUDI-CIR und DSGVO Art. 25 verlangen, dass auch Massenfreigaben (z. B. Führersc
 
 **Technische Umsetzung:**
 - `@mitch/wallet-core` erweitert um `issueBatchCredentials(claims[])` 
-- `@mitch/shared-crypto` rotiert automatisch Nullifier pro Credential
+- `@askmi/shared-crypto` rotiert automatisch Nullifier pro Credential
 - Fail-Closed: Bei jeder Batch-Session wird die Session-ID sofort nach Abschluss shredded
 
 ## Alternatives Considered

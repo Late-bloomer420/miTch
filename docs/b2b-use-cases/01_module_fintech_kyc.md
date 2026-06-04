@@ -80,7 +80,7 @@ sees which path produced it.**
 
 ## The Transformation — What the Module Does
 
-The relying party sends a `PredicateRequest` (`@mitch/shared-types`):
+The relying party sends a `PredicateRequest` (`@askmi/shared-types`):
 
 ```
 predicates:  [ kyc-reusable-v1 ]
@@ -188,12 +188,12 @@ The verifier stores **only** the WORM receipt (hashed binding + booleans), not c
 | ------------------------------ | ---------------------------------------------------------- |
 | `@mitch/policy-engine`         | Fail-closed evaluation; `jurisdiction.ts`, `geo-scope.ts`  |
 | `@mitch/predicates`            | DSL evaluation (`gte`, `in`, `eq`) over bank credential    |
-| `@mitch/shared-types`          | `PredicateRequest`, `DecisionProofPayload` shapes          |
-| `@mitch/shared-crypto`         | Pairwise DID per verifier; ECDSA proof; PQC migration path |
+| `@askmi/shared-types`          | `PredicateRequest`, `DecisionProofPayload` shapes          |
+| `@askmi/shared-crypto`         | Pairwise DID per verifier; ECDSA proof; PQC migration path |
 | `@mitch/oid4vci`               | Bank-issued SD-JWT VC issuance                             |
 | `@mitch/oid4vp`                | Presentation flow                                          |
 | `@mitch/verifier-sdk`          | Relying-party verification + replay-check hook             |
-| `@mitch/revocation-statuslist` | Fail-closed if KYC credential is revoked                   |
+| `@askmi/revocation-statuslist` | Fail-closed if KYC credential is revoked                   |
 | `@mitch/audit-log`             | WORM receipts for supervisory inspection                   |
 
 Relevant deny codes (`@mitch/policy-engine` → `deny-reason-codes.ts`):

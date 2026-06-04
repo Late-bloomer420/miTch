@@ -60,7 +60,7 @@ Age and identity bootstrap from a national eID (eIDAS 2.0) or bank-issued creden
 
 OASIS (BZgA, Germany), GAMSTOP (UK), or RUA (Italy) status is modelled as a **revocable
 credential**: holding it asserts "not currently self-excluded." Entering self-exclusion revokes
-it via `@mitch/revocation-statuslist`, so the next check at any operator fails closed
+it via `@askmi/revocation-statuslist`, so the next check at any operator fails closed
 (`DENY_CREDENTIAL_REVOKED`). The operator learns only the boolean, never the register record.
 
 ### Path C — Affordability (optional, PSD2 rail)
@@ -177,9 +177,9 @@ app.post('/session/authorize', async (req, res) => {
 | ------------------------------ | -------------------------------------------------------- |
 | `@mitch/policy-engine`         | Fail-closed eval; `rate-limiter.ts`, `proof-fatigue.ts`  |
 | `@mitch/predicates`            | Age / self-exclusion / limit DSL; `nullifier.ts`         |
-| `@mitch/shared-crypto`         | Pairwise DID per operator (cross-operator unlinkability) |
+| `@askmi/shared-crypto`         | Pairwise DID per operator (cross-operator unlinkability) |
 | `@mitch/webauthn-verifier`     | Step-up auth for high-value actions                      |
-| `@mitch/revocation-statuslist` | Self-exclusion = revocation, propagates everywhere       |
+| `@askmi/revocation-statuslist` | Self-exclusion = revocation, propagates everywhere       |
 | `@mitch/verifier-sdk`          | Operator-side verification + replay-check                |
 | `@mitch/audit-log`             | WORM receipts for GGL/UKGC inspection                    |
 

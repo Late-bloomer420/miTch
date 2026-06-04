@@ -37,7 +37,7 @@
 ### F-05: Audit export schema undefined
 **Severity:** 🟡 MEDIUM  
 **Issue:** Step 9 (export audit evidence) has no defined output schema. The dry-run assumes certain fields exist (requestHash, policyVersion, matchedRule, etc.) but there's no type definition.  
-**Fix:** Create `AuditRecord` type in `@mitch/shared-types` with all required fields.
+**Fix:** Create `AuditRecord` type in `@askmi/shared-types` with all required fields.
 
 ### F-06: `DENY_POLICY_MISMATCH` vs `DENY_NO_MATCHING_RULE` overlap
 **Severity:** 🟢 LOW  

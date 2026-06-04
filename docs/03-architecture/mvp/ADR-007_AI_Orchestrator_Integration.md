@@ -19,7 +19,7 @@ EUDI-CIR und DSGVO verlangen, dass auch automatisierte Entscheidungen (AI) unter
 
 **Technische Umsetzung:**
 - `@mitch/policy-engine` erweitert um `generateScopedDelegationToken`
-- `@mitch/shared-crypto` signiert Token mit ephemerem Key + sofortigem $0x00-Shredding nach Use-Count
+- `@askmi/shared-crypto` signiert Token mit ephemerem Key + sofortigem $0x00-Shredding nach Use-Count
 - AI-Inference läuft im Browser (WebAssembly / ONNX) – niemals Cloud
 
 ## Alternatives Considered

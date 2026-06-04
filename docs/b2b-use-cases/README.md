@@ -83,7 +83,7 @@ if (proof.allPassed) {
 }
 ```
 
-- Proof shape: `PredicateRequest` → `DecisionProofPayload` (`@mitch/shared-types`).
+- Proof shape: `PredicateRequest` → `DecisionProofPayload` (`@askmi/shared-types`).
 - Policy: fail-closed evaluation in `@mitch/policy-engine` (deny codes in `deny-reason-codes.ts`).
 - Audit: WORM receipts via `@mitch/audit-log` (GDPR Art. 32 / EHDS Art. 31).
 

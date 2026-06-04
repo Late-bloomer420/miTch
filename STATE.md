@@ -3,10 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-02
+**Date:** 2026-06-04
 **Branch:** `master` (default)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
+**Current master:** `b64f25f` (PR #66 merged)
 
 ---
 
@@ -20,6 +21,7 @@
 - Metadata budget: [`docs/ops/METADATA_BUDGET_V1.md`](docs/ops/METADATA_BUDGET_V1.md)
 - Failure-mode runbooks: [`docs/ops/RUNBOOKS_V1.md`](docs/ops/RUNBOOKS_V1.md)
 - Security Target (CC): [`docs/compliance/SECURITY_TARGET_CC_READY.md`](docs/compliance/SECURITY_TARGET_CC_READY.md)
+- QA evidence records: [`docs/qa/`](docs/qa/)
 - Deployment Orchestration: [`docker-compose.yml`](docker-compose.yml)
 
 ## Pilot path (v1.0-RC Stable)
@@ -30,8 +32,9 @@
 ## Current status
 
 ### Operational Health
-- **Tests:** 45/45 turbo tasks pass; **1820+ individual tests, 0 failures** (policy-engine 296, shared-crypto 241, mdoc 179, poc-hardened 132, wallet-pwa 88, oid4vp-verifier 52, oid4vci 35, consent-ui 23, …). **Suite re-verified 100% green** on master (2026-06-02).
-- **Lint:** 0 errors, 0 warnings
+- **GitHub Actions:** Post-merge `master` checks for PR #66 passed on 2026-06-04: ci-security, Deploy GitHub Pages, miTch CI/CD Pipeline, and CodeQL.
+- **Tests:** Full suite evidence remains 45/45 turbo tasks and 1820+ individual tests from the 2026-06-04 wallet recovery RC QA record. PR #66 additionally re-ran targeted package tests for the npm scope alignment (`revocation-statuslist`, `shared-crypto`, `audit-log`, `policy-engine`) before merge.
+- **Lint:** Last recorded repo-level lint gate passed in the 2026-06-04 QA evidence. Older notes mention a non-blocking verifier frontend `any` warning; treat exact lint-warning count as evidence-specific until next full local sweep.
 - **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
 - **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5174) → `/authorize` → Passkey Unlock → `/notify-scan` → consent → `/oid4vp-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache (verified integrity)
 - **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
@@ -40,13 +43,16 @@
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 
 ### Recent additions (since Session 11)
+- **npm scope alignment (2026-06-04, PR #66):** The three packages actually published to npm now use the public `@askmi/*` scope in code/config: `@askmi/shared-types`, `@askmi/shared-crypto`, and `@askmi/revocation-statuslist`. miTch remains the project name; most internal packages intentionally remain `@mitch/*`. See [`docs/NPM_SCOPE_RENAME_ASKMI.md`](docs/NPM_SCOPE_RENAME_ASKMI.md).
+- **README npm note (2026-06-04, PR #66):** Root README now documents that npm uses `@askmi/*` because `@mitch` was unavailable on npm. Post-merge checks on `master` are green.
+- **QA evidence surface:** `docs/qa/` contains dated validation records, including `WALLET_RECOVERY_RC_2026-06-04.md` and `MIT-10-demo-evidence.md`. These are evidence records, not general task tracking.
 - **Branch/PR Consolidation (2026-05-27):** all 10 open PRs resolved onto `master` and the branch/worktree sprawl cleared (22 → 3 remote branches; only `master`, the active `feat/mitch-ai-guardian`, and audit-retained `claude/relaxed-pike` remain). Stale-base PRs were never merged directly (they would have re-introduced paperclip / reverted recent work) — only their genuine net-new value was salvaged onto clean master: verifier **fail-closed** + no-PII-logging (#34), **Commercial Trust Kit** docs (#35), **B2B use-case modules** + repo-local **agent skills** + **ADR-010** Regulatory-Positioning Boundary (#37), **MCP-server freeze decisions** (#38), a date-coupled **PII-substring test fix** (#36), and the `_tmp_*` ignore rule (#39). Superseded/no-value PRs closed with rationale (#14/#16/#17/#18/#24/#26/#27/#30). Full suite re-verified green on the consolidated master.
 - **Repo Hardening & Hygiene:** `master` branch protection live (PR-only + required CI checks + **verified/signed commits** + no force-push/deletion); SSH commit signing configured and verified end-to-end (`verified: true`); **all 17 Dependabot alerts cleared → 0 open**; paperclip orchestrator runtime (a committed 1,895-file PostgreSQL data dir + phantom submodule) purged from `master` tracking and gitignored — docs `PAPERCLIP.md`/`MITCH_COMPANY.md` retained; pnpm temp stubs (`_tmp_*`) ignored.
 - **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping miTch security functions to Common Criteria (ISO/IEC 15408) requirements.
 - **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
 - **EUDI Trust List (TSL) Integration:** `EUDITrustListResolver` implemented in `shared-crypto`, providing dynamic lookup and validation of trusted issuers/verifiers with fail-closed logic. Operational documentation added in `docs/ops/TRUST_ANCHOR_ARCHITECTURE.md`.
 - **Compliance Gap Sprint:** Reached 98% EUDI CIR coverage (52/53). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, dynamic Trust List (TSL) integration, and Certification-Readiness artefacts. Remaining: formal CC certification.
-- **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@mitch/revocation-statuslist` package for live revocation fetch capability.
+- **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@askmi/revocation-statuslist` package for live revocation fetch capability.
 - **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
 - **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
 - **`@mitch/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).

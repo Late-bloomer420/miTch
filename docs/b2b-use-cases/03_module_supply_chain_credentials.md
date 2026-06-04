@@ -70,7 +70,7 @@ issuers are on the policy trust list; others → `DENY_UNTRUSTED_ISSUER`.
 
 A chamber / licensing authority issues a license as an ISO 18013-5 mdoc (`@mitch/mdoc`) so it can
 be presented by NFC tap at a site gate, offline if needed. Suspension revokes it via
-`@mitch/revocation-statuslist`.
+`@askmi/revocation-statuslist`.
 
 ### Path C — Tier-2 rollup attestation
 
@@ -191,7 +191,7 @@ verified by a handheld reader — no name, no ID number, decision in seconds.
 | `@mitch/oid4vci`               | Accredited-body credential issuance                  |
 | `@mitch/mdoc`                  | ISO 18013-5 license for NFC site-access tap          |
 | `@mitch/anchor-service`        | Merkle anchoring of multi-year audit chains          |
-| `@mitch/revocation-statuslist` | Withdrawn certificate / suspended license revocation |
+| `@askmi/revocation-statuslist` | Withdrawn certificate / suspended license revocation |
 | `@mitch/verifier-sdk`          | Buyer-side verification + replay-check               |
 | `@mitch/audit-log`             | WORM receipts as CSRD/CSDDD evidence                 |
 

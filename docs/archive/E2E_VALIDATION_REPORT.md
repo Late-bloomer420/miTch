@@ -69,7 +69,7 @@
 | @mitch/mock-issuer | ✅ | 14/14 ✅ | READY |
 | @mitch/policy-engine | ✅ | 42/42 ✅ | READY |
 | @mitch/layer-resolver | ✅ | N/A | READY |
-| @mitch/shared-types | ✅ | N/A | READY |
+| @askmi/shared-types | ✅ | N/A | READY |
 | All other packages | ✅ | Various | READY |
 
 **Total packages:** 18 (up from 17)

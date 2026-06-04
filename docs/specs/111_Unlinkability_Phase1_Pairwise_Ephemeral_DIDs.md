@@ -46,7 +46,7 @@ Wallet                          Verifier
 
 ### 2. Ephemeral Keypair per Interaction
 
-Location: `@mitch/shared-crypto/src/pairwise-did.ts`
+Location: `@askmi/shared-crypto/src/pairwise-did.ts`
 
 ```typescript
 interface PairwiseDIDOptions {

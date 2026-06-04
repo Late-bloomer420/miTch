@@ -70,7 +70,7 @@ Regulierte Märkte (Sportwetten, Health) brauchen:
 
 ## Entscheidung 6: Code-Audit STABLE packages
 
-**Empfehlung aus Inventur (02.05.2026):** `@mitch/shared-crypto` und `@mitch/policy-engine` sollten vor erster kommerzieller Nutzung unabhängig auditiert werden.
+**Empfehlung aus Inventur (02.05.2026):** `@askmi/shared-crypto` und `@mitch/policy-engine` sollten vor erster kommerzieller Nutzung unabhängig auditiert werden.
 
 **Status: Ausstehend.**
 

@@ -56,7 +56,7 @@ Naming-Konvention: `mitch_{verb}_{object}` (snake_case, Service-Prefix).
 |---|---|---|---|
 | `mitch_evaluate_disclosure` | core | `readOnlyHint: false`, `idempotentHint: true`, `destructiveHint: false`, `openWorldHint: false` | Verifier-Request + Policy + Context → DecisionCapsule. Kernroute. |
 | `mitch_verify_presentation` | core | `readOnlyHint: true` | OID4VP-Response prüfen (Signatur, Nonce, Holder-Binding). Delegiert an `@mitch/oid4vp-verifier`. |
-| `mitch_check_status` | core | `readOnlyHint: true` | Revocation/StatusList prüfen (`@mitch/revocation-statuslist`). |
+| `mitch_check_status` | core | `readOnlyHint: true` | Revocation/StatusList prüfen (`@askmi/revocation-statuslist`). |
 | `mitch_list_policies` | read | `readOnlyHint: true` | Aktive Policy-Manifests + Hashes auflisten. |
 | `mitch_get_policy` | read | `readOnlyHint: true` | Einzelne Policy nach `policy_hash` lesen. |
 | `mitch_get_decision` | read | `readOnlyHint: true` | DecisionCapsule per `decision_id` aus Audit-Log holen. |
@@ -154,9 +154,9 @@ Dependencies (extern):
 Dependencies (intern, workspace:*):
 - `@mitch/policy-engine`
 - `@mitch/oid4vp-verifier`
-- `@mitch/revocation-statuslist`
+- `@askmi/revocation-statuslist`
 - `@mitch/audit-log`
-- `@mitch/shared-types`
+- `@askmi/shared-types`
 - `@mitch/anchor-service` (optional, für `anchor_status`)
 
 ## 8. Test- und Release-Strategie

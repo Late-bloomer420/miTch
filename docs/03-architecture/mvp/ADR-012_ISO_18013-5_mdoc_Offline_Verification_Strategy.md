@@ -20,7 +20,7 @@ EUDI-CIR und ISO 18013-5 verlangen Offline-Proofs ohne Linkability oder PII-Leak
 
 **Technische Umsetzung:**
 - `@mitch/wallet-core` erweitert um `issueMdoc(claims)` + `verifyOfflineMdoc()`
-- `@mitch/shared-crypto` nutzt CBOR + COSE für mdoc (parallel zu SD-JWT)
+- `@askmi/shared-crypto` nutzt CBOR + COSE für mdoc (parallel zu SD-JWT)
 - Fail-Closed: Bei fehlendem Offline-Consent → gesamter Batch DENY
 
 ## Alternatives Considered

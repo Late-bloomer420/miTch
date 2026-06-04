@@ -100,7 +100,7 @@ PolicyContext {
 
 **Current State:** PolicyEngine returns reason codes, but NOT standardized across system
 
-**Fix Required:** Create `ReasonCode` enum in `@mitch/shared-types`
+**Fix Required:** Create `ReasonCode` enum in `@askmi/shared-types`
 
 ---
 

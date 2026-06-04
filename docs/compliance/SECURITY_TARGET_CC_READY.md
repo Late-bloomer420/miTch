@@ -12,12 +12,12 @@ This document serves as the formal **Security Target (ST)** according to Common 
 
 | Objective | Security Function (SF) | Implementation Module |
 | :--- | :--- | :--- |
-| **User Authentication** | WebAuthn Hardware Binding | `@mitch/shared-crypto/webauthn.ts` |
-| **Data Integrity** | ECDSA (P-256) & COSE Sign1 | `@mitch/shared-crypto/signing.ts` |
+| **User Authentication** | WebAuthn Hardware Binding | `@askmi/shared-crypto/webauthn.ts` |
+| **Data Integrity** | ECDSA (P-256) & COSE Sign1 | `@askmi/shared-crypto/signing.ts` |
 | **Confidentiality** | AES-256-GCM Encryption | `@mitch/secure-storage` |
-| **Privacy (Minimization)** | SD-JWT Selective Disclosure | `@mitch/shared-crypto/sd-jwt-vc.ts` |
-| **Unlinkability** | Pairwise Ephemeral DIDs | `@mitch/shared-crypto/pairwise-did.ts` |
-| **Revocation Check** | W3C StatusList2021 | `@mitch/revocation-statuslist` |
+| **Privacy (Minimization)** | SD-JWT Selective Disclosure | `@askmi/shared-crypto/sd-jwt-vc.ts` |
+| **Unlinkability** | Pairwise Ephemeral DIDs | `@askmi/shared-crypto/pairwise-did.ts` |
+| **Revocation Check** | W3C StatusList2021 | `@askmi/revocation-statuslist` |
 
 ## 3. Mapping to CC Assurance Levels (EAL4+ Readiness)
 

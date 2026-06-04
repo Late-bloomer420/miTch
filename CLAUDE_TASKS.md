@@ -1,5 +1,10 @@
 # CLAUDE_TASKS.md — Session 10: Security Hardening + E2E Completion
 
+> **Historical session artifact. Do not treat this file as the current task
+> list.** Current repo authority is `docs/DOCS_CANON.md`; current operational
+> state is `STATE.md`; current task tracking is `docs/BACKLOG.md`. This file is
+> retained as audit/session context for March 2026 work.
+
 **Datum:** 2026-03-12
 **Vorgabe:** Autonome Abarbeitung, keine Rückfragen. Bei Blocker → `BLOCKED.md` schreiben.
 **Branch:** `master` (direkt committen + pushen nach jedem Block)

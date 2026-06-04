@@ -15,7 +15,7 @@ pnpm install
 # Build all packages (respects dependency graph)
 pnpm build
 
-# Run all tests (1411 individual tests across 40 turbo tasks)
+# Run all tests (latest QA evidence: 45 turbo tasks, 1820+ individual tests)
 pnpm test
 
 # Run tests for a single package
@@ -40,8 +40,8 @@ pnpm format
 ### Core packages
 
 - **policy-engine** — The central "Privacy Firewall" / ZKQF. Evaluates disclosure requests → ALLOW/DENY/PROMPT verdicts. Contains: engine.ts (main evaluator), kpi.ts, rate-limiter.ts, proof-fatigue.ts, jurisdiction.ts, config-profiles.ts, allow-assertion.ts
-- **shared-crypto** — All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
-- **shared-types** — Central type definitions shared across all packages
+- **shared-crypto** — Published as `@askmi/shared-crypto`. All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
+- **shared-types** — Published as `@askmi/shared-types`. Central type definitions shared across all packages
 - **layer-resolver** — Resolves trust layers and credential schemas
 - **data-flow** — Transaction transparency and audit grouping
 
@@ -57,7 +57,7 @@ pnpm format
 ### Infrastructure packages
 
 - **anchor-service** — Merkle batch anchoring + L2 provider stubs
-- **revocation-statuslist** — StatusList2021, multi-source resolver
+- **revocation-statuslist** — Published as `@askmi/revocation-statuslist`. StatusList2021, multi-source resolver
 - **secure-storage** — IndexedDB-backed encrypted storage (uses fake-indexeddb in tests)
 - **secure-memory** — Memory-safe credential handling
 - **audit-log** — Immutable audit trail
@@ -80,6 +80,8 @@ pnpm format
 - **Test framework:** Vitest. Some packages use `environment: 'node'`, wallet-pwa uses `environment: 'jsdom'` with setup files for IndexedDB mocking.
 - **No breaking changes** to public package APIs without explicit approval.
 - **policy-engine index.ts** has many exports — check for naming conflicts when adding new modules.
+- **npm scope reality:** miTch is the project name. Only the three published packages above use `@askmi/*`; do not perform a blanket `@mitch/*` rename.
+- **Repo truth sources:** Read `docs/DOCS_CANON.md` before updating status, backlog, QA evidence, session history, or agent-facing instructions.
 
 ## Testing Notes
 

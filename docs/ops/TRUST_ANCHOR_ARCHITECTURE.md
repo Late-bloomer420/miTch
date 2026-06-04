@@ -24,7 +24,7 @@ To enable rapid prototyping without a live eIDAS Node, miTch currently employs *
 The transition to 100% compliance requires the use of the **EU Trusted List (TSL)**.
 
 ### EUDI Trust List Resolver
-The `EUDITrustListResolver` (`@mitch/shared-crypto`) replaces static lists with dynamic lookups.
+The `EUDITrustListResolver` (`@askmi/shared-crypto`) replaces static lists with dynamic lookups.
 
 1. **Source**: Fetches the official TSL from an EU-managed endpoint (e.g., `https://ec.europa.eu/.../lotl.xml` or a JSON-wrapped mirror).
 2. **Caching**: Implements a 24-hour cache with a "fail-closed" grace period.

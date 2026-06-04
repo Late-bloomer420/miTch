@@ -13,6 +13,7 @@ This file defines the authoritative document per topic area and serves as naviga
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
+| `docs/qa/` | Datierte QA-/Evidence-Artefakte | Was wurde konkret geprüft? |
 
 ## Authoritative Sources
 
@@ -23,13 +24,32 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Capability handshake + downgrade handling:** `docs/protocol/CAP_NEGOTIATION_V1.md`
 - **Metadata budget + anti-correlation controls:** `docs/ops/METADATA_BUDGET_V1.md`
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
+- **QA evidence archive:** `docs/qa/`
 
 ## Navigation
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
+- **QA evidence (date-specific validation records):** `docs/qa/`
 - **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
+
+## Agent and Memory Surfaces
+
+| Ort | Rolle |
+|-----|-------|
+| `AGENTS.md` | Aktuelle repo-lokale Regeln fuer Codex/OpenClaw/Coding Agents |
+| `CLAUDE.md` | Aktuelle repo-lokale Regeln fuer Claude Code |
+| `CLAUDE_TASKS.md` | Historisches Session-Artefakt, nicht aktueller Arbeitsauftrag |
+| `.agent/skills/**` | Versionierte repo-lokale Skills |
+| `.codex/agents/**` | Versionierte repo-lokale Codex-Agent-Konfiguration |
+| `.agents/`, `.claude/`, `.qodo/` | Lokale/ignored Agent-Runtime oder Tool-Konfiguration |
+| workspace `memory/*` | Private lokale OpenClaw-Memory, nicht portable Repo-Wahrheit |
+
+Wenn diese Flaechen widersprechen, gelten fuer den Repo-Stand zuerst
+`docs/DOCS_CANON.md`, `STATE.md`, `docs/BACKLOG.md`, `AGENTS.md` und die
+jeweilige aktuelle Tool-Datei. Historische Session-Aufgaben duerfen nicht als
+neuer Auftrag behandelt werden.
 
 ## Architecture Decision Records (3 Sammlungen)
 
@@ -46,3 +66,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - If README conflicts with the Evidence Pack, the Evidence Pack is authoritative.
 - If STATE.md conflicts with a protocol spec, the spec is authoritative.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
+- If QA evidence conflicts with STATE.md, prefer the newer dated evidence for
+  the specific validation it records, then update STATE.md in the next docs
+  alignment pass.
+- If repo docs reference workspace `memory/*`, treat that as local/private
+  context, not as portable public evidence.
