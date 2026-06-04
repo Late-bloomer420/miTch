@@ -71,6 +71,7 @@ paperclip-mitch-company-home/
 .claude/
 
 .gemini/
+.agents/
 gha-creds-*.json
 
 # Paperclip runtime and local company context.
