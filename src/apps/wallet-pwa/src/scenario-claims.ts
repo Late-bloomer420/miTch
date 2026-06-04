@@ -1,39 +1,11 @@
 /**
  * PoC scenario claims — hardcoded credential data per demo scenario.
  * In production, these would come from stored credentials in SecureStorage.
+ *
+ * Source of truth: `ASKMI_SCENARIO_CLAIMS` in `@askmi/shared-types`. This module
+ * re-exports it under the wallet's expected `Record<string, ...>` shape so the
+ * wallet and the verifier-demo backend cannot drift apart on demo claim values.
  */
-export const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = {
-    'liquor-store': {
-        age: 24,
-        birthDate: '2000-01-01',
-        name: 'Max Mustermann',
-        address: 'Zirl, AT',
-        nationalId: 'AT-123456',
-    },
-    'doctor-login': {
-        age: 35,
-        role: 'Surgeon',
-        licenseId: 'MED-998877',
-        employer: 'St. Mary Hospital',
-        salary: 'redacted',
-        homeAddress: 'redacted',
-    },
-    'ehds-er': {
-        bloodGroup: 'A+',
-        allergies: 'Penicillin, Cashew nuts',
-        emergencyContacts: 'Mother: +49-151-555-0100',
-        activeProblems: 'Asthma',
-        diagnosis: '[full history]',
-        geneticData: '[genetic profile]',
-        insuranceId: 'INS-redacted',
-    },
-    'pharmacy': {
-        medication: 'Amoxicillin 500mg',
-        dosageInstruction: '1 tablet every 8 hours',
-        refillsRemaining: 2,
-        diagnosis: '[prescribing diagnosis]',
-        insuranceId: 'INS-redacted',
-        geneticData: '[genetic markers]',
-    },
-    'revoked': { age: 24 },
-};
+import { ASKMI_SCENARIO_CLAIMS } from '@askmi/shared-types';
+
+export const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = ASKMI_SCENARIO_CLAIMS;

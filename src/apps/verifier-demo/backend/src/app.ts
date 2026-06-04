@@ -22,7 +22,7 @@ import {
   SCENARIO_LABELS,
 } from '@askmi/oid4vp';
 import { trustListResolver } from '@askmi/shared-crypto';
-import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
+import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT, ASKMI_SCENARIO_CLAIMS } from '@askmi/shared-types';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
@@ -69,42 +69,17 @@ let lastIssuer: string | null = null;
 let lastDisclosedClaims: Record<string, unknown> | null = null;
 let lastConsentReceipt: Record<string, unknown> | null = null;
 
-// Scenario credential fixtures (wallet simulation claims)
-const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = {
-  'liquor-store': {
-    age: 24,
-    dateOfBirth: '2000-01-01',
-    name: 'Max Mustermann',
-    address: 'Zirl, AT',
-    nationalId: 'AT-123456',
-  },
-  'doctor-login': {
-    age: 35,
-    role: 'Surgeon',
-    licenseId: 'MED-998877',
-    employer: 'St. Mary Hospital',
-    salary: 'redacted',
-    homeAddress: 'redacted',
-  },
-  'ehds-er': {
-    bloodGroup: 'A+',
-    allergies: 'Penicillin, Cashew nuts',
-    emergencyContacts: 'Mother: +49-151-555-0100',
-    activeProblems: 'Asthma',
-    diagnosis: '[full history]',
-    geneticData: '[genetic profile]',
-    insuranceId: 'INS-redacted',
-  },
-  pharmacy: {
-    medication: 'Amoxicillin 500mg',
-    dosageInstruction: '1 tablet every 8 hours',
-    refillsRemaining: 2,
-    diagnosis: '[prescribing diagnosis]',
-    insuranceId: 'INS-redacted',
-    geneticData: '[genetic markers]',
-  },
-  revoked: { age: 24 },
-};
+// Scenario credential fixtures (wallet simulation claims).
+// Derived from the canonical ASKMI_SCENARIO_CLAIMS so the backend cannot drift
+// apart from the wallet PWA. The protocol layer uses `dateOfBirth`, while the
+// canonical (holder-domain) fixtures use `birthDate`; we alias that key here at
+// the protocol boundary (mirroring the wallet's own birthDate -> dateOfBirth map).
+const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = Object.fromEntries(
+  Object.entries(ASKMI_SCENARIO_CLAIMS).map(([id, claims]) => {
+    const { birthDate, ...rest } = claims as Record<string, unknown>;
+    return [id, birthDate !== undefined ? { ...rest, dateOfBirth: birthDate } : rest];
+  }),
+);
 
 const KEY_FILE = path.join(process.cwd(), 'verifier-key.json');
 const NONCE_STORE_FILE = path.join(process.cwd(), 'nonce-cache.json');

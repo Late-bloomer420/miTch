@@ -71,6 +71,16 @@ pnpm lint
   scans `src`, `.github`, and root config files for stale `@mitch/*`,
   `did:mitch`, `mitch.demo`, and `MitchPolicyEvaluator` references while
   leaving historical docs/evidence out of scope.
+- 2026-06-04: Completed S2-04 demo-scenario fixture slice. The demo claim values
+  were triplicated across the wallet PWA, the verifier-demo backend, and the
+  verifier frontend, and had already drifted (`doctor-login` age was 24 in the
+  frontend vs 35 in backend/wallet). Added canonical `ASKMI_SCENARIO_CLAIMS` in
+  `@askmi/shared-types`; wallet and backend now derive from it (backend aliases
+  the holder-domain `birthDate` to the protocol `dateOfBirth`, preserving the
+  intentional layer boundary). The frontend `data/scenarios.ts` was kept as local
+  presentation copy (per the "do not over-generalize UX copy" criterion); only
+  its drifted age value was corrected to 35. See
+  `docs/qa/BIG_AUDIT_SCENARIO_FIXTURES_2026-06-04.md`.
 - 2026-06-04: Completed S2-05 status-list test-fixture slice. `makeStatusListEntry`
   and `makeStatusListCredential` were copy/pasted across three test surfaces
   (`revocation-statuslist` checker + multi-source, `@askmi/integration-tests`)
