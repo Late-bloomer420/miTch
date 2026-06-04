@@ -51,14 +51,20 @@
 
 - `pnpm --filter @askmi/shared-types build` — pass
 - `pnpm build` — pass, 30/30 Turbo tasks
-- `pnpm test` — pass, 45/45 Turbo tasks (wallet-pwa 94, verifier-backend green)
+- `pnpm test` — pass, 46/46 Turbo tasks (wallet-pwa 94, verifier-backend green,
+  verifier-frontend drift guard 6)
 - `pnpm lint` — pass, 10/10 Turbo tasks
 - `pnpm guard:rebrand` — pass
 
-## Follow-Up Backlog
+## Drift Guard
 
-- Optional: add a small drift-guard test asserting the frontend's non-redacted
-  display values stay consistent with `ASKMI_SCENARIO_CLAIMS`, so the
-  deliberately-decoupled presentation copy cannot silently drift again.
+- Added `src/apps/verifier-demo/frontend/src/data/scenarios.guard.test.ts` (plus
+  minimal vitest setup — the frontend had no tests before). It asserts that the
+  frontend's displayed **real** claim values match `ASKMI_SCENARIO_CLAIMS`, while
+  deliberately skipping redaction/placeholder copy and not requiring the frontend
+  to show every claim. This keeps the decoupled presentation copy from silently
+  drifting again without forcing it into the shared abstraction.
+
+## Follow-Up Backlog
 - S2-05 (P2) remains open: promote trust-/status-list test fixtures into a
   reusable test helper.
