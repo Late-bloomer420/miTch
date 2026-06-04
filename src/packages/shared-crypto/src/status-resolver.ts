@@ -4,7 +4,7 @@
  */
 
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
-import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@askmi/revocation-statuslist/src/types';
+import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@askmi/revocation-statuslist';
 import type { StatusClaim } from './sd-jwt-vc';
 
 /**

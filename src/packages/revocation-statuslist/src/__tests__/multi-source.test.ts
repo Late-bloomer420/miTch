@@ -7,19 +7,13 @@ import {
     encodeStatusListBitstring,
     extractRevokedIndices,
 } from '../multi-source';
-import type { StatusListEntry } from '../types';
+import { makeStatusListEntry } from '../test-helpers';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
-function makeEntry(url: string, index: string = '0'): StatusListEntry {
-    return {
-        id: `${url}#${index}`,
-        type: 'StatusList2021Entry',
-        statusPurpose: 'revocation',
-        statusListIndex: index,
-        statusListCredential: url,
-    };
-}
+// Local convention is `(url, index)` (reversed vs the shared builder); this thin
+// adapter reuses the shared fixture (S2-05) without copying its body.
+const makeEntry = (url: string, index: string = '0') => makeStatusListEntry(index, url);
 
 // ─── Bitstring Tests (Spec 68) ─────────────────────────────────────
 

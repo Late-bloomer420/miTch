@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { StatusListRevocationChecker } from '../index';
-import type { StatusListEntry, StatusListCredential } from '../types';
+import type { StatusListCredential } from '../types';
+import { makeStatusListEntry, makeStatusListCredential } from '../test-helpers';
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────
+
+// Reuse the shared StatusList2021 entry builder (S2-05). Local convention is
+// `makeEntry(index, url)`, matching the shared builder's signature.
+const makeEntry = makeStatusListEntry;
 
 function makeEncodedList(revokedIndices: number[], byteCount = 4): string {
   const bytes = new Uint8Array(byteCount);
@@ -17,33 +22,15 @@ function makeEncodedList(revokedIndices: number[], byteCount = 4): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
+// Reuse the shared credential shell (S2-05); the bitstring encoding stays local.
 function makeCredential(
   revokedIndices: number[],
   purpose: 'revocation' | 'suspension' = 'revocation',
 ): StatusListCredential {
-  return {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    id: 'https://example.com/status-list/1',
-    type: ['VerifiableCredential', 'StatusList2021Credential'],
-    issuer: 'did:example:issuer',
-    issuanceDate: new Date().toISOString(),
-    credentialSubject: {
-      id: 'https://example.com/status-list/1#list',
-      type: 'StatusList2021',
-      statusPurpose: purpose,
-      encodedList: makeEncodedList(revokedIndices),
-    },
-  };
-}
-
-function makeEntry(index: number, url = 'https://example.com/status-list/1'): StatusListEntry {
-  return {
-    id: `${url}#${index}`,
-    type: 'StatusList2021Entry',
-    statusPurpose: 'revocation',
-    statusListIndex: String(index),
-    statusListCredential: url,
-  };
+  return makeStatusListCredential({
+    encodedList: makeEncodedList(revokedIndices),
+    statusPurpose: purpose,
+  });
 }
 
 function mockFetchOk(credential: StatusListCredential): typeof fetch {

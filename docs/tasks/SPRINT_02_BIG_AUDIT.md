@@ -81,3 +81,14 @@ pnpm lint
   presentation copy (per the "do not over-generalize UX copy" criterion); only
   its drifted age value was corrected to 35. See
   `docs/qa/BIG_AUDIT_SCENARIO_FIXTURES_2026-06-04.md`.
+- 2026-06-04: Completed S2-05 status-list test-fixture slice. `makeStatusListEntry`
+  and `makeStatusListCredential` were copy/pasted across three test surfaces
+  (`revocation-statuslist` checker + multi-source, `@askmi/integration-tests`)
+  and had already drifted in signature (`(index, url)` vs reversed `(url, index)`).
+  Extracted them into `@askmi/revocation-statuslist/test-helpers`; all three
+  surfaces now reuse the shared builders. The bitstring encoding stays local to
+  each caller, so revocation semantics are unchanged. Adding the package
+  `exports` map also surfaced and fixed a pre-existing anti-pattern: shared-crypto
+  deep-imported `@askmi/revocation-statuslist/src/types`; it now imports the
+  re-exported types from the package root. See
+  `docs/qa/BIG_AUDIT_STATUSLIST_FIXTURES_2026-06-04.md`.
