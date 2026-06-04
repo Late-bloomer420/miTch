@@ -14,7 +14,7 @@
  * SECURITY: Fail-closed — any resolution or key extraction failure = DENY
  */
 
-import { DIDDocument } from '@mitch/shared-types';
+import { DIDDocument } from '@askmi/shared-types';
 import { importJWK } from 'jose';
 import type { KeyLike, JWK } from 'jose';
 import { resolveDidPeer0 } from './pairwise-did';

@@ -28,7 +28,7 @@ import type {
     InteractionMetadata,
     StoredCredentialMetadata,
     Requirement
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import { DenialResolver } from './catalog';
 import { extractCountryFromDid, isAllowedByGeoScope } from './geo-scope';
 import {
@@ -37,7 +37,7 @@ import {
     includesLayer,
     getLayerName
 } from '@mitch/layer-resolver';
-import { generatePairwiseDID, sha256, canonicalStringify } from '@mitch/shared-crypto';
+import { generatePairwiseDID, sha256, canonicalStringify } from '@askmi/shared-crypto';
 
 /**
  * Context for policy evaluation.

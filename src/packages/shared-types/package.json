@@ -1,7 +1,10 @@
 {
-    "name": "@mitch/shared-types",
-    "version": "0.0.1",
+    "name": "@askmi/shared-types",
+    "version": "0.1.0",
     "type": "module",
+    "publishConfig": {
+        "access": "public"
+    },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {

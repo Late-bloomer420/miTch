@@ -15,7 +15,7 @@ export type {
     LegacyPredicateOperator as PredicateOperator,
     LegacyPredicateConstraint as PredicateConstraint,
     LegacyAttributeKey as AttributeKey
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 export * from './policy-validator';
 export * from './deny-reason-codes';

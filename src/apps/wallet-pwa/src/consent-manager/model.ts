@@ -1,4 +1,4 @@
-import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@mitch/shared-types';
+import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@askmi/shared-types';
 import { DataFlowService } from '@mitch/data-flow';
 import type { DataFlowTransaction, IdentityFirewallAccess } from '@mitch/data-flow';
 import type { ConsentReceipt } from '@mitch/oid4vp';

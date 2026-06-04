@@ -12,13 +12,13 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PolicyEngine } from '@mitch/policy-engine';
-import { generatePairwiseDID } from '@mitch/shared-crypto';
+import { generatePairwiseDID } from '@askmi/shared-crypto';
 import { buildVPToken } from '@mitch/oid4vp';
 import type {
   PolicyManifest,
   VerifierRequest,
   StoredCredentialMetadata,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import type { EvaluationContext } from '@mitch/policy-engine';
 
 // ─── Shared Fixtures ──────────────────────────────────────────────────────────

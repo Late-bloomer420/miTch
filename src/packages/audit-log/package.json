@@ -20,8 +20,8 @@
         "lint": "tsc --noEmit"
     },
     "dependencies": {
-        "@mitch/shared-crypto": "workspace:*",
-        "@mitch/shared-types": "workspace:*"
+        "@askmi/shared-crypto": "workspace:*",
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.0.0",

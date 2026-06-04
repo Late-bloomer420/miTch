@@ -16,7 +16,7 @@ import {
     SCENARIO_PRESENTATION_DEFINITIONS,
     SCENARIO_VCT,
 } from '../demo-flow';
-import { statusResolver } from '@mitch/shared-crypto';
+import { statusResolver } from '@askmi/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

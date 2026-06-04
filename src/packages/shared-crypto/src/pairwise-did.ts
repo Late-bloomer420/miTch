@@ -11,7 +11,7 @@
 
 import { EphemeralKey } from './ephemeral-key';
 import { crypto } from './platform';
-import type { DIDDocument } from '@mitch/shared-types';
+import type { DIDDocument } from '@askmi/shared-types';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 

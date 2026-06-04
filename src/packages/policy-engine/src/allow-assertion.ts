@@ -8,7 +8,7 @@
  * Invariant: no code path can produce ALLOW without an explicit PolicyRule match.
  */
 
-import type { DecisionCapsule } from '@mitch/shared-types';
+import type { DecisionCapsule } from '@askmi/shared-types';
 
 // ─── Allow Evidence ────────────────────────────────────────────────
 

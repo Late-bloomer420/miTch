@@ -63,15 +63,15 @@ importers:
 
   src/apps/issuer-mock:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../../packages/shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@mitch/mdoc':
         specifier: workspace:*
         version: link:../../packages/mdoc
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../../packages/shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../../packages/shared-types
       cors:
         specifier: ^2.8.5
         version: 2.8.6
@@ -112,18 +112,18 @@ importers:
 
   src/apps/verifier-demo/backend:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../../../packages/shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../../../packages/shared-types
       '@mitch/oid4vp':
         specifier: workspace:*
         version: link:../../../packages/oid4vp
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../../../packages/predicates
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../../../packages/shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../../../packages/shared-types
       '@mitch/verifier-sdk':
         specifier: workspace:*
         version: link:../../../packages/verifier-sdk
@@ -195,6 +195,12 @@ importers:
 
   src/apps/wallet-pwa:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../../packages/shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@mitch/audit-log':
         specifier: workspace:*
         version: link:../../packages/audit-log
@@ -216,12 +222,6 @@ importers:
       '@mitch/secure-storage':
         specifier: workspace:*
         version: link:../../packages/secure-storage
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../../packages/shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../../packages/shared-types
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -271,7 +271,7 @@ importers:
 
   src/packages/anchor-service:
     dependencies:
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -287,10 +287,10 @@ importers:
 
   src/packages/audit-log:
     dependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -309,15 +309,15 @@ importers:
 
   src/packages/benchmarks:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/audit-log':
         specifier: workspace:*
         version: link:../audit-log
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
     devDependencies:
       '@types/node':
         specifier: ^20.11.0
@@ -350,7 +350,7 @@ importers:
 
   src/packages/data-flow:
     dependencies:
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -410,6 +410,15 @@ importers:
 
   src/packages/integration-tests:
     dependencies:
+      '@askmi/revocation-statuslist':
+        specifier: workspace:*
+        version: link:../revocation-statuslist
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/eid-issuer-connector':
         specifier: workspace:*
         version: link:../eid-issuer-connector
@@ -425,15 +434,6 @@ importers:
       '@mitch/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
-      '@mitch/revocation-statuslist':
-        specifier: workspace:*
-        version: link:../revocation-statuslist
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
       '@mitch/webauthn-verifier':
         specifier: workspace:*
         version: link:../webauthn-verifier
@@ -459,12 +459,12 @@ importers:
 
   src/packages/mcp-server:
     dependencies:
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
       '@modelcontextprotocol/sdk':
         specifier: ^1.10.0
         version: 1.29.0(zod@3.25.76)
@@ -522,15 +522,15 @@ importers:
 
   src/packages/oid4vci:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/policy-engine':
         specifier: workspace:*
         version: link:../policy-engine
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -544,10 +544,10 @@ importers:
 
   src/packages/oid4vp:
     dependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
       jose:
@@ -600,10 +600,10 @@ importers:
 
   src/packages/poc-hardened:
     dependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -619,18 +619,18 @@ importers:
 
   src/packages/policy-engine:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/layer-resolver':
         specifier: workspace:*
         version: link:../layer-resolver
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../predicates
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
     devDependencies:
       '@mitch/mock-issuer':
         specifier: workspace:*
@@ -650,7 +650,7 @@ importers:
 
   src/packages/predicates:
     dependencies:
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
       '@noble/hashes':
@@ -685,7 +685,7 @@ importers:
 
   src/packages/secure-memory:
     devDependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
       vitest:
@@ -694,10 +694,10 @@ importers:
 
   src/packages/secure-storage:
     dependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -732,10 +732,10 @@ importers:
 
   src/packages/shared-crypto:
     dependencies:
-      '@mitch/revocation-statuslist':
+      '@askmi/revocation-statuslist':
         specifier: workspace:^
         version: link:../revocation-statuslist
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
       '@noble/curves':
@@ -781,10 +781,10 @@ importers:
 
   src/packages/verifier-browser:
     dependencies:
-      '@mitch/shared-crypto':
+      '@askmi/shared-crypto':
         specifier: workspace:*
         version: link:../shared-crypto
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
@@ -800,15 +800,15 @@ importers:
 
   src/packages/verifier-sdk:
     dependencies:
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@mitch/predicates':
         specifier: workspace:*
         version: link:../predicates
-      '@mitch/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@mitch/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
     devDependencies:
       rimraf:
         specifier: ^5.0.0
@@ -822,7 +822,7 @@ importers:
 
   src/packages/wallet-core:
     dependencies:
-      '@mitch/shared-types':
+      '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:

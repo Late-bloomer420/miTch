@@ -10,4 +10,4 @@ export type {
     PredicateErrorCode,
     PredicateVerificationResult,
     DecisionProofPayload
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';

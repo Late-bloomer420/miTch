@@ -9,7 +9,7 @@
  */
 
 import { ResolveKey, ResolvedKey } from './keyResolver';
-import { DIDResolver, DIDResolverOptions } from '@mitch/shared-crypto';
+import { DIDResolver, DIDResolverOptions } from '@askmi/shared-crypto';
 
 export function createDIDKeyResolver(
     fallback: ResolveKey,

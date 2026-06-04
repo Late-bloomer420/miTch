@@ -42,7 +42,7 @@ import {
     decryptJWE,
 } from './crypto.js';
 
-import { DIDSignatureVerifier } from '@mitch/shared-crypto';
+import { DIDSignatureVerifier } from '@askmi/shared-crypto';
 
 /**
  * Default in-memory session storage

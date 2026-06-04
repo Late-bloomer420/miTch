@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DataFlowService } from '../service';
 import { eventLabel } from '../labels';
-import type { AuditLogEntry } from '@mitch/shared-types';
+import type { AuditLogEntry } from '@askmi/shared-types';
 
 function makeEntry(
   overrides: Partial<AuditLogEntry> & Pick<AuditLogEntry, 'action'>

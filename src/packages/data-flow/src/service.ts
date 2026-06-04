@@ -1,4 +1,4 @@
-import type { AuditLogEntry, AuditEventType, IdentityFirewallMetadata } from '@mitch/shared-types';
+import type { AuditLogEntry, AuditEventType, IdentityFirewallMetadata } from '@askmi/shared-types';
 import type { DataFlowTransaction, DataFlowEvent } from './types';
 import { eventLabel } from './labels';
 

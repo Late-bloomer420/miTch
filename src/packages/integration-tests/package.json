@@ -11,11 +11,11 @@
     "@mitch/mock-issuer": "workspace:*",
     "@mitch/policy-engine": "workspace:*",
     "@mitch/layer-resolver": "workspace:*",
-    "@mitch/revocation-statuslist": "workspace:*",
+    "@askmi/revocation-statuslist": "workspace:*",
     "@mitch/eid-issuer-connector": "workspace:*",
     "@mitch/webauthn-verifier": "workspace:*",
-    "@mitch/shared-types": "workspace:*",
-    "@mitch/shared-crypto": "workspace:*",
+    "@askmi/shared-types": "workspace:*",
+    "@askmi/shared-crypto": "workspace:*",
     "@mitch/oid4vp": "workspace:*"
   },
   "devDependencies": {

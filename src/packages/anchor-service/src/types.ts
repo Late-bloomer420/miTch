@@ -5,9 +5,9 @@ export type {
     AnchorSubmit,
     AnchorBatchReceipt,
     InclusionProof
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
-import type { Hex32, AnchorRef } from '@mitch/shared-types';
+import type { Hex32, AnchorRef } from '@askmi/shared-types';
 
 export interface AnchorServiceConfig {
     maxBatchSize: number;

@@ -9,8 +9,8 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*",
-        "@mitch/shared-crypto": "workspace:*",
+        "@askmi/shared-types": "workspace:*",
+        "@askmi/shared-crypto": "workspace:*",
         "jose": "^5.2.0"
     },
     "devDependencies": {

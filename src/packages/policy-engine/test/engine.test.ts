@@ -1,7 +1,7 @@
 
 import { describe, test, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../src/engine';
-import type { VerifierRequest, PolicyManifest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type { VerifierRequest, PolicyManifest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const baseContext: EvaluationContext = {
     timestamp: Date.now(),

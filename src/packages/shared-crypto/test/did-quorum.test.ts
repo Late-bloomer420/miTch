@@ -3,7 +3,7 @@ import {
     QuorumDIDResolver,
     QUORUM_PROFILES,
 } from '../src/did-quorum';
-import type { DIDDocument } from '@mitch/shared-types';
+import type { DIDDocument } from '@askmi/shared-types';
 
 function makeDoc(id: string, keyId: string): DIDDocument {
     return {

@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { AuditLog, verifyAuditReport } from '../src/index';
-import { generateKeyPair } from '@mitch/shared-crypto';
+import { generateKeyPair } from '@askmi/shared-crypto';
 
 describe('Adversarial Tests: Audit Log Tampering (A1-A6)', () => {
     let auditKeys: CryptoKeyPair;

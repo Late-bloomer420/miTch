@@ -1,5 +1,5 @@
 import { webcrypto, createHash } from 'node:crypto';
-import type { IEphemeralKey } from '@mitch/shared-crypto';
+import type { IEphemeralKey } from '@askmi/shared-crypto';
 
 export interface ShredProof {
     timestamp: string;

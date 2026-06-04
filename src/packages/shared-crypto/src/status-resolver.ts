@@ -3,7 +3,7 @@
  * Wires @mitch/revocation-statuslist into the shared-crypto suite.
  */
 
-import { StatusListRevocationChecker } from '@mitch/revocation-statuslist';
+import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
 import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@mitch/revocation-statuslist/src/types';
 import type { StatusClaim } from './sd-jwt-vc';
 

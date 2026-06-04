@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest';
 import { validatePolicy, checkManifestRollback } from '../src/policy-validator';
-import { PolicyManifest } from '@mitch/shared-types';
+import { PolicyManifest } from '@askmi/shared-types';
 
 const VALID_HASH = 'a'.repeat(64); // 64 hex chars
 

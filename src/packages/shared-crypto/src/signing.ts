@@ -19,7 +19,7 @@ import { SignJWT, jwtVerify, importJWK } from 'jose';
 import type {
     VerifiableCredential,
     Proof,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 /**
  * Sign a Verifiable Credential (VC) with a private ECDSA key.

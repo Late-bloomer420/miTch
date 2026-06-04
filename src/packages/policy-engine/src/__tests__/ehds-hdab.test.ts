@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const HDAB_POLICY: PolicyManifest = {
   version: '1.2',

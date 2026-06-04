@@ -7,7 +7,7 @@
  * Multi-resolver quorum for DID resolution. Prevents single-point manipulation.
  */
 
-import type { DIDDocument } from '@mitch/shared-types';
+import type { DIDDocument } from '@askmi/shared-types';
 
 // ─── Config Profiles (Spec 83) ─────────────────────────────────────
 

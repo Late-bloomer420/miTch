@@ -15,8 +15,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*",
-        "@mitch/shared-crypto": "workspace:*"
+        "@askmi/shared-types": "workspace:*",
+        "@askmi/shared-crypto": "workspace:*"
     },
     "devDependencies": {
         "typescript": "^5.3.0",

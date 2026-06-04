@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@mitch/policy-engine": "workspace:*",
-    "@mitch/shared-types": "workspace:*",
+    "@askmi/shared-types": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.10.0",
     "zod": "^3.25.0"
   },

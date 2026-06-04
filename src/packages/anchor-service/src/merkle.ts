@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { Hex32, InclusionProof } from '@mitch/shared-types';
+import { Hex32, InclusionProof } from '@askmi/shared-types';
 import { MerkleBuildResult } from './types.js';
 
 /**

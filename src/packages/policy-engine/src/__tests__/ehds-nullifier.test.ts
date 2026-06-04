@@ -11,7 +11,7 @@ import type {
   PolicyManifest,
   VerifierRequest,
   StoredCredentialMetadata,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 // --- Fixtures ---
 

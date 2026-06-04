@@ -13,7 +13,7 @@
  * 6. Delegation Safety
  */
 
-import { PolicyManifest, PolicyRule, TrustedIssuer } from '@mitch/shared-types';
+import { PolicyManifest, PolicyRule, TrustedIssuer } from '@askmi/shared-types';
 
 export interface ValidationResult {
     valid: boolean;

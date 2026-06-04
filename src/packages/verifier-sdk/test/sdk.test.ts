@@ -12,7 +12,7 @@ import {
     generateKeyPair,
     EphemeralKey,
     canonicalStringify,
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 
 // Polyfill for Node environment if needed (Vitest usually handles this but explicit is safe)
 const crypto = globalThis.crypto;

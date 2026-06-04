@@ -13,8 +13,8 @@
  * - T-36a: Supports selective claim decryption for data minimization
  */
 
-import { encrypt, decrypt } from '@mitch/shared-crypto';
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import { encrypt, decrypt } from '@askmi/shared-crypto';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 /**
  * Structure of a document stored in IndexedDB.

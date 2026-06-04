@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
 import { extractCountryFromDid, isAllowedByGeoScope } from '../geo-scope';
-import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@mitch/shared-types';
+import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 // ─── Helper function unit tests ───
 
