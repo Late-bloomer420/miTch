@@ -22,11 +22,14 @@ pnpm dev
 
 # 3. Sanity Check: Tests müssen grün sein
 pnpm test
-# Erwartete Ausgabe: 44/44 tasks, 1664 tests passed
+# Erwartete Ausgabe: 45/45 tasks, 1820+ tests passed
 
 ```
 
 **Browser:** Chrome/Firefox, DevTools offen auf Console-Tab.
+**Port-Regel:** Die Wallet-Abnahme läuft auf `http://localhost:5174`. Wenn Vite auf
+`5175` ausweicht, läuft noch ein alter Dev-Server auf `5174`; für Release-Abnahmen den
+alten Prozess stoppen und die Wallet wieder auf `5174` starten.
 
 ---
 

@@ -1,28 +1,37 @@
 # Sprint Plan: Recovery, Hardening & Sovereignty (Phase 6b)
 
-**Status:** Planned
+**Status:** Epic 1 complete; wallet recovery RC accepted on `master`
 **Objective:** Safely restore security patches, integrate the Sovereignty Center UI without modifying the core architecture, polish existing components, and prepare the MCP Server for the "Agentic Future".
 **Rule of Engagement:** STRICT NON-DESTRUCTIVE MODE. No architectural refactoring. No deletion of core files.
+**Recovery Gate:** `v1.0.1-wallet-recovery-rc` on commit `f2a6ae1`; wallet flow accepted on canonical port `5174`, verifier `3004`, issuer `3005`.
 
 ---
 
 ## Epic 1: Security & Hardening (Immediate Fixes)
 *Restore the security posture lost during the rollback.*
 
-### Task 1.1: Dependency Patch (Vitest RCE)
-- **Target:** `src/apps/wallet-pwa/package.json`
-- **Action:** Update `vitest` dependency from `^4.0.18` to `^4.1.8`. Run `pnpm install` in the monorepo root.
-- **Acceptance Criteria:** `pnpm-lock.yaml` reflects the updated version. `pnpm audit` shows 0 critical vulnerabilities.
+### Task 1.1: Dependency Patch (Vitest RCE) — DONE
+- **Target:** Monorepo-wide Vitest usage, not only `src/apps/wallet-pwa/package.json`.
+- **Action:** Update Vitest consistently across the workspace and keep the lockfile/audit gate clean.
+- **Acceptance Criteria:** `pnpm audit` shows no known vulnerabilities.
 
-### Task 1.2: Anti-Fingerprinting Wiring (U-22 / U-23)
+### Task 1.2: Anti-Fingerprinting Wiring (U-22 / U-23) — DONE
 - **Target:** `src/apps/wallet-pwa/src/App.tsx`
 - **Action:** In the `proceedWithProof` function (around line 315), import and apply `padPayload`, `applyJitter`, and `UNIFORM_HEADERS` from `src/apps/wallet-pwa/src/utils/anti-fingerprinting.ts`.
 - **Acceptance Criteria:** The fetch request to the verifier endpoint includes uniform headers, the payload is padded to a fixed block size, and a random delay (jitter) is applied before sending.
+
+### Task 1.3: Recovery Flow Regression Gate — DONE
+- **Target:** `wallet-pwa` + `verifier-backend`
+- **Action:** Restore age predicate proof verification for the recovered demo credential shape and current verifier predicate result shape.
+- **Acceptance Criteria:** Wallet seed render, OID4VCI issuance, Age Proof, Doctor Login, ER Access, and Pharmacy flows pass on `5174` / `3004` / `3005`.
 
 ---
 
 ## Epic 2: Visual Sovereignty ("miTch Insights" Restoration)
 *Safely re-introduce the Data Value Ticker and Exposure Heatmap.*
+
+**Current status:** Analysis/prep only. Do not merge UI work into `master` until the
+recovery RC remains stable and the audit-log metadata contract is reconciled.
 
 ### Task 2.1: Data Aggregation Engine
 - **Target:** `src/packages/data-flow/src/InsightAggregator.ts` (New File), `src/packages/data-flow/src/summary.ts` (Update), `src/packages/data-flow/src/index.ts` (Update)
