@@ -9,8 +9,8 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            '@mitch/shared-types': path.resolve(__dirname, '../../packages/shared-types/src'),
-            '@mitch/shared-crypto': path.resolve(__dirname, '../../packages/shared-crypto/src'),
+            '@askmi/shared-types': path.resolve(__dirname, '../../packages/shared-types/src'),
+            '@askmi/shared-crypto': path.resolve(__dirname, '../../packages/shared-crypto/src'),
             '@mitch/policy-engine': path.resolve(__dirname, '../../packages/policy-engine/src'),
             '@mitch/audit-log': path.resolve(__dirname, '../../packages/audit-log/src'),
             '@mitch/secure-storage': path.resolve(__dirname, '../../packages/secure-storage/src'),

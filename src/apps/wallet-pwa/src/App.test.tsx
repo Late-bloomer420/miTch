@@ -3,7 +3,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { PolicyEvaluationResult } from '@mitch/shared-types';
+import type { PolicyEvaluationResult } from '@askmi/shared-types';
 
 const buildSDJWTPresentationMock = vi.hoisted(() => vi.fn());
 const walletServiceMockState = vi.hoisted(() => ({
@@ -54,9 +54,9 @@ vi.mock('./components/SecureZone', () => ({
   ),
 }));
 
-vi.mock('@mitch/shared-crypto', async () => {
+vi.mock('@askmi/shared-crypto', async () => {
   const actual =
-    await vi.importActual<typeof import('@mitch/shared-crypto')>('@mitch/shared-crypto');
+    await vi.importActual<typeof import('@askmi/shared-crypto')>('@askmi/shared-crypto');
   return {
     ...actual,
     WebAuthnService: {

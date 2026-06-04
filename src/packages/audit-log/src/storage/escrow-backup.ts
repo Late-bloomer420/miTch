@@ -1,4 +1,4 @@
-import { AuditLogEntry } from '@mitch/shared-types';
+import { AuditLogEntry } from '@askmi/shared-types';
 
 /**
  * Encrypted Escrow Backup Service

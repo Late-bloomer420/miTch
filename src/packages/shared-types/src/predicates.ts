@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/predicates
+ * @module @askmi/shared-types/predicates
  * 
  * Predicate type definitions for miTch identity infrastructure.
  * 

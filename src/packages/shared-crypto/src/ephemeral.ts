@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/ephemeral
+ * @module @askmi/shared-crypto/ephemeral
  * 
  * Ephemeral Key Management for Crypto-Shredding
  * 

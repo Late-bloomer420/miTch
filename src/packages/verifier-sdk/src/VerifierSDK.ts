@@ -2,7 +2,7 @@
 import {
     decrypt,
     canonicalStringify
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 
 interface DecryptedArtifact {
     proof: {
@@ -20,7 +20,7 @@ interface DecryptedArtifact {
 }
 import {
     VerifierRequest
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import {
     TransportPackage,
     VerificationResult,

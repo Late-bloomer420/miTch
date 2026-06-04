@@ -12,7 +12,7 @@ import {
     type PredicateRequest,
     type Predicate
 } from '@mitch/predicates';
-import { verifyData } from '@mitch/shared-crypto';
+import { verifyData } from '@askmi/shared-crypto';
 import {
     buildOID4VPRequest,
     buildSDJWTPresentation,
@@ -21,7 +21,7 @@ import {
     SCENARIO_VCT,
     SCENARIO_LABELS,
 } from '@mitch/oid4vp';
-import { trustListResolver } from '@mitch/shared-crypto';
+import { trustListResolver } from '@askmi/shared-crypto';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';

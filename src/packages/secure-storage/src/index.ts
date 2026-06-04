@@ -1,18 +1,18 @@
 /**
  * @module @mitch/secure-storage
- * 
+ *
  * Secure Storage Module for Verifiable Credentials
- * 
+ *
  * Provides encrypted storage for sensitive credential data.
  * All data is encrypted at rest using AES-256-GCM with a Master Key.
- * 
+ *
  * ## Architecture
  * - Pluggable backends via IStorageAdapter (IndexedDB, Memory, etc.)
  * - T-36a: Supports selective claim decryption for data minimization
  */
 
-import { encrypt, decrypt } from '@mitch/shared-crypto';
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import { encrypt, decrypt } from '@askmi/shared-crypto';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 import type { IStorageAdapter, EncryptedDocument } from './IStorageAdapter';
 import { BrowserIndexedDBAdapter } from './BrowserIndexedDBAdapter';
 
@@ -22,7 +22,7 @@ export * from './InMemoryStorageAdapter';
 
 /**
  * Secure Storage for Verifiable Credentials.
- * 
+ *
  * All credentials are encrypted before storage and can only be
  * decrypted with the correct Master Key. Implements data minimization
  * through selective claim decryption (T-36a).

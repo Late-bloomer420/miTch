@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@mitch/shared-types';
+import type { AuditLogEntry, PolicyEvaluationResult, VerifierRequest } from '@askmi/shared-types';
 import { buildConsentManagerViewModel } from '../model';
 import type { PrivacyConsent } from '../../services/PrivacyAuditService';
 

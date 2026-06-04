@@ -21,7 +21,7 @@ import {
     statusResolver,
     trustListResolver,
     type SDJWTVCPayload,
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 import type { JWK } from 'jose';
 import type {
     AuthorizationRequest,

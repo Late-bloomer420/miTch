@@ -5,7 +5,7 @@
  * DID Resolver profile (Spec 83).
  */
 
-import type { PolicyManifest } from '@mitch/shared-types';
+import type { PolicyManifest } from '@askmi/shared-types';
 
 // ─── Profile Types ─────────────────────────────────────────────────
 

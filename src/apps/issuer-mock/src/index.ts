@@ -1,9 +1,9 @@
 import cors from 'cors';
 import express from 'express';
-import { generateKeyPair, signVC } from '@mitch/shared-crypto';
+import { generateKeyPair, signVC } from '@askmi/shared-crypto';
 import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@mitch/mdoc';
 import type { ValidityInfo } from '@mitch/mdoc';
-import type { AgeCredential, CredentialRequest, CredentialResponse } from '@mitch/shared-types';
+import type { AgeCredential, CredentialRequest, CredentialResponse } from '@askmi/shared-types';
 
 const app = express();
 const allowedOrigins = new Set([

@@ -20,7 +20,7 @@ import {
     TokenExpiredError,
     VerifierError,
 } from '../src/types.js';
-import { generateKeyPair, EphemeralKey, canonicalStringify } from '@mitch/shared-crypto';
+import { generateKeyPair, EphemeralKey, canonicalStringify } from '@askmi/shared-crypto';
 
 const VERIFIER_DID = 'did:example:edge-verifier';
 

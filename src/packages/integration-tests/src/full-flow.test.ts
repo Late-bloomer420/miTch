@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { MockGovernmentIssuer, computeAgeProof } from '@mitch/mock-issuer';
 import { PolicyEngine } from '@mitch/policy-engine';
 import { ProtectionLayer } from '@mitch/layer-resolver';
-import { StatusListRevocationChecker } from '@mitch/revocation-statuslist';
+import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
 import { EIDIssuerConnector } from '@mitch/eid-issuer-connector';
-import type { PolicyRule } from '@mitch/shared-types';
+import type { PolicyRule } from '@askmi/shared-types';
 
 describe('E2E: Full Credential Lifecycle', () => {
   let mockIssuer: MockGovernmentIssuer;

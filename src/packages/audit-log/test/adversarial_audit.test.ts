@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { AuditLog, verifyAuditReport } from '../src/index';
-import { generateKeyPair } from '@mitch/shared-crypto';
+import { generateKeyPair } from '@askmi/shared-crypto';
 
 describe('Adversarial Tests: Audit Log Tampering (A1-A6)', () => {
     let auditKeys: CryptoKeyPair;
@@ -98,7 +98,7 @@ describe('Adversarial Tests: Audit Log Tampering (A1-A6)', () => {
         await log.append('KEY_CREATED', 'key-1');
         const report = await log.exportReport();
 
-        // Attack: Modify an entry AND IT'S HASH (simulating a "cleaner" hack), 
+        // Attack: Modify an entry AND IT'S HASH (simulating a "cleaner" hack),
         // but can't forge the report-level signature.
         report.entries[0].action = 'VC_IMPORTED';
         report.entries[0].currentHash = '0'.repeat(64); // Invalid hash but testing report sig

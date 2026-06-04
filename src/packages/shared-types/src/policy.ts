@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/policy
+ * @module @askmi/shared-types/policy
  * 
  * Policy Engine Type Definitions
  * 

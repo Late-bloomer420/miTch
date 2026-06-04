@@ -20,7 +20,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*",
+        "@askmi/shared-types": "workspace:*",
         "@noble/hashes": "^2.0.1"
     },
     "devDependencies": {

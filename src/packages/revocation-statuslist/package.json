@@ -1,5 +1,5 @@
 {
-  "name": "@mitch/revocation-statuslist",
+  "name": "@askmi/revocation-statuslist",
   "version": "0.1.0",
   "description": "Privacy-preserving credential revocation using StatusList2021",
   "type": "module",

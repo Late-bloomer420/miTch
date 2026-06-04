@@ -1,4 +1,4 @@
-import { L2AnchorReceipt } from '@mitch/shared-types';
+import { L2AnchorReceipt } from '@askmi/shared-types';
 
 /**
  * StateAnchorClient (T-28 Mock)

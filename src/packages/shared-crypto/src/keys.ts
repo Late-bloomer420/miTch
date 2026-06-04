@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/keys
+ * @module @askmi/shared-crypto/keys
  * 
  * Cryptographic Key Management
  * 

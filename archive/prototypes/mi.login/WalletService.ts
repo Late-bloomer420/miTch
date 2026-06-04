@@ -12,7 +12,7 @@ import {
     AuditLogEntry,
     AuditLogExport,
     StoredCredentialMetadata
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import {
     EphemeralKey,
     deriveKeyFromPassword,
@@ -21,7 +21,7 @@ import {
     RecoveryService,
     WebAuthnService,
     signData
-} from '@mitch/shared-crypto';
+} from '@askmi/shared-crypto';
 
 import { DEMO_POLICY } from '../data/DemoPolicy';
 import { ProofOfExistence } from './DocumentService';
@@ -782,7 +782,7 @@ export class WalletService {
         return this.auditLog.syncToL2();
     }
 
-    async handleAction(action: import('@mitch/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {
+    async handleAction(action: import('@askmi/shared-types').DenialAction): Promise<{ success: boolean; message: string }> {
         console.log(`[Action Handler] Processing: ${action.type}`);
 
         switch (action.type) {

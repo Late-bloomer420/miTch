@@ -1,5 +1,5 @@
-import { AuditLogExport } from '@mitch/shared-types';
-import { sha256, verifyData, canonicalStringify } from '@mitch/shared-crypto';
+import { AuditLogExport } from '@askmi/shared-types';
+import { sha256, verifyData, canonicalStringify } from '@askmi/shared-crypto';
 
 /**
  * Independent Auditor Tool: Verifies a miTch Audit Report.

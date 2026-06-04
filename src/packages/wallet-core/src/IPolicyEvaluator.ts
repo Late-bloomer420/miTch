@@ -3,7 +3,7 @@ import {
     PolicyEvaluationResult, 
     PolicyManifest, 
     StoredCredentialMetadata
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import { EvaluationContext } from '@mitch/policy-engine';
 
 /**

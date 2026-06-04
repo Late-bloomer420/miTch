@@ -1,5 +1,5 @@
-import { AuditLogEntry, AuditLogExport, L2AnchorReceipt } from '@mitch/shared-types';
-import { sha256, signData, verifyData, canonicalStringify } from '@mitch/shared-crypto';
+import { AuditLogEntry, AuditLogExport, L2AnchorReceipt } from '@askmi/shared-types';
+import { sha256, signData, verifyData, canonicalStringify } from '@askmi/shared-crypto';
 import { StateAnchorClient } from './anchor';
 import { IndexedDBAuditStore } from './storage/indexeddb-store';
 import { L2AnchorClient, type L2AnchorConfig } from './storage/l2-anchor-client';

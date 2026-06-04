@@ -1,6 +1,6 @@
 import React from 'react';
 import Mustache from 'mustache';
-import { verifyDigestMultibase } from '@mitch/shared-crypto';
+import { verifyDigestMultibase } from '@askmi/shared-crypto';
 import { SecureIframeRenderer } from './SecureIframeRenderer';
 
 export interface RenderMethod {

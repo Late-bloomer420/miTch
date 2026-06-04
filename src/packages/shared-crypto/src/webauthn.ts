@@ -1,5 +1,5 @@
 /**
- * webauthn.ts  —  @mitch/shared-crypto
+ * webauthn.ts  —  @askmi/shared-crypto
  *
  * Ersetzt die Software-ECDSA-Simulation durch echte
  * navigator.credentials (FIDO2/WebAuthn) API-Aufrufe.

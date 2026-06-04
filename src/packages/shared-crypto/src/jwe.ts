@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/jwe
+ * @module @askmi/shared-crypto/jwe
  *
  * G-08: JWE-encrypted credentials at rest.
  *

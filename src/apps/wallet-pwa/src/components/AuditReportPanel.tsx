@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AuditLogExport, AuditLogEntry, L2AnchorReceipt } from "@mitch/shared-types";
+import { AuditLogExport, AuditLogEntry, L2AnchorReceipt } from "@askmi/shared-types";
 
 interface ComplianceDashboardProps {
     onExport: () => Promise<AuditLogExport>;

@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/verifier-trust
+ * @module @askmi/shared-types/verifier-trust
  *
  * Verifier attestation and reputation types.
  *

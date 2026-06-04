@@ -1,4 +1,4 @@
-import type { AuditEventType, IdentityFirewallMetadata } from '@mitch/shared-types';
+import type { AuditEventType, IdentityFirewallMetadata } from '@askmi/shared-types';
 
 export type IdentityFirewallAccess = Omit<IdentityFirewallMetadata, 'decision_id'>;
 

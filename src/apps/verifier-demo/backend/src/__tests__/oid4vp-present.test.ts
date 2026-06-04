@@ -12,7 +12,7 @@ import {
     buildSDJWTPresentation,
     SCENARIO_VCT,
 } from '@mitch/oid4vp';
-import { statusResolver, trustListResolver } from '@mitch/shared-crypto';
+import { statusResolver, trustListResolver } from '@askmi/shared-crypto';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

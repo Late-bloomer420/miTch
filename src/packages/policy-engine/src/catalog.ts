@@ -1,4 +1,4 @@
-import { PolicyDenialCode, PolicyDenialResolution } from '@mitch/shared-types';
+import { PolicyDenialCode, PolicyDenialResolution } from '@askmi/shared-types';
 import { ReasonCode } from './engine';
 
 /**

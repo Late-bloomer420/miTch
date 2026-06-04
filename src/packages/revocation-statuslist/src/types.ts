@@ -1,5 +1,5 @@
 /**
- * @package @mitch/revocation-statuslist
+ * @package @askmi/revocation-statuslist
  * @description Type definitions for StatusList2021 revocation
  */
 

@@ -14,7 +14,7 @@
         "build": "tsc -p tsconfig.build.json"
     },
     "dependencies": {
-        "@mitch/shared-types": "workspace:*"
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^20.0.0",

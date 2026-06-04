@@ -1,4 +1,4 @@
-import type { StoredCredentialMetadata } from '@mitch/shared-types';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 /**
  * Interface for credential lifecycle management.

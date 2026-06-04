@@ -1,7 +1,7 @@
 import { 
     DecisionCapsule, 
     AuditLogEntry 
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 /**
  * Interface for Verifiable Presentation generation and cryptographic cleanup.

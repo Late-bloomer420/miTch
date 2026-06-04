@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-types/ad-preferences
+ * @module @askmi/shared-types/ad-preferences
  *
  * User-controlled ad preferences and quantized budget signals.
  *

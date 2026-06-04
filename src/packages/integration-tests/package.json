@@ -13,9 +13,9 @@
     "@mitch/mock-issuer": "workspace:*",
     "@mitch/oid4vp": "workspace:*",
     "@mitch/policy-engine": "workspace:*",
-    "@mitch/revocation-statuslist": "workspace:*",
-    "@mitch/shared-crypto": "workspace:*",
-    "@mitch/shared-types": "workspace:*",
+    "@askmi/revocation-statuslist": "workspace:*",
+    "@askmi/shared-crypto": "workspace:*",
+    "@askmi/shared-types": "workspace:*",
     "@mitch/webauthn-verifier": "workspace:*"
   },
   "devDependencies": {

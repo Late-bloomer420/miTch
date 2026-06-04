@@ -108,6 +108,6 @@ describe('shared-types/predicates module hygiene', () => {
 
         expect(source).not.toMatch(/from ['"]crypto['"]/);
         expect(source).not.toMatch(/from ['"]jose['"]/);
-        expect(source).not.toContain('@mitch/shared-crypto');
+        expect(source).not.toContain('@askmi/shared-crypto');
     });
 });

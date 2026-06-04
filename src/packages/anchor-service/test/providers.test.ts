@@ -6,7 +6,7 @@ import { describe, test, expect, beforeEach } from 'vitest';
 import { EthereumL2AnchorProvider } from '../src/providers/ethereum-l2.js';
 import { TransparencyLogAnchorProvider } from '../src/providers/transparency-log.js';
 import { InMemoryAnchorService } from '../src/service.js';
-import type { Hex32 } from '@mitch/shared-types';
+import type { Hex32 } from '@askmi/shared-types';
 
 const TEST_ROOT = 'a'.repeat(64) as Hex32;
 const TEST_META = { batchId: 'batch-001', count: 3 };

@@ -4,7 +4,7 @@
         "baseUrl": ".",
         "outDir": "dist",
         "paths": {
-            "@mitch/shared-types": [
+            "@askmi/shared-types": [
                 "../shared-types/src"
             ]
         }

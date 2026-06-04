@@ -1,5 +1,5 @@
 /**
- * @module @mitch/shared-crypto/hashing
+ * @module @askmi/shared-crypto/hashing
  * 
  * Cryptographic Hashing Utilities
  * 

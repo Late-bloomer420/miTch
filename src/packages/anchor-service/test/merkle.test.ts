@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { buildMerkleTree, getInclusionProof } from '../src/merkle.js';
 import { InMemoryAnchorService } from '../src/service.js';
-import { Hex32 } from '@mitch/shared-types';
+import { Hex32 } from '@askmi/shared-types';
 
 describe('Merkle Logic', () => {
     // deterministic mock hashes

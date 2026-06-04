@@ -2,7 +2,7 @@ import {
     LegacyPredicateRequest,
     LegacyDecisionProof,
     legacyToDSL,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import { evaluatePredicates, hashRequest } from '@mitch/predicates';
 
 /**

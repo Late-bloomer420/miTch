@@ -14,7 +14,7 @@ vi.mock('../components/SecureZone', () => ({
 }));
 
 import { ConsentModal } from '../components/ConsentModal';
-import type { DecisionCapsule } from '@mitch/shared-types';
+import type { DecisionCapsule } from '@askmi/shared-types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

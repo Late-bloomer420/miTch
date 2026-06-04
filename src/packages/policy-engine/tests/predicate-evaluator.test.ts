@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PredicateEvaluator } from '../src/predicate-evaluator';
 import {
     LegacyPredicateRequest as PredicateRequest, // Alias for refactoring
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 
 /**
  * T-51 Unit Tests: Predicate Evaluator

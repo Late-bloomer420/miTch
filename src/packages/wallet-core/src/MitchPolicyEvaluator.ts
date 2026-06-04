@@ -7,7 +7,7 @@ import {
     VerifierRequest, 
     PolicyEvaluationResult, 
     StoredCredentialMetadata 
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import type { IPolicyEvaluator } from './IPolicyEvaluator';
 
 /**

@@ -19,7 +19,7 @@ import type {
     AdVerificationRequest,
     AdVerificationResponse,
     AdTechPredicate,
-} from '@mitch/shared-types';
+} from '@askmi/shared-types';
 import type { NullifierStore } from './ad-nullifier-store';
 
 // ---------------------------------------------------------------------------
