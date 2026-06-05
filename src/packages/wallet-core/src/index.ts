@@ -31,3 +31,6 @@ export * from './IPolicyEvaluator';
 export * from './AskmiPolicyEvaluator';
 export * from './IPresentationManager';
 export * from './WalletService';
+
+// Verifier Reputation Network watchdog (Epic 3 / VRN)
+export * from './ReputationSensor';

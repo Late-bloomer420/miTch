@@ -800,6 +800,25 @@
     outline-offset: 2px;
 }
 
+.btn-report-reputation {
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px 12px;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.08);
+    color: #fbbf24;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.btn-report-reputation:hover {
+    border-color: rgba(245, 158, 11, 0.7);
+    background: rgba(245, 158, 11, 0.14);
+}
+
 /* ── UX-07: GuidedDemoMode ───────────────────────────────────────────────── */
 
 /* Step slide transitions */
@@ -1365,4 +1384,3 @@
     font-weight: 550;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
-

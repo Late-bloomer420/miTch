@@ -229,6 +229,9 @@ importers:
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
+      '@askmi/wallet-core':
+        specifier: workspace:*
+        version: link:../../packages/wallet-core
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
