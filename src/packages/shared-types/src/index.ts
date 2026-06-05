@@ -30,6 +30,9 @@ export * from './ad-predicates.js';
 export * from './ad-response.js';
 export * from './verifier-trust.js';
 
+// Verifier Reputation Network (Epic 3 / VRN)
+export * from './reputation.js';
+
 // AskMI runtime/demo constants
 export * from './askmi.js';
 /**

@@ -8,8 +8,10 @@ import type {
   PolicyEvaluationResult,
   PolicyManifest,
   StoredCredentialMetadata,
+  VerifierReportCard,
 } from '@askmi/shared-types';
 import { ASKMI_DEMO } from '@askmi/shared-types';
+import { ReputationSensor } from '@askmi/wallet-core';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
 import { PolicyEditor } from './components/PolicyEditor';
@@ -108,6 +110,7 @@ function WalletApp() {
   const [showDataFlow, setShowDataFlow] = useState(false);
   const [showSovereignty, setShowSovereignty] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
+  const [, setReputationReports] = useState<VerifierReportCard[]>([]);
   const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
   const [consentReceiptHistory, setConsentReceiptHistory] = useState(() =>
     loadConsentReceiptHistory()
@@ -195,6 +198,25 @@ function WalletApp() {
     const time = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
   };
+
+  const handleReportReputation = useCallback(() => {
+    if (!currentRequest) {
+      addLog('⚠️ Reputation report skipped: original verifier request unavailable', 'warning');
+      return;
+    }
+
+    const trackerCount = _privacyConsent?.acceptedTrackers.length ?? 0;
+    const report = ReputationSensor.generateReport(
+      currentRequest,
+      evaluationResult?.decisionCapsule,
+      trackerCount
+    );
+    setReputationReports((prev) => [...prev, report]);
+    addLog(
+      `🧭 VRN report stored locally for ${String(report.verifierId)} (score ${report.localPrivacyScore.toFixed(2)}, over-requesting: ${report.metrics.overRequestingDetected ? 'yes' : 'no'})`,
+      report.metrics.overRequestingDetected ? 'warning' : 'info'
+    );
+  }, [currentRequest, evaluationResult?.decisionCapsule, _privacyConsent]);
 
   // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
@@ -427,6 +449,7 @@ function WalletApp() {
         },
       ],
     };
+    setCurrentRequest(request);
 
     const context: EvaluationContext = {
       timestamp: Date.now(),
@@ -489,6 +512,7 @@ function WalletApp() {
         },
       ],
     };
+    setCurrentRequest(request);
 
     const context: EvaluationContext = {
       timestamp: Date.now(),
@@ -522,6 +546,7 @@ function WalletApp() {
         },
       ],
     };
+    setCurrentRequest(request);
 
     const context: EvaluationContext = {
       timestamp: Date.now(),
@@ -556,6 +581,7 @@ function WalletApp() {
         },
       ],
     };
+    setCurrentRequest(request);
 
     const context: EvaluationContext = {
       timestamp: Date.now(),
@@ -594,6 +620,7 @@ function WalletApp() {
         },
       ],
     };
+    setCurrentRequest(request);
 
     const context: EvaluationContext = {
       timestamp: Date.now(),
@@ -1191,6 +1218,7 @@ function WalletApp() {
             }
             setShowConsent(false);
           }}
+          onReportReputation={handleReportReputation}
           onLog={addLog}
         />
       )}

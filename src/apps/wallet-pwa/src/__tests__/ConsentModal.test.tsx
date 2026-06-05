@@ -199,6 +199,21 @@ describe('ConsentModal — Callbacks', () => {
     expect(onApprove).toHaveBeenCalledOnce();
   });
 
+  it('calls onReportReputation when Report bad behavior is clicked', () => {
+    const onReportReputation = vi.fn();
+    render(
+      <ConsentModal
+        capsule={makeCapsule({ risk_level: 'LOW', requires_presence: false })}
+        reasonCodes={[]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+        onReportReputation={onReportReputation}
+      />
+    );
+    fireEvent.click(screen.getByText(/Report bad behavior/i));
+    expect(onReportReputation).toHaveBeenCalledOnce();
+  });
+
   it('Approve button is disabled when biometric is required but not verified', () => {
     render(
       <ConsentModal

@@ -18,6 +18,7 @@
         "@askmi/secure-storage": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*",
+        "@askmi/wallet-core": "workspace:*",
         "mustache": "^4.2.0",
         "qrcode.react": "^4.2.0",
         "react": "^18.2.0",

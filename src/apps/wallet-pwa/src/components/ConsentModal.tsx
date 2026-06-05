@@ -24,6 +24,7 @@ interface ConsentModalProps {
   timeoutMinutes?: number;
   onApprove: (presenceProof?: string) => void;
   onReject: () => void;
+  onReportReputation?: () => void;
   onLog?: (msg: string, type: 'info' | 'success' | 'warning' | 'error') => void;
 }
 
@@ -140,7 +141,7 @@ const DISCLOSED_CAPTION = '⚠️ Disclosed — raw value shared';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, onReject, onLog }: ConsentModalProps) {
+export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, onReject, onReportReputation, onLog }: ConsentModalProps) {
 
   const [biometricState, setBiometricState] = useState<BiometricState>('idle');
   const [presenceProof, setPresenceProof] = useState<string | undefined>(undefined);
@@ -399,6 +400,16 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
             </button>
           </SecureZone>
         </div>
+
+        {onReportReputation && (
+          <button
+            type="button"
+            onClick={onReportReputation}
+            className="btn-report-reputation"
+          >
+            Report bad behavior
+          </button>
+        )}
 
         {/* UX-06: Countdown ring if timeout set */}
         {timeoutMinutes && timeoutMinutes > 0 && (
