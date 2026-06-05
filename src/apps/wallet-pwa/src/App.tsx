@@ -33,6 +33,7 @@ import {
 import type { ConsentReceipt } from '@askmi/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
+import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 
@@ -105,6 +106,7 @@ function WalletApp() {
   const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
   const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
   const [showDataFlow, setShowDataFlow] = useState(false);
+  const [showSovereignty, setShowSovereignty] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
   const [consentReceiptHistory, setConsentReceiptHistory] = useState(() =>
@@ -1350,6 +1352,20 @@ function WalletApp() {
           {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
         </button>
         {showDataFlow && <DataFlowPanel entries={recentAuditEntries} />}
+      </div>
+
+      <div className="wallet-section" style={{ marginTop: 10 }}>
+        <button onClick={() => setShowSovereignty(!showSovereignty)} className="btn-demo-secondary">
+          {showSovereignty ? 'Sovereignty Center schließen' : 'Sovereignty Center öffnen'}
+        </button>
+        {showSovereignty && (
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+            <SovereigntyCenter
+              auditEntries={recentAuditEntries}
+              onClose={() => setShowSovereignty(false)}
+            />
+          </div>
+        )}
       </div>
 
       <div className="wallet-section" style={{ marginBottom: 20 }}>
