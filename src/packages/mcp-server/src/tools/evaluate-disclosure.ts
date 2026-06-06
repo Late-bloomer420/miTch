@@ -1,19 +1,36 @@
 /**
  * Tool: askmi_evaluate_disclosure
  *
- * Evaluates a verifier disclosure request against the AskMI privacy policy engine.
- * Returns a signed DecisionCapsule with verdict ALLOW | DENY | PROMPT, reason codes,
- * and (on ALLOW) the selective disclosure plan.
+ * Evaluates a verifier disclosure request against the AskMI privacy policy
+ * engine and returns a sanitised "Controlled Insight" verdict
+ * (ALLOW | DENY | PROMPT) with reason codes and the claim NAMES in scope.
  *
- * Fail-closed: any ambiguity -> DENY. Never default to ALLOW.
+ * Fail-closed: any ambiguity, validation gap or internal error resolves to DENY.
+ * Never default to ALLOW.
  *
- * Status: STUB -- returns DENY / NOT_IMPLEMENTED until @askmi/policy-engine is wired.
- * See docs/mcp-server-architecture.md section 4-5 for the full spec.
+ * Status: WIRED to @askmi/policy-engine over a NON-AUTHORITATIVE mock scope
+ * (see server-scope.ts). The engine runs for real; the policy + credential
+ * inputs are synthetic, so no decision here is authoritative — every response
+ * is tagged `scope: "mock"`. The agent only ever sees the sanitised verdict
+ * (see sanitize.ts), never credentials, identifiers or signatures.
+ *
+ * See docs/mcp-server-architecture.md §4–6 and §11 (thaw decision).
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod/v3';
-import { randomUUID } from 'crypto';
+import { PolicyEngine } from '@askmi/policy-engine';
+import type {
+  VerifierRequest,
+  PolicyEvaluationResult,
+} from '@askmi/shared-types';
+import type { EvaluationContext } from '@askmi/policy-engine';
+import { MOCK_CREDENTIALS, MOCK_POLICY } from '../server-scope.js';
+import {
+  sanitizeDecision,
+  formatInsightMarkdown,
+  type ControlledInsight,
+} from '../sanitize.js';
 
 const VerifierRequestSchema = z.object({
   verifier_id: z.string().min(1).max(512).describe('DID or origin URL of the requesting verifier'),
@@ -54,14 +71,46 @@ const EvaluateDisclosureShape = {
     .describe('Output format: json (default) or markdown'),
 };
 
-interface DecisionCapsuleStub {
-  verdict: 'ALLOW' | 'DENY' | 'PROMPT';
-  decision_id: string;
-  policy_hash: string;
-  reason_codes: string[];
-  evaluated_at: number;
-  stub: true;
-  stub_message: string;
+type EvaluateDisclosureArgs = {
+  verifier_request: z.infer<typeof VerifierRequestSchema>;
+  context: z.infer<typeof ContextSchema>;
+  policy_hash?: string;
+  response_format?: 'json' | 'markdown';
+};
+
+/** Map the MCP wire input onto the engine's VerifierRequest (legacy claims path). */
+function toEngineRequest(args: EvaluateDisclosureArgs): VerifierRequest {
+  return {
+    verifierId: args.verifier_request.verifier_id,
+    nonce: args.verifier_request.nonce,
+    purpose: args.verifier_request.purpose,
+    requestedClaims: args.verifier_request.requested_claims,
+  };
+}
+
+/** Map the MCP context onto the engine's EvaluationContext.
+ *  Interaction risk-metadata is intentionally NOT forwarded — the mock scope
+ *  evaluates policy intent, not device risk. */
+function toEngineContext(args: EvaluateDisclosureArgs): EvaluationContext {
+  return {
+    timestamp: Date.now(),
+    userDID: args.context.user_did,
+    overrideGranted: args.context.override_granted,
+  };
+}
+
+/** Fail-closed DENY insight used when evaluation cannot complete safely. */
+function denyInsight(reasonCode: string): ControlledInsight {
+  return {
+    verdict: 'DENY',
+    decision_id: globalThis.crypto.randomUUID(),
+    policy_hash: '0'.repeat(64),
+    reason_codes: [reasonCode],
+    disclosed_claims: [],
+    proven_claims: [],
+    scope: 'mock',
+    evaluated_at: new Date().toISOString(),
+  };
 }
 
 export function registerEvaluateDisclosure(server: McpServer): void {
@@ -70,8 +119,10 @@ export function registerEvaluateDisclosure(server: McpServer): void {
     {
       description:
         'Evaluate a verifier disclosure request against the AskMI privacy policy engine. ' +
-        'Returns a DecisionCapsule with verdict ALLOW | DENY | PROMPT and reason codes. ' +
-        'Fail-closed: ambiguous or incomplete requests always resolve to DENY.',
+        'Returns a Controlled Insight verdict ALLOW | DENY | PROMPT with reason codes and ' +
+        'the claim names in scope — never credential values, ids or issuer identities. ' +
+        'Fail-closed: ambiguous or incomplete requests always resolve to DENY. ' +
+        'Runs on a non-authoritative mock scope (responses tagged scope:"mock").',
       inputSchema: EvaluateDisclosureShape,
       annotations: {
         readOnlyHint: false,
@@ -80,27 +131,35 @@ export function registerEvaluateDisclosure(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async (_args) => {
-      // STUB -- wire @askmi/policy-engine here:
-      //   const engine = new PolicyEngine(await loadDefaultPolicy());
-      //   const result = await engine.evaluate(_args.verifier_request, _args.context);
-      //   return formatResult(result, _args.response_format);
+    async (args) => {
+      let insight: ControlledInsight;
 
-      const capsule: DecisionCapsuleStub = {
-        verdict: 'DENY',
-        decision_id: randomUUID(),
-        policy_hash: '0000000000000000000000000000000000000000000000000000000000000000',
-        reason_codes: ['NOT_IMPLEMENTED'],
-        evaluated_at: Date.now(),
-        stub: true,
-        stub_message:
-          'askmi_evaluate_disclosure is a stub. ' +
-          'Wire @askmi/policy-engine to activate. ' +
-          'See docs/mcp-server-architecture.md section 10.',
-      };
+      try {
+        const engine = new PolicyEngine();
+        const result: PolicyEvaluationResult = await engine.evaluate(
+          toEngineRequest(args as EvaluateDisclosureArgs),
+          toEngineContext(args as EvaluateDisclosureArgs),
+          MOCK_CREDENTIALS,
+          MOCK_POLICY,
+        );
+        insight = sanitizeDecision(result);
+      } catch (err) {
+        // stderr only — stdout is reserved for the MCP wire protocol.
+        // Never surface stack traces to the agent (architecture §6).
+        const message = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`[AskMI-mcp] evaluate_disclosure failed: ${message}\n`);
+        insight = denyInsight('ERR_EVALUATION_FAILED');
+      }
+
+      const format = (args as EvaluateDisclosureArgs).response_format ?? 'json';
+      const text =
+        format === 'markdown'
+          ? formatInsightMarkdown(insight)
+          : JSON.stringify(insight, null, 2);
 
       return {
-        content: [{ type: 'text' as const, text: JSON.stringify(capsule, null, 2) }],
+        content: [{ type: 'text' as const, text }],
+        structuredContent: insight as unknown as Record<string, unknown>,
       };
     },
   );
