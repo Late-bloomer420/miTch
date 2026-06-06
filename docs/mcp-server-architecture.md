@@ -229,3 +229,51 @@ Dependencies (intern, workspace:*):
    braucht. Bis dahin: nichts bauen, Stub-Disziplin halten.
 6. Inspector-Smoke-Test, sobald irgendein Tool wirklich implementiert
    wird.
+
+## 11. Auftau-Entscheidung — `evaluate_disclosure` verdrahtet (2026-06-06)
+
+Status: **aufgetaut**. Die in §10.3 eingefrorene Stub-Phase für
+`askmi_evaluate_disclosure` wird hiermit bewusst beendet.
+
+**Auftau-Trigger (gemäß §10.5):** die konkrete Anwender-Story ist die
+agentische MCP-Integration selbst (Epic 5 / CI-01): ein LLM-Agent soll die
+AskMI-PolicyEngine abfragen können, *ob* eine Disclosure erlaubt wäre, ohne
+Zugriff auf Daten zu erhalten. Das ist der in §10.5 geforderte konkrete
+Konsument.
+
+**Wie das ursprüngliche Bedenken gewahrt bleibt** (§10.3: „ein embedded
+Default produziert echte Decisions ohne autorisierte Policy"):
+
+- Die Engine läuft echt, aber gegen einen **explizit als Mock gekennzeichneten
+  Scope** (`src/server-scope.ts`): synthetische Policy **und** synthetische
+  Credential-Metadaten. Nichts davon ist autoritativ.
+- Jede Tool-Antwort trägt `scope: "mock"`. Kein Konsument kann eine
+  Mock-Entscheidung mit einer echten Wallet-Decision verwechseln.
+- Es wird **keine** stille embedded Default-Policy aktiviert. Der Pfad zu einer
+  echten, autorisierten Policy (Env `MITCH_WALLET_DB`, §9.2) bleibt offen und
+  unverändert; er ersetzt später nur `server-scope.ts`, der Tool-Vertrag bleibt
+  gleich.
+
+**Controlled-Insight-Grenze** (`src/sanitize.ts`): Das reichhaltige
+`PolicyEvaluationResult` wird auf ein Whitelist-Objekt reduziert
+(`verdict`, `decision_id`, `policy_hash`, `reason_codes`, `disclosed_claims`,
+`proven_claims`, `scope`, `evaluated_at`). Bewusst **nicht** exponiert:
+`selected_credential_id`, `issuer_trust_refs`, `request_hash`,
+`wallet_attestation`, `pairwise_did`, `authorized_requirements`, die
+Credential-IDs und Issuer-DIDs. Der Sanitizer spreadet das Engine-Resultat
+nie — ein künftig hinzugefügtes (evtl. sensibles) Feld kann nicht versehentlich
+durchsickern. Abgesichert durch den Leak-Test in
+`__tests__/evaluate-disclosure.test.ts`.
+
+**Verdikt-Matrix des Mock-Scopes** (deterministisch, für Tests):
+
+| Verifier | Ergebnis | Grund |
+|---|---|---|
+| `did:web:liquor-store.example.com` | ALLOW | Regel matcht, vertrauenswürdiger Issuer, kein Consent-Gate |
+| `did:web:hospital.example.com` | PROMPT | Regel matcht, `requiresUserConsent` |
+| sonst | DENY | `blockUnknownVerifiers` (fail-closed) |
+
+**Noch eingefroren:** Die Read-Tools (`mitch_get_decision`,
+`mitch_list_decisions`, `mitch_explain_denial`) bleiben gemäß §10.4
+unimplementiert, bis die in §10.5 genannte Audit-Story steht. Nur
+`evaluate_disclosure` ist aufgetaut.

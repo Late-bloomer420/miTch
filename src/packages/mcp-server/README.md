@@ -1,6 +1,6 @@
 # @askmi/mcp-server
 
-> **Status:** Experimental / Frozen Stub (v0.1)
+> **Status:** Experimental — `evaluate_disclosure` wired to the policy engine over a non-authoritative **mock scope** (v0.1)
 
 This package exposes the AskMI policy engine as a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. It allows LLM agents (like Claude Desktop) to request disclosure evaluations without giving them access to raw credentials or keys.
 
@@ -12,10 +12,15 @@ This package exposes the AskMI policy engine as a [Model Context Protocol (MCP)]
 
 ## Current Status
 
-The server is currently in a **frozen stub phase**. While the architecture is defined, most tools are stubs returning `DENY` with a `NOT_IMPLEMENTED` reason. This is a deliberate design choice to prevent the accidental creation of valid decisions without a fully authorized policy source.
+`askmi_evaluate_disclosure` is **wired to `@askmi/policy-engine`** and returns real `ALLOW`/`DENY`/`PROMPT` verdicts — but over a **non-authoritative mock scope** (`src/server-scope.ts`): synthetic policy + synthetic credential metadata. Every response is tagged `scope: "mock"`. This honours the original freeze concern (no embedded default produces real decisions without an authorized policy) while enabling agentic integration. The thaw decision and its constraints are recorded in `docs/mcp-server-architecture.md` §11.
+
+All **read tools** (`get_decision`, `list_decisions`, `explain_denial`) remain frozen stubs pending a concrete audit use-case (architecture §10.4).
+
+### Output: Controlled Insight
+The agent never sees the full `PolicyEvaluationResult`. `src/sanitize.ts` reduces it to a whitelist object — `verdict`, `decision_id`, `policy_hash`, `reason_codes`, `disclosed_claims` (names only), `proven_claims` (names only), `scope`, `evaluated_at`. Credential ids, issuer DIDs, hashes, signatures and the pairwise DID are dropped.
 
 ### Implemented Tools
-- `askmi_evaluate_disclosure`: Evaluates a verifier request against the local policy engine.
+- `askmi_evaluate_disclosure`: Evaluates a verifier request against the policy engine (mock scope). Verdict + claim names only, fail-closed.
 
 ### Planned Tools (See `docs/mcp-server-architecture.md`)
 - `askmi_verify_presentation`
