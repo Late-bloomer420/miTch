@@ -116,7 +116,8 @@ The agent receives only: `verdict`, `decision_id`, `policy_hash`,
 ---
 
 ## Open items / follow-ups
-- Real-wallet scope loader (`MITCH_WALLET_DB`) to replace `server-scope.ts` when
-  a real consumer needs authoritative decisions (architecture §9.2).
+- Full wallet DB adapter remains open: `MITCH_WALLET_DB` now supports an explicit
+  local JSON evaluation scope (policy + credential metadata only), but not a
+  raw wallet database or credential-value loader.
 - Read tools (`get_decision`, `list_decisions`, `explain_denial`) remain frozen
   per architecture §10.4 until a concrete audit use-case exists.

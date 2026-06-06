@@ -277,3 +277,33 @@ durchsickern. Abgesichert durch den Leak-Test in
 `mitch_list_decisions`, `mitch_explain_denial`) bleiben gemäß §10.4
 unimplementiert, bis die in §10.5 genannte Audit-Story steht. Nur
 `evaluate_disclosure` ist aufgetaut.
+
+## 12. Lokaler Evaluation-Scope via `MITCH_WALLET_DB` (2026-06-06)
+
+Status: **teilweise aufgetaut**. `evaluate_disclosure` bleibt standardmäßig im
+Mock-Scope, kann aber explizit mit einem lokalen Evaluation-Scope betrieben
+werden.
+
+`src/evaluation-scope.ts` lädt bei gesetztem `MITCH_WALLET_DB` eine lokale
+JSON-Datei mit:
+
+- `policy`: `PolicyManifest`
+- `credentials`: `StoredCredentialMetadata[]`
+- optional `user_did` / `userDid`
+
+Wichtig: Das ist **noch kein Wallet-DB-Adapter** und keine Roh-Credential-
+Anbindung. Es werden ausschließlich Policy und Credential-Metadaten geladen.
+Roh-VCs, Claim-Werte, Schlüssel, Signaturen und Proof-Material bleiben außerhalb
+des MCP-Servers.
+
+Sicherheitsverhalten:
+
+- Ohne `MITCH_WALLET_DB`: Mock-Scope, Antwort `scope: "mock"`.
+- Mit gültigem `MITCH_WALLET_DB`: lokaler Scope, Antwort `scope: "local"`.
+- Mit ungültigem oder nicht lesbarem `MITCH_WALLET_DB`: fail-closed `DENY`,
+  Antwort `scope: "local"`, keine disclosed/proven claims, kein stiller Fallback
+  auf Mock.
+
+Damit ist der Pfad aus §9.2 operationalisiert, ohne das ursprüngliche Freeze-
+Bedenken zu verletzen: Eine echte Entscheidung kann nur entstehen, wenn der
+Operator explizit eine lokale, autorisierte Scope-Datei konfiguriert.

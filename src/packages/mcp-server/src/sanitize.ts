@@ -33,8 +33,8 @@ export interface ControlledInsight {
   disclosed_claims: string[];
   /** ZKP/predicate claim NAMES that would be proven without disclosure. */
   proven_claims: string[];
-  /** Always "mock" while the server runs on the non-authoritative fixture. */
-  scope: 'mock';
+  /** Explicitly identifies whether the result came from mock or local scope. */
+  scope: 'mock' | 'local';
   evaluated_at: string;
 }
 
@@ -47,7 +47,10 @@ function randomDecisionId(): string {
  * Reduce a full PolicyEvaluationResult to the agent-safe ControlledInsight.
  * Pulls only whitelisted, non-identifying fields.
  */
-export function sanitizeDecision(result: PolicyEvaluationResult): ControlledInsight {
+export function sanitizeDecision(
+  result: PolicyEvaluationResult,
+  scope: ControlledInsight['scope'] = 'mock',
+): ControlledInsight {
   const capsule = result.decisionCapsule;
 
   // Claim names come from the authorised requirements. On DENY there is no
@@ -69,7 +72,7 @@ export function sanitizeDecision(result: PolicyEvaluationResult): ControlledInsi
     reason_codes: [...result.reasonCodes],
     disclosed_claims: [...disclosed],
     proven_claims: [...proven],
-    scope: 'mock',
+    scope,
     evaluated_at: new Date().toISOString(),
   };
 }
