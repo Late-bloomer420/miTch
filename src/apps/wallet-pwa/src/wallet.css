@@ -1384,3 +1384,402 @@
     font-weight: 550;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* ==========================================================================
+   UX-09: Consent Manager Panel
+   Stylesheet for the BEM class contract declared in
+   components/ConsentManagerPanel.tsx. Mirrors the credential-card design
+   language (dark surface, accent-blue trim, glass borders) and uses the
+   shared --accent-* / --text-* tokens from App.css for status colours.
+   UI only — no business logic or React state is affected.
+   ========================================================================== */
+
+.consent-manager-panel {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto 24px;
+    padding: 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
+    border: 1px solid rgba(0, 191, 255, 0.18);
+    border-radius: 20px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(0, 191, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.consent-manager-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.consent-manager-panel__title {
+    margin: 0 0 4px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.consent-manager-panel__subtitle {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* ── State badge (replaces former inline-styled <StateBadge>) ─────────────── */
+
+.consent-manager-panel__state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.consent-manager-panel__state-badge--idle {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.consent-manager-panel__state-badge--prompt {
+    background: rgba(255, 215, 64, 0.12);
+    color: var(--accent-yellow);
+    border-color: rgba(255, 215, 64, 0.4);
+}
+
+.consent-manager-panel__state-badge--approved {
+    background: rgba(0, 230, 118, 0.12);
+    color: var(--accent-green);
+    border-color: rgba(0, 230, 118, 0.4);
+}
+
+.consent-manager-panel__state-badge--denied {
+    background: rgba(255, 82, 82, 0.12);
+    color: var(--accent-red);
+    border-color: rgba(255, 82, 82, 0.4);
+}
+
+/* ── Summary stat row ─────────────────────────────────────────────────────── */
+
+.consent-manager-panel__summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.consent-manager-panel__summary > div {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.consent-manager-panel__label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.consent-manager-panel__value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+/* ── Card grid (Requested / Allowed / Withheld / Evidence) ────────────────── */
+
+.consent-manager-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.consent-manager-panel__card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+
+.consent-manager-panel__card h4 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+/* ── Claim chips ──────────────────────────────────────────────────────────── */
+
+.consent-manager-panel__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.consent-manager-panel__chip {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.consent-manager-panel__chip--requested {
+    background: rgba(0, 191, 255, 0.1);
+    color: var(--accent-blue);
+    border-color: rgba(0, 191, 255, 0.35);
+}
+
+.consent-manager-panel__chip--allowed {
+    background: rgba(0, 230, 118, 0.1);
+    color: var(--accent-green);
+    border-color: rgba(0, 230, 118, 0.35);
+}
+
+.consent-manager-panel__chip--withheld {
+    background: rgba(255, 82, 82, 0.1);
+    color: var(--accent-red);
+    border-color: rgba(255, 82, 82, 0.35);
+}
+
+.consent-manager-panel__chip--signal {
+    background: rgba(255, 215, 64, 0.1);
+    color: var(--accent-yellow);
+    border-color: rgba(255, 215, 64, 0.35);
+    cursor: help;
+}
+
+.consent-manager-panel__empty {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+}
+
+/* ── Evidence + identity signals ──────────────────────────────────────────── */
+
+.consent-manager-panel__evidence {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.consent-manager-panel__evidence-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.consent-manager-panel__evidence-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.consent-manager-panel__signals {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────────── */
+
+.consent-manager-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ── Receipt history ──────────────────────────────────────────────────────── */
+
+.consent-manager-panel__history-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.consent-manager-panel__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.consent-manager-panel__filter-input,
+.consent-manager-panel__filter-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 8px 10px;
+    min-height: 38px;
+}
+
+.consent-manager-panel__filter-input:focus-visible,
+.consent-manager-panel__filter-select:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 1px;
+}
+
+.consent-manager-panel__history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.consent-manager-panel__history-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.1s ease;
+    color: inherit;
+}
+
+.consent-manager-panel__history-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 191, 255, 0.3);
+}
+
+.consent-manager-panel__history-item:active {
+    transform: scale(0.995);
+}
+
+.consent-manager-panel__history-item:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.consent-manager-panel__history-item--selected {
+    border-color: rgba(0, 191, 255, 0.55);
+    background: rgba(0, 191, 255, 0.06);
+}
+
+.consent-manager-panel__history-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.consent-manager-panel__history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* Status badges: green SUCCESS · red DENIED · amber ERROR */
+.consent-manager-panel__history-pill {
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.consent-manager-panel__history-pill--success {
+    background: rgba(0, 230, 118, 0.14);
+    color: var(--accent-green);
+    border-color: rgba(0, 230, 118, 0.45);
+}
+
+.consent-manager-panel__history-pill--denied {
+    background: rgba(255, 82, 82, 0.14);
+    color: var(--accent-red);
+    border-color: rgba(255, 82, 82, 0.45);
+}
+
+.consent-manager-panel__history-pill--error {
+    background: rgba(255, 215, 64, 0.14);
+    color: var(--accent-yellow);
+    border-color: rgba(255, 215, 64, 0.45);
+}
+
+/* ── Pagination ───────────────────────────────────────────────────────────── */
+
+.consent-manager-panel__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.consent-manager-panel__pagination-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* ── Receipt detail ───────────────────────────────────────────────────────── */
+
+.consent-manager-panel__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.consent-manager-panel__detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.consent-manager-panel__detail-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+@media (max-width: 480px) {
+    .consent-manager-panel {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .consent-manager-panel__header {
+        flex-direction: column;
+    }
+}
