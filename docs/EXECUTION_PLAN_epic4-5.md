@@ -109,6 +109,8 @@ The agent receives only: `verdict`, `decision_id`, `policy_hash`,
 ### Validation
 - `pnpm --filter @askmi/mcp-server... build` → ✓ (full dependency chain, tsc)
 - `pnpm --filter @askmi/mcp-server test` → ✓ **9 / 9** (baseline 4)
+- `pnpm --filter @askmi/mcp-server smoke` → ✓ (built stdio server subprocess,
+  tool inventory, ALLOW/PROMPT/DENY matrix, Controlled-Insight leak guard)
 - `pnpm turbo run test` → see PR description for the full-sweep result.
 
 ---
@@ -118,5 +120,3 @@ The agent receives only: `verdict`, `decision_id`, `policy_hash`,
   a real consumer needs authoritative decisions (architecture §9.2).
 - Read tools (`get_decision`, `list_decisions`, `explain_denial`) remain frozen
   per architecture §10.4 until a concrete audit use-case exists.
-- MCP Inspector smoke-test once the server is exercised outside the test
-  harness.

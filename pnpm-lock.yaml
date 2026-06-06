@@ -485,6 +485,9 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.33
+      esbuild:
+        specifier: 0.25.12
+        version: 0.25.12
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
@@ -1609,6 +1612,7 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
+    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-musl@4.59.0':
