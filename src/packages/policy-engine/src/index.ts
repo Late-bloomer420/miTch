@@ -24,6 +24,7 @@ export * from './conflict-resolver';
 
 export * from './capability-negotiation';
 export * from './audit-metadata';
+export * from './audit-export-schema';
 export * from './geo-scope';
 export * from './input-validation';
 export * from './kpi';

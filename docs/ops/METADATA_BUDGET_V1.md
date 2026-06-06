@@ -15,6 +15,11 @@ Allowed audit fields:
 - `verifierHash` (rotated salted SHA-256)
 - `verdict` (`ALLOW` / `DENY` / `PROMPT`)
 - `reasonCode` (from `DenyReasonCode` only)
+- `protocolVersion`
+- `capabilityProfile`
+- Tier-2 accountability fields from ADR-011 / Audit Export Schema v1.1:
+  `legalBasis`, `purposeCode`, `dataCategories` (claim names only),
+  `policyHash`, `retentionUntil`, `prevRecordHash`, `recordHash`
 
 Forbidden in operational logs:
 
@@ -30,6 +35,8 @@ Forbidden in operational logs:
 - Salt rotation SHOULD be periodic (e.g., monthly per deployment profile).
 - Timestamps MUST be bucketed to 5-minute granularity.
 - Cross-RP joins using stable IDs MUST NOT be possible from logs.
+- `purposeCode` and `dataCategories` MUST be code tokens, not free text or
+  raw values.
 
 ## Audience split for reason codes
 
