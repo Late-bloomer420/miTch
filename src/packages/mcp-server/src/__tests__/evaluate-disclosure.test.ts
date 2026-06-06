@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createServer } from '../index.js';
-import { MOCK_VERIFIERS, MOCK_ISSUER_DID, MOCK_CREDENTIALS } from '../server-scope.js';
+import {
+  MOCK_VERIFIERS,
+  MOCK_ISSUER_DID,
+  MOCK_CREDENTIALS,
+  MOCK_POLICY,
+} from '../server-scope.js';
 
 async function createConnectedClient(): Promise<Client> {
   const server = createServer();
@@ -35,7 +43,25 @@ async function evaluate(client: Client, verifierId: string, claims?: string[]) {
   return { result, block, capsule: JSON.parse(block.text) as Record<string, unknown> };
 }
 
-describe('askmi_evaluate_disclosure (wired to policy-engine, mock scope)', () => {
+async function withWalletDb<T>(content: unknown, run: () => Promise<T>): Promise<T> {
+  const previous = process.env.MITCH_WALLET_DB;
+  const dir = await mkdtemp(join(tmpdir(), 'askmi-mcp-scope-'));
+  const file = join(dir, 'scope.json');
+  await writeFile(file, typeof content === 'string' ? content : JSON.stringify(content), 'utf8');
+  process.env.MITCH_WALLET_DB = file;
+
+  try {
+    return await run();
+  } finally {
+    if (previous === undefined) {
+      delete process.env.MITCH_WALLET_DB;
+    } else {
+      process.env.MITCH_WALLET_DB = previous;
+    }
+  }
+}
+
+describe('askmi_evaluate_disclosure (wired to policy-engine)', () => {
   it('is listed in the tool inventory', async () => {
     const client = await createConnectedClient();
     const { tools } = await client.listTools();
@@ -129,6 +155,38 @@ describe('askmi_evaluate_disclosure (wired to policy-engine, mock scope)', () =>
       ].sort(),
     );
     await client.close();
+  });
+
+  it('loads an explicitly configured local evaluation scope from MITCH_WALLET_DB', async () => {
+    await withWalletDb(
+      {
+        user_did: 'did:example:local-holder',
+        policy: MOCK_POLICY,
+        credentials: MOCK_CREDENTIALS,
+      },
+      async () => {
+        const client = await createConnectedClient();
+        const { block, capsule } = await evaluate(client, MOCK_VERIFIERS.liquorStore);
+        expect(capsule.verdict).toBe('ALLOW');
+        expect(capsule.scope).toBe('local');
+        expect(capsule.disclosed_claims).toContain('age_over_18');
+        expect(block.text).not.toContain(MOCK_CREDENTIALS[0].id);
+        expect(block.text).not.toContain(MOCK_ISSUER_DID);
+        await client.close();
+      },
+    );
+  });
+
+  it('fail-closes when MITCH_WALLET_DB points at an invalid scope file', async () => {
+    await withWalletDb({ policy: { version: 'broken' }, credentials: 'not-array' }, async () => {
+      const client = await createConnectedClient();
+      const { capsule } = await evaluate(client, MOCK_VERIFIERS.liquorStore);
+      expect(capsule.verdict).toBe('DENY');
+      expect(capsule.scope).toBe('local');
+      expect(capsule.reason_codes).toContain('ERR_EVALUATION_FAILED');
+      expect(capsule.disclosed_claims).toEqual([]);
+      await client.close();
+    });
   });
 
   it('renders Markdown when response_format=markdown', async () => {

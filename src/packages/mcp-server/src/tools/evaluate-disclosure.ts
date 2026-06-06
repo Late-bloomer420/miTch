@@ -8,11 +8,11 @@
  * Fail-closed: any ambiguity, validation gap or internal error resolves to DENY.
  * Never default to ALLOW.
  *
- * Status: WIRED to @askmi/policy-engine over a NON-AUTHORITATIVE mock scope
- * (see server-scope.ts). The engine runs for real; the policy + credential
- * inputs are synthetic, so no decision here is authoritative — every response
- * is tagged `scope: "mock"`. The agent only ever sees the sanitised verdict
- * (see sanitize.ts), never credentials, identifiers or signatures.
+ * Status: WIRED to @askmi/policy-engine. By default it runs over the
+ * NON-AUTHORITATIVE mock scope (see server-scope.ts). If MITCH_WALLET_DB is
+ * set, it loads an explicit local JSON evaluation scope via evaluation-scope.ts.
+ * The agent only ever sees the sanitised verdict (see sanitize.ts), never
+ * credentials, identifiers or signatures.
  *
  * See docs/mcp-server-architecture.md §4–6 and §11 (thaw decision).
  */
@@ -25,12 +25,12 @@ import type {
   PolicyEvaluationResult,
 } from '@askmi/shared-types';
 import type { EvaluationContext } from '@askmi/policy-engine';
-import { MOCK_CREDENTIALS, MOCK_POLICY } from '../server-scope.js';
 import {
   sanitizeDecision,
   formatInsightMarkdown,
   type ControlledInsight,
 } from '../sanitize.js';
+import { loadEvaluationScope } from '../evaluation-scope.js';
 
 const VerifierRequestSchema = z.object({
   verifier_id: z.string().min(1).max(512).describe('DID or origin URL of the requesting verifier'),
@@ -100,7 +100,7 @@ function toEngineContext(args: EvaluateDisclosureArgs): EvaluationContext {
 }
 
 /** Fail-closed DENY insight used when evaluation cannot complete safely. */
-function denyInsight(reasonCode: string): ControlledInsight {
+function denyInsight(reasonCode: string, scope: ControlledInsight['scope']): ControlledInsight {
   return {
     verdict: 'DENY',
     decision_id: globalThis.crypto.randomUUID(),
@@ -108,7 +108,7 @@ function denyInsight(reasonCode: string): ControlledInsight {
     reason_codes: [reasonCode],
     disclosed_claims: [],
     proven_claims: [],
-    scope: 'mock',
+    scope,
     evaluated_at: new Date().toISOString(),
   };
 }
@@ -133,22 +133,30 @@ export function registerEvaluateDisclosure(server: McpServer): void {
     },
     async (args) => {
       let insight: ControlledInsight;
+      let insightScope: ControlledInsight['scope'] = process.env.MITCH_WALLET_DB?.trim()
+        ? 'local'
+        : 'mock';
 
       try {
+        const scope = await loadEvaluationScope();
+        insightScope = scope.kind;
         const engine = new PolicyEngine();
         const result: PolicyEvaluationResult = await engine.evaluate(
           toEngineRequest(args as EvaluateDisclosureArgs),
-          toEngineContext(args as EvaluateDisclosureArgs),
-          MOCK_CREDENTIALS,
-          MOCK_POLICY,
+          {
+            ...toEngineContext(args as EvaluateDisclosureArgs),
+            userDID: scope.userDid,
+          },
+          scope.credentials,
+          scope.policy,
         );
-        insight = sanitizeDecision(result);
+        insight = sanitizeDecision(result, scope.kind);
       } catch (err) {
         // stderr only — stdout is reserved for the MCP wire protocol.
         // Never surface stack traces to the agent (architecture §6).
         const message = err instanceof Error ? err.message : String(err);
         process.stderr.write(`[AskMI-mcp] evaluate_disclosure failed: ${message}\n`);
-        insight = denyInsight('ERR_EVALUATION_FAILED');
+        insight = denyInsight('ERR_EVALUATION_FAILED', insightScope);
       }
 
       const format = (args as EvaluateDisclosureArgs).response_format ?? 'json';

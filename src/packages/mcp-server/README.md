@@ -1,6 +1,6 @@
 # @askmi/mcp-server
 
-> **Status:** Experimental — `evaluate_disclosure` wired to the policy engine over a non-authoritative **mock scope** (v0.1)
+> **Status:** Experimental — `evaluate_disclosure` wired to the policy engine over a non-authoritative **mock scope** by default, with an opt-in local JSON evaluation scope via `MITCH_WALLET_DB` (v0.2)
 
 This package exposes the AskMI policy engine as a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. It allows LLM agents (like Claude Desktop) to request disclosure evaluations without giving them access to raw credentials or keys.
 
@@ -12,7 +12,25 @@ This package exposes the AskMI policy engine as a [Model Context Protocol (MCP)]
 
 ## Current Status
 
-`askmi_evaluate_disclosure` is **wired to `@askmi/policy-engine`** and returns real `ALLOW`/`DENY`/`PROMPT` verdicts — but over a **non-authoritative mock scope** (`src/server-scope.ts`): synthetic policy + synthetic credential metadata. Every response is tagged `scope: "mock"`. This honours the original freeze concern (no embedded default produces real decisions without an authorized policy) while enabling agentic integration. The thaw decision and its constraints are recorded in `docs/mcp-server-architecture.md` §11.
+`askmi_evaluate_disclosure` is **wired to `@askmi/policy-engine`** and returns real `ALLOW`/`DENY`/`PROMPT` verdicts.
+
+By default it runs over a **non-authoritative mock scope** (`src/server-scope.ts`): synthetic policy + synthetic credential metadata. Every default response is tagged `scope: "mock"`. This honours the original freeze concern (no embedded default produces real decisions without an authorized policy) while enabling agentic integration. The thaw decision and its constraints are recorded in `docs/mcp-server-architecture.md` §11.
+
+For local evaluation, set `MITCH_WALLET_DB` to a JSON evaluation-scope file containing:
+
+```json
+{
+  "user_did": "did:example:holder",
+  "policy": {
+    "version": "local-1",
+    "trustedIssuers": [],
+    "rules": []
+  },
+  "credentials": []
+}
+```
+
+Only policy data and `StoredCredentialMetadata[]` are loaded. Raw credentials, proofs, keys and claim values are out of scope. When `MITCH_WALLET_DB` is configured but invalid or unreadable, the tool fail-closes to `DENY` and returns `scope: "local"` with no disclosed claims; it does not silently fall back to mock.
 
 All **read tools** (`get_decision`, `list_decisions`, `explain_denial`) remain frozen stubs pending a concrete audit use-case (architecture §10.4).
 
@@ -20,7 +38,7 @@ All **read tools** (`get_decision`, `list_decisions`, `explain_denial`) remain f
 The agent never sees the full `PolicyEvaluationResult`. `src/sanitize.ts` reduces it to a whitelist object — `verdict`, `decision_id`, `policy_hash`, `reason_codes`, `disclosed_claims` (names only), `proven_claims` (names only), `scope`, `evaluated_at`. Credential ids, issuer DIDs, hashes, signatures and the pairwise DID are dropped.
 
 ### Implemented Tools
-- `askmi_evaluate_disclosure`: Evaluates a verifier request against the policy engine (mock scope). Verdict + claim names only, fail-closed.
+- `askmi_evaluate_disclosure`: Evaluates a verifier request against the policy engine (mock scope by default, local JSON scope when `MITCH_WALLET_DB` is set). Verdict + claim names only, fail-closed.
 
 ### Planned Tools (See `docs/mcp-server-architecture.md`)
 - `askmi_verify_presentation`
