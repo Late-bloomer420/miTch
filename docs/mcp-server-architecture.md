@@ -307,3 +307,26 @@ Sicherheitsverhalten:
 Damit ist der Pfad aus §9.2 operationalisiert, ohne das ursprüngliche Freeze-
 Bedenken zu verletzen: Eine echte Entscheidung kann nur entstehen, wenn der
 Operator explizit eine lokale, autorisierte Scope-Datei konfiguriert.
+
+## 13. Audit-Story-Entscheidung — Export vor Read-Tools (2026-06-06)
+
+Status: **§10.4 bleibt eingefroren**. Die neue Audit-Story aus ADR-011 wird
+zuerst über den verifizierbaren Tier-2 Audit-Export gelöst, nicht über
+MCP-Read-Tools.
+
+Begründung:
+
+- Der Audit-Bedarf ist Handoff/Prüfbarkeit: ein auditorfähiges Artefakt mit
+  Controller/RoPA-Kontext, PII-Gate, Hash-Chain, `bundleHash`,
+  `chainTipHash` und `recordCount`.
+- Ein lokales LLM oder Auditor-Tool kann dieses JSON-Artefakt direkt prüfen,
+  ohne dass der MCP-Server zusätzliche Zugriffspfade auf alte Decisions öffnen
+  muss.
+- MCP-Read-Tools wären erst dann gerechtfertigt, wenn der einfache Exportpfad
+  praktisch nicht reicht: sehr große Logs, wiederkehrende strukturierte
+  Queries, Rollen-/Scope-Prüfung pro Auditor, oder ein Bedarf nach
+  Reason-Code-Anreicherung zur Laufzeit.
+
+Damit beantwortet §10.4 die Architekturfrage weiterhin konservativ:
+`evaluate_disclosure` ist der aktive Agentenpfad; Audit-Read bleibt File-Export
++ Verifikation, bis ein echter Tool-Mehrwert nachweisbar ist.

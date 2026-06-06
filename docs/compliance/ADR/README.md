@@ -24,6 +24,7 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/03-architecture/mvp/` â
 | [ADR-008](ADR-008.md) | Fail-Closed Policy Engine with Deny-Bias | Accepted |
 | [ADR-009](ADR-009.md) | Native WebAuthn Verifier statt HMAC-Proxy-Mode-System | Accepted (retrospective) |
 | [ADR-010](ADR-010.md) | Regulatory-Positioning Boundary for Age Verification | Accepted |
+| [ADR-011](ADR-011.md) | Two-Tier Audit Model â€” Minimised, Accountable, Tamper-Evident | Accepted |
 
 ## Verwandte Sammlungen
 
