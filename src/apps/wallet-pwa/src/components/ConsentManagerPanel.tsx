@@ -40,29 +40,17 @@ function matchesTimeframe(timestamp: string, timeframe: 'all' | '24h' | '7d' | '
   return ageMs <= limits[timeframe];
 }
 
-function StateBadge({ state }: { state: 'idle' | 'prompt' | 'approved' | 'denied' }) {
-  const palette = {
-    idle: { bg: '#e5e7eb', fg: '#374151', label: 'Idle' },
-    prompt: { bg: '#fef3c7', fg: '#92400e', label: 'Consent prompt' },
-    approved: { bg: '#dcfce7', fg: '#166534', label: 'Approved' },
-    denied: { bg: '#fee2e2', fg: '#991b1b', label: 'Denied' },
-  }[state];
+const STATE_BADGE_LABELS: Record<'idle' | 'prompt' | 'approved' | 'denied', string> = {
+  idle: 'Idle',
+  prompt: 'Consent prompt',
+  approved: 'Approved',
+  denied: 'Denied',
+};
 
+function StateBadge({ state }: { state: 'idle' | 'prompt' | 'approved' | 'denied' }) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 999,
-        background: palette.bg,
-        color: palette.fg,
-        fontSize: 12,
-        fontWeight: 700,
-      }}
-    >
-      {palette.label}
+    <span className={`consent-manager-panel__state-badge consent-manager-panel__state-badge--${state}`}>
+      {STATE_BADGE_LABELS[state]}
     </span>
   );
 }
