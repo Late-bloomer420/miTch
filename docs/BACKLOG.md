@@ -3,7 +3,7 @@
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
-**Stand:** 2026-06-04 (Sprint-0-Reconciliation: PR #66 npm scope alignment merged; `docs/qa/` als Evidence-Fläche identifiziert; ältere Video-Gap-Tabellen teilweise durch Phase-1 bis Phase-4-Arbeit überholt)
+**Stand:** 2026-06-07 (Truth-Alignment: master bei `fb879cc`/PR #81; voller AskMI-Rebrand via PR #70 gemerged; Epic 2–5 Advisory-Arbeit (#71–#81) dokumentiert in `STATE.md` + Session 17; ältere Video-Gap-Tabellen teilweise durch Phase-1–Phase-4 + Epic-Arbeit überholt)
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -50,7 +50,7 @@ geplant werden.
 |---|---|---|---|---|
 | G-100.1 | 🔴 P0 | ⏳ | Root-Cause `AGE_NOT_VERIFIED` + `ZKP Verification Exception` beheben (Verifier-Pipeline) | Liquor-Szenario ist deterministisch grün (10/10 Läufe) |
 | G-100.2 | 🔴 P0 | ⏳ | Claim/Predicate Contract festziehen (`age`, `age_over_18`, `birthDate` Mapping) | Versioniertes JSON-Schema + Contract Tests vorhanden |
-| G-100.3 | 🔴 P0 | ⏳ | 5-Szenarien E2E-Matrix in CI (Liquor, Doctor, EHDS, Pharmacy, Revoked) | CI bricht bei 1 Szenario-Regression |
+| G-100.3 | 🔴 P0 | ✅ | 5-Szenarien E2E-Matrix in CI (Liquor, Doctor, EHDS, Pharmacy, Revoked) | CI bricht bei 1 Szenario-Regression — erledigt via PR #69 (`test(verifier): automate pilot five-scenario smoke matrix`) |
 | G-100.4 | 🟡 P1 | ⏳ | Correlation IDs über Wallet/Verifier/Issuer | Jede Demo-Transaktion end-to-end tracebar |
 
 ### EPIC G-110 — QR + Deep-Link Handoff

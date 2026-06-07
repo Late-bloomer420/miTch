@@ -24,6 +24,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Capability handshake + downgrade handling:** `docs/protocol/CAP_NEGOTIATION_V1.md`
 - **Metadata budget + anti-correlation controls:** `docs/ops/METADATA_BUDGET_V1.md`
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
+- **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
+- **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
 - **QA evidence archive:** `docs/qa/`
 
 ## Navigation
@@ -32,6 +34,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
+- **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
+- **Epic 4–5 execution plan (Scout & Advisor record):** `docs/EXECUTION_PLAN_epic4-5.md`
 - **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
 
 ## Agent and Memory Surfaces
