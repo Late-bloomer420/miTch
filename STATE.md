@@ -44,6 +44,7 @@
 
 ### Recent additions (since Session 16, post full-rebrand — 2026-06-05/06)
 Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct commits to `master`. Plan of record: [`docs/EXECUTION_PLAN_epic4-5.md`](docs/EXECUTION_PLAN_epic4-5.md).
+- **Identity Firewall MVP — Abschlussreview passed (2026-06-07):** the Sprint 1 MVP (`IDENTITY_ACCESS_DETECTED` audit events, PII-minimal `IdentityFirewallMetadata`, DataFlow `identity` category + badge) survived the rebrand/consolidation and is on `master`, `@askmi`-namespaced. Final review confirmed PII-minimal metadata (sanitized actor labels, no raw identifiers, no new cross-RP correlators), `blocked: false` literal (visibility, not blocking), and **230 green tests** (shared-types 69, data-flow 56, wallet-pwa 105). Enforcement/blocking deferred to a later sprint. See [`docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md`](docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md).
 - **Sovereignty Center restored (Epic 2, PR #75):** `SovereigntyCenter.tsx` re-wired into `wallet-pwa` `App.tsx`.
 - **Verifier reputation watchdog (Epic 2):** wallet-side watchdog flagging verifier reputation signals.
 - **Consent Manager UX polish (Epic 4, PR #77 — UX-09):** authored the missing `consent-manager-panel__*` stylesheet in `wallet.css` against shared design tokens; removed all inline styles; added `ConsentManagerPanel.test.tsx` (10 tests, wallet-pwa 105/105).
