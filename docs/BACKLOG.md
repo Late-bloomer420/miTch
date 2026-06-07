@@ -31,6 +31,26 @@ Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
 
 ---
 
+## Erledigte Legacy-Items: Unlinkability U-20–U-23 (Traceability)
+
+Die ursprüngliche „Unlinkability"-Gruppe (`U-20`–`U-23`) stammt aus dem ersten Master-Backlog
+(`656a07b`) und wurde beim v1.0-RC-Restructure (`4a19176`) aus der Tabellenstruktur entfernt.
+**Die IDs wurden nicht migriert, die Arbeit aber geliefert** — diese Notiz schließt die
+Nachverfolgungslücke (nichts wurde fälschlich gelöscht):
+
+| Legacy-ID | Status | Beschreibung | Wo auf `master` |
+|---|---|---|---|
+| U-20 | ✅ | Identitäts-Firewall — Tracker-/Cookie-Zugriffe erkennen + loggen | `IDENTITY_ACCESS_DETECTED`-Audit-Events; `WalletService.recordIdentityFirewallEvents`; siehe [`tasks/SPRINT_01_IDENTITY_FIREWALL.md`](tasks/SPRINT_01_IDENTITY_FIREWALL.md) (Abschlussreview 2026-06-07) |
+| U-21 | ✅ | UI: Anzeige bei Identifier-Zugriff | `data-flow` Kategorie `identity`, `DataFlowPanel`-Badge/Timeline (informierend, nicht blockierend) |
+| U-22 | ✅ | Anti-Fingerprinting: Wallet-Uniformität (Header-/JSON-Normalisierung, Payload-Padding) | `src/apps/wallet-pwa/src/utils/anti-fingerprinting.ts` (+ `anti-fingerprinting.test.ts`) |
+| U-23 | ✅ | Timing-Jitter für Netzwerk-Requests | `anti-fingerprinting.ts` (Sektion „U-23: Network Timing Jitter") |
+
+**Hinweis:** Enforcement/Blocking von Tracker-Zugriffen war bewusst **nicht** Teil dieser
+Items (nur Sichtbarmachung + Anti-Korrelation). Aktives Blocking bleibt einem späteren Sprint
+vorbehalten.
+
+---
+
 ## Video Gap Analysis → Delivery Backlog (2026-05-31)
 
 Quelle für diese Sektion: Analyse der drei Referenz-Demos (Web Wallet, Unified Identity, MCP Agent Identity).
