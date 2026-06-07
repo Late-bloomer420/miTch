@@ -31,23 +31,24 @@ Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
 
 ---
 
-## Erledigte Legacy-Items: Unlinkability U-20–U-23 (Traceability)
+## Legacy-Audit: Unlinkability-Gruppe U-01–U-23 (Traceability)
 
-Die ursprüngliche „Unlinkability"-Gruppe (`U-20`–`U-23`) stammt aus dem ersten Master-Backlog
-(`656a07b`) und wurde beim v1.0-RC-Restructure (`4a19176`) aus der Tabellenstruktur entfernt.
-**Die IDs wurden nicht migriert, die Arbeit aber geliefert** — diese Notiz schließt die
-Nachverfolgungslücke (nichts wurde fälschlich gelöscht):
+Die ursprüngliche „Phase 1 — Unlinkability"-Gruppe (`U-01`–`U-23`) stammt aus dem ersten
+Master-Backlog (`656a07b`) und wurde beim v1.0-RC-Restructure (`4a19176`) aus der
+Tabellenstruktur entfernt (ersetzt durch E-/G-/R-Epics). **Die IDs wurden nicht migriert,
+die Arbeit aber überwiegend geliefert.** Vollständiges Audit (2026-06-08, `4a19176` hat nur
+README/STATE/BACKLOG editiert, keine Datei gelöscht):
 
-| Legacy-ID | Status | Beschreibung | Wo auf `master` |
+| Legacy-Block | IDs | Status | Wo auf `master` |
 |---|---|---|---|
-| U-20 | ✅ | Identitäts-Firewall — Tracker-/Cookie-Zugriffe erkennen + loggen | `IDENTITY_ACCESS_DETECTED`-Audit-Events; `WalletService.recordIdentityFirewallEvents`; siehe [`tasks/SPRINT_01_IDENTITY_FIREWALL.md`](tasks/SPRINT_01_IDENTITY_FIREWALL.md) (Abschlussreview 2026-06-07) |
-| U-21 | ✅ | UI: Anzeige bei Identifier-Zugriff | `data-flow` Kategorie `identity`, `DataFlowPanel`-Badge/Timeline (informierend, nicht blockierend) |
-| U-22 | ✅ | Anti-Fingerprinting: Wallet-Uniformität (Header-/JSON-Normalisierung, Payload-Padding) | `src/apps/wallet-pwa/src/utils/anti-fingerprinting.ts` (+ `anti-fingerprinting.test.ts`) |
-| U-23 | ✅ | Timing-Jitter für Netzwerk-Requests | `anti-fingerprinting.ts` (Sektion „U-23: Network Timing Jitter") |
+| 1.1 Pairwise-Ephemeral DIDs | U-01–U-03 | ✅ | Spec 111, `shared-crypto/src/pairwise-did.ts` |
+| 1.2 Randomisierte Proofs | U-10–U-13 | ⬜ **offen** | [`tasks/SPRINT_PROOF_RANDOMIZATION.md`](tasks/SPRINT_PROOF_RANDOMIZATION.md) (Review 1: B+C, BBS+ deferred) |
+| 1.3a Identity Firewall | U-20, U-21 | ✅ | `IDENTITY_ACCESS_DETECTED`, `data-flow` Kategorie `identity` — [`tasks/SPRINT_01_IDENTITY_FIREWALL.md`](tasks/SPRINT_01_IDENTITY_FIREWALL.md) |
+| 1.3b Anti-Fingerprinting | U-22, U-23 | ✅ | `wallet-pwa/src/utils/anti-fingerprinting.ts` (Padding + „U-23: Network Timing Jitter") |
 
-**Hinweis:** Enforcement/Blocking von Tracker-Zugriffen war bewusst **nicht** Teil dieser
-Items (nur Sichtbarmachung + Anti-Korrelation). Aktives Blocking bleibt einem späteren Sprint
-vorbehalten.
+**Ergebnis:** Nichts wurde fälschlich gelöscht. Einziges offenes Cluster: U-10–U-13
+(= Sprint Proof-Randomization). Enforcement/Blocking von Trackern war bewusst nicht Teil
+von 1.3 (nur Sichtbarmachung + Anti-Korrelation).
 
 ---
 
