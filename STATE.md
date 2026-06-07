@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-04
-**Branch:** `chore/full-askmi-rebrand`
+**Date:** 2026-06-07
+**Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `8d8735b` (PR #69 merged)
+**Current master:** `fb879cc` (PR #81 merged)
 
 ---
 
@@ -32,7 +32,7 @@
 ## Current status
 
 ### Operational Health
-- **GitHub Actions:** Post-merge `master` checks for PR #66 passed on 2026-06-04: ci-security, Deploy GitHub Pages, AskMI CI/CD Pipeline, and CodeQL.
+- **GitHub Actions:** `master` stays green by construction — branch protection requires PR-only merges + passing checks (ci-security, Deploy GitHub Pages, AskMI CI/CD Pipeline, CodeQL) + verified/signed commits. This held through the latest merge, PR #81.
 - **Tests:** Full suite evidence remains 45/45 turbo tasks and 1820+ individual tests from the 2026-06-04 wallet recovery RC QA record. PR #66 additionally re-ran targeted package tests for the npm scope alignment (`revocation-statuslist`, `shared-crypto`, `audit-log`, `policy-engine`) before merge.
 - **Lint:** Last recorded repo-level lint gate passed in the 2026-06-04 QA evidence. Older notes mention a non-blocking verifier frontend `any` warning; treat exact lint-warning count as evidence-specific until next full local sweep.
 - **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
@@ -41,6 +41,17 @@
 - **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.askmi.demo` domains.
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+
+### Recent additions (since Session 16, post full-rebrand — 2026-06-05/06)
+Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct commits to `master`. Plan of record: [`docs/EXECUTION_PLAN_epic4-5.md`](docs/EXECUTION_PLAN_epic4-5.md).
+- **Sovereignty Center restored (Epic 2, PR #75):** `SovereigntyCenter.tsx` re-wired into `wallet-pwa` `App.tsx`.
+- **Verifier reputation watchdog (Epic 2):** wallet-side watchdog flagging verifier reputation signals.
+- **Consent Manager UX polish (Epic 4, PR #77 — UX-09):** authored the missing `consent-manager-panel__*` stylesheet in `wallet.css` against shared design tokens; removed all inline styles; added `ConsentManagerPanel.test.tsx` (10 tests, wallet-pwa 105/105).
+- **MCP integration (Epic 5, PRs #78–#80):** `@askmi/mcp-server` `askmi_evaluate_disclosure` wired to the real `policy-engine` (CI-01), stdio smoke validation (#79), and a local evaluation scope loader (#80). Architecture: [`docs/mcp-server-architecture.md`](docs/mcp-server-architecture.md).
+- **Accountable audit export model (PR #81):** `policy-engine` audit export schema for accountable disclosure records — [`docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`](docs/ops/AUDIT_EXPORT_SCHEMA_V1.md).
+- **ADR-013 (PR #73):** WalletService monolith decomposition strategy — [`docs/03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md`](docs/03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md).
+- **Branch cleanup manifest (PR #74):** recorded 2026-06-06 branch hygiene pass — [`docs/ops/BRANCH_CLEANUP_2026-06-06.md`](docs/ops/BRANCH_CLEANUP_2026-06-06.md).
+- **Test-fixture hygiene (PRs #71/#72 — S2-04/S2-05):** centralized scenario claims + a frontend fixture drift guard, and shared StatusList test helpers (no revocation-behavior change).
 
 ### Recent additions (since Session 11)
 - **Full AskMI rebrand (2026-06-04, branch `chore/full-askmi-rebrand`):** All active workspace packages, imports, app aliases, demo trust fixtures, local `*.askmi.demo` runtime IDs, and primary `ASKMI_*` environment variables now align on AskMI / `@askmi/*`. Runtime keeps targeted `MITCH_*` compatibility fallbacks where useful. See [`docs/NPM_SCOPE_RENAME_ASKMI.md`](docs/NPM_SCOPE_RENAME_ASKMI.md).

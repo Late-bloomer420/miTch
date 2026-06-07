@@ -4,6 +4,15 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 17 — Epic 2–5 Scout & Advisor Pass (2026-06-05 / 2026-06-06)
+- **Mode:** Scout & Advisor — every change landed via a reviewed `proposal/*` PR; no direct commits to `master`. Corrected plan of record: [`EXECUTION_PLAN_epic4-5.md`](EXECUTION_PLAN_epic4-5.md).
+- **Epic 2 — Sovereignty Center (PR #75):** Restored `SovereigntyCenter.tsx` and wired it back into `wallet-pwa` `App.tsx`; added a wallet-side verifier reputation watchdog.
+- **Epic 4 — Consent Manager UX (PR #77, UX-09):** Found the panel used a `consent-manager-panel__*` BEM contract with **no matching stylesheet** — authored it in `wallet.css` against shared `--accent-*` / `--text-*` tokens, removed all inline styles, and wrote `ConsentManagerPanel.test.tsx` (10 tests). `wallet-pwa` build ✓, tests ✓ 105/105 (baseline 95).
+- **Epic 5 — MCP Integration (PRs #78–#80, CI-01):** Wired `@askmi/mcp-server` `askmi_evaluate_disclosure` to the real `policy-engine` instead of inventing a new tool; added stdio smoke validation (#79) and a local evaluation scope loader (#80). Architecture: [`mcp-server-architecture.md`](mcp-server-architecture.md).
+- **Accountable audit export (PR #81):** Added a `policy-engine` audit export model for accountable disclosure records — [`docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`](ops/AUDIT_EXPORT_SCHEMA_V1.md).
+- **Housekeeping:** ADR-013 WalletService decomposition strategy (PR #73); 2026-06-06 branch cleanup manifest (PR #74); test-fixture centralization + drift guard and shared StatusList helpers (PRs #71/#72, S2-04/S2-05).
+- **Net master move:** `8d8735b` (PR #69) → `fb879cc` (PR #81).
+
 ### Session 16 — Full AskMI Rebrand (2026-06-04)
 - **Goal:** Complete the partial npm-scope rename into a full active workspace rebrand.
 - **Change:** Renamed all active workspace package names, imports, aliases, scripts, lockfile entries, demo trust fixtures, local `*.askmi.demo` identifiers, and app-facing product strings to AskMI / `@askmi/*`.
