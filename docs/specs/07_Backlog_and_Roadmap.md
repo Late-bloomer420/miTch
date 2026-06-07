@@ -80,7 +80,7 @@ This backlog replaces the old concept-only framing.
 - `STATE.md` (single-screen status)
 - `07_Backlog_and_Roadmap.md` (Now/Next/Later priorities)
 - `00_README.md` (index of new artifacts)
-- workspace `memory/YYYY-MM-DD.md` (short daily chronology)
+- workspace `memory/YYYY-MM-DD.md` (short daily chronology) — *lokal/privat, OpenClaw-Workspace, nicht im Repo-Commit*
 
 ### End-of-batch update protocol
 1. Confirm test baseline: `npm test` + `npm run kpi:check`

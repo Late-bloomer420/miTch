@@ -253,7 +253,7 @@ Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 
 ## Phase 3 — Security Hardening (Salt Typhoon Patterns) 🟡
 
-Basierend auf: `memory/miTch_security_patterns_memory.md`
+Basierend auf: `memory/miTch_security_patterns_memory.md` — *lokale OpenClaw-Workspace-Notiz, nicht im Repo und nicht portabel (siehe `DOCS_CANON.md` → „Agent and Memory Surfaces").*
 
 | ID | Prio | Beschreibung | Angriffsmuster |
 |---|---|---|---|
@@ -348,7 +348,10 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 ### Intern
 - Policy Manifest v2.0: `docs/00-welt/mitch_policy_manifest.md`
 - Controlled Insight: `docs/00-welt/concept_controlled_insight.md`
-- Unlinkability Vision: (workspace) `memory/unlinkability-vision.md`
-- Security Patterns: (workspace) `memory/miTch_security_patterns_memory.md`
-- EHDS Research: (workspace) `memory/eudi-compliance-research.md`
 - Spec 111: `docs/specs/111_Unlinkability_Phase1_Pairwise_Ephemeral_DIDs.md`
+
+#### Lokale Workspace-Notizen (nicht im Repo, nicht portabel)
+> Diese Dateien liegen ausschließlich in der lokalen OpenClaw-Workspace-Memory, nicht im Repo-Commit. Beim Klonen ohne den Workspace sind die Pfade tote Verweise. Siehe `DOCS_CANON.md` → „Agent and Memory Surfaces".
+- Unlinkability Vision: `memory/unlinkability-vision.md`
+- Security Patterns: `memory/miTch_security_patterns_memory.md`
+- EHDS Research: `memory/eudi-compliance-research.md`

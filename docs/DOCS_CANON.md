@@ -44,7 +44,7 @@ This file defines the authoritative document per topic area and serves as naviga
 |-----|-------|
 | `AGENTS.md` | Aktuelle repo-lokale Regeln fuer Codex/OpenClaw/Coding Agents |
 | `CLAUDE.md` | Aktuelle repo-lokale Regeln fuer Claude Code |
-| `CLAUDE_TASKS.md` | Historisches Session-Artefakt, nicht aktueller Arbeitsauftrag |
+| `docs/archive/CLAUDE_TASKS_session10.md` | Historisches Session-10-Artefakt (archiviert), nicht aktueller Arbeitsauftrag |
 | `.agent/skills/**` | Versionierte repo-lokale Skills |
 | `.codex/agents/**` | Versionierte repo-lokale Codex-Agent-Konfiguration |
 | `.agents/`, `.claude/`, `.qodo/` | Lokale/ignored Agent-Runtime oder Tool-Konfiguration |
