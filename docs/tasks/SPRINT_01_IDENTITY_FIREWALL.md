@@ -2,7 +2,7 @@
 
 Stand: 2026-05-20
 Backlog-Bezug: U-20, U-21
-Status: Implementation v1 complete, Abschlussreview pending
+Status: Complete — Abschlussreview bestanden 2026-06-07 (alle Merge-blockierenden Kriterien erfüllt, MVP auf `master`)
 
 ## Sprint-Ziel
 
@@ -502,3 +502,58 @@ Abschlussreview vorbereiten:
 3. Product/Policy bestaetigt UI-Text: Sichtbarmachung, kein Blocking-Versprechen.
 4. Reviewer/Security prueft Metadata auf Roh-Identifier und Cross-RP-Korrelatoren.
 5. Danach U-20/U-21 im Backlog je nach Review-Ergebnis als MVP-complete markieren.
+
+## Abschlussreview 2026-06-07
+
+Durchgefuehrt auf aktuellem `master` (`6ed357a`), nach Rebrand und Branch-Konsolidierung.
+Die Implementation v1 hat beide Umbauten ueberlebt und liegt vollstaendig `@askmi`-namespaced
+auf `master`.
+
+### 1. Code-Diff gegen Review-1/Review-2-Kriterien — ✅
+
+Verifizierte Symbole auf `master`:
+
+- `IDENTITY_ACCESS_DETECTED` als eigener `AuditEventType` (`shared-types/src/audit.ts`).
+- `IdentityFirewallMetadata` mit literal `blocked: false` (PII-eng typisiert).
+- `WalletService.recordIdentityFirewallEvents(...)` + Mapping `mapTrackingPointToIdentityMetadata`.
+- `DataFlowTransaction.identityAccesses` / `identityAccessCount`, Kategorie `identity`,
+  `eventLabel('IDENTITY_ACCESS_DETECTED')`, `summarizeTransaction()`.
+- `DataFlowPanel` Badge/Tag/Timeline-Dot fuer Identity-Ereignisse.
+
+### 2. Package-Tests (frueher lokaler Blocker, jetzt geloest) — ✅
+
+pnpm-Workspace-Linking funktioniert wieder; Tests ueber die normalen Package-Scripts:
+
+- `@askmi/shared-types`: **69/69** gruen.
+- `@askmi/data-flow`: **56/56** gruen.
+- `@askmi/wallet-pwa`: **105/105** gruen.
+- Summe der MVP-relevanten Suiten: **230** Tests gruen.
+
+### 3. Product/Policy — UI-Text — ✅
+
+`eventLabel` liefert `Identifier-Zugriff erkannt`, `summarizeTransaction()` meldet
+`N Identifier-Zugriffe sichtbar gemacht`. Kein UI-Text behauptet Blocking; kein Risk-Score.
+
+### 4. Reviewer/Security — Metadata-Pruefung — ✅
+
+- `sanitizeIdentityActorLabel()` reduziert URLs auf Hostname, entfernt Query/Fragment/Pfad,
+  kappt auf 80 Zeichen, Fallback `Unknown actor` — keine Roh-URLs/Pfade.
+- Keine Cookie-Werte, IPs, raw User-Agent-Strings, Device-IDs oder Credential-Rohwerte im Event.
+- `verifier_did` nur als bereits vorhandener Transaktionskontext, kein neuer stabiler
+  Cross-RP-Korrelator.
+- `blocked: false as const` schliesst falsche Blocking-Behauptung typseitig aus.
+- `if (!decisionId) return []` verhindert Events ohne `decision_id`.
+- Fail-closed gilt fuer Datenoffenlegung, nicht fuer die rein informative Anzeige —
+  Event-Erzeugung kann fehlschlagen, ohne den Proof-Flow zu blockieren.
+
+### 5. Backlog-Status
+
+Die historischen IDs U-20/U-21 existieren in der aktuellen Backlog-Struktur nicht mehr
+(Umstellung auf Video-Gap-Epics + Sprint-02). Der MVP wird hier als **complete** gefuehrt;
+`STATE.md` weist die Identity-Firewall-Transparenz als ausgelieferte Capability aus.
+
+### Ergebnis
+
+Abschlussreview **bestanden**. Identity Firewall MVP (informieren + auditieren, nicht
+blockieren) ist auf `master`, getestet und PII-minimal. Blocking/Enforcement bleibt
+explizit einem spaeteren Sprint vorbehalten (siehe "Nicht im MVP").
