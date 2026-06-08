@@ -398,6 +398,18 @@ export interface StoredCredentialMetadata {
     claims: string[];
     /** Credential lifecycle status */
     status?: 'active' | 'dispensed' | 'revoked' | 'expired';
+    /**
+     * Single-use credential (Proof-Randomization, U-12): present exactly once,
+     * then consume. Set at issuance (batch single-use issuance, deferred). When
+     * absent/false the credential is reusable. See utils/single-use.ts.
+     */
+    singleUse?: boolean;
+    /**
+     * ISO-8601 timestamp when a single-use credential was consumed (presented).
+     * Absent while unused. A consumed single-use credential is excluded from
+     * future selection (fail-closed non-reuse).
+     */
+    consumedAt?: string;
     /** Credential encoding format (default: 'sd-jwt') */
     format?: CredentialFormat;
     /** Visual Rendering Methods (§3.1 W3C VC-Render) */

@@ -102,6 +102,151 @@ describe('WalletService — Credential Store / Retrieve', () => {
   });
 });
 
+describe('WalletService — Single-Use Credential wiring (Proof-Randomization U-12)', () => {
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+  });
+
+  async function presentToLiquorStore() {
+    const verifierKeys = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: 'SHA-256',
+      },
+      true,
+      ['encrypt', 'wrapKey', 'decrypt', 'unwrapKey']
+    );
+    return wallet.evaluateRequest(
+      {
+        verifierId: 'did:askmi:verifier-liquor-store',
+        nonce: crypto.randomUUID(),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+        origin: 'http://localhost:3004',
+        serviceEndpoint: 'http://localhost:3004/present',
+        ephemeralResponseKey: verifierKeys.publicKey,
+      },
+      { userAgent: 'test-agent', timestamp: Date.now() }
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function selectedIds(capsule: any): string[] {
+    const reqs: any[] = capsule?.authorized_requirements ?? [];
+    const ids = reqs.map((r) => r.selected_credential_id).filter(Boolean) as string[];
+    if (capsule?.selected_credential_id) ids.push(capsule.selected_credential_id);
+    return [...new Set(ids)];
+  }
+
+  it('records single_use_credential on VP_GENERATED and consumes the credential', async () => {
+    // Pass 1 — discover which credential the age-proof flow selects.
+    const first = await presentToLiquorStore();
+    expect(first.verdict).toBe('ALLOW');
+    const ids = selectedIds(first.decisionCapsule);
+    expect(ids.length).toBeGreaterThan(0);
+
+    // Re-issue those exact credentials as single-use (same id overwrites metadata).
+    for (const id of ids) {
+      const m = (await wallet.getCredentials()).find((x) => x.id === id)!;
+      const payload = (await wallet.loadCredential(id)) as Record<string, unknown>;
+      await wallet.addCredential(id, payload, {
+        issuer: m.issuer,
+        type: m.type,
+        claims: m.claims,
+        issuedAt: m.issuedAt,
+        singleUse: true,
+      });
+    }
+
+    // Pass 2 — present the now single-use credential.
+    const second = await presentToLiquorStore();
+    expect(second.verdict).toBe('ALLOW');
+    await wallet.generatePresentation(second.decisionCapsule!);
+
+    const report = await wallet.exportAuditReport();
+    const vpEvents = report.entries.filter(
+      (e) =>
+        e.action === 'VP_GENERATED' &&
+        e.metadata?.decision_id === second.decisionCapsule!.decision_id
+    );
+    expect(vpEvents.length).toBeGreaterThan(0);
+    expect(vpEvents.some((e) => e.metadata?.single_use_credential === true)).toBe(true);
+
+    // Consumed: every presented single-use credential is now marked.
+    const after = await wallet.getCredentials();
+    for (const id of ids) {
+      expect(after.find((x) => x.id === id)?.consumedAt).toBeTruthy();
+    }
+  });
+
+  it('reusable (non single-use) presentations record single_use_credential = false', async () => {
+    const result = await presentToLiquorStore();
+    expect(result.verdict).toBe('ALLOW');
+    await wallet.generatePresentation(result.decisionCapsule!);
+
+    const report = await wallet.exportAuditReport();
+    const summary = report.entries.find(
+      (e) =>
+        e.action === 'VP_GENERATED' &&
+        e.metadata?.decision_id === result.decisionCapsule!.decision_id &&
+        'used_zkp' in (e.metadata ?? {})
+    );
+    expect(summary).toBeDefined();
+    expect(summary!.metadata?.single_use_credential).toBe(false);
+  });
+
+  it('mints an issued credential as single-use (constraint fixed at issuance)', async () => {
+    const credId = `vc-issued-${Date.now()}`;
+    await wallet.addIssuedCredential(
+      credId,
+      { birthDate: '1990-01-01', age: 36 },
+      'did:web:localhost%3A3005',
+      undefined,
+      true
+    );
+    const minted = (await wallet.getCredentials()).find((c) => c.id === credId);
+    expect(minted?.singleUse).toBe(true);
+    expect(minted?.consumedAt).toBeFalsy();
+  });
+
+  it('issues reusable credentials by default (no single-use flag)', async () => {
+    const credId = `vc-reusable-${Date.now()}`;
+    await wallet.addIssuedCredential(credId, { birthDate: '1990-01-01' }, 'did:web:localhost%3A3005');
+    const minted = (await wallet.getCredentials()).find((c) => c.id === credId);
+    expect(minted?.singleUse).toBeFalsy();
+  });
+
+  it('does not re-present a consumed single-use credential (fail-closed non-reuse)', async () => {
+    const first = await presentToLiquorStore();
+    const ids = selectedIds(first.decisionCapsule);
+
+    for (const id of ids) {
+      const m = (await wallet.getCredentials()).find((x) => x.id === id)!;
+      const payload = (await wallet.loadCredential(id)) as Record<string, unknown>;
+      await wallet.addCredential(id, payload, {
+        issuer: m.issuer,
+        type: m.type,
+        claims: m.claims,
+        issuedAt: m.issuedAt,
+        singleUse: true,
+      });
+    }
+
+    const second = await presentToLiquorStore();
+    await wallet.generatePresentation(second.decisionCapsule!);
+
+    // Pass 3 — the consumed credential must no longer be selectable.
+    const third = await presentToLiquorStore();
+    const stillUsed = selectedIds(third.decisionCapsule).some((id) => ids.includes(id));
+    expect(stillUsed).toBe(false);
+  });
+});
+
 describe('WalletService — AES-256-GCM Encryption Roundtrip', () => {
   it('two wallets with same PIN can both initialize (key derivation is deterministic)', async () => {
     const wallet1 = makeWallet();
