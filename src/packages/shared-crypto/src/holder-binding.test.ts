@@ -11,7 +11,7 @@ describe('generateHolderBinding', () => {
     expect(typeof cnf.jwk?.x).toBe('string');
     expect(typeof cnf.jwk?.y).toBe('string');
     // public-only: a holder cnf must never carry the private scalar
-    expect((cnf.jwk as Record<string, unknown>).d).toBeUndefined();
+    expect((cnf.jwk as unknown as Record<string, unknown>).d).toBeUndefined();
   });
 
   it('yields a distinct holder key on each call (unlinkability foundation)', async () => {
