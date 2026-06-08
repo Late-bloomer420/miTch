@@ -1,11 +1,13 @@
 # ADR-009 — Formal Threat Model (STRIDE-basiert)
 
-**Status:** PROPOSED
-**Date:** 2026-03-13
+> **Hinweis:** Es existieren zwei `ADR-009`-Dateien mit unterschiedlichem Thema: **diese** (mvp/) ist das Threat Model; `docs/compliance/ADR/ADR-009.md` betrifft WebAuthn Native vs. HMAC-Proxy. Beide sind in ihrer Sammlung autoritativ — siehe `docs/DOCS_CANON.md` → "Architecture Decision Records (3 Sammlungen)".
+
+**Status:** Accepted (technical) — pending external review
+**Date:** 2026-03-13 (initial), aktualisiert 2026-06-08
 **Owner:** Architecture Lead
 **Decision:** Vollständiges STRIDE Threat Model + Mitigations für alle vier Manifest-Prinzipien als P0-Basis für Phase 3
 
-**Status-Begründung (2026-03-18):** Technische Acceptance Criteria dokumentiert (STRIDE-Tabelle, Szenarien, Gap-Analyse). Status bleibt PROPOSED bis externer Security Review abgeschlossen — menschliche Vorbedingung, nicht automatisierbar.
+**Status-Begründung (2026-06-08):** Alle technischen Acceptance Criteria erfüllt; STRIDE-Tabelle deckt jetzt auch die Sprint-1- (Identity Firewall, U-20/U-21) und Sprint-Proof-Randomization-Mitigations (U-11/U-12) ab. **GAP-4** (externer Security-Reviewer) bleibt offen — menschliche Vorbedingung für `Accepted` ohne Zusatz, nicht automatisierbar.
 
 ## Context
 
@@ -75,6 +77,8 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 | I-5 | Policy Engine | Pairwise-DID in DENY-Response leakt Nutzer-Identität | Blind Provider | DENY-Verdict enthält keine pairwise_did; nur ALLOW/PROMPT erhalten DID | belegt | `policy-engine/src/__tests__/pairwise-did-proof.test.ts` — "DENY verdict does NOT include pairwise_did" |
 | I-6 | Policy Engine | Datenabfluss in nicht-adäquate Jurisdiktionen | Blind Provider | GDPR-Transfer-Check: EU→EU erlaubt, nicht-adäquat → blockiert; ISO-3166-Whitelist | belegt | `policy-engine/src/__tests__/jurisdiction.test.ts` — "checkGDPRDataTransfer blocks non-adequate countries" |
 | I-7 | Revocation | Widerrufs-Status unbekannt → Credential trotzdem akzeptiert | Smart Policy Engine | Fail-Closed: High-Risk → DENY bei fetch-Fehler; Revocation unavailable → DENY (never ALLOW) | belegt | `integration-tests/src/fail-closed-golden.test.ts` — "network error → DENY, never ALLOW" |
+| I-8 | Wallet UI / DataFlow | Browser-/OS-/Netzwerk-Layer-Tracker greifen auf Identifier-Oberflächen zu, ohne dass der Nutzer es sieht | Human-in-the-Loop | Identity Firewall: `IDENTITY_ACCESS_DETECTED`-Audit-Events mit PII-minimaler `IdentityFirewallMetadata` (sanitisiertes `actor_label`, keine Roh-Cookies/IPs/UA-Strings); literal `blocked: false` (informierend, nicht blockend); DataFlowPanel-Badge + Timeline-Eintrag | belegt | Sprint 1 Abschlussreview 2026-06-07 — `wallet-pwa/src/__tests__/WalletService.test.ts`, `DataFlowPanel.test.tsx`; `data-flow/src/__tests__/service.test.ts` (Kategorie `identity`); siehe `docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md` |
+| I-9 | Wallet / OID4VP | Cross-Verifier-Korrelation über stabile Holder-Bindings (`cnf`) und wiederverwendete Issuer-Signaturen | Blind Provider | Ephemeral Holder Binding: `generateHolderBinding()` (P-256, non-extractable) erzeugt pro Batch-Member einen frischen Holder-Key → distinkte `cnf`-JWKs; Single-Use Credential Pool (`credential-pool.ts`) mit FIFO-Auswahl und fail-closed Exhaustion; Honesty-Boundary: Unlinkability durch Nicht-Wiederverwendung, nicht durch Multi-Show-Krypto (BBS+ deferred) | belegt | `shared-crypto/src/holder-binding.test.ts` (Cross-Binding-Negativtest); `wallet-pwa/src/__tests__/credential-pool.test.ts`; siehe `docs/tasks/SPRINT_PROOF_RANDOMIZATION.md` |
 
 ### D — Denial of Service
 
@@ -83,6 +87,7 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 | D-1 | Policy Engine | Verifier flutet Verifikations-Anfragen | Smart Policy Engine | Rate Limiting: per-Verifier + per-User Limits; Token-Bucket; RATE_LIMIT_VERIFIER / RATE_LIMIT_USER | belegt | `policy-engine/src/__tests__/rate-limiter.test.ts` — "blocks when verifier limit exceeded", "different verifiers have independent limits" |
 | D-2 | Policy Engine | Proof-Fatigue: Nutzer durch häufige Prompts erschöpft | Human-in-the-Loop | Prompt-Quota pro Zeitfenster; bei Erschöpfung → auto-DENY; Warnung bei 80% | belegt | `policy-engine/src/__tests__/proof-fatigue.test.ts` — "triggers fatigue after exceeding max", "warns at 80% threshold" |
 | D-3 | Policy Engine | Policy-Ambiguität führt zu unerwarteten Verdikten | Smart Policy Engine | Deny-Wins Conflict Resolution: ANY DENY > ANY PROMPT > ALL ALLOW; leere Verdicts → DENY | belegt | `policy-engine/src/__tests__/deny-code-disambiguation.test.ts` — "NO_MATCHING_RULE is produced when no rule matches" |
+| D-4 | Wallet Network Layer | Traffic-Analyse über Request-Größe und -Timing (Linkability gegen passive Beobachter) | Blind Provider | Anti-Fingerprinting: Header-/JSON-Normalisierung + Payload-Padding (`padToBlockSize`) + Network Timing Jitter (legacy U-22/U-23, ursprüngliche Phase-1.3-Gruppe) | belegt | `wallet-pwa/src/__tests__/anti-fingerprinting.test.ts` (`wallet-pwa/src/utils/anti-fingerprinting.ts` Sektion "U-23: Network Timing Jitter") |
 
 ### E — Elevation of Privilege
 
@@ -99,8 +104,8 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 |---|---|---|
 | **Smart Policy Engine** | S-1, S-2, S-3, S-4, T-1, T-2, T-3, T-4, T-6, I-1, I-7, D-1, D-2, D-3, E-2, R-3 | Alle 6 STRIDE-Kategorien |
 | **Crypto-Shredding** | T-5, R-1, R-2, I-3, I-4 | T, R, I |
-| **Blind Provider** | I-2, I-5, I-6 | I |
-| **Human-in-the-Loop** | D-2, E-1 | D, E |
+| **Blind Provider** | I-2, I-5, I-6, I-9, D-4 | I, D |
+| **Human-in-the-Loop** | D-2, E-1, I-8 | D, E, I |
 
 Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 
@@ -136,7 +141,13 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 - **(belegt)** DENY-Verdict ohne pairwise_did
   → `policy-engine/src/__tests__/pairwise-did-proof.test.ts`: "DENY verdict does NOT include pairwise_did"
 
-**Residualrisiko (teilweise belegt):** Timing-Korrelation bei gleichzeitigen Requests — architektonisch adressiert durch sessionspezifische DIDs, aber kein dedizierter Timing-Test vorhanden. Kein Request-Jitter implementiert.
+**Mitigations (2026-06-08 ergänzt):**
+- **(belegt)** Ephemeral Holder Binding + Single-Use Credential Pool: jedes Batch-Member erzeugt eine distinkte `cnf`-JWK (siehe I-9); Wallet wählt pro Präsentation ein ungenutztes Member (`credential-pool.ts`, fail-closed Exhaustion).
+  → `shared-crypto/src/holder-binding.test.ts`: Cross-Binding-Negativtest; `wallet-pwa/src/__tests__/credential-pool.test.ts`.
+- **(belegt)** Anti-Fingerprinting (siehe D-4): Header-/JSON-Normalisierung, Payload-Padding, Network Timing Jitter (legacy U-22/U-23) reduzieren Linkability gegen passive Beobachter zwischen Verifiern.
+  → `wallet-pwa/src/__tests__/anti-fingerprinting.test.ts`.
+
+**Residualrisiko (teilweise belegt):** Dedizierter Anti-Oracle-Timing-Test (Verifier kann via Latenz interne Code-Pfade unterscheiden — siehe GAP-3) bleibt offen; U-23 Jitter reduziert die Auswertbarkeit, ersetzt aber kein Konstanz-Garantie-Modell. Echte kryptografische Multi-Show-Unlinkability eines einzelnen Credentials (BBS+ / blinded issuance) ist explizit deferred (siehe Sprint-Plan; U-10/U-13 als Future-Phase).
 
 ### Szenario 3: Device-Loss
 
@@ -161,7 +172,7 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 |---|---|---|---|---|
 | GAP-1 | JavaScript-Runtime bietet keine physische RAM-Löschung; `TypedArray.fill(0)` ist best-effort | 🟡 | Dokumentiert, kein Fix in Browser möglich | TEE-Integration (ADR-010, deferred) |
 | GAP-2 | Recovery bei Device-Loss nicht implementiert (kein Remote-Wipe, kein Guardian) | 🟡 | Dokumentiert, nicht umgesetzt | ADR-006 (PROPOSED) |
-| GAP-3 | Timing-Side-Channel bei Anti-Oracle: verschiedene Code-Pfade können unterschiedliche Latenz haben | 🟡 | Architektonisch adressiert (4 Buckets), kein Timing-Test | Request-Jitter oder konstante Verarbeitungszeit (Phase 3+) |
+| GAP-3 | Timing-Side-Channel bei Anti-Oracle: verschiedene Code-Pfade können unterschiedliche Latenz haben | 🟡 | Teilweise belegt — Network Timing Jitter (U-23, `anti-fingerprinting.ts`) reduziert Auswertbarkeit. Dedizierter Anti-Oracle-Konstanzzeit-Test bleibt offen. | Konstante Verarbeitungszeit (Phase 3+) zusätzlich zum Jitter |
 | GAP-4 | Externer Security Review nicht durchgeführt | 🔴 | Menschliche Vorbedingung für ACCEPTED | Reviewer zuweisen + Review durchführen |
 
 ---
@@ -171,13 +182,13 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 | Kriterium | Status | Begründung |
 |---|---|---|
 | STRIDE-Tabelle deckt alle 4 Manifest-Prinzipien | **Erfüllt** | Alle 4 Prinzipien haben belegte STRIDE-Zeilen (siehe Manifest-Prinzip-Abdeckung) |
-| Mind. 12 Mitigations mit Test-Vektoren | **Erfüllt** | 22 STRIDE-Einträge, alle mit Evidenz-Status "belegt" und verifizierter Testdatei-Referenz |
+| Mind. 12 Mitigations mit Test-Vektoren | **Erfüllt** | 25 STRIDE-Einträge (22 + I-8/I-9/D-4 aus Sprint 1 & Proof-Randomization), alle mit Evidenz-Status "belegt" und verifizierter Testdatei-/Sprint-Referenz |
 | Gap-Analyse < 5 offene Risiken | **Erfüllt** | 4 Gaps dokumentiert (1× 🔴, 3× 🟡) |
 | 3 Test-Szenarien | **Erfüllt** | Cold-Boot, Verifier-Collusion, Device-Loss — jeweils mit belegten Mitigations + Residualrisiken |
 | Review durch Architecture Lead + 1 externer Security Reviewer | **Nicht erfüllt** | Menschliche Aktion, kein Reviewer zugewiesen |
 
-**Konsequenz:** ADR-009 bleibt **PROPOSED**. Upgrade auf ACCEPTED erst nach:
-1. Externer Security Reviewer bestätigt STRIDE-Tabelle + Gap-Analyse
+**Konsequenz (2026-06-08):** ADR-009 ist **Accepted (technical) — pending external review**. Vollständiges `Accepted` erst nach:
+1. Externer Security Reviewer bestätigt STRIDE-Tabelle + Gap-Analyse (GAP-4 🔴)
 2. Architecture Lead Sign-Off
 
 ---
@@ -212,3 +223,4 @@ Siehe Task S-10 im BACKLOG (Phase 3). Dieses ADR dokumentiert ausschließlich vo
 
 + 2026-03-13: Initial Proposal (PROPOSED)
 + 2026-03-18: STRIDE-Tabelle vollständig (22 Einträge, alle belegt), 3 Test-Szenarien, Gap-Analyse (4 Gaps), Fail-Closed Acceptance-Bewertung. Status bleibt PROPOSED (externer Review offen).
++ 2026-06-08: Sprint-1-Mitigations (Identity Firewall → I-8) und Sprint-Proof-Randomization-Mitigations (Ephemeral Holder Binding + Single-Use Pool → I-9) als STRIDE-Zeilen integriert; D-4 (Traffic-Analyse → Anti-Fingerprinting) ergänzt; Verifier-Collusion-Szenario Residualrisiko aktualisiert (Jitter ist belegt); GAP-3 auf "teilweise belegt" runtergestuft; Manifest-Prinzip-Abdeckung um I-8/I-9/D-4 erweitert. Status: **Accepted (technical) — pending external review** (GAP-4 🔴 bleibt). Siehe `docs/tasks/SPRINT_04_THREAT_MODEL_FINALIZATION.md`.
