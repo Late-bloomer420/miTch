@@ -50,6 +50,7 @@ export class DataFlowService {
       const provenClaims = (vpEvent?.metadata?.proven_claims as string[]) ?? [];
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
+      const singleUseCredential = (vpEvent?.metadata?.single_use_credential as boolean) ?? false;
       const verifierId = (vpEvent?.metadata?.verifier_did as string) ?? null;
       const identityAccesses = group
         .filter(e => e.action === 'IDENTITY_ACCESS_DETECTED')
@@ -97,6 +98,7 @@ export class DataFlowService {
         provenClaims,
         credentialTypes,
         usedZKP,
+        singleUseCredential,
         identityAccesses,
         identityAccessCount: identityAccesses.length,
         lifecycle: {

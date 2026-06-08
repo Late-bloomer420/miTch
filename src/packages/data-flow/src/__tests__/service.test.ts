@@ -97,6 +97,39 @@ describe('DataFlowService', () => {
     expect(txns[0].usedZKP).toBe(true);
   });
 
+  it('extracts singleUseCredential from VP_GENERATED metadata', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          proven_claims: [],
+          credential_types: [],
+          used_zkp: false,
+          single_use_credential: true,
+        },
+      }),
+    ];
+    expect(service.buildTransactions(entries)[0].singleUseCredential).toBe(true);
+  });
+
+  it('defaults singleUseCredential to false when missing', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          proven_claims: [],
+          credential_types: [],
+          used_zkp: false,
+        },
+      }),
+    ];
+    expect(service.buildTransactions(entries)[0].singleUseCredential).toBe(false);
+  });
+
   it('computes lifecycle — keysCreated and keysDestroyed', () => {
     const entries = [
       makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),

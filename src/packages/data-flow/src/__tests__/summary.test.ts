@@ -134,6 +134,24 @@ describe('summarizeTransaction', () => {
     expect(summary.points).toContain('2 Identifier-Zugriffe sichtbar gemacht');
   });
 
+  // Single-use credential (Proof-Randomization U-12)
+  it('shows single-use credential point when set', () => {
+    const txn = makeTxn({ singleUseCredential: true });
+    const summary = summarizeTransaction(txn);
+    expect(summary.points).toContain('Einmal-Credential verwendet (nicht wiederverwendbar)');
+  });
+
+  it('omits single-use credential point when not set / false', () => {
+    expect(
+      summarizeTransaction(makeTxn()).points.some(p => p.includes('Einmal-Credential'))
+    ).toBe(false);
+    expect(
+      summarizeTransaction(makeTxn({ singleUseCredential: false })).points.some(p =>
+        p.includes('Einmal-Credential')
+      )
+    ).toBe(false);
+  });
+
   // Full scenario
   it('produces complete summary for typical transaction', () => {
     const txn = makeTxn({

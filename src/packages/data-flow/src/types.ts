@@ -14,6 +14,13 @@ export interface DataFlowTransaction {
   provenClaims: string[];
   credentialTypes: string[];
   usedZKP: boolean;
+  /**
+   * True iff this presentation consumed a batch-issued single-use credential
+   * member (Proof-Randomization U-12, see SPRINT_PROOF_RANDOMIZATION.md).
+   * Optional for backward compatibility with legacy transactions / fixtures
+   * predating Sprint Proof-Randomization.
+   */
+  singleUseCredential?: boolean;
   identityAccesses: IdentityFirewallAccess[];
   identityAccessCount: number;
   lifecycle: {

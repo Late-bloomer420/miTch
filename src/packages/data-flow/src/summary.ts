@@ -62,5 +62,10 @@ export function summarizeTransaction(txn: DataFlowTransaction): TransactionSumma
     }
   }
 
+  // Single-use credential (Proof-Randomization U-12) — factual, no multi-show claim.
+  if (txn.singleUseCredential) {
+    points.push('Einmal-Credential verwendet (nicht wiederverwendbar)');
+  }
+
   return { points };
 }
