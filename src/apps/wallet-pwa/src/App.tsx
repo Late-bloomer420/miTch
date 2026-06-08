@@ -135,6 +135,11 @@ function WalletApp() {
     }
   };
 
+  // Dev affordance (Proof-Randomization U-12): mint the next issued credential
+  // as single-use. The constraint is fixed at issuance, never mutated in-wallet.
+  // Dev-only (see import.meta.env.DEV); tree-shaken from production builds.
+  const [mintSingleUse, setMintSingleUse] = useState(false);
+
   // G-120: Listen for Auth Popup messages from opener window
   useEffect(() => {
     const handleOpenerMessage = (event: MessageEvent) => {
@@ -357,6 +362,9 @@ function WalletApp() {
       );
 
       auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+
+      // Refresh so a consumed single-use credential reflects its spent state (U-12).
+      await loadWalletCredentials();
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
 
@@ -901,11 +909,22 @@ function WalletApp() {
         {}) as Record<string, unknown>;
 
       const credId = `vc-issuer-${Date.now()}`;
-      await walletRef.current.addIssuedCredential(credId, subject, 'did:web:localhost%3A3005');
+      await walletRef.current.addIssuedCredential(
+        credId,
+        subject,
+        'did:web:localhost%3A3005',
+        undefined,
+        import.meta.env.DEV && mintSingleUse
+      );
       await loadWalletCredentials();
 
       setCredentialStatus('done');
-      addLog(`✅ AgeCredential received from issuer-mock and stored (${credId})`, 'success');
+      addLog(
+        `✅ AgeCredential received from issuer-mock and stored (${credId})${
+          import.meta.env.DEV && mintSingleUse ? ' — minted single-use 🔁' : ''
+        }`,
+        'success'
+      );
     } catch (e) {
       setCredentialStatus('error');
       addLog(`❌ Credential fetch failed: ${(e as Error).message}`, 'error');
@@ -1095,6 +1114,21 @@ function WalletApp() {
                     <span className="credential-trust-badge">✓ Trusted</span>
                   </div>
 
+                  {cred.singleUse && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: cred.consumedAt ? '#fca5a5' : '#fde68a',
+                        marginBottom: 8,
+                      }}
+                    >
+                      {cred.consumedAt
+                        ? '🔥 Einmal-Credential — verbraucht (nicht wiederverwendbar)'
+                        : '🔁 Einmal-Credential — wird nach Vorlage verbraucht'}
+                    </div>
+                  )}
+
                   <div
                     className="credential-item"
                     style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}
@@ -1166,6 +1200,30 @@ function WalletApp() {
                   ? '❌ Retry — Get Test Credential'
                   : '🎫 Get Test Credential (OID4VCI)'}
           </button>
+
+          {import.meta.env.DEV && (
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                maxWidth: 400,
+                margin: '-12px auto 24px',
+                fontSize: 11,
+                color: 'rgba(255,255,255,0.55)',
+                cursor: 'pointer',
+              }}
+              title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
+            >
+              <input
+                type="checkbox"
+                checked={mintSingleUse}
+                onChange={(e) => setMintSingleUse(e.target.checked)}
+              />
+              <span>🧪 Dev: als Einmal-Credential ausstellen</span>
+            </label>
+          )}
         </>
       ) : null}
 

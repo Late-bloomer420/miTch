@@ -30,6 +30,12 @@ import {
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
 import { DEMO_POLICY } from '../data/DemoPolicy';
+import {
+  isSingleUsePresentation,
+  needsConsumption,
+  markConsumed,
+  selectablePresentationCredentials,
+} from '../utils/single-use';
 import { ProofOfExistence } from './DocumentService';
 import { evaluatePredicates, CommonPredicates, type PredicateRequest } from '@askmi/predicates';
 import type { TrackingPoint } from './PrivacyAuditService';
@@ -769,7 +775,8 @@ export class WalletService {
   ): Promise<PolicyEvaluationResult> {
     if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
 
-    const credentials = await this.storage.getAllMetadata();
+    // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
+    const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
     const basePolicy = this.getPolicy();
 
     const explodedRules = Array.from({ length: 500 }).map((_, i) => ({
@@ -806,7 +813,8 @@ export class WalletService {
   ): Promise<PolicyEvaluationResult> {
     if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
 
-    const credentials = await this.storage.getAllMetadata();
+    // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
+    const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
 
     return this.policyEngine.evaluate(request, context, credentials, this.getPolicy());
   }
@@ -940,6 +948,10 @@ export class WalletService {
       // credentialId removed to prevent discovery
     }> = [];
 
+    // Metadata of the credentials actually presented — drives the honest
+    // single_use_credential flag and post-presentation consumption.
+    const presentedMetas: StoredCredentialMetadata[] = [];
+
     // Normalize requirements (support legacy if authorized_requirements is missing)
     const requirements = capsule.authorized_requirements || [
       {
@@ -957,6 +969,7 @@ export class WalletService {
 
       const credMeta = (await this.storage.getAllMetadata()).find((c) => c.id === selectedId);
       if (!credMeta) throw new Error(`Credential ${selectedId} not found.`);
+      presentedMetas.push(credMeta);
 
       // Load & Decrypt
       let credentialData: Record<string, unknown> | null;
@@ -1004,6 +1017,7 @@ export class WalletService {
           decision_id: capsule.decision_id,
           claims_shared: Object.keys(disclosure),
           claims_requested: req.allowed_claims,
+          single_use_credential: credMeta.singleUse === true,
         });
         continue;
       }
@@ -1108,7 +1122,21 @@ export class WalletService {
         Object.keys(b.provenClaims).filter((k) => b.provenClaims[k])
       ),
       used_zkp: bundles.some((b) => Object.keys(b.zkpProofs || {}).length > 0),
+      single_use_credential: isSingleUsePresentation(presentedMetas),
     });
+
+    // Consume single-use credentials: mark them spent so selection can never
+    // present them again (fail-closed non-reuse). Reusable credentials and
+    // already-consumed ones are left untouched (markConsumed is idempotent).
+    const consumedAt = new Date().toISOString();
+    for (const presented of presentedMetas) {
+      if (!needsConsumption(presented)) continue;
+      const payload = await this.storage.load<Record<string, unknown>>(presented.id);
+      if (!payload) continue;
+      const { id: _id, ...rest } = markConsumed(presented, consumedAt);
+      await this.storage.save(presented.id, payload, rest);
+      logs.push(`🔥 Single-use credential consumed (will not be re-presented)`);
+    }
 
     const vpPayload = {
       metadata: {
@@ -1258,7 +1286,12 @@ export class WalletService {
     id: string,
     subject: Record<string, unknown>,
     issuerDid: string,
-    renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>
+    renderMethod?: Array<{ id: string; type: string; format?: string; digestMultibase?: string }>,
+    /**
+     * Mint this credential as single-use (Proof-Randomization U-12): the
+     * single-use constraint is fixed at issuance, not mutated in-wallet.
+     */
+    singleUse = false
   ): Promise<void> {
     await this.ensureSeeded();
     if (!this.storage) throw new Error('Wallet locked');
@@ -1269,6 +1302,7 @@ export class WalletService {
       issuedAt: new Date().toISOString(),
       claims: Object.keys(subject),
       renderMethod,
+      ...(singleUse ? { singleUse: true } : {}),
     };
     await this.storage.save(id, subject, meta);
     await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
@@ -1615,7 +1649,14 @@ export class WalletService {
   async addCredential(
     id: string,
     payload: Record<string, unknown>,
-    metadata: { issuer: string; type: string[]; claims: string[]; issuedAt: string }
+    metadata: {
+      issuer: string;
+      type: string[];
+      claims: string[];
+      issuedAt: string;
+      /** Mark as single-use: present once, then consumed (Proof-Randomization U-12). */
+      singleUse?: boolean;
+    }
   ): Promise<void> {
     if (!this.storage) throw new Error('Wallet locked');
     await this.storage.save(id, payload, metadata);
