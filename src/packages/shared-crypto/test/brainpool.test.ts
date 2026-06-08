@@ -139,6 +139,70 @@ describe('brainpoolP384r1', () => {
     });
 });
 
+// ─── C-01: brainpoolP512r1 (RFC 5639 §3.7) ──────────────────────────────────
+
+describe('brainpoolP512r1', () => {
+    const CURVE: BrainpoolCurve = 'brainpoolP512r1';
+    const testMessage = new TextEncoder().encode('BSI Key Binding P512');
+
+    it('generates a key pair with correct sizes', () => {
+        const kp = generateBrainpoolKeyPair(CURVE);
+        expect(kp.curve).toBe(CURVE);
+        expect(kp.privateKey).toBeInstanceOf(Uint8Array);
+        expect(kp.publicKey).toBeInstanceOf(Uint8Array);
+        expect(kp.privateKey.length).toBe(64); // 512-bit scalar
+        expect(kp.publicKey.length).toBe(65);  // compressed point (1 + 64)
+    });
+
+    it('generates unique key pairs', () => {
+        const kp1 = generateBrainpoolKeyPair(CURVE);
+        const kp2 = generateBrainpoolKeyPair(CURVE);
+        expect(kp1.privateKey).not.toEqual(kp2.privateKey);
+        expect(kp1.publicKey).not.toEqual(kp2.publicKey);
+    });
+
+    it('signs and verifies a message', () => {
+        const kp = generateBrainpoolKeyPair(CURVE);
+        const sig = signWithBrainpool(testMessage, kp);
+        expect(sig.curve).toBe(CURVE);
+        expect(sig.signature).toBeInstanceOf(Uint8Array);
+        expect(sig.signature.length).toBeGreaterThan(0);
+
+        const isValid = verifyWithBrainpool(testMessage, sig, kp.publicKey);
+        expect(isValid).toBe(true);
+    });
+
+    it('rejects tampered message', () => {
+        const kp = generateBrainpoolKeyPair(CURVE);
+        const sig = signWithBrainpool(testMessage, kp);
+        const tampered = new TextEncoder().encode('tampered P512 message');
+        expect(verifyWithBrainpool(tampered, sig, kp.publicKey)).toBe(false);
+    });
+
+    it('rejects signature with wrong key', () => {
+        const kp1 = generateBrainpoolKeyPair(CURVE);
+        const kp2 = generateBrainpoolKeyPair(CURVE);
+        const sig = signWithBrainpool(testMessage, kp1);
+        expect(verifyWithBrainpool(testMessage, sig, kp2.publicKey)).toBe(false);
+    });
+
+    it('ECDH produces same shared secret from both sides', () => {
+        const kp1 = generateBrainpoolKeyPair(CURVE);
+        const kp2 = generateBrainpoolKeyPair(CURVE);
+        const s1 = brainpoolECDH(kp1.privateKey, kp2.publicKey, CURVE);
+        const s2 = brainpoolECDH(kp2.privateKey, kp1.publicKey, CURVE);
+        expect(s1).toEqual(s2);
+    });
+
+    it('exports public key object with crv=brainpoolP512r1', () => {
+        const kp = generateBrainpoolKeyPair(CURVE);
+        const obj = brainpoolPublicKeyToObject(kp);
+        expect(obj.kty).toBe('EC');
+        expect(obj.crv).toBe('brainpoolP512r1');
+        expect(obj.x).toBeDefined();
+    });
+});
+
 // ─── Cross-curve isolation ───────────────────────────────────────────────────
 
 describe('cross-curve isolation', () => {
@@ -155,12 +219,35 @@ describe('cross-curve isolation', () => {
         }).toThrow();
     });
 
-    it('P256 and P384 keys have different sizes', () => {
+    it('P384 signature does not verify with P512 key', () => {
+        const kp384 = generateBrainpoolKeyPair('brainpoolP384r1');
+        const kp512 = generateBrainpoolKeyPair('brainpoolP512r1');
+        const sig = signWithBrainpool(testMessage, kp384);
+        expect(() => {
+            const faked = { ...sig, curve: 'brainpoolP512r1' as BrainpoolCurve };
+            verifyWithBrainpool(testMessage, faked, kp512.publicKey);
+        }).toThrow();
+    });
+
+    it('P256 signature does not verify with P512 key', () => {
+        const kp256 = generateBrainpoolKeyPair('brainpoolP256r1');
+        const kp512 = generateBrainpoolKeyPair('brainpoolP512r1');
+        const sig = signWithBrainpool(testMessage, kp256);
+        expect(() => {
+            const faked = { ...sig, curve: 'brainpoolP512r1' as BrainpoolCurve };
+            verifyWithBrainpool(testMessage, faked, kp512.publicKey);
+        }).toThrow();
+    });
+
+    it('P256/P384/P512 keys have different sizes', () => {
         const kp256 = generateBrainpoolKeyPair('brainpoolP256r1');
         const kp384 = generateBrainpoolKeyPair('brainpoolP384r1');
+        const kp512 = generateBrainpoolKeyPair('brainpoolP512r1');
         expect(kp256.privateKey.length).toBe(32);
         expect(kp384.privateKey.length).toBe(48);
+        expect(kp512.privateKey.length).toBe(64);
         expect(kp256.publicKey.length).toBe(33);
         expect(kp384.publicKey.length).toBe(49);
+        expect(kp512.publicKey.length).toBe(65);
     });
 });
