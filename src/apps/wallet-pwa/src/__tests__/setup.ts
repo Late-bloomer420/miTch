@@ -1,5 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import '@testing-library/jest-dom';
+// Full spec-compliant IndexedDB polyfill (fake-indexeddb) for the jsdom test env.
+// This correctly fires tx.oncomplete, index cursors, and deleteDatabase — the
+// hand-rolled shim below is skipped because fake-indexeddb sets globalThis.indexedDB.
+import 'fake-indexeddb/auto';
+import { IDBFactory } from 'fake-indexeddb';
+
+// Hard-reset IndexedDB before every test by swapping in a brand-new factory.
+// This is fake-indexeddb's recommended isolation idiom: a fresh IDBFactory has
+// no databases and no open connections, so one test's credential data cannot
+// bleed into the next. We deliberately do NOT use deleteDatabase() here — it
+// blocks indefinitely (onblocked, never resolving) whenever a prior connection
+// to the named DB is still open, which the BrowserIndexedDBAdapter never closes,
+// deadlocking the whole suite on the first test.
+beforeEach(() => {
+  globalThis.indexedDB = new IDBFactory(); // empty IndexedDB store per test
+});
 
 // Mock IndexedDB for jsdom environment
 // vitest setup — no direct imports needed (globals: true in vitest.config.ts)

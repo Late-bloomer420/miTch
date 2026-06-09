@@ -29,7 +29,13 @@ export class BrowserIndexedDBAdapter implements IStorageAdapter {
             };
 
             request.onsuccess = (event) => {
-                resolve((event.target as IDBOpenDBRequest).result);
+                const db = (event.target as IDBOpenDBRequest).result;
+                // Auto-close this connection if another context wants to upgrade or
+                // delete the database (e.g. SecureStorage.reset() → deleteDatabase).
+                // Without this, a lingering open connection makes deleteDatabase fire
+                // `blocked` and never resolve, deadlocking callers. Canonical IDB idiom.
+                db.onversionchange = () => db.close();
+                resolve(db);
             };
 
             request.onerror = (event) => {
