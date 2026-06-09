@@ -26,6 +26,8 @@ import {
   sha256,
   resolveDID,
   detectKeyAlgorithm,
+  generateHolderBinding,
+  type HolderBinding,
 } from '@askmi/shared-crypto';
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
@@ -369,6 +371,12 @@ export class WalletService {
   private policyManifest: PolicyManifest | null = null;
   private initialized = false;
   private initPromise: Promise<void> | null = null;
+  /**
+   * Session-scoped holder keypairs for batch-issued single-use members
+   * (Increment 2 / C2). Keyed by credential id; private keys are
+   * non-extractable. Durable persistence lands with C1 (presentation use).
+   */
+  private holderKeys = new Map<string, CryptoKeyPair>();
 
   constructor() {
     this.auditLog = new AuditLog('user-wallet-001');
@@ -1291,7 +1299,9 @@ export class WalletService {
      * Mint this credential as single-use (Proof-Randomization U-12): the
      * single-use constraint is fixed at issuance, not mutated in-wallet.
      */
-    singleUse = false
+    singleUse = false,
+    /** Batch pool id (Increment 2): groups batch-issued single-use members. */
+    poolId?: string
   ): Promise<void> {
     await this.ensureSeeded();
     if (!this.storage) throw new Error('Wallet locked');
@@ -1303,9 +1313,90 @@ export class WalletService {
       claims: Object.keys(subject),
       renderMethod,
       ...(singleUse ? { singleUse: true } : {}),
+      ...(poolId ? { poolId } : {}),
     };
     await this.storage.save(id, subject, meta);
     await this.auditLog.append('KEY_USED', id, { context: 'OID4VCI_ISSUANCE', issuer: issuerDid });
+  }
+
+  /**
+   * Decode the credentialSubject claims from a signed VC-JWT (header.payload.sig).
+   * Tolerates both `payload.vc.credentialSubject` (JWT-VC) and a top-level
+   * `credentialSubject`. Returns a plain claims object for storage.
+   */
+  private decodeVcSubject(jwt: string): Record<string, unknown> {
+    const parts = jwt.split('.');
+    if (parts.length < 2) throw new Error('Invalid VC-JWT format');
+    const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+    const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+    const vc = payload['vc'] as Record<string, unknown> | undefined;
+    return (vc?.credentialSubject ?? payload['credentialSubject'] ?? {}) as Record<string, unknown>;
+  }
+
+  /**
+   * Batch issuance with ephemeral holder binding (Proof-Randomization Increment 2 / C2).
+   *
+   * Wallet-generates / issuer-binds: mints `count` non-extractable P-256 holder
+   * keypairs locally, sends only their PUBLIC JWKs to the issuer's batch endpoint,
+   * and stores the returned credentials as one logical single-use pool — each
+   * member bound to a distinct holder key. Private keys never leave the wallet;
+   * their handles are retained in-memory keyed by member id (durable key
+   * persistence lands with C1, when the keys are consumed at presentation).
+   */
+  async fetchCredentialBatch(
+    count: number,
+    issuerEndpoint = 'http://localhost:3005/credential/batch'
+  ): Promise<{ poolId: string; credentialIds: string[] }> {
+    if (!this.storage) throw new Error('Wallet locked');
+    if (!Number.isInteger(count) || count < 1) throw new Error('Batch count must be a positive integer.');
+
+    // 1. Wallet-generates: N non-extractable holder keypairs (private keys stay here).
+    const bindings: HolderBinding[] = [];
+    for (let i = 0; i < count; i++) {
+      bindings.push(await generateHolderBinding());
+    }
+
+    // 2. Send only PUBLIC holder JWKs to the issuer.
+    const body = {
+      requests: bindings.map((b) => ({
+        credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
+        holder_binding: { type: 'jwk', jwk: b.cnf.jwk },
+      })),
+    };
+    const res = await fetch(issuerEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Batch issuance failed: ${res.status}`);
+    const data = (await res.json()) as { credentials?: string[] };
+    if (!Array.isArray(data.credentials) || data.credentials.length !== count) {
+      throw new Error('Batch response size mismatch (fail-closed).');
+    }
+
+    // 3. Map each returned VC back to its holder key; store as a single-use pool.
+    const poolId = `pool-${Date.now()}`;
+    const credentialIds: string[] = [];
+    for (let i = 0; i < data.credentials.length; i++) {
+      const subject = this.decodeVcSubject(data.credentials[i]);
+      const credId = `vc-${poolId}-${i}`;
+      await this.addIssuedCredential(
+        credId,
+        subject,
+        'did:web:localhost%3A3005',
+        undefined,
+        true,
+        poolId
+      );
+      this.holderKeys.set(credId, bindings[i].keyPair);
+      credentialIds.push(credId);
+    }
+    return { poolId, credentialIds };
+  }
+
+  /** Retained holder keypair for a batch member (session-scoped; consumed at presentation in C1). */
+  getHolderKey(credentialId: string): CryptoKeyPair | undefined {
+    return this.holderKeys.get(credentialId);
   }
 
   /**

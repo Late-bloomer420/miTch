@@ -931,6 +931,27 @@ function WalletApp() {
     }
   };
 
+  // Dev affordance (Proof-Randomization Increment 2 / C2): mint a batch of
+  // single-use credentials, each bound to its own wallet-generated holder key.
+  // Dev-only; tree-shaken from production builds.
+  const BATCH_SIZE = 5;
+  const handleFetchBatch = async () => {
+    setCredentialStatus('fetching');
+    addLog(`🎫 Requesting batch of ${BATCH_SIZE} holder-bound credentials (OID4VCI §7)…`, 'info');
+    try {
+      const { poolId, credentialIds } = await walletRef.current.fetchCredentialBatch(BATCH_SIZE);
+      await loadWalletCredentials();
+      setCredentialStatus('done');
+      addLog(
+        `✅ Batch issued: ${credentialIds.length} single-use members in pool ${poolId} (distinct holder bindings)`,
+        'success'
+      );
+    } catch (e) {
+      setCredentialStatus('error');
+      addLog(`❌ Batch issuance failed: ${(e as Error).message}`, 'error');
+    }
+  };
+
   // UX-02: primary button classes
   const getPrimaryBtnClass = () => {
     const base = 'btn-primary';
@@ -1223,6 +1244,29 @@ function WalletApp() {
               />
               <span>🧪 Dev: als Einmal-Credential ausstellen</span>
             </label>
+          )}
+
+          {import.meta.env.DEV && (
+            <button
+              onClick={handleFetchBatch}
+              disabled={credentialStatus === 'fetching'}
+              style={{
+                width: '100%',
+                maxWidth: 400,
+                padding: '10px 0',
+                marginBottom: 24,
+                background: '#0f172a',
+                border: '1px solid #4338ca',
+                borderRadius: 12,
+                color: '#c7d2fe',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: credentialStatus === 'fetching' ? 'not-allowed' : 'pointer',
+              }}
+              title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
+            >
+              🧪 Dev: Batch ausstellen ({BATCH_SIZE} Einmal-Credentials, eigene Holder-Keys)
+            </button>
           )}
         </>
       ) : null}
