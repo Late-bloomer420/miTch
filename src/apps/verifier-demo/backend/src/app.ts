@@ -12,7 +12,7 @@ import {
   type PredicateRequest,
   type Predicate,
 } from '@askmi/predicates';
-import { verifyData } from '@askmi/shared-crypto';
+import { verifyData, validateKeyBindingJWT } from '@askmi/shared-crypto';
 import {
   buildOID4VPRequest,
   buildSDJWTPresentation,
@@ -364,6 +364,24 @@ app.get(['/did.json', '/.well-known/did.json'], async (req, res) => {
   });
 });
 
+/**
+ * Decode a `did:jwk:<base64url>` identifier into a P-256 CryptoKey for verification.
+ * Returns null when the sub is absent, not a did:jwk, or carries an unsupported curve.
+ */
+async function resolveDidJwkPublicKey(sub: string | undefined): Promise<CryptoKey | null> {
+  if (!sub?.startsWith('did:jwk:')) return null;
+  try {
+    const jwkJson = Buffer.from(sub.slice('did:jwk:'.length), 'base64url').toString('utf8');
+    const jwk = JSON.parse(jwkJson) as JsonWebKey;
+    if (jwk.kty !== 'EC' || jwk.crv !== 'P-256') return null;
+    return await globalThis.crypto.subtle.importKey(
+      'jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']
+    );
+  } catch {
+    return null;
+  }
+}
+
 app.post('/present', presentRouteLimiter, async (req, res) => {
   try {
     const requesterId = getRequesterId(req);
@@ -382,7 +400,35 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
     });
     const result = await sdk.verifyPresentation<Record<string, unknown>>(JSON.stringify(req.body));
     const presentation = result.vp;
-    const firstPres = (presentation as any).presentations?.[0];
+    const presentations: any[] = (presentation as any).presentations ?? [];
+    const sessionNonce: string = (presentation as any).metadata?.nonce ?? '';
+
+    // KB-JWT gate (Proof-Randomization C1): for every presentation bundle that
+    // carries a holder_binding, verify the Key-Binding JWT against the cnf key
+    // embedded in the did:jwk subject. Fail-closed: a tampered or missing KB-JWT
+    // on a holder-bound credential rejects the ENTIRE presentation (403).
+    for (const pres of presentations) {
+      const hb = pres?.holder_binding as { kb_jwt?: string; sub?: string } | undefined;
+      if (!hb?.kb_jwt) continue; // non-pool credentials have no holder_binding → skip
+      const holderPublicKey = await resolveDidJwkPublicKey(hb.sub);
+      if (!holderPublicKey) {
+        lastVerificationStatus = 'FAILED';
+        return res.status(403).json({ ok: false, error: 'KB_JWT_INVALID_HOLDER_KEY', details: 'Cannot resolve did:jwk subject' });
+      }
+      const kbResult = await validateKeyBindingJWT(hb.kb_jwt, holderPublicKey, {
+        expectedAud: ASKMI_DEMO.verifierDid,
+        expectedNonce: sessionNonce,
+        sdJwtWithDisclosures: hb.sub ?? '',
+      });
+      if (!kbResult.ok) {
+        lastVerificationStatus = 'FAILED';
+        console.warn('[Verifier] KB-JWT verification failed:', kbResult.errors);
+        return res.status(403).json({ ok: false, error: 'KB_JWT_VERIFICATION_FAILED', details: kbResult.errors });
+      }
+      console.log('[Verifier] ✅ Holder Key-Binding JWT verified (Proof-of-Possession confirmed)');
+    }
+
+    const firstPres = presentations[0];
     const agePredicateId = 'age >= 18';
     const zkpProof = firstPres?.zkp_proofs?.[agePredicateId];
     let isVerified = false;
