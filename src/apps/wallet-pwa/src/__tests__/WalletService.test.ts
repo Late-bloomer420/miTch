@@ -5,7 +5,7 @@
  * error on corrupt storage, policy persistence.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
 import { SecureStorage } from '@askmi/secure-storage';
@@ -244,6 +244,74 @@ describe('WalletService — Single-Use Credential wiring (Proof-Randomization U-
     const third = await presentToLiquorStore();
     const stillUsed = selectedIds(third.decisionCapsule).some((id) => ids.includes(id));
     expect(stillUsed).toBe(false);
+  });
+});
+
+describe('WalletService — Batch Issuance + Holder Binding (Increment 2 / C2)', () => {
+  let wallet: WalletService;
+
+  function b64url(obj: unknown): string {
+    return btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  // Build a minimal signed-looking VC-JWT with a given subject id.
+  function fakeVcJwt(subjectId: string): string {
+    const payload = {
+      vc: { credentialSubject: { id: subjectId, dateOfBirth: '1990-01-01', isOver18: true } },
+    };
+    return `aaa.${b64url(payload)}.sig`;
+  }
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('generates N local keypairs, transmits ONLY public JWKs, stores a single-use pool', async () => {
+    let sentBody: { requests: Array<{ holder_binding: { jwk: JsonWebKey } }> } | null = null;
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      sentBody = JSON.parse(init!.body as string);
+      const credentials = sentBody!.requests.map((_, i) => fakeVcJwt(`did:jwk:MEMBER_${i}`));
+      return { ok: true, json: async () => ({ credentials }) } as Response;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { poolId, credentialIds } = await wallet.fetchCredentialBatch(3);
+
+    // Transport carried N requests…
+    expect(sentBody!.requests).toHaveLength(3);
+    for (const r of sentBody!.requests) {
+      // …each a public EC JWK…
+      expect(r.holder_binding.jwk.kty).toBe('EC');
+      expect(typeof r.holder_binding.jwk.x).toBe('string');
+      // …and CRITICALLY never a private 'd' component (keys stay in the wallet).
+      expect(r.holder_binding.jwk).not.toHaveProperty('d');
+    }
+
+    // Stored as one logical single-use pool, retaining the private key handles.
+    expect(credentialIds).toHaveLength(3);
+    const stored = await wallet.getCredentials();
+    const members = stored.filter((c) => c.poolId === poolId);
+    expect(members).toHaveLength(3);
+    expect(members.every((m) => m.singleUse === true)).toBe(true);
+    for (const id of credentialIds) {
+      expect(wallet.getHolderKey(id)).toBeDefined();
+    }
+  });
+
+  it('fails closed when the issuer returns the wrong batch size', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ credentials: [fakeVcJwt('did:jwk:ONE')] }) }) as Response)
+    );
+    await expect(wallet.fetchCredentialBatch(3)).rejects.toThrow(/size mismatch/i);
+  });
+
+  it('rejects a non-positive batch count', async () => {
+    await expect(wallet.fetchCredentialBatch(0)).rejects.toThrow(/positive integer/i);
   });
 });
 

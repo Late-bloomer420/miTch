@@ -4,6 +4,7 @@ import { generateKeyPair, signVC } from '@askmi/shared-crypto';
 import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@askmi/mdoc';
 import type { ValidityInfo } from '@askmi/mdoc';
 import type { AgeCredential, CredentialRequest, CredentialResponse } from '@askmi/shared-types';
+import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
 const app = express();
 const allowedOrigins = new Set([
@@ -235,6 +236,30 @@ app.post('/credential', async (req, res) => {
 
     } catch (error) {
         console.error('Signing failed:', error);
+        return res.status(500).json({ error: 'server_error' });
+    }
+});
+
+// OID4VCI Batch Issuance with Holder Binding (Proof-Randomization Increment 2 / C2)
+// Wallet-generates / issuer-binds: the wallet sends N PUBLIC holder JWKs; we bind
+// each into a distinct credential (did:jwk subject + cnf) and sign. No private keys.
+app.post('/credential/batch', async (req, res) => {
+    if (!issuerKeys) {
+        return res.status(503).json({ error: 'keys_not_initialized' });
+    }
+    let batch;
+    try {
+        batch = assertValidBatch(req.body);
+    } catch (e) {
+        // Fail-closed: a single malformed member rejects the whole batch.
+        return res.status(400).json({ error: 'invalid_batch_request', details: (e as Error).message });
+    }
+    try {
+        const credentials = await issueAgeCredentialBatch(batch, issuerKeys.privateKey, ISSUER_DID);
+        console.log(`✅ Batch Issued: ${credentials.length} holder-bound credentials`);
+        return res.json({ credentials });
+    } catch (error) {
+        console.error('Batch signing failed:', error);
         return res.status(500).json({ error: 'server_error' });
     }
 });

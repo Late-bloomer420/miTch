@@ -410,6 +410,12 @@ export interface StoredCredentialMetadata {
      * future selection (fail-closed non-reuse).
      */
     consumedAt?: string;
+    /**
+     * Batch pool id (Proof-Randomization Increment 2): groups credentials that
+     * were batch-issued together as one logical single-use pool, each member
+     * carrying its own holder binding. Absent for standalone credentials.
+     */
+    poolId?: string;
     /** Credential encoding format (default: 'sd-jwt') */
     format?: CredentialFormat;
     /** Visual Rendering Methods (§3.1 W3C VC-Render) */
