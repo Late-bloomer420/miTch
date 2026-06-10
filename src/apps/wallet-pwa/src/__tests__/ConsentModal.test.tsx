@@ -244,6 +244,49 @@ describe('ConsentModal — Callbacks', () => {
   });
 });
 
+describe('ConsentModal — Linkability Transparency (Inc 3)', () => {
+  it('shows the single-use (non-reusable) honesty box when isSingleUse is true', () => {
+    render(
+      <ConsentModal
+        capsule={makeCapsule()}
+        reasonCodes={[]}
+        isSingleUse={true}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Einmal-Credential/i)).toBeInTheDocument();
+    expect(screen.getByText(/Shred-on-Burn/i)).toBeInTheDocument();
+  });
+
+  it('shows the multi-presentation (linkable) honesty box when isSingleUse is false', () => {
+    render(
+      <ConsentModal
+        capsule={makeCapsule()}
+        reasonCodes={[]}
+        isSingleUse={false}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Mehrfach-Präsentation/i)).toBeInTheDocument();
+    expect(screen.getByText(/korreliert werden/i)).toBeInTheDocument();
+  });
+
+  it('makes no linkability claim when isSingleUse is undefined (honesty: no fabricated assertion)', () => {
+    render(
+      <ConsentModal
+        capsule={makeCapsule()}
+        reasonCodes={[]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    expect(screen.queryByText(/Einmal-Credential/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Mehrfach-Präsentation/i)).not.toBeInTheDocument();
+  });
+});
+
 describe('ConsentModal — Countdown', () => {
   it('shows countdown when timeoutMinutes is set', () => {
     render(

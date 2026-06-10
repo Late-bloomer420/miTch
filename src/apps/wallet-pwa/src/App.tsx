@@ -38,6 +38,7 @@ import { DataFlowPanel } from './components/DataFlowPanel';
 import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
+import { isSingleUsePresentation } from './utils/single-use';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -1277,6 +1278,15 @@ function WalletApp() {
           capsule={evaluationResult.decisionCapsule}
           reasonCodes={evaluationResult.reasonCodes}
           timeoutMinutes={currentPolicy?.globalSettings?.requireConsentTimeoutMinutes}
+          isSingleUse={(() => {
+            // Inc 3 — DataFlow Transparency: resolve the selected credential(s)
+            // for this presentation and report honest reuse status. Unknown
+            // selection ⇒ undefined ⇒ the modal makes no linkability claim.
+            const metas = (evaluationResult.decisionCapsule.authorized_requirements ?? [])
+              .map((req) => credentials.find((c) => c.id === req.selected_credential_id))
+              .filter((m): m is StoredCredentialMetadata => !!m);
+            return metas.length > 0 ? isSingleUsePresentation(metas) : undefined;
+          })()}
           onApprove={(_presenceProof) => {
             setShowConsent(false);
             const pendingAuth = (window as unknown as Record<string, unknown>)

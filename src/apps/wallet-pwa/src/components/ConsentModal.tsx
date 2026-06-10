@@ -22,6 +22,17 @@ interface ConsentModalProps {
   capsule: DecisionCapsule;
   reasonCodes: string[];
   timeoutMinutes?: number;
+  /**
+   * Inc 3 — DataFlow Transparency. Honest linkability statement for the
+   * credential about to be presented:
+   *   true  → single-use (consumed + key-shredded on use): genuine non-reuse.
+   *   false → reusable: a static holder binding the verifier can correlate.
+   *   undefined → unknown: render no claim (never fabricate an assertion).
+   * Derived by the caller from the selected credential metadata via
+   * isSingleUsePresentation() (checks `singleUse`, the field that guarantees
+   * non-reuse — not merely `poolId`).
+   */
+  isSingleUse?: boolean;
   onApprove: (presenceProof?: string) => void;
   onReject: () => void;
   onReportReputation?: () => void;
@@ -141,7 +152,7 @@ const DISCLOSED_CAPTION = '⚠️ Disclosed — raw value shared';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, onReject, onReportReputation, onLog }: ConsentModalProps) {
+export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, isSingleUse, onApprove, onReject, onReportReputation, onLog }: ConsentModalProps) {
 
   const [biometricState, setBiometricState] = useState<BiometricState>('idle');
   const [presenceProof, setPresenceProof] = useState<string | undefined>(undefined);
@@ -290,6 +301,36 @@ export function ConsentModal({ capsule, reasonCodes, timeoutMinutes, onApprove, 
             </span>
           )}
         </div>
+
+        {/* Inc 3 — DataFlow Transparency: honest linkability statement.
+            Factual only, no risk-score. Rendered solely when the caller knows
+            the credential's reuse status (isSingleUse !== undefined). */}
+        {isSingleUse !== undefined && (
+          <div
+            className={`consent-linkability consent-linkability--${isSingleUse ? 'single-use' : 'reusable'}`}
+            style={{
+              marginBottom: 14,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: isSingleUse ? '1px solid rgba(245,124,0,0.55)' : '1px solid #2a2a2a',
+              background: isSingleUse ? 'rgba(245,124,0,0.07)' : '#111',
+            }}
+          >
+            <div style={{
+              fontWeight: 700, fontSize: 12, marginBottom: 4,
+              color: isSingleUse ? '#F57C00' : '#9aa',
+            }}>
+              {isSingleUse
+                ? '⚠️ Einmal-Credential (nicht wiederverwendbar)'
+                : 'ℹ️ Mehrfach-Präsentation (Verknüpfbar)'}
+            </div>
+            <div style={{ fontSize: 11, color: '#888', lineHeight: 1.45 }}>
+              {isSingleUse
+                ? 'Unlinkbarkeit wird durch automatische Schlüssel-Rotation und sofortiges Vernichten (Shred-on-Burn) nach der Präsentation erzwungen.'
+                : 'Dieses Credential verwendet ein statisches kryptografisches Bindeglied. Wiederholte Präsentationen können vom Verifier korreliert werden.'}
+            </div>
+          </div>
+        )}
 
         {/* Security Checksum */}
         <div style={{
