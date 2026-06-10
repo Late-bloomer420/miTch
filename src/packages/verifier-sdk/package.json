@@ -21,7 +21,8 @@
     "dependencies": {
         "@askmi/predicates": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
-        "@askmi/shared-types": "workspace:*"
+        "@askmi/shared-types": "workspace:*",
+        "ajv": "^8.17.1"
     },
     "devDependencies": {
         "rimraf": "^5.0.0",

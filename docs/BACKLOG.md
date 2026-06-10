@@ -4,6 +4,8 @@
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
 **Stand:** 2026-06-07 (Truth-Alignment: master bei `fb879cc`/PR #81; voller AskMI-Rebrand via PR #70 gemerged; Epic 2–5 Advisory-Arbeit (#71–#81) dokumentiert in `STATE.md` + Session 17; ältere Video-Gap-Tabellen teilweise durch Phase-1–Phase-4 + Epic-Arbeit überholt)
+**Update 2026-06-10:** EPIC G-100 verfeinert — G-100.1/.2 auf EUDI-geformten Claim-Contract (Design-Doc + Branch `feature/g100-claim-contract`); EUDI-Interop-Gap als G-100.5 + Issue [#97](https://github.com/Late-bloomer420/miTch/issues/97) ehrlich getrackt; `verifier-browser`-Deprecation als G-100.6; widersprüchliche „G-100 ✅"-Altzeile (1.2) als nur-teilweise/History korrigiert.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -69,10 +71,12 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-100.1 | 🔴 P0 | ⏳ | Root-Cause `AGE_NOT_VERIFIED` + `ZKP Verification Exception` beheben (Verifier-Pipeline) | Liquor-Szenario ist deterministisch grün (10/10 Läufe) |
-| G-100.2 | 🔴 P0 | ⏳ | Claim/Predicate Contract festziehen (`age`, `age_over_18`, `birthDate` Mapping) | Versioniertes JSON-Schema + Contract Tests vorhanden |
+| G-100.1 | 🔴 P0 | 🚧 | Root-Cause `AGE_NOT_VERIFIED` + `ZKP Verification Exception` beheben (Verifier-Pipeline). Zwei Quellen: (a) Claim-Vokabular-Drift (`age`/`isOver18`/`age_over_18`/`birthDate`/`dateOfBirth`), (b) clock-abhängige Altersberechnung (`new Date()`). Fix = Verdrahtung an Claim-Contract (G-100.2) + injizierbares `asOf`. Branch `feature/g100-claim-contract`, PR-B. | Liquor-Szenario ist deterministisch grün (10/10 Läufe) |
+| G-100.2 | 🔴 P0 | 🚧 | Versionierter, **EUDI-geformter** Claim/Predicate-Contract: ein kanonischer `age_over_18` + Format-Binding-Schicht (SD-JWT-VC `age_equal_or_over` unter `urn:eudi:pid:1` voll; mdoc-PID + AV `eu.europa.ec.av.1` reserviert), Alias-Layer (`age`/`isOver18`/`dateOfBirth`→canonical, fail-closed), `asOf`-Determinismus. Schema in `shared-types`, ajv-Guard in `verifier-sdk`. Design: [`superpowers/specs/2026-06-10-eudi-claim-contract-design.md`](superpowers/specs/2026-06-10-eudi-claim-contract-design.md). Branch `feature/g100-claim-contract`, PR-A. | Versioniertes JSON-Schema + Contract-Tests vorhanden; SD-JWT-`age_equal_or_over` korrekt; fail-closed bei unbekanntem Claim |
 | G-100.3 | 🔴 P0 | ✅ | 5-Szenarien E2E-Matrix in CI (Liquor, Doctor, EHDS, Pharmacy, Revoked) | CI bricht bei 1 Szenario-Regression — erledigt via PR #69 (`test(verifier): automate pilot five-scenario smoke matrix`) |
 | G-100.4 | 🟡 P1 | ⏳ | Correlation IDs über Wallet/Verifier/Issuer | Jede Demo-Transaktion end-to-end tracebar |
+| G-100.5 | 🟡 P1 | ⏳ | **EUDI-Interop-Gap (ehrliches Tracking, [#97](https://github.com/Late-bloomer420/miTch/issues/97))**: voller mdoc-`eu.europa.ec.av.1`-Pfad + ECDSA-ZKP (AV-Profil ist mdoc-only, ZKP recommended). Bewusst deferred — Pilot läuft auf SD-JWT-Pfad. | Issue #97 bleibt offen bis mdoc-AV-Pfad + ZKP geliefert oder bewusst verworfen |
+| G-100.6 | 🟡 P1 | ⏳ | `verifier-browser` (PoC-Stub `mockResponse: success:true`, Signaturprüfung übersprungen) → `archive/` + CI-Import-Guard. CRITICAL-falls-aktiv; untergräbt Security-Signoff. | Paket in `archive/`; CI bricht bei Re-Import aus aktivem Tree. Branch `feature/g100-claim-contract`, PR-C. |
 
 ### EPIC G-110 — QR + Deep-Link Handoff
 
@@ -164,7 +168,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 1.2 Demo Reliability & Handoff (Phase 1.3 Stabilisierung) ✅
 | ID | Status | Beschreibung |
 |---|---|---|
-| G-100 | ✅ | Root-Cause `AGE_NOT_VERIFIED` behoben (Claim Normalisierung `dateOfBirth`) |
+| G-100 | ⚠️ teilweise | Erster `AGE_NOT_VERIFIED`-Fix (Claim-Normalisierung `dateOfBirth`) — **hielt nicht deterministisch**. Vollständige Behebung jetzt via EPIC G-100 oben (G-100.1/.2, versionierter EUDI-Contract + `asOf`). Diese Zeile bleibt nur als History. |
 | G-110 | ✅ | Robuster QR/Deep-Link Handoff (`SCANNED`, `EXPIRED` Zustände + `/notify-scan`) |
 
 ---

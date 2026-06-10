@@ -21,6 +21,9 @@ export * from './health.js';
 // ZKP Predicate Schemas
 export * from './predicates.js';
 
+// Versioned EUDI-aligned Claim/Predicate Contract
+export * from './contracts/claim-contract.js';
+
 // Anchor Service Types
 export * from './anchor.js';
 
