@@ -27,6 +27,7 @@ import {
   resolveDID,
   detectKeyAlgorithm,
   generateHolderBinding,
+  createKeyBindingJWT,
   type HolderBinding,
 } from '@askmi/shared-crypto';
 
@@ -38,6 +39,7 @@ import {
   markConsumed,
   selectablePresentationCredentials,
 } from '../utils/single-use';
+import { putKey as putHolderKeyDb, getKey as getHolderKeyDb, deleteKey as deleteHolderKeyDb } from '../utils/crypto-db';
 import { ProofOfExistence } from './DocumentService';
 import { evaluatePredicates, CommonPredicates, type PredicateRequest } from '@askmi/predicates';
 import type { TrackingPoint } from './PrivacyAuditService';
@@ -953,6 +955,9 @@ export class WalletService {
       disclosure: Record<string, unknown>;
       provenClaims: Record<string, boolean>;
       zkpProofs?: Record<string, unknown>; // Full cryptographic proofs
+      // Per-member holder Proof-of-Possession (C1): KB-JWT signed by the member's
+      // holder key + its did:jwk `sub` so the verifier can resolve the cnf key.
+      holderBinding?: { kb_jwt: string; sub: string };
       // credentialId removed to prevent discovery
     }> = [];
 
@@ -1108,11 +1113,27 @@ export class WalletService {
         }
       }
 
+      // C1 — Presentation-time Proof of Possession: if this credential is a
+      // batch-issued pool member, sign a Key-Binding JWT with its holder key so
+      // the verifier can cryptographically confirm the holder controls the cnf.
+      let holderBinding: { kb_jwt: string; sub: string } | undefined;
+      const holderPriv = await this.resolveHolderKey(selectedId);
+      const holderSub = (credentialData as Record<string, unknown>)?.id as string | undefined;
+      if (holderPriv && holderSub) {
+        const kb_jwt = await createKeyBindingJWT(
+          { aud: verifierDID, nonce: capsule.nonce ?? '', sdJwtWithDisclosures: holderSub },
+          holderPriv
+        );
+        holderBinding = { kb_jwt, sub: holderSub };
+        logs.push('🔑 Key-Binding JWT minted (holder proof-of-possession)');
+      }
+
       bundles.push({
         credentialType: req.credential_type,
         disclosure,
         provenClaims,
         zkpProofs,
+        ...(holderBinding ? { holderBinding } : {}),
         // credentialId intentionally omitted to prevent discovery
       });
     }
@@ -1143,7 +1164,10 @@ export class WalletService {
       if (!payload) continue;
       const { id: _id, ...rest } = markConsumed(presented, consumedAt);
       await this.storage.save(presented.id, payload, rest);
-      logs.push(`🔥 Single-use credential consumed (will not be re-presented)`);
+      // Shred-on-burn: destroy the holder key so a spent member can never sign again.
+      this.holderKeys.delete(presented.id);
+      await deleteHolderKeyDb(presented.id);
+      logs.push(`🔥 Single-use credential consumed + holder key shredded`);
     }
 
     const vpPayload = {
@@ -1162,6 +1186,7 @@ export class WalletService {
         disclosure: b.disclosure,
         proven_claims: b.provenClaims,
         zkp_proofs: b.zkpProofs, // Include proofs in VP
+        ...(b.holderBinding ? { holder_binding: b.holderBinding } : {}),
       })),
     };
 
@@ -1389,9 +1414,28 @@ export class WalletService {
         poolId
       );
       this.holderKeys.set(credId, bindings[i].keyPair);
+      // Durably persist the holder key handle (survives reload; consumed at presentation).
+      await putHolderKeyDb({
+        credentialId: credId,
+        poolId,
+        publicKeyJwk: bindings[i].cnf.jwk as JsonWebKey,
+        privateKey: bindings[i].keyPair.privateKey,
+        createdAt: Date.now(),
+      });
       credentialIds.push(credId);
     }
     return { poolId, credentialIds };
+  }
+
+  /**
+   * Resolve a member's holder key pair: session cache first, then the durable
+   * IndexedDB store (so a presentation works after a page reload).
+   */
+  private async resolveHolderKey(credentialId: string): Promise<CryptoKey | undefined> {
+    const cached = this.holderKeys.get(credentialId);
+    if (cached) return cached.privateKey;
+    const stored = await getHolderKeyDb(credentialId);
+    return stored?.privateKey;
   }
 
   /** Retained holder keypair for a batch member (session-scoped; consumed at presentation in C1). */

@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 // hand-rolled shim below is skipped because fake-indexeddb sets globalThis.indexedDB.
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
+import { __resetConnectionForTests } from '../utils/crypto-db';
 
 // Hard-reset IndexedDB before every test by swapping in a brand-new factory.
 // This is fake-indexeddb's recommended isolation idiom: a fresh IDBFactory has
@@ -14,7 +15,8 @@ import { IDBFactory } from 'fake-indexeddb';
 // to the named DB is still open, which the BrowserIndexedDBAdapter never closes,
 // deadlocking the whole suite on the first test.
 beforeEach(() => {
-  globalThis.indexedDB = new IDBFactory(); // empty IndexedDB store per test
+  globalThis.indexedDB = new IDBFactory(); // empty mitch_wallet_v1 + mitch_holder_keys_v1
+  __resetConnectionForTests();             // drop crypto-db's cached connection to the old factory
 });
 
 // Mock IndexedDB for jsdom environment
