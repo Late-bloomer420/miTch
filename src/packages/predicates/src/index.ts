@@ -41,6 +41,13 @@ export {
     CommonPredicates
 } from './evaluate';
 
+// Canonical age predicate (contract-bound, deterministic via injected asOf)
+export {
+    computeAgeOnDate,
+    evaluateAgeOver18,
+    buildAgeOver18Predicate
+} from './age-contract';
+
 // Verifier-side validation
 export {
     verifyPredicateResult,
