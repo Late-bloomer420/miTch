@@ -832,6 +832,9 @@ importers:
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      ajv:
+        specifier: ^8.17.1
+        version: 8.20.0
     devDependencies:
       rimraf:
         specifier: ^5.0.0

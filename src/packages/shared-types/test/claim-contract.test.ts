@@ -4,6 +4,7 @@ import {
     CLAIM_CONTRACT_VERSION,
     UnknownClaimError,
     getFormatBinding,
+    CLAIM_CONTRACT_SCHEMA_V1,
 } from '../src/contracts/claim-contract';
 
 describe('claim-contract / resolveClaim — alias resolution (EUDI-aligned)', () => {
@@ -32,6 +33,25 @@ describe('claim-contract / resolveClaim — alias resolution (EUDI-aligned)', ()
 describe('claim-contract / versioning', () => {
     it('exposes a fixed semver contract version', () => {
         expect(CLAIM_CONTRACT_VERSION).toBe('1.0.0');
+    });
+});
+
+describe('claim-contract / request schema (JSON-Schema source of truth)', () => {
+    it('is a Draft 2020-12 schema versioned to the contract', () => {
+        expect(CLAIM_CONTRACT_SCHEMA_V1.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
+        expect(CLAIM_CONTRACT_SCHEMA_V1.$id).toMatch(/\/claim-contract\/v1$/);
+    });
+
+    it('pins the contractVersion via a const matching CLAIM_CONTRACT_VERSION', () => {
+        const props = CLAIM_CONTRACT_SCHEMA_V1.properties as Record<string, { const?: string }>;
+        expect(props.contractVersion.const).toBe(CLAIM_CONTRACT_VERSION);
+    });
+
+    it('requires a non-empty claims array and forbids extra properties', () => {
+        expect(CLAIM_CONTRACT_SCHEMA_V1.required).toEqual(['contractVersion', 'claims']);
+        expect(CLAIM_CONTRACT_SCHEMA_V1.additionalProperties).toBe(false);
+        const props = CLAIM_CONTRACT_SCHEMA_V1.properties as Record<string, { minItems?: number }>;
+        expect(props.claims.minItems).toBe(1);
     });
 });
 

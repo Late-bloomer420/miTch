@@ -24,6 +24,30 @@ export const CANONICAL_CLAIMS = ['birthdate', 'age_over_18'] as const;
 
 export type CanonicalClaim = (typeof CANONICAL_CLAIMS)[number];
 
+/**
+ * JSON Schema (Draft 2020-12) for a claim request at the verifier-sdk ingress —
+ * the language-agnostic source of truth, held as a TS const so `shared-types`
+ * stays a pure (build-asset-free) leaf. The ajv-based runtime validator lives in
+ * `@askmi/verifier-sdk` (which owns the ajv dependency). Structural validation
+ * only; vocabulary fail-closed is enforced by {@link resolveClaim}.
+ */
+export const CLAIM_CONTRACT_SCHEMA_V1 = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: 'https://askmi.dev/contracts/claim-contract/v1',
+    title: 'AskMI Claim Contract v1',
+    type: 'object',
+    required: ['contractVersion', 'claims'],
+    additionalProperties: false,
+    properties: {
+        contractVersion: { const: CLAIM_CONTRACT_VERSION },
+        claims: {
+            type: 'array',
+            minItems: 1,
+            items: { type: 'string' },
+        },
+    },
+} as const;
+
 /** Thrown when a claim name is neither canonical nor a known alias (fail-closed). */
 export class UnknownClaimError extends Error {
     constructor(public readonly claim: string) {
