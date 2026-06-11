@@ -62,7 +62,9 @@ vi.mock('@askmi/shared-crypto', async () => {
     WebAuthnService: {
       isAvailable: vi.fn().mockResolvedValue(false),
       isRegistered: vi.fn().mockResolvedValue(false),
+      isIdentityRegistered: vi.fn().mockResolvedValue(false),
       registerPasskey: vi.fn().mockResolvedValue(undefined),
+      registerIdentityKey: vi.fn().mockResolvedValue(undefined),
       provePresence: vi.fn().mockResolvedValue('proof'),
       provePresenceDetailed: vi.fn().mockResolvedValue({ signature: 'proof-signature' }),
     },
@@ -187,15 +189,34 @@ describe('G-03 — Wallet App', () => {
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
   });
 
-  it('forces passkey onboarding before showing credentials when WebAuthn is available', async () => {
+  it('enrolls on first run and lands straight in the wallet — a single biometric ceremony', async () => {
+    // Model A UX: the registration ceremony already verifies the user (userVerification:required),
+    // so first run must NOT immediately demand a second unlock of the same passkey.
     const webAuthnServiceMock = vi.mocked(WebAuthnService);
     webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
-    webAuthnServiceMock.isRegistered.mockResolvedValueOnce(false);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(false);
+
+    render(<App />);
+
+    // Straight into the wallet after enrollment — no second "Wallet Locked" gate.
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerIdentityKey).toHaveBeenCalledOnce();
+    expect(webAuthnServiceMock.provePresence).not.toHaveBeenCalled();
+    expect(screen.queryByText('Wallet Locked')).not.toBeInTheDocument();
+  });
+
+  it('returning device with an existing identity is locked until a single unlock', async () => {
+    // Model A guarantee: returning device reuses its identity (no re-enroll) and is gated
+    // behind exactly one unlock ceremony before any credential is shown.
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true);
 
     render(<App />);
 
     expect(await screen.findByText('Wallet Locked')).toBeInTheDocument();
-    expect(webAuthnServiceMock.registerPasskey).toHaveBeenCalledOnce();
+    expect(webAuthnServiceMock.registerIdentityKey).not.toHaveBeenCalled();
+    expect(webAuthnServiceMock.registerPasskey).not.toHaveBeenCalled();
     expect(screen.queryByText('Age Credential (GovID)')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Unlock with Biometrics/i }));

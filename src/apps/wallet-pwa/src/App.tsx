@@ -252,16 +252,26 @@ function WalletApp() {
 
         let requiresPasskeyUnlock = false;
         try {
+          // Model A — the passkey IS the account. A single device-bound platform
+          // identity key is registered once on first run; it persists across reloads
+          // (passkeyDb), so the wallet never treats a returning device as a new user.
           const isAvailable = await WebAuthnService.isAvailable();
-          let isRegistered = await WebAuthnService.isRegistered();
-          if (isAvailable && !isRegistered) {
-            addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
-            await WebAuthnService.registerPasskey();
-            isRegistered = true;
-            addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
+          let hasIdentity = await WebAuthnService.isIdentityRegistered();
+          let justEnrolled = false;
+          if (isAvailable && !hasIdentity) {
+            addLog('📱 First run on this device. Creating your AskMI account…', 'info');
+            await WebAuthnService.registerIdentityKey();
+            hasIdentity = true;
+            justEnrolled = true;
+            addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
           }
-          requiresPasskeyUnlock = isAvailable && isRegistered;
-          if (requiresPasskeyUnlock) {
+          // The enrollment ceremony already verified the user (userVerification: required),
+          // so we don't demand a second unlock of the same passkey on first run. Only a
+          // RETURNING device (identity already existed) is gated behind a single unlock.
+          requiresPasskeyUnlock = isAvailable && hasIdentity && !justEnrolled;
+          if (justEnrolled) {
+            addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
+          } else if (requiresPasskeyUnlock) {
             addLog('🔒 Passkey unlock required before presentation flow.', 'info');
           } else if (!isAvailable) {
             addLog('⚠️ Platform Passkey unavailable; demo fallback unlocked locally.', 'warning');

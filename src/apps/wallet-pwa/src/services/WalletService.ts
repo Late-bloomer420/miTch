@@ -507,20 +507,10 @@ export class WalletService {
       } catch (err) {
         if (!retried) {
           retried = true;
-          console.warn('[WalletService] Init failed. Resetting storage and retrying...', err);
-          try {
-            if (
-              typeof (SecureStorage as unknown as { reset?: () => Promise<void> }).reset ===
-              'function'
-            ) {
-              await (SecureStorage as unknown as { reset: () => Promise<void> }).reset();
-            }
-          } catch (resetErr) {
-            console.warn(
-              '[WalletService] Storage reset failed. Retrying without reset...',
-              resetErr
-            );
-          }
+          // Model A: NEVER auto-wipe the vault on a transient init failure — that
+          // silently destroys the user's credentials. Retry without reset; the vault
+          // is only ever cleared via an explicit user action (resetWallet()).
+          console.warn('[WalletService] Init failed. Retrying without wiping storage...', err);
           await run();
           return;
         }
