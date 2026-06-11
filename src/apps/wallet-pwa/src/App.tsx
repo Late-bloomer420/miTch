@@ -40,6 +40,16 @@ import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
 
+type WalletStatus =
+  | 'LOCKED'
+  | 'LOCKED_PASSKEY'
+  | 'UNLOCKING'
+  | 'IDLE'
+  | 'EVALUATING'
+  | 'PROVING'
+  | 'SHREDDED'
+  | 'DENIED';
+
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
     id: 1,
@@ -101,7 +111,7 @@ function WalletApp() {
     document.title = 'AskMI Wallet';
   }, []);
 
-  const [status, setStatus] = useState<string>('LOCKED');
+  const [status, setStatus] = useState<WalletStatus>('LOCKED');
   const [logs, setLogs] = useState<string[]>([]);
   const [evaluationResult, setEvaluationResult] = useState<PolicyEvaluationResult | null>(null);
   const [showConsent, setShowConsent] = useState(false);
@@ -240,13 +250,21 @@ function WalletApp() {
         addLog('🔓 Wallet Decrypted & Ready', 'success');
         setCurrentPolicy(walletRef.current.getPolicy());
 
+        let requiresPasskeyUnlock = false;
         try {
           const isAvailable = await WebAuthnService.isAvailable();
-          const isRegistered = await WebAuthnService.isRegistered();
+          let isRegistered = await WebAuthnService.isRegistered();
           if (isAvailable && !isRegistered) {
             addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
             await WebAuthnService.registerPasskey();
+            isRegistered = true;
             addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
+          }
+          requiresPasskeyUnlock = isAvailable && isRegistered;
+          if (requiresPasskeyUnlock) {
+            addLog('🔒 Passkey unlock required before presentation flow.', 'info');
+          } else if (!isAvailable) {
+            addLog('⚠️ Platform Passkey unavailable; demo fallback unlocked locally.', 'warning');
           }
         } catch (authError) {
           addLog(
@@ -256,7 +274,7 @@ function WalletApp() {
         }
 
         await loadWalletCredentials();
-        setStatus('IDLE');
+        setStatus(requiresPasskeyUnlock ? 'LOCKED_PASSKEY' : 'IDLE');
       } catch (e) {
         console.error(e);
         const message = e instanceof Error ? e.message : String(e);
@@ -960,6 +978,8 @@ function WalletApp() {
       {
         IDLE: 'btn-primary--idle',
         LOCKED: 'btn-primary--idle',
+        LOCKED_PASSKEY: 'btn-primary--idle',
+        UNLOCKING: 'btn-primary--evaluating',
         EVALUATING: 'btn-primary--evaluating',
         PROVING: 'btn-primary--proving',
         SHREDDED: 'btn-primary--shredded',
@@ -991,6 +1011,8 @@ function WalletApp() {
     }
   };
 
+  const isWalletReady = !['LOCKED', 'LOCKED_PASSKEY', 'UNLOCKING'].includes(status);
+
   return (
     <div className="wallet-app">
       <h1 className="wallet-title">
@@ -1020,7 +1042,7 @@ function WalletApp() {
           </div>
           <button
             onClick={() => handleIncomingOID4VP()}
-            disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+            disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
             style={{
               background: '#0891b2',
               color: '#fff',
@@ -1045,8 +1067,8 @@ function WalletApp() {
             <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
             <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
             <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your AskMI
-              Wallet.
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to unlock your AskMI Wallet
+              before any credential is shown or presented.
             </p>
             <button
               onClick={handlePasskeyUnlock}
@@ -1065,33 +1087,12 @@ function WalletApp() {
             >
               Unlock with Biometrics
             </button>
-            <div style={{ marginTop: 24 }}>
-              <button
-                onClick={async () => {
-                  await walletRef.current.initialize('123456');
-                  setCurrentPolicy(walletRef.current.getPolicy());
-                  await loadWalletCredentials();
-                  setStatus('IDLE');
-                  addLog('🔓 Fallback: Unlocked via PIN', 'warning');
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#64748b',
-                  fontSize: 13,
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                }}
-              >
-                Use PIN instead
-              </button>
-            </div>
           </div>
         </div>
       )}
 
       {/* UX-03: Dynamic Premium Credential Cards */}
-      {status !== 'LOCKED' ? (
+      {isWalletReady ? (
         <>
           <div className="credential-card-list">
             {credentials.map((cred) => {
@@ -1440,7 +1441,7 @@ function WalletApp() {
             handleProveAge();
           }
         }}
-        disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+        disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
         className={getPrimaryBtnClass()}
       >
         {getPrimaryBtnLabel()}

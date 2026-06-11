@@ -6,7 +6,7 @@
 **Stand:** 2026-06-07 (Truth-Alignment: master bei `fb879cc`/PR #81; voller AskMI-Rebrand via PR #70 gemerged; Epic 2–5 Advisory-Arbeit (#71–#81) dokumentiert in `STATE.md` + Session 17; ältere Video-Gap-Tabellen teilweise durch Phase-1–Phase-4 + Epic-Arbeit überholt)
 **Update 2026-06-10:** EPIC G-100 verfeinert — G-100.1/.2 auf EUDI-geformten Claim-Contract (Design-Doc + Branch `feature/g100-claim-contract`); EUDI-Interop-Gap als G-100.5 + Issue [#97](https://github.com/Late-bloomer420/miTch/issues/97) ehrlich getrackt; `verifier-browser`-Deprecation als G-100.6; widersprüchliche „G-100 ✅"-Altzeile (1.2) als nur-teilweise/History korrigiert.
 
-**Update 2026-06-11:** EPIC G-100 P0-Block **geschlossen** — G-100.2 (Contract, PR #98), G-100.1 (asOf-Determinismus, PR #99), G-100.6 (verifier-browser archiviert + Import-Guard, PR #100) alle ✅ auf `master`. Neu: G-100.7 (flaky anti-oracle Timing-Test). Offen bleibt G-100.4 (Correlation IDs), G-100.5 (#97 EUDI-Interop, deferred).
+**Update 2026-06-11:** EPIC G-100 P0-Block **geschlossen** — G-100.2 (Contract, PR #98), G-100.1 (asOf-Determinismus, PR #99), G-100.6 (verifier-browser archiviert + Import-Guard, PR #100) alle ✅ auf `master`. Neu: G-100.7 (flaky anti-oracle Timing-Test). Offen bleibt G-100.4 (Correlation IDs), G-100.5 (#97 EUDI-Interop/mdoc-AV+ZKP, deferred) und G-130.1 (Passkey-Onboarding als erzwungener Default, laufender Branch `feature/g130-passkey-default-onboarding`).
 
 **Leitsatz:** *"Alle sind AskMI."*
 
@@ -101,7 +101,7 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-130.1 | 🔴 P0 | ⏳ | Passkey als Default Unlock im Presentation-Flow | 1-Klick Unlock in Demo-Flow |
+| G-130.1 | 🔴 P0 | ⏳ | Passkey-Onboarding als erzwungener Default vor Wallet-/Presentation-Nutzung; bei WebAuthn-fähigem Gerät wird ein fehlender Passkey zuerst registriert und danach für den Unlock verlangt. | Wallet startet nicht offen; Demo-Flow ist erst nach Passkey-Unlock bedienbar |
 | G-130.2 | 🟡 P1 | ⏳ | Recovery/Fallback UX (device unavailable) | Klarer Fallback ohne Dead-End |
 
 ### EPIC G-140 — Consent & Disclosure UX
@@ -222,7 +222,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
 | E-10 | ✅ | SD-JWT VC Compliance (draft 11) — 17 tests, vct/cnf/kb-jwt | I-D.ietf-oauth-sd-jwt-vc |
-| E-11 | ✅ | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@askmi/mdoc`: CBOR Codec, COSE Sign1, **COSE_Mac0** (HMAC-SHA-256, ECDH+HKDF Key Derivation), Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 169 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements) | ISO.18013-5 |
+| E-11 | ✅/🟡 | ISO/IEC 18013-5 (mdoc) Support — mobiler Führerschein — `@askmi/mdoc`: CBOR Codec, COSE Sign1, **COSE_Mac0** (HMAC-SHA-256, ECDH+HKDF Key Derivation), Offline-Verifikation (5-Step), x5chain, DeviceResponse Parser, **mdoc-builder** (`buildMdocDocument()` Issuance-Pipeline) — 169 tests; **Wallet** (73/73): `addMdocCredential()`, Presentation-Path, Demo-Seed; **Verifier** (52/52): `verifyMdocPresentation()`, `mso_mdoc` OID4VP-Typen; **Hybrid Issuance**: `mso_mdoc` in OID4VCI, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements). **Ehrliche Grenze:** EU-AV-Profil `eu.europa.ec.av.1` + ECDSA-ZKP ist nicht vollständig wired und wird in G-100.5 / Issue [#97](https://github.com/Late-bloomer420/miTch/issues/97) offen gehalten. | ISO.18013-5 |
 | E-12 | 🟢 | Designated Verifier Signatures (JOSE draft 1) | DVS-JOSE |
 | E-13 | ✅ | High Assurance Interoperability Profile — direct_post.jwt, verifier attestation | OpenID4VC HAIP |
 

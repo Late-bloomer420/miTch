@@ -88,6 +88,7 @@ vi.mock('./services/WalletService', () => {
 });
 
 import App from './App';
+import { WebAuthnService } from '@askmi/shared-crypto';
 
 function makePromptResult(verdict: PolicyEvaluationResult['verdict']): PolicyEvaluationResult {
   return {
@@ -184,6 +185,23 @@ describe('G-03 — Wallet App', () => {
   it('renders credential card with Age Credential', async () => {
     render(<App />);
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+  });
+
+  it('forces passkey onboarding before showing credentials when WebAuthn is available', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isRegistered.mockResolvedValueOnce(false);
+
+    render(<App />);
+
+    expect(await screen.findByText('Wallet Locked')).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerPasskey).toHaveBeenCalledOnce();
+    expect(screen.queryByText('Age Credential (GovID)')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Unlock with Biometrics/i }));
+
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(webAuthnServiceMock.provePresence).toHaveBeenCalledWith('AskMI-wallet-unlock');
   });
 
   it('renders the primary action button', () => {
