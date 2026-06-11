@@ -178,17 +178,27 @@ describe('Anti-Oracle: timing oracle (documentation + baseline)', () => {
    * This test measures getDenyMessage timing to establish a baseline.
    * It does NOT enforce constant time (that requires response-level padding).
    */
-  it('getDenyMessage executes in < 1ms for all codes (baseline)', () => {
-    for (const code of Object.values(DenyReasonCode)) {
-      const start = performance.now();
-      getDenyMessage(code, 'verifier');
-      getDenyMessage(code, 'user');
-      getDenyMessage(code, 'audit');
-      const elapsed = performance.now() - start;
+  it('getDenyMessage is trivially fast on average (load-robust baseline)', () => {
+    const codes = Object.values(DenyReasonCode);
+    const ITERATIONS = 2000;
 
-      // Message lookup should be trivially fast (< 1ms)
-      expect(elapsed).toBeLessThan(1);
+    const start = performance.now();
+    for (let i = 0; i < ITERATIONS; i++) {
+      for (const code of codes) {
+        getDenyMessage(code, 'verifier');
+        getDenyMessage(code, 'user');
+        getDenyMessage(code, 'audit');
+      }
     }
+    const elapsed = performance.now() - start;
+    const perCall = elapsed / (ITERATIONS * codes.length * 3);
+
+    // It is a pure catalog lookup — sub-microsecond per call. We assert the
+    // AVERAGE over many iterations, not a single call: a single measurement is
+    // dominated by GC/scheduling jitter on a loaded CI runner (the old
+    // "< 1ms single call" assertion flaked at ~13ms). 0.1ms/call is a generous
+    // ceiling that still catches a genuine pathological-slowness regression.
+    expect(perCall).toBeLessThan(0.1);
   });
 
   it('DOCUMENTED: response-level timing padding is required for Phase 6', () => {

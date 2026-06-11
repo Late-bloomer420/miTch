@@ -79,7 +79,7 @@ geplant werden.
 | G-100.4 | 🟡 P1 | ⏳ | Correlation IDs über Wallet/Verifier/Issuer | Jede Demo-Transaktion end-to-end tracebar |
 | G-100.5 | 🟡 P1 | ⏳ | **EUDI-Interop-Gap (ehrliches Tracking, [#97](https://github.com/Late-bloomer420/miTch/issues/97))**: voller mdoc-`eu.europa.ec.av.1`-Pfad + ECDSA-ZKP (AV-Profil ist mdoc-only, ZKP recommended). Bewusst deferred — Pilot läuft auf SD-JWT-Pfad. | Issue #97 bleibt offen bis mdoc-AV-Pfad + ZKP geliefert oder bewusst verworfen |
 | G-100.6 | 🟡 P1 | ✅ | `verifier-browser` (PoC-Stub `mockResponse: success:true`, Signaturprüfung übersprungen) → `archive/prototypes/` (git mv, History erhalten) + CI-Guard `guard:archived-imports`. **PR #100** (`efc6950`). | Paket in `archive/` ✅; CI bricht bei Re-Import aus aktivem Tree ✅ (negativ-getestet) |
-| G-100.7 | 🟢 P2 | ⏳ | **Flaky Timing-Test:** `policy-engine/src/__tests__/anti-oracle.test.ts` „getDenyMessage < 1ms" misst Wanduhr/Last, nicht Code (CI-Fehler `12.95ms < 1`). Schwelle relativieren (Baseline-Ratio statt absolute 1ms) oder als reine Doku/Skip markieren. | Kein last-abhängiger CI-Flake mehr aus anti-oracle |
+| G-100.7 | 🟢 P2 | ✅ | **Flaky Timing-Test** behoben: `anti-oracle.test.ts` misst jetzt den **Pro-Aufruf-Durchschnitt** über 2000 Iterationen (`< 0.1ms`) statt einer Einzelmessung `< 1ms` — Jitter wird amortisiert. 3× lokal stabil 14/14. | Kein last-abhängiger CI-Flake mehr aus anti-oracle ✅ |
 
 ### EPIC G-110 — QR + Deep-Link Handoff
 
