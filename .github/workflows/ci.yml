@@ -35,6 +35,9 @@ jobs:
       - name: 🔎 Active rebrand guard
         run: pnpm guard:rebrand
 
+      - name: 🗄️ Archived-import guard
+        run: pnpm guard:archived-imports
+
       - name: 🏗️ Build all packages
         run: pnpm build
 
