@@ -47,6 +47,23 @@ describe('WalletService — Initialization', () => {
     resetSpy.mockRestore();
     initSpy.mockRestore();
   });
+
+  it('resetWallet() explicitly wipes the vault and allows a fresh re-initialization', async () => {
+    // The explicit escape hatch: the only sanctioned way to clear the vault.
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const resetSpy = vi.spyOn(SecureStorage, 'reset');
+    await wallet.resetWallet();
+    expect(resetSpy).toHaveBeenCalledOnce();
+
+    // After an explicit reset, initialize() runs fresh again (not a no-op).
+    await expect(wallet.initialize(PIN, SALT)).resolves.not.toThrow();
+    const creds = await wallet.getCredentials();
+    expect(creds.length).toBeGreaterThan(0); // re-seeded from clean slate
+
+    resetSpy.mockRestore();
+  });
 });
 
 describe('WalletService — Credential Store / Retrieve', () => {

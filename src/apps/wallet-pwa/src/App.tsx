@@ -242,6 +242,10 @@ function WalletApp() {
   }, [logs]);
 
   // Auto-init for Demo
+  // Holds the latest bootstrap routine so an explicit reset can re-run first-run
+  // enrollment in place (no full page reload).
+  const bootstrapRef = useRef<() => Promise<void>>(async () => {});
+
   useEffect(() => {
     const init = async () => {
       addLog('🔐 Initializing Wallet Service...', 'info');
@@ -291,8 +295,35 @@ function WalletApp() {
         addLog(`❌ Init Failed: ${message || 'Unknown error'}`, 'error');
       }
     };
+    bootstrapRef.current = init;
     init();
   }, []);
+
+  // Explicit, user-initiated reset — the only sanctioned way to wipe the wallet.
+  // Clears the encrypted vault AND the device passkey/identity meta, then re-runs
+  // bootstrap so the device starts fresh (first-run enrollment).
+  const handleResetWallet = async () => {
+    const confirmed =
+      typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm(
+            'Reset this wallet?\n\nThis permanently clears all stored credentials and unlinks the device passkey from AskMI. You will start over as a new device. This cannot be undone.'
+          )
+        : true;
+    if (!confirmed) return;
+    try {
+      setStatus('UNLOCKING');
+      addLog('♻️ Resetting wallet (explicit user action)…', 'warning');
+      await walletRef.current.resetWallet();
+      await WebAuthnService.clearRegistration();
+      setCredentials([]);
+      setEvaluationResult(null);
+      setStatus('LOCKED');
+      await bootstrapRef.current();
+    } catch (e) {
+      addLog(`❌ Reset failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('LOCKED_PASSKEY');
+    }
+  };
 
   const handlePasskeyUnlock = async () => {
     try {
@@ -1097,6 +1128,20 @@ function WalletApp() {
             >
               Unlock with Biometrics
             </button>
+            <button
+              onClick={handleResetWallet}
+              style={{
+                marginTop: 18,
+                background: 'none',
+                border: 'none',
+                color: '#64748b',
+                fontSize: 13,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+              }}
+            >
+              Reset Wallet (start over as new device)
+            </button>
           </div>
         </div>
       )}
@@ -1518,6 +1563,25 @@ function WalletApp() {
           </div>
         )}
       </div>
+
+      {isWalletReady && (
+        <div className="wallet-section" style={{ marginTop: 10, textAlign: 'center' }}>
+          <button
+            onClick={handleResetWallet}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              fontSize: 13,
+              borderRadius: 10,
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            ♻️ Reset Wallet (start over as new device)
+          </button>
+        </div>
+      )}
 
       <div className="wallet-section" style={{ marginBottom: 20 }}>
         {currentPolicy && (

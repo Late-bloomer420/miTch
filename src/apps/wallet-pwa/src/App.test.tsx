@@ -36,6 +36,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   savePolicy: vi.fn(),
   getRecentAuditLogs: vi.fn().mockReturnValue([]),
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
+  resetWallet: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('./components/SecureZone', () => ({
@@ -65,6 +66,7 @@ vi.mock('@askmi/shared-crypto', async () => {
       isIdentityRegistered: vi.fn().mockResolvedValue(false),
       registerPasskey: vi.fn().mockResolvedValue(undefined),
       registerIdentityKey: vi.fn().mockResolvedValue(undefined),
+      clearRegistration: vi.fn().mockResolvedValue(undefined),
       provePresence: vi.fn().mockResolvedValue('proof'),
       provePresenceDetailed: vi.fn().mockResolvedValue({ signature: 'proof-signature' }),
     },
@@ -223,6 +225,38 @@ describe('G-03 — Wallet App', () => {
 
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
     expect(webAuthnServiceMock.provePresence).toHaveBeenCalledWith('AskMI-wallet-unlock');
+  });
+
+  it('Reset Wallet wipes the vault and unlinks the device passkey (explicit escape hatch)', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true); // returning → locked screen
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+
+    await screen.findByText('Wallet Locked');
+    fireEvent.click(screen.getByRole('button', { name: /Reset Wallet/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.resetWallet).toHaveBeenCalledOnce();
+      expect(webAuthnServiceMock.clearRegistration).toHaveBeenCalledOnce();
+    });
+  });
+
+  it('Reset Wallet does nothing if the user cancels the confirmation', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<App />);
+
+    await screen.findByText('Wallet Locked');
+    fireEvent.click(screen.getByRole('button', { name: /Reset Wallet/i }));
+
+    expect(walletServiceMockState.resetWallet).not.toHaveBeenCalled();
+    expect(webAuthnServiceMock.clearRegistration).not.toHaveBeenCalled();
   });
 
   it('renders the primary action button', () => {

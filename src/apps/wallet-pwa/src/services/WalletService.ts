@@ -1797,6 +1797,25 @@ export class WalletService {
   }
 
   /**
+   * Explicit, user-initiated wallet reset — the ONLY sanctioned way to wipe the
+   * vault (init never auto-wipes; see Model A). Clears the encrypted store and
+   * resets in-memory state so a subsequent initialize() re-seeds from a clean slate.
+   * The device passkey/identity meta is cleared separately at the UI layer
+   * (WebAuthnService.clearRegistration) so the next start re-enrolls.
+   */
+  async resetWallet(): Promise<void> {
+    await SecureStorage.reset();
+    this.storage = null;
+    this.policyEngine = null;
+    this.policyManifest = null;
+    this.policyPublicKey = null;
+    this.policyPrivateKey = null;
+    this.holderKeys.clear();
+    this.initPromise = null;
+    this.initialized = false;
+  }
+
+  /**
    * Get all credential metadata (without decrypting payloads).
    */
   async getCredentials(): Promise<StoredCredentialMetadata[]> {
