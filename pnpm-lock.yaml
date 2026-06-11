@@ -802,25 +802,6 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8(@types/node@25.3.5)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@6.4.2(@types/node@25.3.5)(tsx@4.21.0))
 
-  src/packages/verifier-browser:
-    dependencies:
-      '@askmi/shared-crypto':
-        specifier: workspace:*
-        version: link:../shared-crypto
-      '@askmi/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
-    devDependencies:
-      typescript:
-        specifier: ^5.3.0
-        version: 5.9.3
-      vite:
-        specifier: ^6.4.2
-        version: 6.4.2(@types/node@25.3.5)(tsx@4.21.0)
-      vitest:
-        specifier: ^4.1.8
-        version: 4.1.8(@types/node@25.3.5)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@6.4.2(@types/node@25.3.5)(tsx@4.21.0))
-
   src/packages/verifier-sdk:
     dependencies:
       '@askmi/predicates':
@@ -1618,7 +1599,6 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
-    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-musl@4.59.0':

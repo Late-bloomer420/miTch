@@ -21,6 +21,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "guard:rebrand": "node scripts/guard-active-rebrand.mjs",
+    "guard:archived-imports": "node scripts/guard-archived-imports.mjs",
     "test": "turbo run test",
     "test:golden": "pnpm --filter @askmi/integration-tests exec vitest run src/fail-closed-golden.test.ts",
     "clean": "turbo run clean",
