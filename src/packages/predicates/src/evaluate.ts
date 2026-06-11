@@ -21,6 +21,8 @@ import {
     PredicateResult
 } from './types';
 
+import { computeAgeOnDate } from './age-contract';
+
 // ============================================================================
 // COMMON PREDICATES (Helper Functions)
 // ============================================================================
@@ -114,29 +116,6 @@ interface ClauseResult {
 }
 
 /**
- * Calculates accurate age from a YYYY-MM-DD string, ignoring timezone shifts.
- * Treats the date as a "floating date" relative to the user's current local day.
- */
-function calculateAgeFromBirthDate(birthDateStr: string): number {
-    // Parse "YYYY-MM-DD" manually to avoid UTC/Local shifting
-    const [year, month, day] = birthDateStr.split('T')[0].split('-').map(Number);
-    if (!year || !month || !day) return 0; // Invalid format safety
-
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // 1-indexed for comparison
-    const currentDay = today.getDate();
-
-    let age = currentYear - year;
-
-    // Adjust if birthday hasn't occurred yet this year
-    if (currentMonth < month || (currentMonth === month && currentDay < day)) {
-        age--;
-    }
-    return age;
-}
-
-/**
  * Safely retrieves a nested value from a credential object using dot-notation.
  * Supports array indexing, e.g., "items[0].value".
  */
@@ -165,7 +144,7 @@ function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
  * @param credential - The data source
  * @returns Result with pass/fail status and optional failure reason
  */
-function evaluateClause(clause: PredicateClause, credential: Record<string, unknown>): ClauseResult {
+function evaluateClause(clause: PredicateClause, credential: Record<string, unknown>, asOf: Date): ClauseResult {
     const value = getValueAtPath(credential, clause.path);
 
     // Implement 'exists' operator logic
@@ -189,7 +168,8 @@ function evaluateClause(clause: PredicateClause, credential: Record<string, unkn
         if (typeof value !== 'string') return { passed: false, reasonCode: 'TYPE_MISMATCH' };
 
         const birthDateStr = value;
-        const age = calculateAgeFromBirthDate(birthDateStr);
+        const age = computeAgeOnDate(birthDateStr, asOf);
+        if (!Number.isFinite(age)) return { passed: false, reasonCode: 'TYPE_MISMATCH' };
         const compareValue = Number(clause.value);
 
         let passed: boolean;
@@ -314,12 +294,12 @@ function evaluateClause(clause: PredicateClause, credential: Record<string, unkn
  * @param credential - The data source
  * @returns Aggregated result
  */
-function evaluateExpression(expr: PredicateExpression, credential: Record<string, unknown>): ClauseResult {
+function evaluateExpression(expr: PredicateExpression, credential: Record<string, unknown>, asOf: Date): ClauseResult {
     const results = expr.clauses.map(clause => {
         if ('logic' in clause) {
-            return evaluateExpression(clause as PredicateExpression, credential);
+            return evaluateExpression(clause as PredicateExpression, credential, asOf);
         }
-        return evaluateClause(clause as PredicateClause, credential);
+        return evaluateClause(clause as PredicateClause, credential, asOf);
     });
 
     if (expr.logic === 'and') {
@@ -355,7 +335,8 @@ function evaluateExpression(expr: PredicateExpression, credential: Record<string
 export async function evaluatePredicates(
     credential: Record<string, unknown>,
     request: PredicateRequest,
-    signFn: (data: string) => Promise<string>
+    signFn: (data: string) => Promise<string>,
+    asOf: Date = new Date()
 ): Promise<PredicateResult> {
     // Security: Verify required fields
     if (!request.verifierDid || !request.nonce) {
@@ -375,7 +356,7 @@ export async function evaluatePredicates(
     let allPassed = true;
 
     for (const pred of predicates) {
-        const result = evaluateExpression(pred.expression, credential);
+        const result = evaluateExpression(pred.expression, credential, asOf);
         const predicateHash = await hashPredicateAsync(pred);
 
         evaluations.push({
