@@ -42,6 +42,7 @@ import { isSingleUsePresentation } from './utils/single-use';
 
 type WalletStatus =
   | 'LOCKED'
+  | 'WELCOME'
   | 'LOCKED_PASSKEY'
   | 'UNLOCKING'
   | 'IDLE'
@@ -254,41 +255,37 @@ function WalletApp() {
         addLog('🔓 Wallet Decrypted & Ready', 'success');
         setCurrentPolicy(walletRef.current.getPolicy());
 
-        let requiresPasskeyUnlock = false;
+        let nextStatus: WalletStatus = 'IDLE';
         try {
           // Model A — the passkey IS the account. A single device-bound platform
           // identity key is registered once on first run; it persists across reloads
           // (passkeyDb), so the wallet never treats a returning device as a new user.
           const isAvailable = await WebAuthnService.isAvailable();
-          let hasIdentity = await WebAuthnService.isIdentityRegistered();
-          let justEnrolled = false;
+          const hasIdentity = await WebAuthnService.isIdentityRegistered();
           if (isAvailable && !hasIdentity) {
-            addLog('📱 First run on this device. Creating your AskMI account…', 'info');
-            await WebAuthnService.registerIdentityKey();
-            hasIdentity = true;
-            justEnrolled = true;
-            addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
-          }
-          // The enrollment ceremony already verified the user (userVerification: required),
-          // so we don't demand a second unlock of the same passkey on first run. Only a
-          // RETURNING device (identity already existed) is gated behind a single unlock.
-          requiresPasskeyUnlock = isAvailable && hasIdentity && !justEnrolled;
-          if (justEnrolled) {
-            addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
-          } else if (requiresPasskeyUnlock) {
+            // First run (G-130.1 Task 3): do NOT auto-fire the registration ceremony.
+            // A surprise biometric prompt with no framing reads as a scam. Show a welcome
+            // screen first; enrollment runs only on the explicit "Create account" gesture.
+            addLog('👋 First run on this device — welcome.', 'info');
+            nextStatus = 'WELCOME';
+          } else if (isAvailable && hasIdentity) {
+            // RETURNING device: reuse the existing identity (no re-enroll), gated behind
+            // exactly one unlock ceremony before any credential is shown.
             addLog('🔒 Passkey unlock required before presentation flow.', 'info');
-          } else if (!isAvailable) {
+            nextStatus = 'LOCKED_PASSKEY';
+          } else {
             addLog('⚠️ Platform Passkey unavailable; demo fallback unlocked locally.', 'warning');
+            nextStatus = 'IDLE';
           }
         } catch (authError) {
           addLog(
-            `⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
+            `⚠️  Passkey check skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
             'warning'
           );
         }
 
         await loadWalletCredentials();
-        setStatus(requiresPasskeyUnlock ? 'LOCKED_PASSKEY' : 'IDLE');
+        setStatus(nextStatus);
       } catch (e) {
         console.error(e);
         const message = e instanceof Error ? e.message : String(e);
@@ -322,6 +319,25 @@ function WalletApp() {
     } catch (e) {
       addLog(`❌ Reset failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
       setStatus('LOCKED_PASSKEY');
+    }
+  };
+
+  // First-run account creation (G-130.1 Task 3) — the deliberate, framed gesture that
+  // replaces the old auto-firing mount-time prompt. The enrollment ceremony itself verifies
+  // the user (userVerification: required), so this single biometric lands straight in the
+  // wallet with no redundant second unlock.
+  const handleCreateAccount = async () => {
+    try {
+      setStatus('UNLOCKING');
+      addLog('📱 Creating your AskMI account on this device…', 'info');
+      await WebAuthnService.registerIdentityKey();
+      addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
+      await loadWalletCredentials();
+      addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
+      setStatus('IDLE');
+    } catch (e) {
+      addLog(`❌ Account creation failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('WELCOME');
     }
   };
 
@@ -1019,6 +1035,7 @@ function WalletApp() {
       {
         IDLE: 'btn-primary--idle',
         LOCKED: 'btn-primary--idle',
+        WELCOME: 'btn-primary--idle',
         LOCKED_PASSKEY: 'btn-primary--idle',
         UNLOCKING: 'btn-primary--evaluating',
         EVALUATING: 'btn-primary--evaluating',
@@ -1052,7 +1069,7 @@ function WalletApp() {
     }
   };
 
-  const isWalletReady = !['LOCKED', 'LOCKED_PASSKEY', 'UNLOCKING'].includes(status);
+  const isWalletReady = !['LOCKED', 'WELCOME', 'LOCKED_PASSKEY', 'UNLOCKING'].includes(status);
 
   return (
     <div className="wallet-app">
@@ -1098,6 +1115,56 @@ function WalletApp() {
           >
             ✅ Accept &amp; Prove
           </button>
+        </div>
+      )}
+
+      {/* First-run Welcome / Account Creation (G-130.1 Task 3) */}
+      {status === 'WELCOME' && (
+        <div className="secure-backdrop" style={{ display: 'flex' }}>
+          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40, maxWidth: 420 }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>👋</div>
+            <h2 style={{ fontSize: 24, marginBottom: 12 }}>Welcome to AskMI</h2>
+            <p style={{ color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 }}>
+              This device becomes your AskMI account. We create one passkey
+              (Fingerprint, Face ID or Windows Hello) and it stays on this device.
+            </p>
+            <ul
+              style={{
+                textAlign: 'left',
+                color: '#cbd5e1',
+                fontSize: 14,
+                lineHeight: 1.7,
+                margin: '0 auto 28px',
+                maxWidth: 320,
+                listStyle: 'none',
+                padding: 0,
+              }}
+            >
+              <li>🔒 No email, no password, no server account</li>
+              <li>📵 Your key never leaves this device</li>
+              <li>🗑️ You can reset and start over any time</li>
+            </ul>
+            <button
+              onClick={handleCreateAccount}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: '#0891b2',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+              }}
+            >
+              Create my AskMI account
+            </button>
+            <p style={{ color: '#64748b', fontSize: 12, marginTop: 16 }}>
+              You&apos;ll be asked for your fingerprint or face once to finish.
+            </p>
+          </div>
         </div>
       )}
 

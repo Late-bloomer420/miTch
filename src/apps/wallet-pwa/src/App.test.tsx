@@ -191,16 +191,34 @@ describe('G-03 — Wallet App', () => {
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
   });
 
-  it('enrolls on first run and lands straight in the wallet — a single biometric ceremony', async () => {
-    // Model A UX: the registration ceremony already verifies the user (userVerification:required),
-    // so first run must NOT immediately demand a second unlock of the same passkey.
+  it('first run shows a framed welcome screen and does NOT auto-fire the passkey ceremony (G-130.1 Task 3)', async () => {
+    // The passkey ceremony must be a deliberate, framed user gesture — never an unexplained
+    // prompt that auto-fires on mount. An unframed surprise prompt felt "suss / scammy" on
+    // real devices; the welcome screen explains the device-bound account BEFORE any biometric.
     const webAuthnServiceMock = vi.mocked(WebAuthnService);
     webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
     webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(false);
 
     render(<App />);
 
-    // Straight into the wallet after enrollment — no second "Wallet Locked" gate.
+    expect(
+      await screen.findByRole('button', { name: /Create my AskMI account/i })
+    ).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerIdentityKey).not.toHaveBeenCalled();
+    expect(screen.queryByText('Age Credential (GovID)')).not.toBeInTheDocument();
+  });
+
+  it('first run enrolls only after the explicit Create-account gesture, then lands in the wallet — one ceremony', async () => {
+    // The enrollment ceremony already verifies the user (userVerification:required), so the
+    // explicit gesture IS the single biometric — no second unlock of the same passkey after it.
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(false);
+
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Create my AskMI account/i }));
+
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
     expect(webAuthnServiceMock.registerIdentityKey).toHaveBeenCalledOnce();
     expect(webAuthnServiceMock.provePresence).not.toHaveBeenCalled();
