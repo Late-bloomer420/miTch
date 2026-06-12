@@ -37,6 +37,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   getRecentAuditLogs: vi.fn().mockReturnValue([]),
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
   resetWallet: vi.fn().mockResolvedValue(undefined),
+  addIssuedCredential: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('./components/SecureZone', () => ({
@@ -295,6 +296,60 @@ describe('G-03 — Wallet App', () => {
     expect(document.getElementById('btn-pharmacy')).not.toBeNull();
     expect(document.getElementById('btn-ehds-er')).not.toBeNull();
     expect(document.getElementById('btn-liquor-store')).not.toBeNull();
+  });
+
+  // G-130.1 Task 2 — Get / Refresh Credential UI ------------------------------
+
+  it('shows an empty-state "Get my credential" CTA when the wallet has no credentials', async () => {
+    // After passkey onboarding a fresh wallet is empty; the user needs a clear way to
+    // acquire their first credential instead of staring at a blank card area.
+    walletServiceMockState.getCredentials.mockResolvedValueOnce([]);
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole('button', { name: /Get my credential/i })
+    ).toBeInTheDocument();
+  });
+
+  it('hides the empty-state and shows a Refresh control once credentials exist, and Refresh re-syncs from the vault', async () => {
+    // Default mock returns one Age Credential → wallet is non-empty.
+    render(<App />);
+
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Get my credential/i })).not.toBeInTheDocument();
+
+    const refreshBtn = screen.getByRole('button', { name: /Refresh/i });
+    const before = walletServiceMockState.getCredentials.mock.calls.length;
+    fireEvent.click(refreshBtn);
+
+    await waitFor(() => {
+      expect(walletServiceMockState.getCredentials.mock.calls.length).toBeGreaterThan(before);
+    });
+  });
+
+  it('empty-state "Get my credential" fetches a credential from the issuer (OID4VCI) and stores it', async () => {
+    // Only the initial load needs to be empty (so the CTA renders); the post-fetch reload
+    // can fall back to the default mock. Using ...Once avoids leaking an override into later tests.
+    walletServiceMockState.getCredentials.mockResolvedValueOnce([]);
+    const vcPayload = btoa(JSON.stringify({ vc: { credentialSubject: { age: 21 } } }));
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ credential: `h.${vcPayload}.s` }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Get my credential/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/credential'),
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(walletServiceMockState.addIssuedCredential).toHaveBeenCalled();
+    });
   });
 
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
