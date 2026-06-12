@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
 
+const useBasicSsl = process.env.ASKMI_DEV_HTTPS !== '0';
+
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), ...(useBasicSsl ? [basicSsl()] : [])],
 
     define: {
         'process.env': {},
