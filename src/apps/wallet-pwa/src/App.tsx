@@ -137,6 +137,9 @@ function WalletApp() {
     'idle'
   );
   const [credentials, setCredentials] = useState<StoredCredentialMetadata[]>([]);
+  // G-130.1 Task 2 — dedicated status for the user-facing Refresh control, kept separate
+  // from `credentialStatus` so refreshing never disturbs the demo issuance button's label.
+  const [refreshStatus, setRefreshStatus] = useState<'idle' | 'refreshing' | 'done'>('idle');
 
   const loadWalletCredentials = async () => {
     try {
@@ -145,6 +148,18 @@ function WalletApp() {
     } catch (e) {
       console.warn('Failed loading credentials', e);
     }
+  };
+
+  // G-130.1 Task 2 — REFRESH: re-sync the visible credential list from the encrypted
+  // vault. Reflects current truth (a single-use credential spent in a presentation, or a
+  // credential issued in another tab) without re-hitting the issuer.
+  const handleRefreshCredentials = async () => {
+    setRefreshStatus('refreshing');
+    addLog('🔄 Refreshing credentials from your device vault…', 'info');
+    await loadWalletCredentials();
+    setRefreshStatus('done');
+    addLog('✅ Credentials up to date.', 'success');
+    setTimeout(() => setRefreshStatus('idle'), 2000);
   };
 
   // Dev affordance (Proof-Randomization U-12): mint the next issued credential
@@ -1315,6 +1330,88 @@ function WalletApp() {
               );
             })}
           </div>
+
+          {/* G-130.1 Task 2 — Get (empty-state) / Refresh user-facing affordances */}
+          {credentials.length === 0 ? (
+            <div
+              className="wallet-empty-state"
+              style={{
+                textAlign: 'center',
+                maxWidth: 400,
+                margin: '8px auto 24px',
+                padding: '28px 24px',
+                background: '#0f172a',
+                border: '1px dashed #1e3a5f',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ fontSize: 44, marginBottom: 8 }}>🪪</div>
+              <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#e2e8f0' }}>
+                No credentials yet
+              </h3>
+              <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.5, margin: '0 0 20px' }}>
+                Get your first verifiable credential, then prove things to verifiers without
+                handing over your personal data.
+              </p>
+              <button
+                onClick={handleFetchCredential}
+                disabled={credentialStatus === 'fetching'}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: '#0891b2',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: credentialStatus === 'fetching' ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+                }}
+              >
+                {credentialStatus === 'fetching'
+                  ? '⏳ Getting your credential…'
+                  : credentialStatus === 'error'
+                    ? '↻ Retry — Get my credential'
+                    : 'Get my credential'}
+              </button>
+            </div>
+          ) : (
+            <div
+              className="wallet-credentials-toolbar"
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                maxWidth: 400,
+                margin: '0 auto 16px',
+              }}
+            >
+              <button
+                onClick={handleRefreshCredentials}
+                disabled={refreshStatus === 'refreshing'}
+                aria-label="Refresh credentials"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  background: 'transparent',
+                  color: refreshStatus === 'done' ? '#86efac' : '#7dd3fc',
+                  border: `1px solid ${refreshStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: refreshStatus === 'refreshing' ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {refreshStatus === 'refreshing'
+                  ? '🔄 Refreshing…'
+                  : refreshStatus === 'done'
+                    ? '✅ Up to date'
+                    : '🔄 Refresh'}
+              </button>
+            </div>
+          )}
 
           {/* OID4VCI: fetch credential from issuer-mock */}
           <button
