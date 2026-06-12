@@ -307,6 +307,7 @@ export interface DecisionCapsule {
     request_hash: string; // SHA-256 of VerifierRequest
     policy_hash: string; // SHA-256 of PolicyManifest used
     verifier_did: string;
+    service_endpoint?: string;
 
     /** T-88: Ephemeral Key (JWK) for Zero-Backend sessions */
     ephemeral_key?: JsonWebKey;

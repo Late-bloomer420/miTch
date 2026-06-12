@@ -436,3 +436,18 @@ describe('engine.ts — ephemeralResponseKey export', () => {
         exportSpy.mockRestore();
     });
 });
+
+describe('engine.ts — DecisionCapsule transport endpoint binding', () => {
+    it('binds serviceEndpoint into the decision capsule before signing', async () => {
+        const engine = new PolicyEngine();
+        const result = await engine.evaluate(
+            makeRequest({ serviceEndpoint: 'https://verifier.example/present' }),
+            ctx(),
+            [makeCredential()],
+            makePolicy()
+        );
+
+        expect(result.verdict).toBe('ALLOW');
+        expect(result.decisionCapsule?.service_endpoint).toBe('https://verifier.example/present');
+    });
+});

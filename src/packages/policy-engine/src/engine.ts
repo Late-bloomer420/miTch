@@ -717,6 +717,7 @@ export class PolicyEngine {
                 request_hash: requestHash,
                 policy_hash: policyHash,
                 verifier_did: request.verifierId,
+                service_endpoint: request.serviceEndpoint,
                 authorized_requirements: authorizedRequirements,
                 nonce: request.nonce || crypto.randomUUID(), // Propagate Verifier Nonce or generate internal one
                 audience: 'askmi-wallet-pwa',

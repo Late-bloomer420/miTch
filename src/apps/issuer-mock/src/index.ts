@@ -11,14 +11,16 @@ const allowedOrigins = new Set([
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
+    'http://localhost:4173',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5175',
+    'http://127.0.0.1:4173',
 ]);
 // Restrictive CORS for local wallet development only
 app.use(cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) {
+        if (!origin || allowedOrigins.has(origin) || /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(origin)) {
             return callback(null, true);
         }
         return callback(new Error('Origin not allowed by issuer-mock CORS policy'));
