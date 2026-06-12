@@ -977,7 +977,7 @@ function WalletApp() {
     setCredentialStatus('fetching');
     addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
     try {
-      const res = await fetch('http://localhost:3005/credential', {
+      const res = await fetch(`${CONFIG.ISSUER_ENDPOINT}/credential`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -364,6 +364,40 @@ async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
   return key;
 }
 
+async function fetchVerifierPublicKeyFromServiceEndpoint(
+  did: string,
+  serviceEndpoint: string
+): Promise<CryptoKey> {
+  const didUrl = new URL(serviceEndpoint);
+  didUrl.pathname = '/did.json';
+  didUrl.search = '';
+  didUrl.hash = '';
+
+  const response = await fetch(didUrl.toString());
+  if (!response.ok) {
+    throw new Error(`DID_RESOLUTION_FAILED: ${did} — HTTP ${response.status} from ${didUrl}`);
+  }
+
+  const didDocument = (await response.json()) as {
+    verificationMethod?: Array<{ publicKeyJwk?: JsonWebKey }>;
+  };
+  const vm = didDocument.verificationMethod?.[0];
+  if (!vm?.publicKeyJwk) {
+    throw new Error(`DID_DOCUMENT_INVALID: Missing publicKeyJwk in ${didUrl}`);
+  }
+
+  const algorithm = detectKeyAlgorithm(vm.publicKeyJwk);
+  const key = await getSubtle().importKey('jwk', vm.publicKeyJwk, algorithm, true, [
+    'encrypt',
+    'wrapKey',
+  ]);
+
+  keyCache.set(did, { key, expires: Date.now() + CACHE_TTL_MS });
+  console.log(`🔑 Cached public key for ${did} via ${didUrl}`);
+
+  return key;
+}
+
 export class WalletService {
   private storage: SecureStorage | null = null;
   private auditLog: AuditLog;
@@ -1247,7 +1281,16 @@ export class WalletService {
       }
     } else {
       // Standard Mode: We resolve the DID to get the key.
-      targetPubKey = await fetchVerifierPublicKey(transportDid);
+      try {
+        targetPubKey = await fetchVerifierPublicKey(transportDid);
+      } catch (error) {
+        if (!capsule.service_endpoint) throw error;
+        logs.push(`⚠️ DID resolver unavailable; resolving verifier key via service endpoint.`);
+        targetPubKey = await fetchVerifierPublicKeyFromServiceEndpoint(
+          transportDid,
+          capsule.service_endpoint
+        );
+      }
     }
 
     await this.auditLog.append('KEY_CREATED', 'ephemeral-session-key', {
