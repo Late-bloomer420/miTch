@@ -54,11 +54,11 @@ $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
 
 Start-Sleep -Milliseconds 800
 
-# Verifier-Frontend optional
-if (Test-Path "verifier-demo\frontend\package.json") {
+# Verifier-Frontend optional (forced to 5175 — its vite.config defaults to 5174 and would collide with the wallet)
+if (Test-Path "src\apps\verifier-demo\frontend\package.json") {
   Write-Color "▶  Starting Verifier-Frontend (port 5175)..." Yellow
   $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-    "cd verifier-demo\frontend; pnpm dev" `
+    "Write-Host '[Verifier-UI]' -ForegroundColor Yellow -NoNewline; Set-Location 'src\apps\verifier-demo\frontend'; pnpm dev -- --port 5175 --strictPort" `
     -PassThru
 }
 
@@ -70,7 +70,7 @@ Write-Host ""
 Write-Color "  ●  Issuer-Mock        →  http://localhost:3005" Cyan
 Write-Color "  ●  Verifier-Backend   →  http://localhost:3004" Magenta
 Write-Color "  ●  Wallet PWA         →  http://localhost:5174  ← Start here" Green
-if (Test-Path "verifier-demo\frontend\package.json") {
+if (Test-Path "src\apps\verifier-demo\frontend\package.json") {
   Write-Color "  ●  Verifier-Frontend  →  http://localhost:5175" Yellow
 }
 Write-Host ""
