@@ -36,6 +36,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   savePolicy: vi.fn(),
   getRecentAuditLogs: vi.fn().mockReturnValue([]),
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
+  resetWallet: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('./components/SecureZone', () => ({
@@ -62,7 +63,10 @@ vi.mock('@askmi/shared-crypto', async () => {
     WebAuthnService: {
       isAvailable: vi.fn().mockResolvedValue(false),
       isRegistered: vi.fn().mockResolvedValue(false),
+      isIdentityRegistered: vi.fn().mockResolvedValue(false),
       registerPasskey: vi.fn().mockResolvedValue(undefined),
+      registerIdentityKey: vi.fn().mockResolvedValue(undefined),
+      clearRegistration: vi.fn().mockResolvedValue(undefined),
       provePresence: vi.fn().mockResolvedValue('proof'),
       provePresenceDetailed: vi.fn().mockResolvedValue({ signature: 'proof-signature' }),
     },
@@ -88,6 +92,7 @@ vi.mock('./services/WalletService', () => {
 });
 
 import App from './App';
+import { WebAuthnService } from '@askmi/shared-crypto';
 
 function makePromptResult(verdict: PolicyEvaluationResult['verdict']): PolicyEvaluationResult {
   return {
@@ -184,6 +189,92 @@ describe('G-03 — Wallet App', () => {
   it('renders credential card with Age Credential', async () => {
     render(<App />);
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+  });
+
+  it('first run shows a framed welcome screen and does NOT auto-fire the passkey ceremony (G-130.1 Task 3)', async () => {
+    // The passkey ceremony must be a deliberate, framed user gesture — never an unexplained
+    // prompt that auto-fires on mount. An unframed surprise prompt felt "suss / scammy" on
+    // real devices; the welcome screen explains the device-bound account BEFORE any biometric.
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(false);
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole('button', { name: /Create my AskMI account/i })
+    ).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerIdentityKey).not.toHaveBeenCalled();
+    expect(screen.queryByText('Age Credential (GovID)')).not.toBeInTheDocument();
+  });
+
+  it('first run enrolls only after the explicit Create-account gesture, then lands in the wallet — one ceremony', async () => {
+    // The enrollment ceremony already verifies the user (userVerification:required), so the
+    // explicit gesture IS the single biometric — no second unlock of the same passkey after it.
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(false);
+
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Create my AskMI account/i }));
+
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerIdentityKey).toHaveBeenCalledOnce();
+    expect(webAuthnServiceMock.provePresence).not.toHaveBeenCalled();
+    expect(screen.queryByText('Wallet Locked')).not.toBeInTheDocument();
+  });
+
+  it('returning device with an existing identity is locked until a single unlock', async () => {
+    // Model A guarantee: returning device reuses its identity (no re-enroll) and is gated
+    // behind exactly one unlock ceremony before any credential is shown.
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true);
+
+    render(<App />);
+
+    expect(await screen.findByText('Wallet Locked')).toBeInTheDocument();
+    expect(webAuthnServiceMock.registerIdentityKey).not.toHaveBeenCalled();
+    expect(webAuthnServiceMock.registerPasskey).not.toHaveBeenCalled();
+    expect(screen.queryByText('Age Credential (GovID)')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Unlock with Biometrics/i }));
+
+    expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+    expect(webAuthnServiceMock.provePresence).toHaveBeenCalledWith('AskMI-wallet-unlock');
+  });
+
+  it('Reset Wallet wipes the vault and unlinks the device passkey (explicit escape hatch)', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true); // returning → locked screen
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+
+    await screen.findByText('Wallet Locked');
+    fireEvent.click(screen.getByRole('button', { name: /Reset Wallet/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.resetWallet).toHaveBeenCalledOnce();
+      expect(webAuthnServiceMock.clearRegistration).toHaveBeenCalledOnce();
+    });
+  });
+
+  it('Reset Wallet does nothing if the user cancels the confirmation', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<App />);
+
+    await screen.findByText('Wallet Locked');
+    fireEvent.click(screen.getByRole('button', { name: /Reset Wallet/i }));
+
+    expect(walletServiceMockState.resetWallet).not.toHaveBeenCalled();
+    expect(webAuthnServiceMock.clearRegistration).not.toHaveBeenCalled();
   });
 
   it('renders the primary action button', () => {

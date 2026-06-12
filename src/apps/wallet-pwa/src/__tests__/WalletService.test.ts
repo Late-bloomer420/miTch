@@ -31,6 +31,39 @@ describe('WalletService — Initialization', () => {
     // Must not throw or cause any error on re-call
     await expect(wallet.initialize(PIN, SALT)).resolves.not.toThrow();
   });
+
+  it('recovers from a transient init failure WITHOUT auto-wiping the vault (Model A)', async () => {
+    // A transient storage hiccup must never silently destroy the user's credentials.
+    // The wallet retries, but the vault is only ever wiped via an explicit user action.
+    const resetSpy = vi.spyOn(SecureStorage, 'reset');
+    const initSpy = vi.spyOn(SecureStorage, 'init');
+    initSpy.mockRejectedValueOnce(new Error('transient IndexedDB hiccup'));
+
+    const wallet = makeWallet();
+    await expect(wallet.initialize(PIN, SALT)).resolves.not.toThrow();
+
+    expect(resetSpy).not.toHaveBeenCalled();
+
+    resetSpy.mockRestore();
+    initSpy.mockRestore();
+  });
+
+  it('resetWallet() explicitly wipes the vault and allows a fresh re-initialization', async () => {
+    // The explicit escape hatch: the only sanctioned way to clear the vault.
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const resetSpy = vi.spyOn(SecureStorage, 'reset');
+    await wallet.resetWallet();
+    expect(resetSpy).toHaveBeenCalledOnce();
+
+    // After an explicit reset, initialize() runs fresh again (not a no-op).
+    await expect(wallet.initialize(PIN, SALT)).resolves.not.toThrow();
+    const creds = await wallet.getCredentials();
+    expect(creds.length).toBeGreaterThan(0); // re-seeded from clean slate
+
+    resetSpy.mockRestore();
+  });
 });
 
 describe('WalletService — Credential Store / Retrieve', () => {
@@ -325,10 +358,16 @@ describe('WalletService — AES-256-GCM Encryption Roundtrip', () => {
     expect(true).toBe(true);
   });
 
-  it('wallet with different PIN still initializes independently', async () => {
+  it('a different PIN derives an independent vault only after an explicit reset (Model A)', async () => {
+    // Model A: storage is single-vault. A second identity must NOT silently take over
+    // (and destroy) an existing vault — switching identity requires an explicit reset.
+    // PBKDF2 derivation working for distinct PINs is what we verify here.
+    await SecureStorage.reset();
     const wallet1 = makeWallet();
-    const wallet2 = makeWallet();
     await wallet1.initialize('pin-aaa', SALT);
+
+    await SecureStorage.reset();
+    const wallet2 = makeWallet();
     await wallet2.initialize('pin-bbb', SALT);
     expect(true).toBe(true);
   });

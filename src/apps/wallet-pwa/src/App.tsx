@@ -40,6 +40,17 @@ import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
 
+type WalletStatus =
+  | 'LOCKED'
+  | 'WELCOME'
+  | 'LOCKED_PASSKEY'
+  | 'UNLOCKING'
+  | 'IDLE'
+  | 'EVALUATING'
+  | 'PROVING'
+  | 'SHREDDED'
+  | 'DENIED';
+
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
     id: 1,
@@ -101,7 +112,7 @@ function WalletApp() {
     document.title = 'AskMI Wallet';
   }, []);
 
-  const [status, setStatus] = useState<string>('LOCKED');
+  const [status, setStatus] = useState<WalletStatus>('LOCKED');
   const [logs, setLogs] = useState<string[]>([]);
   const [evaluationResult, setEvaluationResult] = useState<PolicyEvaluationResult | null>(null);
   const [showConsent, setShowConsent] = useState(false);
@@ -232,6 +243,10 @@ function WalletApp() {
   }, [logs]);
 
   // Auto-init for Demo
+  // Holds the latest bootstrap routine so an explicit reset can re-run first-run
+  // enrollment in place (no full page reload).
+  const bootstrapRef = useRef<() => Promise<void>>(async () => {});
+
   useEffect(() => {
     const init = async () => {
       addLog('🔐 Initializing Wallet Service...', 'info');
@@ -240,31 +255,91 @@ function WalletApp() {
         addLog('🔓 Wallet Decrypted & Ready', 'success');
         setCurrentPolicy(walletRef.current.getPolicy());
 
+        let nextStatus: WalletStatus = 'IDLE';
         try {
+          // Model A — the passkey IS the account. A single device-bound platform
+          // identity key is registered once on first run; it persists across reloads
+          // (passkeyDb), so the wallet never treats a returning device as a new user.
           const isAvailable = await WebAuthnService.isAvailable();
-          const isRegistered = await WebAuthnService.isRegistered();
-          if (isAvailable && !isRegistered) {
-            addLog('📱 No Passkey found. Attempting Auto-Registration...', 'info');
-            await WebAuthnService.registerPasskey();
-            addLog('✅ Passkey (Platform Authenticator) registered automatically.', 'success');
+          const hasIdentity = await WebAuthnService.isIdentityRegistered();
+          if (isAvailable && !hasIdentity) {
+            // First run (G-130.1 Task 3): do NOT auto-fire the registration ceremony.
+            // A surprise biometric prompt with no framing reads as a scam. Show a welcome
+            // screen first; enrollment runs only on the explicit "Create account" gesture.
+            addLog('👋 First run on this device — welcome.', 'info');
+            nextStatus = 'WELCOME';
+          } else if (isAvailable && hasIdentity) {
+            // RETURNING device: reuse the existing identity (no re-enroll), gated behind
+            // exactly one unlock ceremony before any credential is shown.
+            addLog('🔒 Passkey unlock required before presentation flow.', 'info');
+            nextStatus = 'LOCKED_PASSKEY';
+          } else {
+            addLog('⚠️ Platform Passkey unavailable; demo fallback unlocked locally.', 'warning');
+            nextStatus = 'IDLE';
           }
         } catch (authError) {
           addLog(
-            `⚠️  Passkey auto-registration skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
+            `⚠️  Passkey check skipped: ${authError instanceof Error ? authError.message : String(authError)}`,
             'warning'
           );
         }
 
         await loadWalletCredentials();
-        setStatus('IDLE');
+        setStatus(nextStatus);
       } catch (e) {
         console.error(e);
         const message = e instanceof Error ? e.message : String(e);
         addLog(`❌ Init Failed: ${message || 'Unknown error'}`, 'error');
       }
     };
+    bootstrapRef.current = init;
     init();
   }, []);
+
+  // Explicit, user-initiated reset — the only sanctioned way to wipe the wallet.
+  // Clears the encrypted vault AND the device passkey/identity meta, then re-runs
+  // bootstrap so the device starts fresh (first-run enrollment).
+  const handleResetWallet = async () => {
+    const confirmed =
+      typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm(
+            'Reset this wallet?\n\nThis permanently clears all stored credentials and unlinks the device passkey from AskMI. You will start over as a new device. This cannot be undone.'
+          )
+        : true;
+    if (!confirmed) return;
+    try {
+      setStatus('UNLOCKING');
+      addLog('♻️ Resetting wallet (explicit user action)…', 'warning');
+      await walletRef.current.resetWallet();
+      await WebAuthnService.clearRegistration();
+      setCredentials([]);
+      setEvaluationResult(null);
+      setStatus('LOCKED');
+      await bootstrapRef.current();
+    } catch (e) {
+      addLog(`❌ Reset failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('LOCKED_PASSKEY');
+    }
+  };
+
+  // First-run account creation (G-130.1 Task 3) — the deliberate, framed gesture that
+  // replaces the old auto-firing mount-time prompt. The enrollment ceremony itself verifies
+  // the user (userVerification: required), so this single biometric lands straight in the
+  // wallet with no redundant second unlock.
+  const handleCreateAccount = async () => {
+    try {
+      setStatus('UNLOCKING');
+      addLog('📱 Creating your AskMI account on this device…', 'info');
+      await WebAuthnService.registerIdentityKey();
+      addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
+      await loadWalletCredentials();
+      addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
+      setStatus('IDLE');
+    } catch (e) {
+      addLog(`❌ Account creation failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      setStatus('WELCOME');
+    }
+  };
 
   const handlePasskeyUnlock = async () => {
     try {
@@ -960,6 +1035,9 @@ function WalletApp() {
       {
         IDLE: 'btn-primary--idle',
         LOCKED: 'btn-primary--idle',
+        WELCOME: 'btn-primary--idle',
+        LOCKED_PASSKEY: 'btn-primary--idle',
+        UNLOCKING: 'btn-primary--evaluating',
         EVALUATING: 'btn-primary--evaluating',
         PROVING: 'btn-primary--proving',
         SHREDDED: 'btn-primary--shredded',
@@ -991,6 +1069,8 @@ function WalletApp() {
     }
   };
 
+  const isWalletReady = !['LOCKED', 'WELCOME', 'LOCKED_PASSKEY', 'UNLOCKING'].includes(status);
+
   return (
     <div className="wallet-app">
       <h1 className="wallet-title">
@@ -1020,7 +1100,7 @@ function WalletApp() {
           </div>
           <button
             onClick={() => handleIncomingOID4VP()}
-            disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+            disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
             style={{
               background: '#0891b2',
               color: '#fff',
@@ -1038,6 +1118,56 @@ function WalletApp() {
         </div>
       )}
 
+      {/* First-run Welcome / Account Creation (G-130.1 Task 3) */}
+      {status === 'WELCOME' && (
+        <div className="secure-backdrop" style={{ display: 'flex' }}>
+          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40, maxWidth: 420 }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>👋</div>
+            <h2 style={{ fontSize: 24, marginBottom: 12 }}>Welcome to AskMI</h2>
+            <p style={{ color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 }}>
+              This device becomes your AskMI account. We create one passkey
+              (Fingerprint, Face ID or Windows Hello) and it stays on this device.
+            </p>
+            <ul
+              style={{
+                textAlign: 'left',
+                color: '#cbd5e1',
+                fontSize: 14,
+                lineHeight: 1.7,
+                margin: '0 auto 28px',
+                maxWidth: 320,
+                listStyle: 'none',
+                padding: 0,
+              }}
+            >
+              <li>🔒 No email, no password, no server account</li>
+              <li>📵 Your key never leaves this device</li>
+              <li>🗑️ You can reset and start over any time</li>
+            </ul>
+            <button
+              onClick={handleCreateAccount}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: '#0891b2',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px 0 rgba(8, 145, 178, 0.39)',
+              }}
+            >
+              Create my AskMI account
+            </button>
+            <p style={{ color: '#64748b', fontSize: 12, marginTop: 16 }}>
+              You&apos;ll be asked for your fingerprint or face once to finish.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Passkey Unlock State */}
       {status === 'LOCKED_PASSKEY' && (
         <div className="secure-backdrop" style={{ display: 'flex' }}>
@@ -1045,8 +1175,8 @@ function WalletApp() {
             <div style={{ fontSize: 64, marginBottom: 20 }}>🔐</div>
             <h2 style={{ fontSize: 24, marginBottom: 12 }}>Wallet Locked</h2>
             <p style={{ color: '#94a3b8', marginBottom: 32 }}>
-              Use your Passkey (Fingerprint, Face ID or Windows Hello) to securely unlock your AskMI
-              Wallet.
+              Use your Passkey (Fingerprint, Face ID or Windows Hello) to unlock your AskMI Wallet
+              before any credential is shown or presented.
             </p>
             <button
               onClick={handlePasskeyUnlock}
@@ -1065,33 +1195,26 @@ function WalletApp() {
             >
               Unlock with Biometrics
             </button>
-            <div style={{ marginTop: 24 }}>
-              <button
-                onClick={async () => {
-                  await walletRef.current.initialize('123456');
-                  setCurrentPolicy(walletRef.current.getPolicy());
-                  await loadWalletCredentials();
-                  setStatus('IDLE');
-                  addLog('🔓 Fallback: Unlocked via PIN', 'warning');
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#64748b',
-                  fontSize: 13,
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                }}
-              >
-                Use PIN instead
-              </button>
-            </div>
+            <button
+              onClick={handleResetWallet}
+              style={{
+                marginTop: 18,
+                background: 'none',
+                border: 'none',
+                color: '#64748b',
+                fontSize: 13,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+              }}
+            >
+              Reset Wallet (start over as new device)
+            </button>
           </div>
         </div>
       )}
 
       {/* UX-03: Dynamic Premium Credential Cards */}
-      {status !== 'LOCKED' ? (
+      {isWalletReady ? (
         <>
           <div className="credential-card-list">
             {credentials.map((cred) => {
@@ -1440,7 +1563,7 @@ function WalletApp() {
             handleProveAge();
           }
         }}
-        disabled={status === 'EVALUATING' || status === 'PROVING' || status === 'LOCKED'}
+        disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
         className={getPrimaryBtnClass()}
       >
         {getPrimaryBtnLabel()}
@@ -1507,6 +1630,25 @@ function WalletApp() {
           </div>
         )}
       </div>
+
+      {isWalletReady && (
+        <div className="wallet-section" style={{ marginTop: 10, textAlign: 'center' }}>
+          <button
+            onClick={handleResetWallet}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              fontSize: 13,
+              borderRadius: 10,
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            ♻️ Reset Wallet (start over as new device)
+          </button>
+        </div>
+      )}
 
       <div className="wallet-section" style={{ marginBottom: 20 }}>
         {currentPolicy && (

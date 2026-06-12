@@ -507,20 +507,10 @@ export class WalletService {
       } catch (err) {
         if (!retried) {
           retried = true;
-          console.warn('[WalletService] Init failed. Resetting storage and retrying...', err);
-          try {
-            if (
-              typeof (SecureStorage as unknown as { reset?: () => Promise<void> }).reset ===
-              'function'
-            ) {
-              await (SecureStorage as unknown as { reset: () => Promise<void> }).reset();
-            }
-          } catch (resetErr) {
-            console.warn(
-              '[WalletService] Storage reset failed. Retrying without reset...',
-              resetErr
-            );
-          }
+          // Model A: NEVER auto-wipe the vault on a transient init failure — that
+          // silently destroys the user's credentials. Retry without reset; the vault
+          // is only ever cleared via an explicit user action (resetWallet()).
+          console.warn('[WalletService] Init failed. Retrying without wiping storage...', err);
           await run();
           return;
         }
@@ -1804,6 +1794,25 @@ export class WalletService {
   async deleteCredential(id: string): Promise<boolean> {
     if (!this.storage) throw new Error('Wallet locked');
     return this.storage.delete(id);
+  }
+
+  /**
+   * Explicit, user-initiated wallet reset — the ONLY sanctioned way to wipe the
+   * vault (init never auto-wipes; see Model A). Clears the encrypted store and
+   * resets in-memory state so a subsequent initialize() re-seeds from a clean slate.
+   * The device passkey/identity meta is cleared separately at the UI layer
+   * (WebAuthnService.clearRegistration) so the next start re-enrolls.
+   */
+  async resetWallet(): Promise<void> {
+    await SecureStorage.reset();
+    this.storage = null;
+    this.policyEngine = null;
+    this.policyManifest = null;
+    this.policyPublicKey = null;
+    this.policyPrivateKey = null;
+    this.holderKeys.clear();
+    this.initPromise = null;
+    this.initialized = false;
   }
 
   /**
