@@ -14,6 +14,7 @@
     "build:topo": "pnpm -r --filter ./src/packages/* --sort build",
     "build:all": "pnpm -r --filter ./src/packages/* build && pnpm -r --filter ./src/apps/* build",
     "dev:wallet": "pnpm --filter @askmi/wallet-pwa dev",
+    "preview:wallet:public": "powershell -ExecutionPolicy Bypass -File scripts/wallet-public-preview.ps1",
     "dev:issuer": "pnpm --filter @askmi/issuer-mock dev",
     "dev:verifier": "pnpm --filter verifier-backend dev",
     "demo": "bash dev-demo.sh",

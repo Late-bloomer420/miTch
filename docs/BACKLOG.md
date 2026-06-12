@@ -8,6 +8,8 @@
 
 **Update 2026-06-11:** EPIC G-100 P0-Block **geschlossen** — G-100.2 (Contract, PR #98), G-100.1 (asOf-Determinismus, PR #99), G-100.6 (verifier-browser archiviert + Import-Guard, PR #100) alle ✅ auf `master`. Neu: G-100.7 (flaky anti-oracle Timing-Test). Offen bleibt G-100.4 (Correlation IDs), G-100.5 (#97 EUDI-Interop/mdoc-AV+ZKP, deferred) und G-130.1 (Passkey-Onboarding als erzwungener Default, laufender Branch `feature/g130-passkey-default-onboarding`).
 
+**Update 2026-06-12:** G-130.1 ist auf `master` geschlossen: Passkey-Onboarding als Default via PR #103, danach nutzbarer Empty-Wallet-GET + Refresh-Follow-up via PR #104. Fuer mobile Tests ist der stabile Public-Preview-Pfad jetzt `pnpm run preview:wallet:public` (Production Preview + Cloudflare Quick Tunnel), nicht der Vite-Devserver.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -101,7 +103,7 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-130.1 | 🔴 P0 | ⏳ | Passkey-Onboarding als erzwungener Default vor Wallet-/Presentation-Nutzung; bei WebAuthn-fähigem Gerät wird ein fehlender Passkey zuerst registriert und danach für den Unlock verlangt. | Wallet startet nicht offen; Demo-Flow ist erst nach Passkey-Unlock bedienbar |
+| G-130.1 | 🔴 P0 | ✅ | Passkey-Onboarding als erzwungener Default vor Wallet-/Presentation-Nutzung; bei WebAuthn-fähigem Gerät wird ein fehlender Passkey zuerst registriert und danach für den Unlock verlangt. **PR #103**. Follow-up **PR #104** ergänzt Empty-Wallet-GET und Refresh, damit der erste Credential-Erwerb nach Unlock nicht im leeren Wallet endet. | Wallet startet nicht offen; Demo-Flow ist erst nach Passkey-Unlock bedienbar; Empty Wallet hat eine echte GET-CTA; Refresh synchronisiert aus dem Vault |
 | G-130.2 | 🟡 P1 | ⏳ | Recovery/Fallback UX (device unavailable) | Klarer Fallback ohne Dead-End |
 
 ### EPIC G-140 — Consent & Disclosure UX
