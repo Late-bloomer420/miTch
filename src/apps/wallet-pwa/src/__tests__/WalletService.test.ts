@@ -602,3 +602,81 @@ describe('WalletService — Identity Firewall Audit Events', () => {
     expect(JSON.stringify(entries[0].metadata)).not.toContain('raw-value');
   });
 });
+
+describe('WalletService — Layer-2 visibility (G-140 PR1): log all requested claims', () => {
+  const VERIFIER = 'did:askmi:overask-test';
+
+  // Policy that allows ONLY `age` for VERIFIER, so any extra requested claim is over-asking.
+  function withOverAskRule(base: PolicyManifest): PolicyManifest {
+    return {
+      ...base,
+      rules: [
+        {
+          id: 'overask-rule',
+          verifierPattern: VERIFIER,
+          allowedClaims: ['age'],
+          provenClaims: [],
+          requiresTrustedIssuer: false,
+          priority: 100,
+          requiresUserConsent: false,
+        },
+        ...base.rules,
+      ],
+      globalSettings: { ...base.globalSettings, blockUnknownVerifiers: false },
+    };
+  }
+
+  function findDisclosureDecision(wallet: WalletService) {
+    return wallet
+      .getRecentAuditLogs(20)
+      .find(
+        (e) =>
+          e.action === 'POLICY_EVALUATED' &&
+          (e.metadata as Record<string, unknown> | undefined)?.['requested_claims'] !== undefined
+      );
+  }
+
+  it('logs every raw requested claim — including over-asked ones — on evaluateRequest', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    wallet.savePolicy(withOverAskRule(wallet.getPolicy()));
+
+    await wallet.evaluateRequest(
+      {
+        verifierId: VERIFIER,
+        nonce: crypto.randomUUID(),
+        requirements: [{ credentialType: 'AgeCredential', requestedClaims: ['age', 'salary'] }],
+      },
+      { userAgent: 'test', timestamp: Date.now() }
+    );
+
+    const decision = findDisclosureDecision(wallet);
+    expect(decision, 'expected a POLICY_EVALUATED entry carrying requested_claims').toBeDefined();
+    const meta = decision!.metadata as Record<string, unknown>;
+    expect(meta['requested_claims']).toContain('age');
+    // The over-asked claim must be visible, not silently stripped by the policy:
+    expect(meta['requested_claims']).toContain('salary');
+    expect(meta['denied_claims']).toContain('salary');
+    expect(meta['verifier_did']).toBe(VERIFIER);
+    expect(['ALLOW', 'DENY', 'PROMPT']).toContain(meta['verdict']);
+  });
+
+  it('a DENY verdict still produces a disclosure-decision audit event (gap B)', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    // Request a credential type the wallet does not hold -> DENY (no VP_GENERATED today).
+    await wallet.evaluateRequest(
+      {
+        verifierId: 'did:askmi:deny-test',
+        nonce: crypto.randomUUID(),
+        requirements: [{ credentialType: 'NonExistentCredential', requestedClaims: ['secret'] }],
+      },
+      { userAgent: 'test', timestamp: Date.now() }
+    );
+
+    const decision = findDisclosureDecision(wallet);
+    expect(decision, 'a DENY must still emit a disclosure-decision audit event').toBeDefined();
+    expect((decision!.metadata as Record<string, unknown>)['requested_claims']).toContain('secret');
+  });
+});
