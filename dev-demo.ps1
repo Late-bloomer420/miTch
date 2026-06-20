@@ -58,7 +58,7 @@ Start-Sleep -Milliseconds 800
 if (Test-Path "src\apps\verifier-demo\frontend\package.json") {
   Write-Color "▶  Starting Verifier-Frontend (port 5175)..." Yellow
   $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-    "Write-Host '[Verifier-UI]' -ForegroundColor Yellow -NoNewline; Set-Location 'src\apps\verifier-demo\frontend'; pnpm dev -- --port 5175 --strictPort" `
+    "Write-Host '[Verifier-UI]' -ForegroundColor Yellow -NoNewline; Set-Location 'src\apps\verifier-demo\frontend'; `$env:VERIFIER_BACKEND_PORT='3004'; pnpm dev -- --port 5175 --strictPort" `
     -PassThru
 }
 
