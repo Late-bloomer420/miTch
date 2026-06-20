@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-07
+**Date:** 2026-06-20 (truth-alignment pass, H-10)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `fb879cc` (PR #81 merged)
+**Current master:** `20478f0` (PR #104 merged) — *was `fb879cc`/PR #81 at the 2026-06-07 snapshot; PRs #82–#104 landed since (see "Recent additions since PR #81" below).*
 
 ---
 
@@ -41,6 +41,13 @@
 - **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.askmi.demo` domains.
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+
+### Recent additions (since PR #81 → master `20478f0`/PR #104, 2026-06-08 … 2026-06-20)
+- **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), `asOf`-determinism root-cause fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102). Authoritative tracking in [`docs/BACKLOG.md`](docs/BACKLOG.md).
+- **Phase-1 Unlinkability / Proof-Randomization sprint (#83–#96):** single-use credential boundary at issuance (#91), batch issuance with ephemeral holder binding (C2, #92), KB-JWT proof-of-possession gate on verifier `/present` (C1, #94), `brainpoolP512r1` (#90), honest single-use DataFlow display (#88/#96), IndexedDB teardown-deadlock fix (#93). BBS+ (U-10–U-13 remainder) remains deferred.
+- **G-130.1 Passkey-first onboarding landed (#103, #104):** device-bound passkey = account, durable vault, enforced unlock as default, first-run welcome + explicit Reset escape hatch, user-facing Get/Refresh credential UI. (Updates the Video-Gap epic row that still read ⏳; see BACKLOG note.)
+- **"Capsule signature verification failures" RESOLVED (2026-06-18):** root-caused as an incomplete AskMI↔miTch rebrand (DID-namespace + package-scope drift), **not** a crypto defect. `did:mitch`/`@mitch/*` now 0 in `src/`, `guard:rebrand` passes. Verified live: all 4 demo servers up, `POST /wallet-present` returns real disclosed claims for liquor-store/doctor-login/ehds-er/pharmacy and a correct `REVOKED` 403. Evidence: [`docs/qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](docs/qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md). Standalone 4-window dev launcher `start-4-servers.ps1` added at repo root.
+- **Full suite re-verified 2026-06-20:** `pnpm test` → **46/46 turbo test tasks green**. Directly re-run package counts this pass: shared-crypto 266, verifier-sdk 59, integration-tests 54, verifier-demo backend 96.
 
 ### Recent additions (since Session 16, post full-rebrand — 2026-06-05/06)
 Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct commits to `master`. Plan of record: [`docs/EXECUTION_PLAN_epic4-5.md`](docs/EXECUTION_PLAN_epic4-5.md).
