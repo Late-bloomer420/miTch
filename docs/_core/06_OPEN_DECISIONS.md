@@ -14,8 +14,11 @@
 | **B only** | User-Side Selbstkenntnis-Schicht | Direkter Nutzernutzen | Schwieriges Business Model |
 | **A+B** | Beide parallel | Vollständiger Ansatz | Überdehnung, zu wenig Fokus |
 
-**Status: Nicht entschieden.**  
-Empfehlung: Produkt A zuerst (Revenue, regulierte Märkte) — Produkt B als strategische Option sobald A stabil.
+**Status: ENTSCHIEDEN (2026-06-15): A **und** B parallel.**  
+Verifier-Side Compliance-as-a-Service (A) *und* User-Side Selbstkenntnis/Sichtbarmachung (B).
+Erster konkreter B-Schritt: Layer-2-Visibility (neutrale, lokale Sichtbarmachung), siehe
+[`08_EU_BOUNDARIES.md`](08_EU_BOUNDARIES.md).
+*(Vorherige Empfehlung war „A zuerst" — vom Nutzer überstimmt zugunsten A+B.)*
 
 ---
 
@@ -26,8 +29,12 @@ Empfehlung: Produkt A zuerst (Revenue, regulierte Märkte) — Produkt B als str
 - Option A: Age Verification ist Beachhead (konkurriert mit EU-App = verliert)
 - Option B: miTch ist der **Policy Layer über** der EU-App (EU-App = Zulieferer, miTch = Enforcement)
 
-**Status: Nicht formal entschieden.**  
-Empfehlung: Option B. Die EU-App löst `age_over_X`. miTch löst "was darf der Verifier danach."
+**Status: GEKLÄRT (2026-06-15): daneben, nicht darüber/dagegen.**  
+miTch konkurriert nicht mit der EU-App und positioniert sich auch nicht als Hierarchie *über* ihr,
+sondern **daneben**: es ergänzt die proven EU-Schienen (EUDI Wallet, EU Age App, EU Business Wallet)
+genau dort, wo sie strukturell aufhören (Zweckbindung/Enforcement + neutrale Sichtbarmachung *nach*
+der Offenlegung). Voraussetzung: die exakten Grenzen der EU-Systeme stehen belegt fest →
+[`08_EU_BOUNDARIES.md`](08_EU_BOUNDARIES.md) (das Fundament).
 
 ---
 

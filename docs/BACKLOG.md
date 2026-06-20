@@ -8,6 +8,8 @@
 
 **Update 2026-06-11:** EPIC G-100 P0-Block **geschlossen** — G-100.2 (Contract, PR #98), G-100.1 (asOf-Determinismus, PR #99), G-100.6 (verifier-browser archiviert + Import-Guard, PR #100) alle ✅ auf `master`. Neu: G-100.7 (flaky anti-oracle Timing-Test). Offen bleibt G-100.4 (Correlation IDs), G-100.5 (#97 EUDI-Interop/mdoc-AV+ZKP, deferred) und G-130.1 (Passkey-Onboarding als erzwungener Default, laufender Branch `feature/g130-passkey-default-onboarding`).
 
+**Update 2026-06-20 (H-10 Truth-Alignment):** `master` steht jetzt bei `20478f0`/**PR #104** (war `fb879cc`/#81 in den Stand-Zeilen oben). Seither gemerged: G-100.7 (#102), **G-130.1 Passkey-Onboarding gelandet** (#103 + #104) → der ⏳-Eintrag in EPIC G-130 unten ist auf ✅ korrigiert. G-100.7 (#102) ✅. **Statuskonvention geklärt** (löst den scheinbaren Widerspruch): die `Phase 3 — Identity Ecosystem & UX ✅`-Zeilen sind die *groben Meilenstein-Rollups* (G-120/G-130/G-150 als Konzept gelandet); die `Video Gap Analysis`-EPIC-Tabellen (G-110.x … G-170.x) sind die *granulare Re-Skopierung* vom 2026-05-31 und werden einzeln getrackt — beide beschreiben dieselben Bereiche auf unterschiedlicher Granularität, kein Widerspruch. **Capsule-Sig-„Failures" gelöst** (Rebrand-AAD-Drift, kein Crypto-Bug) — Evidenz [`qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md). Voller Suite-Lauf 2026-06-20: 46/46 Turbo-Test-Tasks grün. Noch offen/ehrlich: G-100.4, G-100.5/#97, U-10–U-13 (BBS+), G-110/G-120/G-140/G-150/G-160/G-170 (granular), S-10, Issue #95.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -101,7 +103,7 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-130.1 | 🔴 P0 | ⏳ | Passkey-Onboarding als erzwungener Default vor Wallet-/Presentation-Nutzung; bei WebAuthn-fähigem Gerät wird ein fehlender Passkey zuerst registriert und danach für den Unlock verlangt. | Wallet startet nicht offen; Demo-Flow ist erst nach Passkey-Unlock bedienbar |
+| G-130.1 | 🔴 P0 | ✅ | Passkey-Onboarding als erzwungener Default vor Wallet-/Presentation-Nutzung; bei WebAuthn-fähigem Gerät wird ein fehlender Passkey zuerst registriert und danach für den Unlock verlangt. **Gelandet via PR #103 (`ab4d970`, enforce passkey onboarding) + PR #104 (`20478f0`, Get/Refresh credential UI), inkl. Model-A device-bound passkey, durable vault, first-run welcome, expliziter Reset.** | Wallet startet nicht offen; Demo-Flow ist erst nach Passkey-Unlock bedienbar ✅ |
 | G-130.2 | 🟡 P1 | ⏳ | Recovery/Fallback UX (device unavailable) | Klarer Fallback ohne Dead-End |
 
 ### EPIC G-140 — Consent & Disclosure UX
@@ -321,7 +323,7 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 | H-07 | ✅ | Uni-Präsentation vorbereiten — OUTLINE.md + ARCHITECTURE.md |
 | H-08 | ✅ | Branch/PR-Consolidation (2026-05-27): alle 10 offenen PRs auf `master` aufgelöst, Branch-Sprawl 22→3. Nur net-new value gesalvaged (Trust Kit #35, B2B-Use-Cases + Agent-Skills + ADR-010 #37, MCP-Freeze-Decisions #38, Verifier fail-closed + no-PII-log #34, PII-Substring-Testfix #36, `_tmp_*` gitignore #39); stale-base PRs ohne Wert mit Begründung geschlossen (#14/#16/#17/#18/#24/#26/#27/#30). **Kein Paperclip auf master** (Pflicht erfüllt); Suite 100% grün (44/44 Tasks, 1787 Tests) |
 | H-09 | ✅ | npm scope alignment (2026-06-04): drei veröffentlichte Pakete als `@askmi/shared-types`, `@askmi/shared-crypto`, `@askmi/revocation-statuslist`; vollständiger Workspace-Rebrand auf AskMI / `@askmi/*`; PR #66 auf `master` gemerged |
-| H-10 | 🟡 | Sprint 0 Repo Truth Alignment: `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, `AGENTS.md`, `CLAUDE.md` und historische Session-Dateien konsolidieren |
+| H-10 | 🟡→🟢 | Sprint 0 Repo Truth Alignment: `STATE.md`, `docs/BACKLOG.md`, `docs/SESSION_HISTORY.md`, `docs/qa/`, `AGENTS.md`, `CLAUDE.md` und historische Session-Dateien konsolidieren. **2026-06-20 Pass (Branch `docs/h10-truth-alignment`):** master-Pointer #81→#104 korrigiert, G-130.1 ✅, Status-Widerspruch (Phase-3-Rollup vs. Video-Gap-Granular) geklärt, Capsule-Sig-Resolution als QA-Evidenz abgelegt, SESSION_HISTORY Session 18 ergänzt. **Noch offen:** `AGENTS.md`/`CLAUDE.md` Review + `docs/qa/`-Altbestand. |
 
 ---
 

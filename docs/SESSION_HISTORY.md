@@ -4,6 +4,14 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 
 ---
 
+### Session 18 — G-100 closure, Proof-Randomization, Passkey onboarding, Capsule-Sig root-cause (2026-06-08 … 2026-06-20)
+- **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), injectable `asOf` determinism fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102).
+- **Phase-1 Unlinkability / Proof-Randomization (#83–#96):** single-use credential boundary at issuance (#91), batch issuance + ephemeral holder binding (C2, #92), KB-JWT PoP gate on verifier `/present` (C1, #94), `brainpoolP512r1` (#90), honest single-use DataFlow display (#88/#96), IndexedDB teardown-deadlock fix (#93). BBS+ (U-10–U-13 remainder) deferred.
+- **G-130.1 Passkey-first onboarding (#103, #104):** device-bound passkey = account (Model A), durable vault, enforced unlock default, first-run welcome, explicit Reset escape hatch, user-facing Get/Refresh credential UI.
+- **"Capsule signature verification failures" root-caused & resolved (2026-06-18):** the 5-scenario failures were an incomplete AskMI↔miTch rebrand (DID-namespace + package-scope drift), not a crypto defect. `did:mitch`/`@mitch/*` = 0 in `src/`, `guard:rebrand` green. Verified live across all 4 demo servers (`POST /wallet-present`: real disclosed claims for liquor-store/doctor-login/ehds-er/pharmacy; correct `REVOKED` 403). Evidence: [`qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md). Added `start-4-servers.ps1` (4-window dev launcher).
+- **H-10 Truth-Alignment (2026-06-20, branch `docs/h10-truth-alignment`):** corrected `STATE.md`/`BACKLOG.md` master pointer #81→#104, flipped G-130.1 to ✅, clarified the Phase-3-rollup vs. Video-Gap-granular status convention, recorded the capsule-sig resolution as QA evidence, added this entry. Full suite: 46/46 turbo test tasks green.
+- **Net master move:** `fb879cc` (PR #81) → `20478f0` (PR #104).
+
 ### Session 17 — Epic 2–5 Scout & Advisor Pass (2026-06-05 / 2026-06-06)
 - **Mode:** Scout & Advisor — every change landed via a reviewed `proposal/*` PR; no direct commits to `master`. Corrected plan of record: [`EXECUTION_PLAN_epic4-5.md`](EXECUTION_PLAN_epic4-5.md).
 - **Epic 2 — Sovereignty Center (PR #75):** Restored `SovereigntyCenter.tsx` and wired it back into `wallet-pwa` `App.tsx`; added a wallet-side verifier reputation watchdog.
