@@ -47,10 +47,9 @@ export class DataFlowService {
       );
       const verdict = disclosureEvent?.metadata?.verdict as DataFlowTransaction['verdict'];
 
-      // G-140 PR3: the ISO 18013-5 proximity (mdoc) path is offline and not policy-gated,
-      // so it emits neither a VP_GENERATED nor a disclosure event — only a VP_SENT tagged
-      // PROXIMITY_PRESENTATION carrying its own requested/disclosed claim names. Read it as a
-      // last resort so proximity transactions stop being invisible / under-described.
+      // G-140 PR3/PR4: ISO 18013-5 proximity (mdoc) emits VP_SENT rather than
+      // VP_GENERATED. PR4 adds POLICY_EVALUATED; keep VP_SENT as the proximity
+      // claim source while letting the disclosure event supply verdict/raw request.
       const proximityEvent = group.find(
         e => e.action === 'VP_SENT' && e.metadata?.context === 'PROXIMITY_PRESENTATION'
       );

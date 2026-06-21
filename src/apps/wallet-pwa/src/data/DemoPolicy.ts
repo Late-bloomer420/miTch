@@ -48,6 +48,21 @@ export const DEMO_POLICY: PolicyManifest = {
   ],
 
   rules: [
+    // ── Proximity mDL Reader (ISO 18013-5 demo) ─────────────────────────────
+    // Narrow offline reader: the policy may clip over-asked elements, but it
+    // only authorizes first/last name for this mock proximity verifier.
+    {
+      id: 'rule-proximity-mdl-01',
+      context: 'Proximity mDL reader: narrow name check',
+      verifierPattern: 'did:askmi:proximity-reader',
+      allowedClaims: ['given_name', 'family_name'],
+      provenClaims: [],
+      requiresUserConsent: false,
+      requiresTrustedIssuer: false,
+      maxCredentialAgeDays: 365,
+      priority: 15,
+    },
+
     // ── Rule 1: Altersnachweis (Liquor Store / Tabak etc.) ─────────────────
     // ZKP only — kein Rohdatum, kein Name, keine ID
     // Auto-ALLOW: Nutzer hat einmalig Zustimmung gegeben → kein PROMPT mehr
