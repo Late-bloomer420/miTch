@@ -1690,10 +1690,11 @@ export class WalletService {
       context: 'PROXIMITY_PRESENTATION',
       docType: credData.docType,
       verifier_did: verifierDid,
-      // Raw requested set (names only) so over-asking stays visible; disclosed = what the
-      // credential actually satisfied (selective disclosure).
-      claims_requested: requestedElements.map((e) => e.element),
-      claims_shared: disclosedElements,
+      // Raw requested set (element NAMES only, namespace-stripped) so over-asking stays
+      // visible; disclosed = what the credential actually satisfied (selective disclosure).
+      // De-duped to match the online collectRequestedClaims() convention.
+      claims_requested: Array.from(new Set(requestedElements.map((e) => e.element))),
+      claims_shared: Array.from(new Set(disclosedElements)),
       status: 'SUCCESS',
     });
 

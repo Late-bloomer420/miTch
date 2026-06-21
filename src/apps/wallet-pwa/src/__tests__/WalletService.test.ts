@@ -588,6 +588,25 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
     // claims_shared reflects only what was actually disclosed (honest selective disclosure):
     expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
   });
+
+  it('de-duplicates repeated requested elements in the proximity audit event', async () => {
+    const NS = 'org.iso.18013.5.1';
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [
+        { ns: NS, element: 'family_name' },
+        { ns: NS, element: 'family_name' }, // duplicate request
+        { ns: NS, element: 'issuing_country' },
+      ],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-decision-dedupe', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const meta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
+    // Claim-name lists are de-duped, matching the online collectRequestedClaims convention:
+    expect(meta['claims_requested']).toEqual(['family_name', 'issuing_country']);
+    expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
+  });
 });
 
 describe('WalletService — Identity Firewall Audit Events', () => {

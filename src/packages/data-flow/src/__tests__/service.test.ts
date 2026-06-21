@@ -560,6 +560,22 @@ describe('DataFlowService — Layer-2 visibility (G-140 PR3): mdoc proximity (IS
     expect(txn.claimsWithheld).toEqual(['home_address']);
   });
 
+  it('shows everything as withheld when the credential satisfied nothing requested (strongest over-ask signal)', () => {
+    const entries = [
+      proximityVpSent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:proximity-reader',
+        claims_requested: ['home_address', 'nationality'],
+        claims_shared: [], // credential could satisfy none of the requested elements
+      }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+    expect(txn.claimsShared).toEqual([]);
+    expect(txn.claimsRequested).toEqual(['home_address', 'nationality']);
+    expect(txn.claimsWithheld).toEqual(['home_address', 'nationality']);
+  });
+
   it('does not let a proximity VP_SENT clobber a richer VP_GENERATED in the same group', () => {
     const entries = [
       makeEntry({
