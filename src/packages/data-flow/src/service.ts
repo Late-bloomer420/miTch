@@ -40,8 +40,20 @@ export class DataFlowService {
       // Find VP_GENERATED event for claim data
       const vpEvent = group.find(e => e.action === 'VP_GENERATED');
 
+      // G-140 PR2: the disclosure decision (POLICY_EVALUATED w/ requested_claims) is
+      // logged on EVERY verdict — including DENY, which never produces a VP_GENERATED.
+      const disclosureEvent = group.find(
+        e => e.action === 'POLICY_EVALUATED' && (e.metadata?.requested_claims as unknown) !== undefined
+      );
+      const verdict = disclosureEvent?.metadata?.verdict as DataFlowTransaction['verdict'];
+
       const claimsShared = (vpEvent?.metadata?.claims_shared as string[]) ?? [];
-      const claimsRequested = (vpEvent?.metadata?.claims_requested as string[] | undefined) ?? null;
+      // Prefer the verifier's RAW requested set from the disclosure event so over-asking
+      // is measured honestly (gap A); fall back to the VP's own view for legacy entries.
+      const claimsRequested =
+        (disclosureEvent?.metadata?.requested_claims as string[] | undefined) ??
+        (vpEvent?.metadata?.claims_requested as string[] | undefined) ??
+        null;
       let claimsWithheld: string[] | null = null;
       if (claimsRequested !== null) {
         const sharedSet = new Set(claimsShared);
@@ -51,7 +63,11 @@ export class DataFlowService {
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
       const singleUseCredential = (vpEvent?.metadata?.single_use_credential as boolean) ?? false;
-      const verifierId = (vpEvent?.metadata?.verifier_did as string) ?? null;
+      // DENY transactions have no vpEvent — fall back to the disclosure event's verifier.
+      const verifierId =
+        (vpEvent?.metadata?.verifier_did as string) ??
+        (disclosureEvent?.metadata?.verifier_did as string) ??
+        null;
       const identityAccesses = group
         .filter(e => e.action === 'IDENTITY_ACCESS_DETECTED')
         .map(e => e.metadata)
@@ -92,6 +108,7 @@ export class DataFlowService {
         completedAt: group[group.length - 1].timestamp,
         verifierId,
         verifierLabel: extractVerifierLabel(verifierId),
+        verdict,
         claimsShared,
         claimsRequested,
         claimsWithheld,
