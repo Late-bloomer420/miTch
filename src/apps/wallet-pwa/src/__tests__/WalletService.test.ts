@@ -10,6 +10,7 @@ import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
+import { DataFlowService } from '@askmi/data-flow';
 
 // Fresh WalletService instance per test (state isolation)
 function makeWallet() {
@@ -561,6 +562,17 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
       );
   }
 
+  function findProximityPolicyEvaluated(w: WalletService) {
+    return w
+      .getRecentAuditLogs(20)
+      .find(
+        (e) =>
+          e.action === 'POLICY_EVALUATED' &&
+          (e.metadata as Record<string, unknown> | undefined)?.['verifier_did'] ===
+            'did:askmi:proximity-reader'
+      );
+  }
+
   it('logs a proximity VP_SENT with decision_id, verifier_did and raw requested vs disclosed claims', async () => {
     const NS = 'org.iso.18013.5.1';
     // family_name + issuing_country exist in the seeded mDL; home_address does NOT.
@@ -576,17 +588,20 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
     );
 
     const vpSent = findProximityVpSent(wallet);
+    const policyEvent = findProximityPolicyEvaluated(wallet);
     expect(vpSent, 'expected a PROXIMITY_PRESENTATION VP_SENT in the audit log').toBeDefined();
+    expect(policyEvent, 'expected the proximity flow to be policy-evaluated').toBeDefined();
     const meta = vpSent!.metadata as Record<string, unknown>;
+    const policyMeta = policyEvent!.metadata as Record<string, unknown>;
 
     // decision anchor so data-flow can group this into a Layer-2 transaction:
-    expect(meta['decision_id']).toBe('proximity-decision-001');
+    expect(meta['decision_id']).toBe(policyMeta['decision_id']);
     expect(meta['verifier_did']).toBe('did:askmi:proximity-reader');
 
     // Raw requested set is logged in full — including the element the credential cannot satisfy:
     expect(meta['claims_requested']).toEqual(['family_name', 'issuing_country', 'home_address']);
-    // claims_shared reflects only what was actually disclosed (honest selective disclosure):
-    expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
+    // PR4: claims_shared reflects only what was policy-authorized and present in the credential.
+    expect(meta['claims_shared']).toEqual(['family_name']);
   });
 
   it('de-duplicates repeated requested elements in the proximity audit event', async () => {
@@ -605,7 +620,83 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
     const meta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
     // Claim-name lists are de-duped, matching the online collectRequestedClaims convention:
     expect(meta['claims_requested']).toEqual(['family_name', 'issuing_country']);
-    expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
+    expect(meta['claims_shared']).toEqual(['family_name']);
+  });
+
+  it('routes proximity requests through policy and uses the same decision anchor for POLICY_EVALUATED and VP_SENT', async () => {
+    const NS = 'org.iso.18013.5.1';
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [
+        { ns: NS, element: 'given_name' },
+        { ns: NS, element: 'family_name' },
+      ],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-policy-nonce', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const policyEvent = findProximityPolicyEvaluated(wallet);
+    const vpSent = findProximityVpSent(wallet);
+    expect(policyEvent, 'expected proximity POLICY_EVALUATED').toBeDefined();
+    expect(vpSent, 'expected proximity VP_SENT').toBeDefined();
+
+    const policyMeta = policyEvent!.metadata as Record<string, unknown>;
+    const vpMeta = vpSent!.metadata as Record<string, unknown>;
+    expect(policyMeta['verdict']).toBe('ALLOW');
+    expect(policyMeta['requested_claims']).toEqual(['given_name', 'family_name']);
+    expect(policyMeta['authorized_claims']).toEqual(['given_name', 'family_name']);
+    expect(vpMeta['decision_id']).toBe(policyMeta['decision_id']);
+    expect(vpMeta['claims_shared']).toEqual(['given_name', 'family_name']);
+  });
+
+  it('clips proximity over-asking to the authorized intersection before VP_SENT', async () => {
+    const NS = 'org.iso.18013.5.1';
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [
+        { ns: NS, element: 'given_name' },
+        { ns: NS, element: 'family_name' },
+        { ns: NS, element: 'issuing_country' },
+      ],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-overask-nonce', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const policyMeta = findProximityPolicyEvaluated(wallet)!.metadata as Record<string, unknown>;
+    const vpMeta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
+    expect(policyMeta['verdict']).toBe('ALLOW');
+    expect(policyMeta['requested_claims']).toEqual(['given_name', 'family_name', 'issuing_country']);
+    expect(policyMeta['authorized_claims']).toEqual(['given_name', 'family_name']);
+    expect(policyMeta['denied_claims']).toEqual(['issuing_country']);
+    expect(vpMeta['claims_requested']).toEqual(['given_name', 'family_name', 'issuing_country']);
+    expect(vpMeta['claims_shared']).toEqual(['given_name', 'family_name']);
+  });
+
+  it('logs a visible proximity transaction with no shared claims on DENY', async () => {
+    const NS = 'org.iso.18013.5.1';
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [{ ns: NS, element: 'issuing_country' }],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-deny-nonce', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const policyMeta = findProximityPolicyEvaluated(wallet)!.metadata as Record<string, unknown>;
+    const vpMeta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
+    expect(policyMeta['verdict']).toBe('DENY');
+    expect(policyMeta['requested_claims']).toEqual(['issuing_country']);
+    expect(policyMeta['authorized_claims']).toEqual([]);
+    expect(vpMeta['decision_id']).toBe(policyMeta['decision_id']);
+    expect(vpMeta['claims_requested']).toEqual(['issuing_country']);
+    expect(vpMeta['claims_shared']).toEqual([]);
+
+    const [txn] = new DataFlowService().buildTransactions(wallet.getRecentAuditLogs(20));
+    expect(txn, 'DENY proximity flow should still be visible in Layer-2').toBeDefined();
+    expect(txn.transactionId).toBe(policyMeta['decision_id']);
+    expect(txn.verdict).toBe('DENY');
+    expect(txn.claimsRequested).toEqual(['issuing_country']);
+    expect(txn.claimsShared).toEqual([]);
+    expect(txn.claimsWithheld).toEqual(['issuing_country']);
   });
 });
 

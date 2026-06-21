@@ -1613,12 +1613,9 @@ export class WalletService {
   /**
    * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
    *
-   * Layer-2 visibility (G-140 PR3): the offline mdoc path is not policy-gated, so it
-   * emits no VP_GENERATED and no policy disclosure event. To stay visible in the
-   * data-flow view, the VP_SENT carries its own decision anchor (decision_id +
-   * verifier_did) and the full requested-vs-disclosed claim names so over-asking and
-   * what the credential could not satisfy both become observable. PII-minimal: names
-   * only, never element values.
+   * G-140 PR4: proximity mdoc is now policy-routed before disclosure. The
+   * policy decision supplies the transaction anchor and authorized claim set;
+   * the VP_SENT remains the proximity-specific presentation event.
    */
   async generateProximityResponse(
     credId: string,
@@ -1628,7 +1625,7 @@ export class WalletService {
   ): Promise<Uint8Array> {
     if (!this.storage) throw new Error('Wallet locked');
 
-    const decisionId = decision?.decisionId ?? `proximity-${crypto.randomUUID()}`;
+    const requestNonce = decision?.decisionId ?? `proximity-${crypto.randomUUID()}`;
     const verifierDid = decision?.verifierDid ?? 'did:askmi:proximity-reader';
 
     const credData = await this.storage.load<{ _mdoc: true; docType: string; cborBase64: string }>(
@@ -1639,13 +1636,36 @@ export class WalletService {
     const cborBytes = base64ToUint8Array(credData.cborBase64);
     const mdoc = mdocDecodeMdoc<any>(cborBytes);
 
+    const requestedClaimNames = Array.from(new Set(requestedElements.map((e) => e.element)));
+    const policyResult = await this.evaluateRequest(
+      {
+        verifierId: verifierDid,
+        nonce: requestNonce,
+        requirements: [
+          {
+            credentialType: credData.docType,
+            requestedClaims: requestedClaimNames,
+          },
+        ],
+      },
+      {
+        timestamp: Date.now(),
+        userDID: 'did:askmi:wallet-holder',
+      }
+    );
+    const decisionId = policyResult.decisionCapsule?.decision_id ?? `eval-${requestNonce}`;
+    const authorizedClaimSet = new Set(this.collectAuthorizedClaims(policyResult));
+
     // 1. Filter elements (Selective Disclosure). Track which requested elements the
-    //    credential could actually satisfy — that, not the raw request, is what we disclosed.
+    //    credential could actually satisfy AND the policy authorized.
     const issuerNamespaces = mdoc.get('nameSpaces') as Map<string, any[]>;
     const filteredNamespaces = new Map<string, any[]>();
     const disclosedElements: string[] = [];
+    const disclosedElementSet = new Set<string>();
 
     for (const req of requestedElements) {
+      if (!authorizedClaimSet.has(req.element) || disclosedElementSet.has(req.element)) continue;
+
       const items = issuerNamespaces.get(req.ns);
       if (!items) continue;
 
@@ -1655,6 +1675,7 @@ export class WalletService {
       );
       if (item) {
         filteredNamespaces.get(req.ns)!.push(item);
+        disclosedElementSet.add(req.element);
         disclosedElements.push(req.element);
       }
     }
@@ -1691,10 +1712,9 @@ export class WalletService {
       docType: credData.docType,
       verifier_did: verifierDid,
       // Raw requested set (element NAMES only, namespace-stripped) so over-asking stays
-      // visible; disclosed = what the credential actually satisfied (selective disclosure).
-      // De-duped to match the online collectRequestedClaims() convention.
-      claims_requested: Array.from(new Set(requestedElements.map((e) => e.element))),
-      claims_shared: Array.from(new Set(disclosedElements)),
+      // visible; disclosed = what was both policy-authorized and present in the credential.
+      claims_requested: requestedClaimNames,
+      claims_shared: disclosedElements,
       status: 'SUCCESS',
     });
 

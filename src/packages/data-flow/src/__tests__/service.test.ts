@@ -597,4 +597,36 @@ describe('DataFlowService — Layer-2 visibility (G-140 PR3): mdoc proximity (IS
     expect(txn.claimsShared).toEqual(['age']);
     expect(txn.claimsRequested).toEqual(['age', 'name']);
   });
+
+  it('uses the policy verdict with proximity VP_SENT claim data once mdoc is policy-routed', () => {
+    const entries = [
+      makeEntry({
+        action: 'POLICY_EVALUATED',
+        metadata: {
+          decision_id: DEC_ID,
+          verifier_did: 'did:askmi:proximity-reader',
+          verdict: 'ALLOW',
+          requested_claims: ['given_name', 'family_name', 'issuing_country'],
+          authorized_claims: ['given_name', 'family_name'],
+          denied_claims: ['issuing_country'],
+          reason_codes: ['RULE_MATCHED', 'CREDENTIAL_VALID'],
+          source: 'policy_engine',
+        },
+      }),
+      proximityVpSent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:proximity-reader',
+        claims_requested: ['given_name', 'family_name', 'issuing_country'],
+        claims_shared: ['given_name', 'family_name'],
+      }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+    expect(txn.transactionId).toBe(DEC_ID);
+    expect(txn.verdict).toBe('ALLOW');
+    expect(txn.verifierId).toBe('did:askmi:proximity-reader');
+    expect(txn.claimsRequested).toEqual(['given_name', 'family_name', 'issuing_country']);
+    expect(txn.claimsShared).toEqual(['given_name', 'family_name']);
+    expect(txn.claimsWithheld).toEqual(['issuing_country']);
+  });
 });
