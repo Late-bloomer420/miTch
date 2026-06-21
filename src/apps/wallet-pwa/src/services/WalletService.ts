@@ -10,6 +10,7 @@ import {
   AuditLogExport,
   StoredCredentialMetadata,
   IdentityFirewallMetadata,
+  DisclosureDecisionMetadata,
   IdentityPersistence,
   IdentityLinkability,
   IdentitySeverity,
@@ -816,7 +817,73 @@ export class WalletService {
     // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
     const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
 
-    return this.policyEngine.evaluate(request, context, credentials, this.getPolicy());
+    const result = await this.policyEngine.evaluate(
+      request,
+      context,
+      credentials,
+      this.getPolicy()
+    );
+
+    // Layer-2 visibility (G-140 PR1): log the disclosure decision on EVERY verdict so the
+    // full requested-vs-authorized picture — including over-asked claims — is captured.
+    await this.logDisclosureDecision(request, result);
+
+    return result;
+  }
+
+  /** All claims the verifier asked for, raw (requirements + legacy fields, names only). */
+  private collectRequestedClaims(request: VerifierRequest): string[] {
+    const fromRequirements = (request.requirements ?? []).flatMap((r) => [
+      ...(r.requestedClaims ?? []),
+      ...(r.requestedProvenClaims ?? []),
+    ]);
+    const legacy = [...(request.requestedClaims ?? []), ...(request.requestedProvenClaims ?? [])];
+    return Array.from(new Set([...fromRequirements, ...legacy]));
+  }
+
+  /** Claims the policy actually authorized (allowed + proven), from the decision capsule. */
+  private collectAuthorizedClaims(result: PolicyEvaluationResult): string[] {
+    const reqs = result.decisionCapsule?.authorized_requirements ?? [];
+    return Array.from(
+      new Set(reqs.flatMap((r) => [...(r.allowed_claims ?? []), ...(r.proven_claims ?? [])]))
+    );
+  }
+
+  /**
+   * Layer-2 visibility (G-140 PR1): append a neutral, PII-minimal disclosure-decision
+   * event for every verdict. Best-effort — must never break the fail-closed eval path.
+   */
+  private async logDisclosureDecision(
+    request: VerifierRequest,
+    result: PolicyEvaluationResult
+  ): Promise<void> {
+    try {
+      const requested = this.collectRequestedClaims(request);
+      const authorized = this.collectAuthorizedClaims(result);
+      const denied = requested.filter((claim) => !authorized.includes(claim));
+      const decisionId =
+        result.decisionCapsule?.decision_id ?? `eval-${request.nonce ?? crypto.randomUUID()}`;
+
+      const metadata: DisclosureDecisionMetadata = {
+        decision_id: decisionId,
+        verifier_did: request.verifierId,
+        verdict: result.verdict,
+        requested_claims: requested,
+        authorized_claims: authorized,
+        denied_claims: denied,
+        reason_codes: result.reasonCodes ?? [],
+        source: 'policy_engine',
+      };
+
+      await this.auditLog.append(
+        'POLICY_EVALUATED',
+        decisionId,
+        metadata as unknown as Record<string, unknown>
+      );
+    } catch (e) {
+      // Visibility logging is observability, not the security path — never let it throw.
+      console.warn('[Layer-2] Failed to log disclosure decision', e);
+    }
   }
 
   /**
