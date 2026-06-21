@@ -282,6 +282,29 @@ describe('DataFlowService', () => {
     expect(txns[0].claimsWithheld).toEqual([]);
   });
 
+  it('claimsWithheld excludes proven predicates as well as shared claims', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          claims_requested: ['age >= 18'],
+          proven_claims: ['age >= 18'],
+          credential_types: ['AgeCredential'],
+          used_zkp: true,
+          verifier_did: 'did:askmi:verifier-test',
+        },
+      }),
+    ];
+
+    const txns = service.buildTransactions(entries);
+
+    expect(txns[0].claimsRequested).toEqual(['age >= 18']);
+    expect(txns[0].provenClaims).toEqual(['age >= 18']);
+    expect(txns[0].claimsWithheld).toEqual([]);
+  });
+
   it('claimsWithheld is null when claims_requested missing (legacy)', () => {
     const entries = [
       makeEntry({
@@ -439,5 +462,64 @@ describe('eventLabel', () => {
 
   it('returns correct label for VC_DELETED', () => {
     expect(eventLabel('VC_DELETED').label).toBe('Credential gelöscht');
+  });
+});
+
+describe('DataFlowService — Layer-2 visibility (G-140 PR2): read the disclosure event', () => {
+  const service = new DataFlowService();
+
+  function disclosureEvent(meta: Record<string, unknown>) {
+    return makeEntry({
+      action: 'POLICY_EVALUATED',
+      metadata: { source: 'policy_engine', ...meta },
+    });
+  }
+
+  it('builds a populated transaction for a DENY from the disclosure event alone (gap B: no VP_GENERATED)', () => {
+    const entries = [
+      disclosureEvent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:verifier-deny',
+        verdict: 'DENY',
+        requested_claims: ['age', 'salary'],
+        authorized_claims: [],
+        denied_claims: ['age', 'salary'],
+        reason_codes: ['NO_MATCHING_RULE'],
+      }),
+    ];
+    const [txn] = service.buildTransactions(entries);
+    expect(txn, 'a DENY must still produce a transaction').toBeDefined();
+    expect(txn.verdict).toBe('DENY');
+    expect(txn.claimsRequested).toEqual(['age', 'salary']);
+    expect(txn.claimsWithheld).toEqual(['age', 'salary']); // nothing shared on a DENY
+    expect(txn.verifierId).toBe('did:askmi:verifier-deny');
+  });
+
+  it('measures claimsWithheld against the raw verifier-requested claims (gap A: over-asking visible)', () => {
+    const entries = [
+      disclosureEvent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:verifier-overask',
+        verdict: 'ALLOW',
+        requested_claims: ['age', 'salary'],
+        authorized_claims: ['age'],
+        denied_claims: ['salary'],
+        reason_codes: [],
+      }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          verifier_did: 'did:askmi:verifier-overask',
+          credential_types: ['AgeCredential'],
+        },
+      }),
+    ];
+    const [txn] = service.buildTransactions(entries);
+    // Raw requested set comes from the disclosure event, not the VP's own view:
+    expect(txn.claimsRequested).toEqual(['age', 'salary']);
+    expect(txn.claimsWithheld).toContain('salary'); // the over-asked claim is shown as withheld
+    expect(txn.verdict).toBe('ALLOW');
   });
 });
