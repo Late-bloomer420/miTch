@@ -1612,13 +1612,24 @@ export class WalletService {
 
   /**
    * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
+   *
+   * Layer-2 visibility (G-140 PR3): the offline mdoc path is not policy-gated, so it
+   * emits no VP_GENERATED and no policy disclosure event. To stay visible in the
+   * data-flow view, the VP_SENT carries its own decision anchor (decision_id +
+   * verifier_did) and the full requested-vs-disclosed claim names so over-asking and
+   * what the credential could not satisfy both become observable. PII-minimal: names
+   * only, never element values.
    */
   async generateProximityResponse(
     credId: string,
     requestedElements: { ns: string; element: string }[],
-    sessionTranscript: import('@askmi/mdoc').SessionTranscript
+    sessionTranscript: import('@askmi/mdoc').SessionTranscript,
+    decision?: { decisionId?: string; verifierDid?: string }
   ): Promise<Uint8Array> {
     if (!this.storage) throw new Error('Wallet locked');
+
+    const decisionId = decision?.decisionId ?? `proximity-${crypto.randomUUID()}`;
+    const verifierDid = decision?.verifierDid ?? 'did:askmi:proximity-reader';
 
     const credData = await this.storage.load<{ _mdoc: true; docType: string; cborBase64: string }>(
       credId
@@ -1628,9 +1639,11 @@ export class WalletService {
     const cborBytes = base64ToUint8Array(credData.cborBase64);
     const mdoc = mdocDecodeMdoc<any>(cborBytes);
 
-    // 1. Filter elements (Selective Disclosure)
+    // 1. Filter elements (Selective Disclosure). Track which requested elements the
+    //    credential could actually satisfy — that, not the raw request, is what we disclosed.
     const issuerNamespaces = mdoc.get('nameSpaces') as Map<string, any[]>;
     const filteredNamespaces = new Map<string, any[]>();
+    const disclosedElements: string[] = [];
 
     for (const req of requestedElements) {
       const items = issuerNamespaces.get(req.ns);
@@ -1640,7 +1653,10 @@ export class WalletService {
       const item = items.find(
         (i) => (i instanceof Map ? i.get('elementIdentifier') : i.elementIdentifier) === req.element
       );
-      if (item) filteredNamespaces.get(req.ns)!.push(item);
+      if (item) {
+        filteredNamespaces.get(req.ns)!.push(item);
+        disclosedElements.push(req.element);
+      }
     }
 
     // 2. Device Authentication (DeviceSigned)
@@ -1669,10 +1685,16 @@ export class WalletService {
 
     const responseCbor = (await import('@askmi/mdoc')).buildDeviceResponse([document]);
 
-    await this.auditLog.append('VP_SENT', credId, {
+    await this.auditLog.append('VP_SENT', decisionId, {
+      decision_id: decisionId,
       context: 'PROXIMITY_PRESENTATION',
       docType: credData.docType,
-      claims_shared: requestedElements.map((e) => e.element),
+      verifier_did: verifierDid,
+      // Raw requested set (element NAMES only, namespace-stripped) so over-asking stays
+      // visible; disclosed = what the credential actually satisfied (selective disclosure).
+      // De-duped to match the online collectRequestedClaims() convention.
+      claims_requested: Array.from(new Set(requestedElements.map((e) => e.element))),
+      claims_shared: Array.from(new Set(disclosedElements)),
       status: 'SUCCESS',
     });
 

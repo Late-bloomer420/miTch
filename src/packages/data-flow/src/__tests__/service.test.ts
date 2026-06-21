@@ -523,3 +523,78 @@ describe('DataFlowService — Layer-2 visibility (G-140 PR2): read the disclosur
     expect(txn.verdict).toBe('ALLOW');
   });
 });
+
+describe('DataFlowService — Layer-2 visibility (G-140 PR3): mdoc proximity (ISO 18013-5)', () => {
+  const service = new DataFlowService();
+
+  // A proximity presentation logs only a VP_SENT (no VP_GENERATED, no policy-engine
+  // disclosure event — the offline mdoc path is not policy-gated in the PoC). The
+  // requested/disclosed claim names live on that VP_SENT under context PROXIMITY_PRESENTATION.
+  function proximityVpSent(meta: Record<string, unknown>) {
+    return makeEntry({
+      action: 'VP_SENT',
+      metadata: { context: 'PROXIMITY_PRESENTATION', status: 'SUCCESS', ...meta },
+    });
+  }
+
+  it('forms a populated transaction from a proximity VP_SENT (decision_id + claims)', () => {
+    const entries = [
+      proximityVpSent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:proximity-reader',
+        docType: 'org.iso.18013.5.1.mDL',
+        claims_requested: ['family_name', 'given_name', 'home_address'],
+        claims_shared: ['family_name', 'given_name'],
+      }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+
+    expect(txn, 'an mdoc proximity presentation must be visible in Layer-2').toBeDefined();
+    expect(txn.transactionId).toBe(DEC_ID);
+    expect(txn.verifierId).toBe('did:askmi:proximity-reader');
+    expect(txn.verifierLabel).toBe('Proximity Reader');
+    expect(txn.claimsShared).toEqual(['family_name', 'given_name']);
+    expect(txn.claimsRequested).toEqual(['family_name', 'given_name', 'home_address']);
+    // The element the credential could not satisfy is shown as withheld (over-asking visible):
+    expect(txn.claimsWithheld).toEqual(['home_address']);
+  });
+
+  it('shows everything as withheld when the credential satisfied nothing requested (strongest over-ask signal)', () => {
+    const entries = [
+      proximityVpSent({
+        decision_id: DEC_ID,
+        verifier_did: 'did:askmi:proximity-reader',
+        claims_requested: ['home_address', 'nationality'],
+        claims_shared: [], // credential could satisfy none of the requested elements
+      }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+    expect(txn.claimsShared).toEqual([]);
+    expect(txn.claimsRequested).toEqual(['home_address', 'nationality']);
+    expect(txn.claimsWithheld).toEqual(['home_address', 'nationality']);
+  });
+
+  it('does not let a proximity VP_SENT clobber a richer VP_GENERATED in the same group', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: ['age'],
+          claims_requested: ['age', 'name'],
+          verifier_did: 'did:askmi:verifier-online',
+          credential_types: ['AgeCredential'],
+          proven_claims: [],
+        },
+      }),
+      proximityVpSent({ decision_id: DEC_ID, claims_shared: ['IGNORE_ME'] }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+    // VP_GENERATED remains the source of truth when present:
+    expect(txn.claimsShared).toEqual(['age']);
+    expect(txn.claimsRequested).toEqual(['age', 'name']);
+  });
+});

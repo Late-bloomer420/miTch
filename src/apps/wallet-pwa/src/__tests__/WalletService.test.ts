@@ -542,6 +542,73 @@ describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
   });
 });
 
+describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013-5)', () => {
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+  });
+
+  function findProximityVpSent(w: WalletService) {
+    return w
+      .getRecentAuditLogs(20)
+      .find(
+        (e) =>
+          e.action === 'VP_SENT' &&
+          (e.metadata as Record<string, unknown> | undefined)?.['context'] ===
+            'PROXIMITY_PRESENTATION'
+      );
+  }
+
+  it('logs a proximity VP_SENT with decision_id, verifier_did and raw requested vs disclosed claims', async () => {
+    const NS = 'org.iso.18013.5.1';
+    // family_name + issuing_country exist in the seeded mDL; home_address does NOT.
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [
+        { ns: NS, element: 'family_name' },
+        { ns: NS, element: 'issuing_country' },
+        { ns: NS, element: 'home_address' },
+      ],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-decision-001', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const vpSent = findProximityVpSent(wallet);
+    expect(vpSent, 'expected a PROXIMITY_PRESENTATION VP_SENT in the audit log').toBeDefined();
+    const meta = vpSent!.metadata as Record<string, unknown>;
+
+    // decision anchor so data-flow can group this into a Layer-2 transaction:
+    expect(meta['decision_id']).toBe('proximity-decision-001');
+    expect(meta['verifier_did']).toBe('did:askmi:proximity-reader');
+
+    // Raw requested set is logged in full — including the element the credential cannot satisfy:
+    expect(meta['claims_requested']).toEqual(['family_name', 'issuing_country', 'home_address']);
+    // claims_shared reflects only what was actually disclosed (honest selective disclosure):
+    expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
+  });
+
+  it('de-duplicates repeated requested elements in the proximity audit event', async () => {
+    const NS = 'org.iso.18013.5.1';
+    await wallet.generateProximityResponse(
+      'mdoc-mdl-001',
+      [
+        { ns: NS, element: 'family_name' },
+        { ns: NS, element: 'family_name' }, // duplicate request
+        { ns: NS, element: 'issuing_country' },
+      ],
+      [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
+      { decisionId: 'proximity-decision-dedupe', verifierDid: 'did:askmi:proximity-reader' }
+    );
+
+    const meta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
+    // Claim-name lists are de-duped, matching the online collectRequestedClaims convention:
+    expect(meta['claims_requested']).toEqual(['family_name', 'issuing_country']);
+    expect(meta['claims_shared']).toEqual(['family_name', 'issuing_country']);
+  });
+});
+
 describe('WalletService — Identity Firewall Audit Events', () => {
   let wallet: WalletService;
 

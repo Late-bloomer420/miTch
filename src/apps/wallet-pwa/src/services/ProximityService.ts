@@ -56,6 +56,9 @@ export class ProximityService {
             setTimeout(() => {
                 const mockRequest = {
                     type: 'device_request',
+                    // Reader identity, so the wallet can attribute the disclosure to a verifier
+                    // in the Layer-2 data-flow view (G-140 PR3).
+                    verifierDid: 'did:askmi:proximity-reader',
                     items: [
                         { ns: 'org.iso.18013.5.1', element: 'given_name' },
                         { ns: 'org.iso.18013.5.1', element: 'family_name' }
