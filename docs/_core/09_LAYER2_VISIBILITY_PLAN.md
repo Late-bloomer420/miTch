@@ -1,6 +1,6 @@
 # Layer-2-Visibility — Plan: das „Hin und Her" sauber sichtbar machen
 
-**Status: Aktiv (Plan, kein Code) | Stand: 2026-06-15**
+**Status: Umgesetzt für G-140.1 (#112/#114/#115/#116) | Stand: 2026-06-21**
 
 > **Auftrag.** Entscheidung 1 = **A + B** ([`06_OPEN_DECISIONS.md`](06_OPEN_DECISIONS.md)).
 > B = neutrale, lokale Sichtbarmachung für jeden Nutzer. Dieser Plan zeigt, wie wir das
@@ -87,37 +87,48 @@ stillschweigend weggestrichen zu werden.
   - `DecisionCapsule.authorized_requirements[].requested_claims?` ist im Kommentar bereits
     *„for audit completeness / claimsWithheld"* vorgesehen (`shared-types/policy.ts:329`).
 - **Verifizierte Lücken:**
-  - **A** — `claimsWithheld` misst gegen *Policy-erlaubt*, nicht *Verifier-verlangt*
+  - **A — geschlossen mit #112/#114** — `claimsWithheld` misst gegen *Policy-erlaubt*, nicht *Verifier-verlangt*
     (`WalletService.ts:1022` `claims_requested: req.allowed_claims`; `:1139` autorisiert).
-  - **B** — ein **DENY** erzeugt keine Transaktion: `DataFlowService` liest **nur**
+  - **B — geschlossen mit #112/#114** — ein **DENY** erzeugt keine Transaktion: `DataFlowService` liest **nur**
     `VP_GENERATED` (`data-flow/service.ts:41`); bei DENY gibt es kein `VP_GENERATED`.
     Das einzige `POLICY_EVALUATED`-Log (`WalletService.ts:1745`) trägt nur `result:'OVERRIDE'`.
-  - **C** — Proximity/Offline-mdoc (ISO 18013-5, `WalletService.ts:1605`) loggt `VP_SENT`
-    **ohne** `decision_id`/`claims_requested` → fällt aus der `decision_id`-Gruppierung → unsichtbar.
-  - **D** — `DataFlowPanel` ist ein Demo-Toggle (`App.tsx:1711`, default `showDataFlow=false`),
+  - **C — geschlossen mit #115/#116** — Proximity/Offline-mdoc (ISO 18013-5, `WalletService.ts:1605`) loggt `VP_SENT`
+    **ohne** `decision_id`/`claims_requested` → fällt aus der `decision_id`-Gruppierung → unsichtbar. #116 routet proximity zusätzlich vor Disclosure durch Policy.
+  - **D — zukünftiges Surfacing-Thema, nicht Teil von G-140.1-Codekette** — `DataFlowPanel` ist ein Demo-Toggle (`App.tsx:1711`, default `showDataFlow=false`),
     nicht „für jeden Nutzer".
-  - **E** — kein Layer-2-Bezug in den Visibility-Komponenten (grep leer).
+  - **E — zukünftiges Surfacing-Thema, nicht Teil von G-140.1-Codekette** — kein Layer-2-Bezug in den Visibility-Komponenten (grep leer).
 
 ---
 
 ## 4. Umsetzung — PR-Schnitt (klein, TDD-fähig, je 1 PR)
 
 ### PR1 — Wurzel: ALLE `requested_claims` loggen (autorisiert **und** nicht-autorisiert)
+**Geliefert mit #112.**
 *Das Muss.* An `evaluateRequest` (`:810`) auf **jedem** Verdict (ALLOW/PROMPT/**DENY**) ein
 Audit-Event mit: `decision_id, verifier_did, requested_claims (alle, roh), authorized_claims,
 denied_claims, verdict, reason_codes`.
 → Löst **A** (withheld misst gegen Roh-Anfrage) und **B** (DENY erzeugt jetzt einen Eintrag).
 
 ### PR2 — `data-flow` liest die neue Seite (additiv, nichts brechen)
+**Geliefert mit #114.**
 - `DataFlowService.buildTransactions` zusätzlich das Policy-Event lesen → `claimsRequested`
   aus Roh-Anfrage, neues `deniedClaims`, Transaktionen **auch ohne `VP_GENERATED`** (DENY-Karten).
 - `summarizeTransaction` um neutrale Sätze ergänzen: „Verifier verlangte X — nicht autorisiert: Y".
 - Bestehende Felder/Tests bleiben (nullable → backward-compatible).
 
 ### PR3 — Gap C: Proximity/Offline-mdoc sichtbar
+**Geliefert mit #115.**
 Dem Proximity-Pfad (`:1605`) `decision_id` + `claims_requested` mitgeben.
 
-### PR4 — Surfacing (Gap D + E)
+### PR4 — Proximity policy routing
+**Geliefert mit #116.**
+- Proximity mdoc Requests werden vor Disclosure in `evaluateRequest()` geroutet.
+- `POLICY_EVALUATED` und `VP_SENT` teilen denselben Entscheidunganker.
+- Demo-Regel `did:askmi:proximity-reader` erlaubt exakt `given_name` + `family_name`.
+- Over-Ask wird nicht offengelegt; DENY bleibt sichtbar mit `claims_shared: []`.
+
+### Follow-up — Surfacing (Gap D + E)
+**Nicht Teil der geschlossenen G-140.1-Kette; nur starten, wenn konkret priorisiert.**
 - `DataFlowPanel` von Demo-Toggle zur **erstklassigen, immer erreichbaren** Ansicht heben.
 - **Sensitivitäts-Klassifikation** (`specs/36` Track A1: low/med/high), in die `minimumLayer`
   (inkl. Layer 2 = vulnerable) als *ein* Input einfließt — nicht als „Layer 2"-Definition.
@@ -134,12 +145,13 @@ Dem Proximity-Pfad (`:1605`) `decision_id` + `claims_requested` mitgeben.
 
 ---
 
-## 6. Offene Mini-Frage (vor PR1 zu verifizieren)
+## 6. Geklärte Mini-Frage (PR1/#112)
 
 Trägt die `VerifierRequest` die **vollständige** rohe Claim-Liste — auch Claims, die **kein**
 `authorized_requirement` trifft? `request_hash` (`policy.ts:307`) beweist, dass das Objekt zur
-Capsule-Bauzeit vorliegt; die genaue Feldstruktur ist beim PR1-Scoping zu bestätigen
-(erst schauen, dann Code).
+Capsule-Bauzeit vorliegt. In #112 verifiziert: `VerifierRequest.requirements[].requestedClaims`
+trägt die rohe Claim-Liste; `WalletService.collectRequestedClaims()` sammelt Requirements +
+Legacy-Felder und de-dupliziert namenbasiert.
 
 ---
 

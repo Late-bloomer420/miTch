@@ -10,6 +10,7 @@ import {
   AuditLogExport,
   StoredCredentialMetadata,
   IdentityFirewallMetadata,
+  DisclosureDecisionMetadata,
   IdentityPersistence,
   IdentityLinkability,
   IdentitySeverity,
@@ -816,7 +817,73 @@ export class WalletService {
     // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
     const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
 
-    return this.policyEngine.evaluate(request, context, credentials, this.getPolicy());
+    const result = await this.policyEngine.evaluate(
+      request,
+      context,
+      credentials,
+      this.getPolicy()
+    );
+
+    // Layer-2 visibility (G-140 PR1): log the disclosure decision on EVERY verdict so the
+    // full requested-vs-authorized picture — including over-asked claims — is captured.
+    await this.logDisclosureDecision(request, result);
+
+    return result;
+  }
+
+  /** All claims the verifier asked for, raw (requirements + legacy fields, names only). */
+  private collectRequestedClaims(request: VerifierRequest): string[] {
+    const fromRequirements = (request.requirements ?? []).flatMap((r) => [
+      ...(r.requestedClaims ?? []),
+      ...(r.requestedProvenClaims ?? []),
+    ]);
+    const legacy = [...(request.requestedClaims ?? []), ...(request.requestedProvenClaims ?? [])];
+    return Array.from(new Set([...fromRequirements, ...legacy]));
+  }
+
+  /** Claims the policy actually authorized (allowed + proven), from the decision capsule. */
+  private collectAuthorizedClaims(result: PolicyEvaluationResult): string[] {
+    const reqs = result.decisionCapsule?.authorized_requirements ?? [];
+    return Array.from(
+      new Set(reqs.flatMap((r) => [...(r.allowed_claims ?? []), ...(r.proven_claims ?? [])]))
+    );
+  }
+
+  /**
+   * Layer-2 visibility (G-140 PR1): append a neutral, PII-minimal disclosure-decision
+   * event for every verdict. Best-effort — must never break the fail-closed eval path.
+   */
+  private async logDisclosureDecision(
+    request: VerifierRequest,
+    result: PolicyEvaluationResult
+  ): Promise<void> {
+    try {
+      const requested = this.collectRequestedClaims(request);
+      const authorized = this.collectAuthorizedClaims(result);
+      const denied = requested.filter((claim) => !authorized.includes(claim));
+      const decisionId =
+        result.decisionCapsule?.decision_id ?? `eval-${request.nonce ?? crypto.randomUUID()}`;
+
+      const metadata: DisclosureDecisionMetadata = {
+        decision_id: decisionId,
+        verifier_did: request.verifierId,
+        verdict: result.verdict,
+        requested_claims: requested,
+        authorized_claims: authorized,
+        denied_claims: denied,
+        reason_codes: result.reasonCodes ?? [],
+        source: 'policy_engine',
+      };
+
+      await this.auditLog.append(
+        'POLICY_EVALUATED',
+        decisionId,
+        metadata as unknown as Record<string, unknown>
+      );
+    } catch (e) {
+      // Visibility logging is observability, not the security path — never let it throw.
+      console.warn('[Layer-2] Failed to log disclosure decision', e);
+    }
   }
 
   /**
@@ -1545,13 +1612,21 @@ export class WalletService {
 
   /**
    * Generate an ISO 18013-5 DeviceResponse for proximity presentation.
+   *
+   * G-140 PR4: proximity mdoc is now policy-routed before disclosure. The
+   * policy decision supplies the transaction anchor and authorized claim set;
+   * the VP_SENT remains the proximity-specific presentation event.
    */
   async generateProximityResponse(
     credId: string,
     requestedElements: { ns: string; element: string }[],
-    sessionTranscript: import('@askmi/mdoc').SessionTranscript
+    sessionTranscript: import('@askmi/mdoc').SessionTranscript,
+    decision?: { decisionId?: string; verifierDid?: string }
   ): Promise<Uint8Array> {
     if (!this.storage) throw new Error('Wallet locked');
+
+    const requestNonce = decision?.decisionId ?? `proximity-${crypto.randomUUID()}`;
+    const verifierDid = decision?.verifierDid ?? 'did:askmi:proximity-reader';
 
     const credData = await this.storage.load<{ _mdoc: true; docType: string; cborBase64: string }>(
       credId
@@ -1561,11 +1636,36 @@ export class WalletService {
     const cborBytes = base64ToUint8Array(credData.cborBase64);
     const mdoc = mdocDecodeMdoc<any>(cborBytes);
 
-    // 1. Filter elements (Selective Disclosure)
+    const requestedClaimNames = Array.from(new Set(requestedElements.map((e) => e.element)));
+    const policyResult = await this.evaluateRequest(
+      {
+        verifierId: verifierDid,
+        nonce: requestNonce,
+        requirements: [
+          {
+            credentialType: credData.docType,
+            requestedClaims: requestedClaimNames,
+          },
+        ],
+      },
+      {
+        timestamp: Date.now(),
+        userDID: 'did:askmi:wallet-holder',
+      }
+    );
+    const decisionId = policyResult.decisionCapsule?.decision_id ?? `eval-${requestNonce}`;
+    const authorizedClaimSet = new Set(this.collectAuthorizedClaims(policyResult));
+
+    // 1. Filter elements (Selective Disclosure). Track which requested elements the
+    //    credential could actually satisfy AND the policy authorized.
     const issuerNamespaces = mdoc.get('nameSpaces') as Map<string, any[]>;
     const filteredNamespaces = new Map<string, any[]>();
+    const disclosedElements: string[] = [];
+    const disclosedElementSet = new Set<string>();
 
     for (const req of requestedElements) {
+      if (!authorizedClaimSet.has(req.element) || disclosedElementSet.has(req.element)) continue;
+
       const items = issuerNamespaces.get(req.ns);
       if (!items) continue;
 
@@ -1573,7 +1673,11 @@ export class WalletService {
       const item = items.find(
         (i) => (i instanceof Map ? i.get('elementIdentifier') : i.elementIdentifier) === req.element
       );
-      if (item) filteredNamespaces.get(req.ns)!.push(item);
+      if (item) {
+        filteredNamespaces.get(req.ns)!.push(item);
+        disclosedElementSet.add(req.element);
+        disclosedElements.push(req.element);
+      }
     }
 
     // 2. Device Authentication (DeviceSigned)
@@ -1602,10 +1706,15 @@ export class WalletService {
 
     const responseCbor = (await import('@askmi/mdoc')).buildDeviceResponse([document]);
 
-    await this.auditLog.append('VP_SENT', credId, {
+    await this.auditLog.append('VP_SENT', decisionId, {
+      decision_id: decisionId,
       context: 'PROXIMITY_PRESENTATION',
       docType: credData.docType,
-      claims_shared: requestedElements.map((e) => e.element),
+      verifier_did: verifierDid,
+      // Raw requested set (element NAMES only, namespace-stripped) so over-asking stays
+      // visible; disclosed = what was both policy-authorized and present in the credential.
+      claims_requested: requestedClaimNames,
+      claims_shared: disclosedElements,
       status: 'SUCCESS',
     });
 

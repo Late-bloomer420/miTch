@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-20 (truth-alignment pass, H-10)
+**Date:** 2026-06-21 (G-140 Layer-2 visibility sequence closed)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `20478f0` (PR #104 merged) — *was `fb879cc`/PR #81 at the 2026-06-07 snapshot; PRs #82–#104 landed since (see "Recent additions since PR #81" below).*
+**Current master:** `c118f93` (PR #116 merged) — G-140 Layer-2 visibility sequence landed through #112, #114, #115, and #116 after the H-10/#104 snapshot.
 
 ---
 
@@ -42,7 +42,9 @@
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 
-### Recent additions (since PR #81 → master `20478f0`/PR #104, 2026-06-08 … 2026-06-20)
+### Recent additions (since PR #81 → master `c118f93`/PR #116, 2026-06-08 … 2026-06-21)
+- **Doc truth-alignment + drift cleanup (2026-06-20/21):** H-10 pass merged (#110) correcting the master pointer and the G-130.1 ✅-vs-⏳ contradiction; EU-boundaries/Layer-2 foundation merged (#109, docs 08/09 + decisions 1&2); dependabot (#108); the four-window dev launcher consolidated into `dev-demo.ps1` with the `VERIFIER_BACKEND_PORT=3004` proxy fix (#106, duplicate `start-4-servers.ps1` removed).
+- **G-140 / Layer-2 Visibility sequence closed (#112, #114, #115, #116):** `WalletService.evaluateRequest()` logs a neutral, PII-minimal `POLICY_EVALUATED` audit event on every verdict (ALLOW/PROMPT/DENY) carrying raw `requested_claims`, `authorized_claims`, `denied_claims`, verdict, and reason codes (#112). `DataFlowService` reads those events so DENY and over-asking transactions are visible and honest against the verifier's raw request (#114). Proximity mdoc `VP_SENT` events carry `decision_id`, `verifier_did`, `claims_requested`, and `claims_shared`, so offline presentations group into Layer-2 transactions (#115). Proximity mdoc now routes through policy before disclosure; the demo reader `did:askmi:proximity-reader` is limited to `given_name` + `family_name`, over-asked elements are clipped, and DENY still creates a visible transaction with empty `claims_shared` (#116). Local validation for #116: wallet-pwa 162/162, data-flow 67/67, `pnpm test` 46/46 turbo tasks, `pnpm build` 29/29, `guard:rebrand` green.
 - **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), `asOf`-determinism root-cause fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102). Authoritative tracking in [`docs/BACKLOG.md`](docs/BACKLOG.md).
 - **Phase-1 Unlinkability / Proof-Randomization sprint (#83–#96):** single-use credential boundary at issuance (#91), batch issuance with ephemeral holder binding (C2, #92), KB-JWT proof-of-possession gate on verifier `/present` (C1, #94), `brainpoolP512r1` (#90), honest single-use DataFlow display (#88/#96), IndexedDB teardown-deadlock fix (#93). BBS+ (U-10–U-13 remainder) remains deferred.
 - **G-130.1 Passkey-first onboarding landed (#103, #104):** device-bound passkey = account, durable vault, enforced unlock as default, first-run welcome + explicit Reset escape hatch, user-facing Get/Refresh credential UI. (Updates the Video-Gap epic row that still read ⏳; see BACKLOG note.)

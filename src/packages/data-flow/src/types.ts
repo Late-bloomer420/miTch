@@ -8,6 +8,12 @@ export interface DataFlowTransaction {
   completedAt: string | null;
   verifierId: string | null;
   verifierLabel: string;
+  /**
+   * Policy verdict for this transaction (G-140 PR2). Present when a disclosure
+   * decision event (POLICY_EVALUATED) was logged — including DENY transactions
+   * that never produced a VP_GENERATED. Optional for backward compatibility.
+   */
+  verdict?: 'ALLOW' | 'DENY' | 'PROMPT';
   claimsShared: string[];
   claimsRequested: string[] | null;
   claimsWithheld: string[] | null;

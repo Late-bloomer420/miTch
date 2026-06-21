@@ -68,6 +68,29 @@ export interface IdentityFirewallMetadata {
 }
 
 /**
+ * Layer-2 visibility (G-140): the disclosure decision for a single verifier request,
+ * logged on EVERY verdict (ALLOW / PROMPT / DENY) so the user can see the full
+ * "Hin und Her" — what was requested vs. what was actually authorized.
+ *
+ * PII-minimal: carries claim NAMES only (e.g. "age"), NEVER claim values. Making the
+ * raw requested set visible is the point — it surfaces over-asking instead of letting
+ * the policy silently strip it. Neutral facts only; no scoring (see data-flow/summary).
+ */
+export interface DisclosureDecisionMetadata {
+    decision_id: string;
+    verifier_did?: DID;
+    verdict: 'ALLOW' | 'DENY' | 'PROMPT';
+    /** ALL claims the verifier requested, raw, before policy (names only). */
+    requested_claims: string[];
+    /** Claims the policy authorized for disclosure (allowed + proven). */
+    authorized_claims: string[];
+    /** Honest withheld set = requested − authorized (over-asking becomes visible). */
+    denied_claims: string[];
+    reason_codes: string[];
+    source: 'policy_engine';
+}
+
+/**
  * Audit log entry with hash chain
  * Forms an immutable, verifiable log
  */

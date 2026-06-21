@@ -10,6 +10,10 @@
 
 **Update 2026-06-20 (H-10 Truth-Alignment):** `master` steht jetzt bei `20478f0`/**PR #104** (war `fb879cc`/#81 in den Stand-Zeilen oben). Seither gemerged: G-100.7 (#102), **G-130.1 Passkey-Onboarding gelandet** (#103 + #104) → der ⏳-Eintrag in EPIC G-130 unten ist auf ✅ korrigiert. G-100.7 (#102) ✅. **Statuskonvention geklärt** (löst den scheinbaren Widerspruch): die `Phase 3 — Identity Ecosystem & UX ✅`-Zeilen sind die *groben Meilenstein-Rollups* (G-120/G-130/G-150 als Konzept gelandet); die `Video Gap Analysis`-EPIC-Tabellen (G-110.x … G-170.x) sind die *granulare Re-Skopierung* vom 2026-05-31 und werden einzeln getrackt — beide beschreiben dieselben Bereiche auf unterschiedlicher Granularität, kein Widerspruch. **Capsule-Sig-„Failures" gelöst** (Rebrand-AAD-Drift, kein Crypto-Bug) — Evidenz [`qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md). Voller Suite-Lauf 2026-06-20: 46/46 Turbo-Test-Tasks grün. Noch offen/ehrlich: G-100.4, G-100.5/#97, U-10–U-13 (BBS+), G-110/G-120/G-140/G-150/G-160/G-170 (granular), S-10, Issue #95.
 
+**Update 2026-06-21 (G-140 Layer-2 PR1 + Merges, superseded below):** master jetzt `1d0264d`/**PR #112**. Gemerged seit H-10: #110 (H-10 docs), #109 (EU-boundaries/Layer-2 Fundament 08/09 + Entsch. 1&2), #108 (dependabot), #106 (4-Fenster-Launcher konsolidiert), **#112 (G-140 Layer-2 PR1)**. PR1 = `WalletService.evaluateRequest()` loggt ein neutrales, PII-minimales `POLICY_EVALUATED`-Event auf JEDEM Verdict (requested_claims roh inkl. Over-Ask, authorized, denied = requested−authorized, verdict, reason_codes; neuer Typ `DisclosureDecisionMetadata`). Zu diesem Zeitpunkt war G-140.1 noch offen; die Folge-PRs #114/#115/#116 schließen die Kette im Update direkt darunter. Noch offen/PRs: #111 (dependabot vite), #105 (wallet public-preview, exposure — hold).
+
+**Update 2026-06-21 (G-140 Layer-2 sequence closed):** master jetzt `c118f93`/**PR #116**. G-140.1 ist über die kleine PR-Kette **#112 → #114 → #115 → #116** gelandet: raw requested/authorized/denied auf jedem Verdict, DataFlow liest DENY + Over-Ask ehrlich, proximity mdoc ist sichtbar, und proximity mdoc wird vor Disclosure policy-geroutet. Demo-Regel `did:askmi:proximity-reader` erlaubt exakt `given_name` + `family_name`; Over-Ask wird nicht geteilt, DENY bleibt als sichtbare Layer-2-Transaktion erhalten. Validierung #116: wallet-pwa 162/162, data-flow 67/67, `pnpm test` 46/46 Turbo-Tasks, `pnpm build` 29/29, `guard:rebrand` grün. Noch offen/PRs: #111 (dependabot vite), #105 (wallet public-preview, exposure — hold).
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -110,7 +114,7 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-140.1 | 🟡 P1 | ⏳ | Vor Abgabe klare Anzeige: requested/allowed/withheld | Nutzer sieht exakt was geteilt wird |
+| G-140.1 | 🟡 P1 | ✅ | Layer-2 requested/allowed/withheld sichtbar und proximity mdoc policy-geroutet (#112/#114/#115/#116) | Nutzer sieht exakt was verlangt, autorisiert, geteilt oder zurückgehalten wurde; DENY bleibt sichtbar |
 | G-140.2 | 🟡 P1 | ⏳ | Ergebnis-Screen + Return-to-verifier UX | Erfolgs-/Fehler-Rückgabe konsistent |
 
 ### EPIC G-150 — “Sign in with AskMI” Integration Kit

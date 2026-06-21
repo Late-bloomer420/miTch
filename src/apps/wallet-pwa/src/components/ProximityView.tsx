@@ -24,6 +24,10 @@ export const ProximityView: React.FC<ProximityViewProps> = ({ wallet, onComplete
                 return;
             }
 
+            // One decision anchor per proximity session, generated up front so every
+            // audit event for this exchange groups into a single Layer-2 transaction (G-140 PR3).
+            const decisionId = crypto.randomUUID();
+
             const sess = await ProximityService.startSession(pubKey);
             activeSession = sess;
             
@@ -40,7 +44,8 @@ export const ProximityView: React.FC<ProximityViewProps> = ({ wallet, onComplete
                         const responseBytes = await wallet.generateProximityResponse(
                             'mdoc-mdl-001', // Seed mDL
                             msg.items,
-                            [null, null, null] // SessionTranscript placeholder
+                            [null, null, null], // SessionTranscript placeholder
+                            { decisionId, verifierDid: msg.verifierDid ?? 'did:askmi:proximity-reader' }
                         );
 
                         setTimeout(() => {
