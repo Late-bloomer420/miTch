@@ -47,12 +47,25 @@ export class DataFlowService {
       );
       const verdict = disclosureEvent?.metadata?.verdict as DataFlowTransaction['verdict'];
 
-      const claimsShared = (vpEvent?.metadata?.claims_shared as string[]) ?? [];
+      // G-140 PR3: the ISO 18013-5 proximity (mdoc) path is offline and not policy-gated,
+      // so it emits neither a VP_GENERATED nor a disclosure event — only a VP_SENT tagged
+      // PROXIMITY_PRESENTATION carrying its own requested/disclosed claim names. Read it as a
+      // last resort so proximity transactions stop being invisible / under-described.
+      const proximityEvent = group.find(
+        e => e.action === 'VP_SENT' && e.metadata?.context === 'PROXIMITY_PRESENTATION'
+      );
+
+      const claimsShared =
+        (vpEvent?.metadata?.claims_shared as string[] | undefined) ??
+        (proximityEvent?.metadata?.claims_shared as string[] | undefined) ??
+        [];
       // Prefer the verifier's RAW requested set from the disclosure event so over-asking
-      // is measured honestly (gap A); fall back to the VP's own view for legacy entries.
+      // is measured honestly (gap A); fall back to the VP's own view, then to the proximity
+      // event for offline mdoc presentations.
       const claimsRequested =
         (disclosureEvent?.metadata?.requested_claims as string[] | undefined) ??
         (vpEvent?.metadata?.claims_requested as string[] | undefined) ??
+        (proximityEvent?.metadata?.claims_requested as string[] | undefined) ??
         null;
       let claimsWithheld: string[] | null = null;
       if (claimsRequested !== null) {
@@ -66,10 +79,12 @@ export class DataFlowService {
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
       const usedZKP = (vpEvent?.metadata?.used_zkp as boolean) ?? false;
       const singleUseCredential = (vpEvent?.metadata?.single_use_credential as boolean) ?? false;
-      // DENY transactions have no vpEvent — fall back to the disclosure event's verifier.
+      // DENY transactions have no vpEvent — fall back to the disclosure event's verifier,
+      // then to the proximity event for offline mdoc presentations.
       const verifierId =
         (vpEvent?.metadata?.verifier_did as string) ??
         (disclosureEvent?.metadata?.verifier_did as string) ??
+        (proximityEvent?.metadata?.verifier_did as string) ??
         null;
       const identityAccesses = group
         .filter(e => e.action === 'IDENTITY_ACCESS_DETECTED')
