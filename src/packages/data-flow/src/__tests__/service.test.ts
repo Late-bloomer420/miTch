@@ -282,6 +282,29 @@ describe('DataFlowService', () => {
     expect(txns[0].claimsWithheld).toEqual([]);
   });
 
+  it('claimsWithheld excludes proven predicates as well as shared claims', () => {
+    const entries = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: DEC_ID,
+          claims_shared: [],
+          claims_requested: ['age >= 18'],
+          proven_claims: ['age >= 18'],
+          credential_types: ['AgeCredential'],
+          used_zkp: true,
+          verifier_did: 'did:askmi:verifier-test',
+        },
+      }),
+    ];
+
+    const txns = service.buildTransactions(entries);
+
+    expect(txns[0].claimsRequested).toEqual(['age >= 18']);
+    expect(txns[0].provenClaims).toEqual(['age >= 18']);
+    expect(txns[0].claimsWithheld).toEqual([]);
+  });
+
   it('claimsWithheld is null when claims_requested missing (legacy)', () => {
     const entries = [
       makeEntry({

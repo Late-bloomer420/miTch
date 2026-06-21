@@ -56,8 +56,11 @@ export class DataFlowService {
         null;
       let claimsWithheld: string[] | null = null;
       if (claimsRequested !== null) {
-        const sharedSet = new Set(claimsShared);
-        claimsWithheld = claimsRequested.filter(c => !sharedSet.has(c));
+        const sharedOrProvenSet = new Set([
+          ...claimsShared,
+          ...((vpEvent?.metadata?.proven_claims as string[] | undefined) ?? []),
+        ]);
+        claimsWithheld = claimsRequested.filter(c => !sharedOrProvenSet.has(c));
       }
       const provenClaims = (vpEvent?.metadata?.proven_claims as string[]) ?? [];
       const credentialTypes = (vpEvent?.metadata?.credential_types as string[]) ?? [];
