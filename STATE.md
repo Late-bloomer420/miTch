@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-21 (G-140 Layer-2 visibility sequence closed)
+**Date:** 2026-06-22 (G-140 Layer-2 visibility sequence closed; dev-dep #111 merged)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `c118f93` (PR #116 merged) — G-140 Layer-2 visibility sequence landed through #112, #114, #115, and #116 after the H-10/#104 snapshot.
+**Current master:** `1a86d62` (PR #111 merged) — dev-only `vite` 6.4.2→6.4.3 bump on top of the G-140 Layer-2 visibility sequence (#112, #114, #115, #116; master was `c118f93`/#116 after the H-10/#104 snapshot).
 
 ---
 

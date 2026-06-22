@@ -14,6 +14,8 @@
 
 **Update 2026-06-21 (G-140 Layer-2 sequence closed):** master jetzt `c118f93`/**PR #116**. G-140.1 ist über die kleine PR-Kette **#112 → #114 → #115 → #116** gelandet: raw requested/authorized/denied auf jedem Verdict, DataFlow liest DENY + Over-Ask ehrlich, proximity mdoc ist sichtbar, und proximity mdoc wird vor Disclosure policy-geroutet. Demo-Regel `did:askmi:proximity-reader` erlaubt exakt `given_name` + `family_name`; Over-Ask wird nicht geteilt, DENY bleibt als sichtbare Layer-2-Transaktion erhalten. Validierung #116: wallet-pwa 162/162, data-flow 67/67, `pnpm test` 46/46 Turbo-Tasks, `pnpm build` 29/29, `guard:rebrand` grün. Noch offen/PRs: #111 (dependabot vite), #105 (wallet public-preview, exposure — hold).
 
+**Update 2026-06-22:** #111 (dependabot `vite` 6.4.2→6.4.3, reine Dev-/Build-Abhängigkeit — nur `pnpm-lock.yaml` + 2 `package.json`, kein Runtime-Code) gemerged → master jetzt `1a86d62` (war `c118f93`/#116). Noch offen: **#105** (wallet public-preview, exposure — **hold**). Scope-Check 2026-06-22: #105 ist auf *Scope/Stale*, nicht Code-Korrektheit blockiert (einziger Merge-Konflikt = diese Datei, narrativ). Drei Teile: A) Cloudflare-`trycloudflare.com`-Tunnel (wallet/issuer/verifier) + Download-Tooling = exposure-sensibel, widerspricht der Stable-Hosted-Env-Präferenz; B) issuer-mock CORS-Wildcard für `*.trycloudflare.com`; C) low-risk & nützlich = `DecisionCapsule.service_endpoint` + Verifier-Key-Fallback via `/did.json`. Empfehlung: gehalten lassen; bei Bedarf nur Teil C als kleine, saubere PR salvagen; A/B nur bei bewusster Hosted-Preview-Neuausrichtung.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
