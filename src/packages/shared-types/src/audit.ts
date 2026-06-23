@@ -88,6 +88,14 @@ export interface DisclosureDecisionMetadata {
     denied_claims: string[];
     reason_codes: string[];
     source: 'policy_engine';
+    /**
+     * Per requested-claim protection layer, resolved at decision time
+     * (G-140 surfacing). Value is a ProtectionLayer (0=WELT, 1=GRUNDVERSORGUNG,
+     * 2=VULNERABLE); null = unclassified (claim not in the layer map). Raw layer
+     * kept here for audit; the UI projects it onto a neutral low/medium/high view.
+     * Optional → backward-compatible. Names only, never values.
+     */
+    requested_claim_layers?: Record<string, number | null>;
 }
 
 /**

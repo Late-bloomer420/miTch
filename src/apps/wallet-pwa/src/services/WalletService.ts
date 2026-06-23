@@ -1,4 +1,5 @@
 import { PolicyEngine, type EvaluationContext } from '@askmi/policy-engine';
+import { resolveLayerForData } from '@askmi/layer-resolver';
 import { SecureStorage } from '@askmi/secure-storage';
 import { AuditLog } from '@askmi/audit-log';
 import {
@@ -864,6 +865,13 @@ export class WalletService {
       const decisionId =
         result.decisionCapsule?.decision_id ?? `eval-${request.nonce ?? crypto.randomUUID()}`;
 
+      // G-140 surfacing: resolve each raw requested claim to its protection layer
+      // (visibility path — null = unclassified, never a false WELT/low default).
+      const requestedClaimLayers: Record<string, number | null> = {};
+      for (const claim of requested) {
+        requestedClaimLayers[claim] = resolveLayerForData(claim) ?? null;
+      }
+
       const metadata: DisclosureDecisionMetadata = {
         decision_id: decisionId,
         verifier_did: request.verifierId,
@@ -873,6 +881,7 @@ export class WalletService {
         denied_claims: denied,
         reason_codes: result.reasonCodes ?? [],
         source: 'policy_engine',
+        requested_claim_layers: requestedClaimLayers,
       };
 
       await this.auditLog.append(
