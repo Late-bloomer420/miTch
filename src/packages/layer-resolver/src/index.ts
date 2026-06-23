@@ -164,10 +164,53 @@ export function getLayerName(layer: ProtectionLayer): string {
 }
 
 /**
+ * Neutral sensitivity view over a protection layer. NOT a risk score —
+ * a structural projection of the layer the policy engine resolved.
+ */
+export type Sensitivity = 'low' | 'medium' | 'high' | 'unclassified';
+
+/**
+ * Single source of truth: claim/data type → minimum protection layer.
+ * Shared by getMinimumLayerForData (enforcement, safe WELT default) and
+ * resolveLayerForData (visibility, honest `undefined` when unmapped).
+ */
+const LAYER_MAP: Record<string, ProtectionLayer> = {
+  // Layer 0 (WELT) — Universal / identity basics
+  consent: ProtectionLayer.WELT,
+  publicKey: ProtectionLayer.WELT,
+  given_name: ProtectionLayer.WELT,
+  family_name: ProtectionLayer.WELT,
+
+  // Layer 1 (GRUNDVERSORGUNG) — Children + Basic
+  age: ProtectionLayer.GRUNDVERSORGUNG,
+  dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
+  birth_date: ProtectionLayer.GRUNDVERSORGUNG,
+  education: ProtectionLayer.GRUNDVERSORGUNG,
+
+  // Layer 2 (VULNERABLE) — Health / Finance / Professional
+  healthRecord: ProtectionLayer.VULNERABLE,
+  medicalHistory: ProtectionLayer.VULNERABLE,
+  prescription: ProtectionLayer.VULNERABLE,
+  financialData: ProtectionLayer.VULNERABLE,
+  bankAccount: ProtectionLayer.VULNERABLE,
+  creditScore: ProtectionLayer.VULNERABLE,
+  employmentRecord: ProtectionLayer.VULNERABLE,
+  professionalLicense: ProtectionLayer.VULNERABLE,
+  // EHDS / health demo vocabulary
+  bloodGroup: ProtectionLayer.VULNERABLE,
+  allergies: ProtectionLayer.VULNERABLE,
+  emergencyContacts: ProtectionLayer.VULNERABLE,
+  medication: ProtectionLayer.VULNERABLE,
+  dosageInstruction: ProtectionLayer.VULNERABLE,
+  refillsRemaining: ProtectionLayer.VULNERABLE,
+  // Professional credential demo vocabulary
+  role: ProtectionLayer.VULNERABLE,
+  licenseId: ProtectionLayer.VULNERABLE,
+};
+
+/**
  * Determine the minimum required layer for a given data type.
- *
- * @param dataType - The type of data being processed
- * @returns Minimum required protection layer
+ * ENFORCEMENT path — keeps the safe WELT default for unmapped types.
  *
  * @example
  * ```typescript
@@ -176,29 +219,38 @@ export function getLayerName(layer: ProtectionLayer): string {
  * ```
  */
 export function getMinimumLayerForData(dataType: string): ProtectionLayer {
-  // Map data types to minimum required layers
-  const layerMap: Record<string, ProtectionLayer> = {
-    // Layer 0 (WELT) - Universal
-    consent: ProtectionLayer.WELT,
-    publicKey: ProtectionLayer.WELT,
+  return LAYER_MAP[dataType] ?? ProtectionLayer.WELT;
+}
 
-    // Layer 1 (GRUNDVERSORGUNG) - Children + Basic
-    age: ProtectionLayer.GRUNDVERSORGUNG,
-    dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
-    education: ProtectionLayer.GRUNDVERSORGUNG,
+/**
+ * VISIBILITY path — returns the claim's protection layer, or `undefined`
+ * when the claim is not classified. Unlike getMinimumLayerForData this does
+ * NOT default to WELT, so the UI can honestly show "unclassified" instead of
+ * a false "low". Same LAYER_MAP authority.
+ */
+export function resolveLayerForData(dataType: string): ProtectionLayer | undefined {
+  return LAYER_MAP[dataType];
+}
 
-    // Layer 2 (VULNERABLE) - Sensitive Adult Data
-    healthRecord: ProtectionLayer.VULNERABLE,
-    medicalHistory: ProtectionLayer.VULNERABLE,
-    prescription: ProtectionLayer.VULNERABLE,
-    financialData: ProtectionLayer.VULNERABLE,
-    bankAccount: ProtectionLayer.VULNERABLE,
-    creditScore: ProtectionLayer.VULNERABLE,
-    employmentRecord: ProtectionLayer.VULNERABLE,
-    professionalLicense: ProtectionLayer.VULNERABLE,
-  };
+/** Project a protection layer onto a neutral sensitivity view (no scoring). */
+export function sensitivityFromLayer(
+  layer: ProtectionLayer | undefined | null
+): Sensitivity {
+  switch (layer) {
+    case ProtectionLayer.WELT:
+      return 'low';
+    case ProtectionLayer.GRUNDVERSORGUNG:
+      return 'medium';
+    case ProtectionLayer.VULNERABLE:
+      return 'high';
+    default:
+      return 'unclassified';
+  }
+}
 
-  return layerMap[dataType] ?? ProtectionLayer.WELT;
+/** Convenience: claim name → neutral sensitivity view. */
+export function sensitivityForData(dataType: string): Sensitivity {
+  return sensitivityFromLayer(resolveLayerForData(dataType));
 }
 
 /**
@@ -210,4 +262,7 @@ export default {
   includesLayer,
   getLayerName,
   getMinimumLayerForData,
+  resolveLayerForData,
+  sensitivityFromLayer,
+  sensitivityForData,
 };
