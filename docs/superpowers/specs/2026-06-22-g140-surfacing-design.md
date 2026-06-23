@@ -25,7 +25,7 @@ The plan explicitly parked the **Surfacing follow-up (Gap D + E)** as *"nicht Te
 ## 2. Decisions (settled with user, 2026-06-22)
 
 1. **Sensitivity = a read-only view over the existing layer classification.** Map: `ProtectionLayer.WELT(0)→low`, `GRUNDVERSORGUNG(1)→medium`, `VULNERABLE(2)→high`. No second classification authority; `layer-resolver` stays canonical.
-2. **Unmapped claims render as `unclassified`** — never a false "low." Extend the layer map to cover the real demo vocabulary; anything still unmapped is honestly `unclassified`.
+2. **Unmapped claims render as `unclassified`** — never a false "low." A **visibility map** (superset of the enforcement map) covers the real demo vocabulary; anything still unmapped is honestly `unclassified`. *(Updated post-implementation: the demo vocabulary lives in a separate `VISIBILITY_LAYER_MAP`, not the enforcement `LAYER_MAP` — see §4.)*
 3. **Sensitivity is sourced from the audit event**, not recomputed in the UI — the value shown is exactly what the engine resolved at decision time.
 4. **`DataFlowPanel` becomes a permanent wallet section** — the hide-toggle is removed; per-transaction expand/collapse stays.
 5. `unclassified` is a **neutral factual state**, not a warning/alarm level.
@@ -35,7 +35,7 @@ The plan explicitly parked the **Surfacing follow-up (Gap D + E)** as *"nicht Te
 The core invariant (`02_POLICY.md`, plan §5) forbids scoring and value judgments. By making sensitivity a *projection* of `layer-resolver` output rather than a new model:
 
 - The UI cannot assert a sensitivity the policy engine did not already resolve structurally.
-- There is exactly one place to change the mapping (`layer-resolver`).
+- There is exactly one place to change the mapping (`layer-resolver` — one file holding both the enforcement base and the visibility superset).
 - The honesty invariant holds: we never label a claim "low" when we never classified it — we say `unclassified`.
 
 This mirrors PR1's discipline (measure withheld against the *raw* request, not a recomputed set): derive, don't duplicate.
@@ -44,10 +44,12 @@ This mirrors PR1's discipline (measure withheld against the *raw* request, not a
 
 `getMinimumLayerForData(dataType)` (`layer-resolver/src/index.ts:178`) **defaults unknown → `WELT(0)`**. So today "genuinely Layer 0" and "never classified" are indistinguishable, and most demo claims (`given_name`, `bloodGroup`, `allergies`, `medication`, `licenseId`, `emergencyContacts`, …) are unmapped and would show as "low."
 
-Resolution — two honest read modes over one authority:
+Resolution — two read modes over two maps in one file (`layer-resolver`):
 
-- **Enforcement path** keeps `getMinimumLayerForData` with its safe default (unchanged — no policy-test risk).
-- **Visibility path** uses a new non-defaulting sibling that returns `undefined` for unmapped claims, so the UI can show `unclassified` truthfully.
+- **Enforcement path** keeps `getMinimumLayerForData` reading the original `LAYER_MAP` with its safe WELT default — **unchanged**.
+- **Visibility path** uses a new non-defaulting `resolveLayerForData` reading `VISIBILITY_LAYER_MAP` (a `{ ...LAYER_MAP, ...demoVocabulary }` superset), returning `undefined` for still-unmapped claims so the UI can show `unclassified` truthfully.
+
+**Why two maps, not one (discovered during PR-A implementation):** `getMinimumLayerForData` is also consumed by the **policy-engine's layer-violation check**. Putting the demo vocabulary (`bloodGroup`, `medication`, `role`, …) directly into the enforcement `LAYER_MAP` raised the required layer for those claims and **changed policy verdicts** — it broke 23 EHDS break-glass / geo-scope / dispensed-credential tests by short-circuiting them with `LAYER_VIOLATION`. This proved the user's condition *"don't add a standalone visibility map unless the layer model is insufficient"* — it **is** insufficient. The superset keeps a single shared base in a single file (one authority) while guaranteeing visibility classification can never alter an enforcement verdict. A guard test asserts `getMinimumLayerForData('bloodGroup') === WELT` to lock this.
 
 ## 5. Architecture — two small PRs (E → D)
 
@@ -57,8 +59,8 @@ Sequenced E-before-D because the panel (D) consumes the audit data produced by t
 
 | # | File | Change |
 |---|---|---|
-| A1 | `src/packages/layer-resolver/src/index.ts` | Extend `layerMap` to the real demo vocabulary. Add `resolveLayerForData(dataType): ProtectionLayer \| undefined` (no default) and `sensitivityForData(dataType): Sensitivity`. Leave `getMinimumLayerForData` unchanged. |
-| A2 | `src/packages/shared-types/src/audit.ts` | Add optional `requested_claim_layers?: Record<string, ProtectionLayer \| null>` to `DisclosureDecisionMetadata` (raw layer for audit; `null` = unclassified). Optional → back-compatible. |
+| A1 | `src/packages/layer-resolver/src/index.ts` | Add `VISIBILITY_LAYER_MAP = { ...LAYER_MAP, ...demoVocabulary }` (the real demo vocabulary). Add `resolveLayerForData(dataType): ProtectionLayer \| undefined` (no default, reads the visibility map), `sensitivityFromLayer(...)` and `sensitivityForData(dataType): Sensitivity`. Leave enforcement `LAYER_MAP` / `getMinimumLayerForData` **unchanged** (guard test enforces this). |
+| A2 | `src/packages/shared-types/src/audit.ts` | Add optional `requested_claim_layers?: Record<string, number \| null>` to `DisclosureDecisionMetadata` (raw `ProtectionLayer` value `0/1/2`, kept as `number` so `shared-types` stays dependency-free; `null` = unclassified). Optional → back-compatible. |
 | A3 | `src/apps/wallet-pwa/src/services/WalletService.ts` | In `logDisclosureDecision`, populate `requested_claim_layers` for each entry in `requested_claims` via `resolveLayerForData`. |
 | A4 | `src/packages/data-flow/src/{types,service}.ts` | Carry optional per-claim sensitivity onto `DataFlowTransaction` (mirrors how #114 added `verdict`). Read from the `POLICY_EVALUATED` event. |
 
@@ -106,7 +108,7 @@ Full suite (`turbo`) + `guard:rebrand` must stay green; validate on master after
 
 ## 9. Out of scope (flagged, not touched)
 
-- **Enforcement default:** unknown → `WELT(0)` is the *lowest* protection, which is arguably not fail-closed for enforcement either. Changing it risks policy tests and is a separate decision. Flagged only.
+- **Enforcement default:** unknown → `WELT(0)` is the *lowest* protection, which is arguably not fail-closed for enforcement either. Changing it risks policy tests and is a separate decision. Flagged only. **PR-A confirmed the stakes:** the policy-engine's layer check actively under-protects the demo health vocabulary (treats `bloodGroup`/`medication`/`role` as WELT). The visibility view now *surfaces* this gap (it shows them as `high`) without changing enforcement — a candidate for a future enforcement-map review, tracked separately.
 - **Sensitivity as an *input* to `minimumLayer`:** plan §4 mentions sensitivity feeding `minimumLayer`. This design takes the inverse, simpler direction (layer → sensitivity view) per the user's decision. A future change could let sensitivity refine layer resolution; not here.
 - **Top-level nav/tab** for the panel (option C) — out; permanent section is enough.
 
