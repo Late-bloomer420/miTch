@@ -135,13 +135,23 @@ describe('sensitivityForData', () => {
     });
 });
 
-describe('getMinimumLayerForData (enforcement default unchanged)', () => {
+describe('getMinimumLayerForData (enforcement map untouched by visibility vocabulary)', () => {
     it('still defaults unmapped claims to WELT', () => {
         expect(getMinimumLayerForData('somethingUnknown')).toBe(ProtectionLayer.WELT);
     });
 
-    it('classifies newly-added health vocabulary as VULNERABLE', () => {
-        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.VULNERABLE);
-        expect(getMinimumLayerForData('emergencyContacts')).toBe(ProtectionLayer.VULNERABLE);
+    // Visibility-only vocabulary must NOT leak into the enforcement layer check,
+    // or it would change policy verdicts (G-140 PR-A: this exact leak broke the
+    // EHDS break-glass / geo-scope tests). Enforcement still sees these as WELT.
+    it('does NOT reclassify visibility-only vocabulary (no enforcement change)', () => {
+        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.WELT);
+        expect(getMinimumLayerForData('medication')).toBe(ProtectionLayer.WELT);
+        expect(getMinimumLayerForData('role')).toBe(ProtectionLayer.WELT);
+    });
+
+    // The original enforcement entries are still classified as before.
+    it('keeps the original enforcement classifications', () => {
+        expect(getMinimumLayerForData('healthRecord')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('age')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
     });
 });

@@ -170,24 +170,22 @@ export function getLayerName(layer: ProtectionLayer): string {
 export type Sensitivity = 'low' | 'medium' | 'high' | 'unclassified';
 
 /**
- * Single source of truth: claim/data type → minimum protection layer.
- * Shared by getMinimumLayerForData (enforcement, safe WELT default) and
- * resolveLayerForData (visibility, honest `undefined` when unmapped).
+ * ENFORCEMENT map — claim/data type → minimum protection layer. Drives
+ * getMinimumLayerForData and therefore the policy-engine's layer check.
+ * KEPT INTENTIONALLY NARROW: extending this map changes access-control verdicts.
+ * New visibility vocabulary goes in VISIBILITY_LAYER_MAP, never here.
  */
 const LAYER_MAP: Record<string, ProtectionLayer> = {
-  // Layer 0 (WELT) — Universal / identity basics
+  // Layer 0 (WELT) — Universal
   consent: ProtectionLayer.WELT,
   publicKey: ProtectionLayer.WELT,
-  given_name: ProtectionLayer.WELT,
-  family_name: ProtectionLayer.WELT,
 
   // Layer 1 (GRUNDVERSORGUNG) — Children + Basic
   age: ProtectionLayer.GRUNDVERSORGUNG,
   dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
-  birth_date: ProtectionLayer.GRUNDVERSORGUNG,
   education: ProtectionLayer.GRUNDVERSORGUNG,
 
-  // Layer 2 (VULNERABLE) — Health / Finance / Professional
+  // Layer 2 (VULNERABLE) — Sensitive Adult Data
   healthRecord: ProtectionLayer.VULNERABLE,
   medicalHistory: ProtectionLayer.VULNERABLE,
   prescription: ProtectionLayer.VULNERABLE,
@@ -196,6 +194,23 @@ const LAYER_MAP: Record<string, ProtectionLayer> = {
   creditScore: ProtectionLayer.VULNERABLE,
   employmentRecord: ProtectionLayer.VULNERABLE,
   professionalLicense: ProtectionLayer.VULNERABLE,
+};
+
+/**
+ * VISIBILITY map — the enforcement map PLUS the concrete claim vocabulary used
+ * in real flows, for the user-facing sensitivity view ONLY. Built as a superset
+ * of LAYER_MAP so there is one shared base in one file (single authority), while
+ * classifying a claim for visibility can never change an enforcement verdict.
+ *
+ * (The layer model proved insufficient for visibility: putting this vocabulary
+ * directly in LAYER_MAP altered policy-engine layer-checks — see G-140 PR-A.)
+ */
+const VISIBILITY_LAYER_MAP: Record<string, ProtectionLayer> = {
+  ...LAYER_MAP,
+  // Identity basics
+  given_name: ProtectionLayer.WELT,
+  family_name: ProtectionLayer.WELT,
+  birth_date: ProtectionLayer.GRUNDVERSORGUNG,
   // EHDS / health demo vocabulary
   bloodGroup: ProtectionLayer.VULNERABLE,
   allergies: ProtectionLayer.VULNERABLE,
@@ -226,10 +241,10 @@ export function getMinimumLayerForData(dataType: string): ProtectionLayer {
  * VISIBILITY path — returns the claim's protection layer, or `undefined`
  * when the claim is not classified. Unlike getMinimumLayerForData this does
  * NOT default to WELT, so the UI can honestly show "unclassified" instead of
- * a false "low". Same LAYER_MAP authority.
+ * a false "low". Reads VISIBILITY_LAYER_MAP (enforcement base + demo vocabulary).
  */
 export function resolveLayerForData(dataType: string): ProtectionLayer | undefined {
-  return LAYER_MAP[dataType];
+  return VISIBILITY_LAYER_MAP[dataType];
 }
 
 /** Project a protection layer onto a neutral sensitivity view (no scoring). */
