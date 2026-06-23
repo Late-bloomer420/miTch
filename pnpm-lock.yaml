@@ -366,6 +366,9 @@ importers:
 
   src/packages/data-flow:
     dependencies:
+      '@askmi/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types

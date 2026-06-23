@@ -1,4 +1,5 @@
 import type { AuditLogEntry, AuditEventType, IdentityFirewallMetadata } from '@askmi/shared-types';
+import { sensitivityFromLayer, type Sensitivity } from '@askmi/layer-resolver';
 import type { DataFlowTransaction, DataFlowEvent } from './types';
 import { eventLabel } from './labels';
 
@@ -46,6 +47,20 @@ export class DataFlowService {
         e => e.action === 'POLICY_EVALUATED' && (e.metadata?.requested_claims as unknown) !== undefined
       );
       const verdict = disclosureEvent?.metadata?.verdict as DataFlowTransaction['verdict'];
+
+      // G-140 surfacing: project the per-claim protection layers (logged on the
+      // disclosure event) onto a neutral sensitivity view. No re-resolution here —
+      // we read exactly what the engine classified at decision time.
+      let claimSensitivity: Record<string, Sensitivity> | undefined;
+      const rawLayers = disclosureEvent?.metadata?.requested_claim_layers as
+        | Record<string, number | null>
+        | undefined;
+      if (rawLayers) {
+        claimSensitivity = {};
+        for (const [claim, layer] of Object.entries(rawLayers)) {
+          claimSensitivity[claim] = sensitivityFromLayer(layer);
+        }
+      }
 
       // G-140 PR3/PR4: ISO 18013-5 proximity (mdoc) emits VP_SENT rather than
       // VP_GENERATED. PR4 adds POLICY_EVALUATED; keep VP_SENT as the proximity
@@ -126,6 +141,7 @@ export class DataFlowService {
         verifierId,
         verifierLabel: extractVerifierLabel(verifierId),
         verdict,
+        claimSensitivity,
         claimsShared,
         claimsRequested,
         claimsWithheld,

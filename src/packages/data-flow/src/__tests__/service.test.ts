@@ -630,3 +630,48 @@ describe('DataFlowService — Layer-2 visibility (G-140 PR3): mdoc proximity (IS
     expect(txn.claimsWithheld).toEqual(['issuing_country']);
   });
 });
+
+describe('DataFlowService — Layer-2 visibility (G-140 surfacing): per-claim sensitivity', () => {
+  const service = new DataFlowService();
+
+  it('projects requested_claim_layers onto neutral claim sensitivities', () => {
+    const entries: AuditLogEntry[] = [
+      makeEntry({
+        action: 'POLICY_EVALUATED',
+        metadata: {
+          decision_id: 'dec-sensitivity-1',
+          verifier_did: 'did:askmi:verifier-hospital',
+          verdict: 'ALLOW',
+          requested_claims: ['bloodGroup', 'age', 'mysteryClaim'],
+          authorized_claims: ['bloodGroup', 'age'],
+          denied_claims: [],
+          reason_codes: [],
+          source: 'policy_engine',
+          requested_claim_layers: { bloodGroup: 2, age: 1, mysteryClaim: null },
+        },
+      }),
+    ];
+
+    const [txn] = service.buildTransactions(entries);
+    expect(txn.claimSensitivity).toEqual({
+      bloodGroup: 'high',
+      age: 'medium',
+      mysteryClaim: 'unclassified',
+    });
+  });
+
+  it('leaves claimSensitivity undefined when no layers were logged (back-compat)', () => {
+    const entries: AuditLogEntry[] = [
+      makeEntry({
+        action: 'VP_GENERATED',
+        metadata: {
+          decision_id: 'dec-no-layers',
+          verifier_did: 'did:askmi:verifier-liquor-store',
+          claims_shared: ['age'],
+        },
+      }),
+    ];
+    const [txn] = service.buildTransactions(entries);
+    expect(txn.claimSensitivity).toBeUndefined();
+  });
+});
