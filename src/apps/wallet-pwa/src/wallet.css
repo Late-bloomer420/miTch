@@ -1112,6 +1112,39 @@
     color: #6b7280;
 }
 
+/* Neutral per-claim sensitivity badge (G-140 Gap D). Factual level labels,
+   not an alarm; high is a muted rose consistent with the light panel theme. */
+.dataflow-card__sensitivity {
+    margin-left: 6px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 6px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.dataflow-card__sensitivity--low {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.dataflow-card__sensitivity--medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dataflow-card__sensitivity--high {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.dataflow-card__sensitivity--unclassified {
+    background: #f3f4f6;
+    color: #9ca3af;
+}
+
 .dataflow-card__timeline {
     margin-top: 10px;
     padding-top: 10px;
