@@ -2,7 +2,40 @@ import React, { useState, useMemo } from 'react';
 import type { AuditLogEntry } from '@askmi/shared-types';
 import { DataFlowService, summarizeTransaction } from '@askmi/data-flow';
 import type { DataFlowTransaction } from '@askmi/data-flow';
+import type { Sensitivity } from '@askmi/layer-resolver';
 import { translateClaim } from '../utils/i18n';
+
+const SENSITIVITY_LABEL: Record<Sensitivity, string> = {
+  low: 'niedrig',
+  medium: 'mittel',
+  high: 'hoch',
+  unclassified: 'unklassifiziert',
+};
+
+/**
+ * A claim chip with a neutral sensitivity badge (G-140 Gap D). The badge text
+ * comes straight from the transaction's audit-resolved sensitivity — the UI adds
+ * no classification logic. The claim name lives in its own inner span so exact-text
+ * queries still match the claim, not "claim+badge".
+ */
+const ClaimTag: React.FC<{
+  claim: string;
+  variant: 'claim' | 'proven' | 'withheld';
+  sensitivity?: Sensitivity;
+}> = ({ claim, variant, sensitivity }) => {
+  const level: Sensitivity = sensitivity ?? 'unclassified';
+  return (
+    <span className={`dataflow-card__tag dataflow-card__tag--${variant}`}>
+      <span className="dataflow-card__claim-name">{translateClaim(claim)}</span>
+      <span
+        className={`dataflow-card__sensitivity dataflow-card__sensitivity--${level}`}
+        title={`Sensitivität: ${SENSITIVITY_LABEL[level]}`}
+      >
+        {SENSITIVITY_LABEL[level]}
+      </span>
+    </span>
+  );
+};
 
 interface DataFlowPanelProps {
   entries: AuditLogEntry[];
@@ -83,20 +116,29 @@ const TransactionCard: React.FC<{
 
       <div className="dataflow-card__claims">
         {txn.claimsShared.map((claim) => (
-          <span key={claim} className="dataflow-card__tag dataflow-card__tag--claim">
-            {translateClaim(claim)}
-          </span>
+          <ClaimTag
+            key={claim}
+            claim={claim}
+            variant="claim"
+            sensitivity={txn.claimSensitivity?.[claim]}
+          />
         ))}
         {txn.provenClaims.map((claim) => (
-          <span key={claim} className="dataflow-card__tag dataflow-card__tag--proven">
-            {translateClaim(claim)}
-          </span>
+          <ClaimTag
+            key={claim}
+            claim={claim}
+            variant="proven"
+            sensitivity={txn.claimSensitivity?.[claim]}
+          />
         ))}
         {txn.claimsWithheld !== null && txn.claimsWithheld.length > 0 &&
           txn.claimsWithheld.map((claim) => (
-            <span key={`withheld-${claim}`} className="dataflow-card__tag dataflow-card__tag--withheld">
-              {translateClaim(claim)}
-            </span>
+            <ClaimTag
+              key={`withheld-${claim}`}
+              claim={claim}
+              variant="withheld"
+              sensitivity={txn.claimSensitivity?.[claim]}
+            />
           ))}
         {txn.identityAccessCount > 0 && (
           <span className="dataflow-card__tag dataflow-card__tag--identity">

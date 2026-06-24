@@ -172,4 +172,75 @@ describe('DataFlowPanel', () => {
     expect(screen.getByText('Präsentation erstellt')).toBeInTheDocument();
     expect(screen.getByText('Schlüssel vernichtet')).toBeInTheDocument();
   });
+
+  it('renders a sensitivity badge per claim from the disclosure event', () => {
+    const DEC = 'dec-badge-1';
+    const entries = [
+      makeEntry({
+        action: 'POLICY_EVALUATED',
+        timestamp: '2026-03-15T10:00:00Z',
+        metadata: {
+          decision_id: DEC,
+          verifier_did: 'did:askmi:verifier-hospital',
+          verdict: 'ALLOW',
+          requested_claims: ['bloodGroup', 'age'],
+          authorized_claims: ['bloodGroup', 'age'],
+          denied_claims: [],
+          reason_codes: [],
+          source: 'policy_engine',
+          requested_claim_layers: { bloodGroup: 2, age: 1 },
+        },
+      }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        timestamp: '2026-03-15T10:00:01Z',
+        metadata: {
+          decision_id: DEC,
+          verifier_did: 'did:askmi:verifier-hospital',
+          claims_shared: ['bloodGroup', 'age'],
+          credential_types: ['HealthCredential'],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
+    ];
+    render(<DataFlowPanel entries={entries} />);
+    expect(screen.getByText('hoch')).toBeInTheDocument(); // bloodGroup → high
+    expect(screen.getByText('mittel')).toBeInTheDocument(); // age → medium
+  });
+
+  it('shows the neutral unclassified badge for claims without a resolved layer', () => {
+    const DEC = 'dec-badge-2';
+    const entries = [
+      makeEntry({
+        action: 'POLICY_EVALUATED',
+        timestamp: '2026-03-15T10:00:00Z',
+        metadata: {
+          decision_id: DEC,
+          verifier_did: 'did:askmi:verifier-test',
+          verdict: 'ALLOW',
+          requested_claims: ['mysteryClaim'],
+          authorized_claims: ['mysteryClaim'],
+          denied_claims: [],
+          reason_codes: [],
+          source: 'policy_engine',
+          requested_claim_layers: { mysteryClaim: null },
+        },
+      }),
+      makeEntry({
+        action: 'VP_GENERATED',
+        timestamp: '2026-03-15T10:00:01Z',
+        metadata: {
+          decision_id: DEC,
+          claims_shared: ['mysteryClaim'],
+          verifier_did: 'did:askmi:verifier-test',
+          credential_types: [],
+          proven_claims: [],
+          used_zkp: false,
+        },
+      }),
+    ];
+    render(<DataFlowPanel entries={entries} />);
+    expect(screen.getByText('unklassifiziert')).toBeInTheDocument();
+  });
 });
