@@ -15,7 +15,7 @@ pnpm install
 # Build all packages (respects dependency graph)
 pnpm build
 
-# Run all tests (latest QA evidence: 45 turbo tasks, 1820+ individual tests)
+# Run all tests (latest QA evidence: 46 turbo tasks, 1820+ individual tests)
 pnpm test
 
 # Run tests for a single package
@@ -42,7 +42,7 @@ pnpm format
 - **policy-engine** — The central "Privacy Firewall" / ZKQF. Evaluates disclosure requests → ALLOW/DENY/PROMPT verdicts. Contains: engine.ts (main evaluator), kpi.ts, rate-limiter.ts, proof-fatigue.ts, jurisdiction.ts, config-profiles.ts, allow-assertion.ts
 - **shared-crypto** — `@askmi/shared-crypto`. All crypto primitives: key generation, signing (Ed25519/P-256), encryption (AES-256-GCM), JWE, WebAuthn, PQC (ML-DSA, ML-KEM via @noble/post-quantum), crypto-agility negotiation, pairwise DIDs, DID quorum resolution, multibase/multihash utilities
 - **shared-types** — `@askmi/shared-types`. Central type definitions shared across all packages
-- **layer-resolver** — Resolves trust layers and credential schemas
+- **layer-resolver** — Resolves protection layers (WELT/GRUNDVERSORGUNG/VULNERABLE) and the neutral per-claim sensitivity view. Two maps: enforcement `LAYER_MAP` (`getMinimumLayerForData`) and a visibility-only `VISIBILITY_LAYER_MAP` superset (`resolveLayerForData`/`sensitivityForData`); extending the enforcement map changes policy verdicts, so visibility vocabulary stays in the superset only
 - **data-flow** — Transaction transparency and audit grouping
 
 ### Protocol packages
