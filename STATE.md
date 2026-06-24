@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-06-22 (G-140 Layer-2 visibility sequence closed; dev-dep #111 merged)
+**Date:** 2026-06-24 (G-140 surfacing follow-up #119/#120 merged — per-claim sensitivity + permanent DataFlow panel; Layer-2 visibility sequence closed earlier; dev-dep #111 merged)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `1a86d62` (PR #111 merged) — dev-only `vite` 6.4.2→6.4.3 bump on top of the G-140 Layer-2 visibility sequence (#112, #114, #115, #116; master was `c118f93`/#116 after the H-10/#104 snapshot).
+**Current master:** `e9bec3c` (PR #120 merged) — G-140 surfacing follow-up (#119 sensitivity substrate + #120 visible badges & permanent DataFlow panel) on top of the dev-only `vite` 6.4.2→6.4.3 bump (#111, `1a86d62`) and the G-140 Layer-2 visibility sequence (#112, #114, #115, #116).
 
 ---
 
@@ -42,7 +42,8 @@
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 
-### Recent additions (since PR #81 → master `c118f93`/PR #116, 2026-06-08 … 2026-06-21)
+### Recent additions (since PR #81 → master `c118f93`/PR #116, 2026-06-08 … 2026-06-24)
+- **G-140 surfacing follow-up landed (#119 Gap E + #120 Gap D, 2026-06-24):** the visibility complement to the Layer-2 sequence. **#119 (substrate):** sensitivity = a read-only projection of `layer-resolver` (`0/1/2 → low/medium/high`, unmapped → `unclassified`); `WalletService.logDisclosureDecision` records `requested_claim_layers` on every `POLICY_EVALUATED`; `DataFlowService` projects them onto `DataFlowTransaction.claimSensitivity`. To keep enforcement untouched, demo vocabulary lives in a separate `VISIBILITY_LAYER_MAP` superset read only by `resolveLayerForData` — the enforcement `LAYER_MAP`/`getMinimumLayerForData` is unchanged (a guard test locks `bloodGroup === WELT`; putting the vocab in the enforcement map had changed policy verdicts). **#120 (display):** neutral per-claim sensitivity badges in `DataFlowPanel` and the panel promoted from a hidden toggle to a permanent first-class section. Validation: `pnpm test` 46/46 turbo green, `guard:rebrand` green. **Open side-finding (tracked, not fixed here):** the policy-engine layer check under-protects the demo health vocabulary (`bloodGroup`/`medication`/`role` treated as WELT for enforcement); the visibility view now surfaces them as `high` — candidate for a future enforcement-map review.
 - **Doc truth-alignment + drift cleanup (2026-06-20/21):** H-10 pass merged (#110) correcting the master pointer and the G-130.1 ✅-vs-⏳ contradiction; EU-boundaries/Layer-2 foundation merged (#109, docs 08/09 + decisions 1&2); dependabot (#108); the four-window dev launcher consolidated into `dev-demo.ps1` with the `VERIFIER_BACKEND_PORT=3004` proxy fix (#106, duplicate `start-4-servers.ps1` removed).
 - **G-140 / Layer-2 Visibility sequence closed (#112, #114, #115, #116):** `WalletService.evaluateRequest()` logs a neutral, PII-minimal `POLICY_EVALUATED` audit event on every verdict (ALLOW/PROMPT/DENY) carrying raw `requested_claims`, `authorized_claims`, `denied_claims`, verdict, and reason codes (#112). `DataFlowService` reads those events so DENY and over-asking transactions are visible and honest against the verifier's raw request (#114). Proximity mdoc `VP_SENT` events carry `decision_id`, `verifier_did`, `claims_requested`, and `claims_shared`, so offline presentations group into Layer-2 transactions (#115). Proximity mdoc now routes through policy before disclosure; the demo reader `did:askmi:proximity-reader` is limited to `given_name` + `family_name`, over-asked elements are clipped, and DENY still creates a visible transaction with empty `claims_shared` (#116). Local validation for #116: wallet-pwa 162/162, data-flow 67/67, `pnpm test` 46/46 turbo tasks, `pnpm build` 29/29, `guard:rebrand` green.
 - **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), `asOf`-determinism root-cause fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102). Authoritative tracking in [`docs/BACKLOG.md`](docs/BACKLOG.md).
