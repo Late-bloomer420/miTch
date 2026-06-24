@@ -119,7 +119,6 @@ function WalletApp() {
   const [currentPolicy, setCurrentPolicy] = useState<PolicyManifest | null>(null);
   const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
   const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
-  const [showDataFlow, setShowDataFlow] = useState(false);
   const [showSovereignty, setShowSovereignty] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [, setReputationReports] = useState<VerifierReportCard[]>([]);
@@ -1694,7 +1693,9 @@ function WalletApp() {
           privacyConsent={_privacyConsent}
           consentReceipt={lastConsentReceipt}
           receiptHistory={consentReceiptHistory}
-          onOpenDataFlow={() => setShowDataFlow(true)}
+          onOpenDataFlow={() =>
+            document.getElementById('dataflow-section')?.scrollIntoView({ behavior: 'smooth' })
+          }
         />
       </div>
 
@@ -1707,11 +1708,8 @@ function WalletApp() {
         />
       </div>
 
-      <div className="wallet-section" style={{ marginTop: 10 }}>
-        <button onClick={() => setShowDataFlow(!showDataFlow)} className="btn-demo-secondary">
-          {showDataFlow ? 'Datenflüsse ausblenden' : 'Datenflüsse anzeigen'}
-        </button>
-        {showDataFlow && <DataFlowPanel entries={recentAuditEntries} />}
+      <div className="wallet-section" id="dataflow-section" style={{ marginTop: 10 }}>
+        <DataFlowPanel entries={recentAuditEntries} />
       </div>
 
       <div className="wallet-section" style={{ marginTop: 10 }}>

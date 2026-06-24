@@ -298,6 +298,16 @@ describe('G-03 — Wallet App', () => {
     expect(document.getElementById('btn-liquor-store')).not.toBeNull();
   });
 
+  it('always shows the data-flow section, with no show/hide toggle (G-140 Gap D)', async () => {
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)'); // main authenticated view
+    // Panel is permanent → its empty-state renders even with no audit logs:
+    expect(screen.getByText('Noch keine Transaktionen')).toBeInTheDocument();
+    // The old toggle is gone:
+    expect(screen.queryByText('Datenflüsse anzeigen')).not.toBeInTheDocument();
+    expect(screen.queryByText('Datenflüsse ausblenden')).not.toBeInTheDocument();
+  });
+
   // G-130.1 Task 2 — Get / Refresh Credential UI ------------------------------
 
   it('shows an empty-state "Get my credential" CTA when the wallet has no credentials', async () => {
