@@ -208,6 +208,9 @@ importers:
       '@askmi/data-flow':
         specifier: workspace:*
         version: link:../../packages/data-flow
+      '@askmi/layer-resolver':
+        specifier: workspace:*
+        version: link:../../packages/layer-resolver
       '@askmi/mdoc':
         specifier: workspace:*
         version: link:../../packages/mdoc
@@ -363,6 +366,9 @@ importers:
 
   src/packages/data-flow:
     dependencies:
+      '@askmi/layer-resolver':
+        specifier: workspace:*
+        version: link:../layer-resolver
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
@@ -1755,7 +1761,6 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
-    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-gnu@4.62.2':

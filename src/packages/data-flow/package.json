@@ -20,6 +20,7 @@
         "lint": "tsc --noEmit"
     },
     "dependencies": {
+        "@askmi/layer-resolver": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {

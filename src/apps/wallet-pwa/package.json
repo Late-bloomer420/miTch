@@ -11,6 +11,7 @@
     "dependencies": {
         "@askmi/audit-log": "workspace:*",
         "@askmi/data-flow": "workspace:*",
+        "@askmi/layer-resolver": "workspace:*",
         "@askmi/mdoc": "workspace:*",
         "@askmi/oid4vp": "workspace:*",
         "@askmi/policy-engine": "workspace:*",

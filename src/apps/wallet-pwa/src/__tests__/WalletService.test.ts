@@ -837,4 +837,32 @@ describe('WalletService — Layer-2 visibility (G-140 PR1): log all requested cl
     expect(decision, 'a DENY must still emit a disclosure-decision audit event').toBeDefined();
     expect((decision!.metadata as Record<string, unknown>)['requested_claims']).toContain('secret');
   });
+
+  it('records per-claim protection layers on POLICY_EVALUATED, with unmapped claims as null', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    await wallet.evaluateRequest(
+      {
+        verifierId: VERIFIER,
+        nonce: crypto.randomUUID(),
+        requirements: [
+          {
+            credentialType: 'HealthCredential',
+            requestedClaims: ['bloodGroup', 'age', 'totallyUnknownClaim'],
+          },
+        ],
+      },
+      { userAgent: 'test', timestamp: Date.now() }
+    );
+
+    const decision = findDisclosureDecision(wallet);
+    expect(decision, 'expected a POLICY_EVALUATED entry').toBeDefined();
+    const layers = (decision!.metadata as Record<string, unknown>)[
+      'requested_claim_layers'
+    ] as Record<string, number | null>;
+    expect(layers['bloodGroup']).toBe(2); // VULNERABLE
+    expect(layers['age']).toBe(1); // GRUNDVERSORGUNG
+    expect(layers['totallyUnknownClaim']).toBeNull(); // unclassified
+  });
 });

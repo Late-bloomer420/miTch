@@ -8,6 +8,9 @@ import {
     includesLayer,
     getLayerName,
     getMinimumLayerForData,
+    resolveLayerForData,
+    sensitivityFromLayer,
+    sensitivityForData,
 } from '../src/index.js';
 
 describe('ProtectionLayer enum', () => {
@@ -90,5 +93,65 @@ describe('getMinimumLayerForData', () => {
 
     it('unknown data type defaults to WELT', () => {
         expect(getMinimumLayerForData('somethingUnknown')).toBe(ProtectionLayer.WELT);
+    });
+});
+
+describe('resolveLayerForData (visibility path, no default)', () => {
+    it('returns the mapped layer for known claims', () => {
+        expect(resolveLayerForData('bloodGroup')).toBe(ProtectionLayer.VULNERABLE);
+        expect(resolveLayerForData('age')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
+        expect(resolveLayerForData('given_name')).toBe(ProtectionLayer.WELT);
+    });
+
+    it('returns undefined for unmapped claims (NOT a WELT default)', () => {
+        expect(resolveLayerForData('somethingUnknown')).toBeUndefined();
+    });
+});
+
+describe('sensitivityFromLayer', () => {
+    it('projects layers onto low/medium/high', () => {
+        expect(sensitivityFromLayer(ProtectionLayer.WELT)).toBe('low');
+        expect(sensitivityFromLayer(ProtectionLayer.GRUNDVERSORGUNG)).toBe('medium');
+        expect(sensitivityFromLayer(ProtectionLayer.VULNERABLE)).toBe('high');
+    });
+
+    it('maps undefined/null to unclassified', () => {
+        expect(sensitivityFromLayer(undefined)).toBe('unclassified');
+        expect(sensitivityFromLayer(null)).toBe('unclassified');
+    });
+});
+
+describe('sensitivityForData', () => {
+    it('classifies the demo vocabulary', () => {
+        expect(sensitivityForData('medication')).toBe('high');
+        expect(sensitivityForData('dosageInstruction')).toBe('high');
+        expect(sensitivityForData('licenseId')).toBe('high');
+        expect(sensitivityForData('age')).toBe('medium');
+        expect(sensitivityForData('family_name')).toBe('low');
+    });
+
+    it('reports unclassified for unmapped claims', () => {
+        expect(sensitivityForData('nonexistentClaim')).toBe('unclassified');
+    });
+});
+
+describe('getMinimumLayerForData (enforcement map untouched by visibility vocabulary)', () => {
+    it('still defaults unmapped claims to WELT', () => {
+        expect(getMinimumLayerForData('somethingUnknown')).toBe(ProtectionLayer.WELT);
+    });
+
+    // Visibility-only vocabulary must NOT leak into the enforcement layer check,
+    // or it would change policy verdicts (G-140 PR-A: this exact leak broke the
+    // EHDS break-glass / geo-scope tests). Enforcement still sees these as WELT.
+    it('does NOT reclassify visibility-only vocabulary (no enforcement change)', () => {
+        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.WELT);
+        expect(getMinimumLayerForData('medication')).toBe(ProtectionLayer.WELT);
+        expect(getMinimumLayerForData('role')).toBe(ProtectionLayer.WELT);
+    });
+
+    // The original enforcement entries are still classified as before.
+    it('keeps the original enforcement classifications', () => {
+        expect(getMinimumLayerForData('healthRecord')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('age')).toBe(ProtectionLayer.GRUNDVERSORGUNG);
     });
 });

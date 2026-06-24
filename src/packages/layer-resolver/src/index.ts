@@ -164,10 +164,68 @@ export function getLayerName(layer: ProtectionLayer): string {
 }
 
 /**
- * Determine the minimum required layer for a given data type.
+ * Neutral sensitivity view over a protection layer. NOT a risk score —
+ * a structural projection of the layer the policy engine resolved.
+ */
+export type Sensitivity = 'low' | 'medium' | 'high' | 'unclassified';
+
+/**
+ * ENFORCEMENT map — claim/data type → minimum protection layer. Drives
+ * getMinimumLayerForData and therefore the policy-engine's layer check.
+ * KEPT INTENTIONALLY NARROW: extending this map changes access-control verdicts.
+ * New visibility vocabulary goes in VISIBILITY_LAYER_MAP, never here.
+ */
+const LAYER_MAP: Record<string, ProtectionLayer> = {
+  // Layer 0 (WELT) — Universal
+  consent: ProtectionLayer.WELT,
+  publicKey: ProtectionLayer.WELT,
+
+  // Layer 1 (GRUNDVERSORGUNG) — Children + Basic
+  age: ProtectionLayer.GRUNDVERSORGUNG,
+  dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
+  education: ProtectionLayer.GRUNDVERSORGUNG,
+
+  // Layer 2 (VULNERABLE) — Sensitive Adult Data
+  healthRecord: ProtectionLayer.VULNERABLE,
+  medicalHistory: ProtectionLayer.VULNERABLE,
+  prescription: ProtectionLayer.VULNERABLE,
+  financialData: ProtectionLayer.VULNERABLE,
+  bankAccount: ProtectionLayer.VULNERABLE,
+  creditScore: ProtectionLayer.VULNERABLE,
+  employmentRecord: ProtectionLayer.VULNERABLE,
+  professionalLicense: ProtectionLayer.VULNERABLE,
+};
+
+/**
+ * VISIBILITY map — the enforcement map PLUS the concrete claim vocabulary used
+ * in real flows, for the user-facing sensitivity view ONLY. Built as a superset
+ * of LAYER_MAP so there is one shared base in one file (single authority), while
+ * classifying a claim for visibility can never change an enforcement verdict.
  *
- * @param dataType - The type of data being processed
- * @returns Minimum required protection layer
+ * (The layer model proved insufficient for visibility: putting this vocabulary
+ * directly in LAYER_MAP altered policy-engine layer-checks — see G-140 PR-A.)
+ */
+const VISIBILITY_LAYER_MAP: Record<string, ProtectionLayer> = {
+  ...LAYER_MAP,
+  // Identity basics
+  given_name: ProtectionLayer.WELT,
+  family_name: ProtectionLayer.WELT,
+  birth_date: ProtectionLayer.GRUNDVERSORGUNG,
+  // EHDS / health demo vocabulary
+  bloodGroup: ProtectionLayer.VULNERABLE,
+  allergies: ProtectionLayer.VULNERABLE,
+  emergencyContacts: ProtectionLayer.VULNERABLE,
+  medication: ProtectionLayer.VULNERABLE,
+  dosageInstruction: ProtectionLayer.VULNERABLE,
+  refillsRemaining: ProtectionLayer.VULNERABLE,
+  // Professional credential demo vocabulary
+  role: ProtectionLayer.VULNERABLE,
+  licenseId: ProtectionLayer.VULNERABLE,
+};
+
+/**
+ * Determine the minimum required layer for a given data type.
+ * ENFORCEMENT path — keeps the safe WELT default for unmapped types.
  *
  * @example
  * ```typescript
@@ -176,29 +234,38 @@ export function getLayerName(layer: ProtectionLayer): string {
  * ```
  */
 export function getMinimumLayerForData(dataType: string): ProtectionLayer {
-  // Map data types to minimum required layers
-  const layerMap: Record<string, ProtectionLayer> = {
-    // Layer 0 (WELT) - Universal
-    consent: ProtectionLayer.WELT,
-    publicKey: ProtectionLayer.WELT,
+  return LAYER_MAP[dataType] ?? ProtectionLayer.WELT;
+}
 
-    // Layer 1 (GRUNDVERSORGUNG) - Children + Basic
-    age: ProtectionLayer.GRUNDVERSORGUNG,
-    dateOfBirth: ProtectionLayer.GRUNDVERSORGUNG,
-    education: ProtectionLayer.GRUNDVERSORGUNG,
+/**
+ * VISIBILITY path — returns the claim's protection layer, or `undefined`
+ * when the claim is not classified. Unlike getMinimumLayerForData this does
+ * NOT default to WELT, so the UI can honestly show "unclassified" instead of
+ * a false "low". Reads VISIBILITY_LAYER_MAP (enforcement base + demo vocabulary).
+ */
+export function resolveLayerForData(dataType: string): ProtectionLayer | undefined {
+  return VISIBILITY_LAYER_MAP[dataType];
+}
 
-    // Layer 2 (VULNERABLE) - Sensitive Adult Data
-    healthRecord: ProtectionLayer.VULNERABLE,
-    medicalHistory: ProtectionLayer.VULNERABLE,
-    prescription: ProtectionLayer.VULNERABLE,
-    financialData: ProtectionLayer.VULNERABLE,
-    bankAccount: ProtectionLayer.VULNERABLE,
-    creditScore: ProtectionLayer.VULNERABLE,
-    employmentRecord: ProtectionLayer.VULNERABLE,
-    professionalLicense: ProtectionLayer.VULNERABLE,
-  };
+/** Project a protection layer onto a neutral sensitivity view (no scoring). */
+export function sensitivityFromLayer(
+  layer: ProtectionLayer | undefined | null
+): Sensitivity {
+  switch (layer) {
+    case ProtectionLayer.WELT:
+      return 'low';
+    case ProtectionLayer.GRUNDVERSORGUNG:
+      return 'medium';
+    case ProtectionLayer.VULNERABLE:
+      return 'high';
+    default:
+      return 'unclassified';
+  }
+}
 
-  return layerMap[dataType] ?? ProtectionLayer.WELT;
+/** Convenience: claim name → neutral sensitivity view. */
+export function sensitivityForData(dataType: string): Sensitivity {
+  return sensitivityFromLayer(resolveLayerForData(dataType));
 }
 
 /**
@@ -210,4 +277,7 @@ export default {
   includesLayer,
   getLayerName,
   getMinimumLayerForData,
+  resolveLayerForData,
+  sensitivityFromLayer,
+  sensitivityForData,
 };

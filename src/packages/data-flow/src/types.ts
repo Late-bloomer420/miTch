@@ -1,4 +1,5 @@
 import type { AuditEventType, IdentityFirewallMetadata } from '@askmi/shared-types';
+import type { Sensitivity } from '@askmi/layer-resolver';
 
 export type IdentityFirewallAccess = Omit<IdentityFirewallMetadata, 'decision_id'>;
 
@@ -14,6 +15,12 @@ export interface DataFlowTransaction {
    * that never produced a VP_GENERATED. Optional for backward compatibility.
    */
   verdict?: 'ALLOW' | 'DENY' | 'PROMPT';
+  /**
+   * Per requested-claim sensitivity (G-140 surfacing), projected from the
+   * protection layer resolved at decision time (POLICY_EVALUATED →
+   * requested_claim_layers). Neutral view, no scoring. Optional/back-compat.
+   */
+  claimSensitivity?: Record<string, Sensitivity>;
   claimsShared: string[];
   claimsRequested: string[] | null;
   claimsWithheld: string[] | null;
