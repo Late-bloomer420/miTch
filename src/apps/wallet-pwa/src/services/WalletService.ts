@@ -871,9 +871,12 @@ export class WalletService {
       for (const claim of requested) {
         requestedClaimLayers[claim] = resolveLayerForData(claim) ?? null;
       }
+      const correlationId =
+        result.originalRequest?.correlation_id ?? request.correlation_id ?? request.nonce ?? decisionId;
 
       const metadata: DisclosureDecisionMetadata = {
         decision_id: decisionId,
+        correlation_id: correlationId,
         verifier_did: request.verifierId,
         verdict: result.verdict,
         requested_claims: requested,
@@ -1209,6 +1212,7 @@ export class WalletService {
     // Log what was shared (Data Transparency Foundation)
     await this.auditLog.append('VP_GENERATED', capsule.decision_id, {
       decision_id: capsule.decision_id,
+      correlation_id: capsule.correlation_id ?? capsule.decision_id,
       verifier_did: verifierDID,
       credential_types: bundles.map((b) => b.credentialType),
       claims_shared: bundles.flatMap((b) => Object.keys(b.disclosure)),
@@ -1630,7 +1634,7 @@ export class WalletService {
     credId: string,
     requestedElements: { ns: string; element: string }[],
     sessionTranscript: import('@askmi/mdoc').SessionTranscript,
-    decision?: { decisionId?: string; verifierDid?: string }
+    decision?: { decisionId?: string; correlationId?: string; verifierDid?: string }
   ): Promise<Uint8Array> {
     if (!this.storage) throw new Error('Wallet locked');
 
@@ -1650,6 +1654,7 @@ export class WalletService {
       {
         verifierId: verifierDid,
         nonce: requestNonce,
+        correlation_id: decision?.correlationId ?? requestNonce,
         requirements: [
           {
             credentialType: credData.docType,
@@ -1717,6 +1722,7 @@ export class WalletService {
 
     await this.auditLog.append('VP_SENT', decisionId, {
       decision_id: decisionId,
+      correlation_id: policyResult.decisionCapsule?.correlation_id ?? decisionId,
       context: 'PROXIMITY_PRESENTATION',
       docType: credData.docType,
       verifier_did: verifierDid,

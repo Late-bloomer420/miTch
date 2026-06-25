@@ -59,7 +59,8 @@ export class VerifierSDK {
             verifierId: this.config.verifierDid,
             requestedClaims,
             purpose,
-            origin: globalThis.location?.origin || 'unknown'
+            origin: globalThis.location?.origin || 'unknown',
+            correlation_id: globalThis.crypto.randomUUID(),
         };
     }
 

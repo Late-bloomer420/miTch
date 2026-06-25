@@ -584,7 +584,11 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
         { ns: NS, element: 'home_address' },
       ],
       [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
-      { decisionId: 'proximity-decision-001', verifierDid: 'did:askmi:proximity-reader' }
+      {
+        decisionId: 'proximity-decision-001',
+        correlationId: 'corr-proximity-001',
+        verifierDid: 'did:askmi:proximity-reader',
+      }
     );
 
     const vpSent = findProximityVpSent(wallet);
@@ -596,6 +600,8 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
 
     // decision anchor so data-flow can group this into a Layer-2 transaction:
     expect(meta['decision_id']).toBe(policyMeta['decision_id']);
+    expect(meta['correlation_id']).toBe('corr-proximity-001');
+    expect(policyMeta['correlation_id']).toBe('corr-proximity-001');
     expect(meta['verifier_did']).toBe('did:askmi:proximity-reader');
 
     // Raw requested set is logged in full — including the element the credential cannot satisfy:
@@ -614,7 +620,11 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
         { ns: NS, element: 'issuing_country' },
       ],
       [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
-      { decisionId: 'proximity-decision-dedupe', verifierDid: 'did:askmi:proximity-reader' }
+      {
+        decisionId: 'proximity-decision-dedupe',
+        correlationId: 'corr-proximity-dedupe',
+        verifierDid: 'did:askmi:proximity-reader',
+      }
     );
 
     const meta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
@@ -632,7 +642,11 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
         { ns: NS, element: 'family_name' },
       ],
       [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
-      { decisionId: 'proximity-policy-nonce', verifierDid: 'did:askmi:proximity-reader' }
+      {
+        decisionId: 'proximity-policy-nonce',
+        correlationId: 'corr-proximity-policy',
+        verifierDid: 'did:askmi:proximity-reader',
+      }
     );
 
     const policyEvent = findProximityPolicyEvaluated(wallet);
@@ -643,6 +657,7 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
     const policyMeta = policyEvent!.metadata as Record<string, unknown>;
     const vpMeta = vpSent!.metadata as Record<string, unknown>;
     expect(policyMeta['verdict']).toBe('ALLOW');
+    expect(policyMeta['correlation_id']).toBe('corr-proximity-policy');
     expect(policyMeta['requested_claims']).toEqual(['given_name', 'family_name']);
     expect(policyMeta['authorized_claims']).toEqual(['given_name', 'family_name']);
     expect(vpMeta['decision_id']).toBe(policyMeta['decision_id']);
@@ -659,7 +674,11 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
         { ns: NS, element: 'issuing_country' },
       ],
       [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
-      { decisionId: 'proximity-overask-nonce', verifierDid: 'did:askmi:proximity-reader' }
+      {
+        decisionId: 'proximity-overask-nonce',
+        correlationId: 'corr-proximity-overask',
+        verifierDid: 'did:askmi:proximity-reader',
+      }
     );
 
     const policyMeta = findProximityPolicyEvaluated(wallet)!.metadata as Record<string, unknown>;
@@ -678,12 +697,17 @@ describe('WalletService — Layer-2 visibility (G-140 PR3): proximity (ISO 18013
       'mdoc-mdl-001',
       [{ ns: NS, element: 'issuing_country' }],
       [null, null, null] as unknown as import('@askmi/mdoc').SessionTranscript,
-      { decisionId: 'proximity-deny-nonce', verifierDid: 'did:askmi:proximity-reader' }
+      {
+        decisionId: 'proximity-deny-nonce',
+        correlationId: 'corr-proximity-deny',
+        verifierDid: 'did:askmi:proximity-reader',
+      }
     );
 
     const policyMeta = findProximityPolicyEvaluated(wallet)!.metadata as Record<string, unknown>;
     const vpMeta = findProximityVpSent(wallet)!.metadata as Record<string, unknown>;
     expect(policyMeta['verdict']).toBe('DENY');
+    expect(policyMeta['correlation_id']).toBe('corr-proximity-deny');
     expect(policyMeta['requested_claims']).toEqual(['issuing_country']);
     expect(policyMeta['authorized_claims']).toEqual([]);
     expect(vpMeta['decision_id']).toBe(policyMeta['decision_id']);

@@ -50,6 +50,15 @@ describe('VerifierSDK Attack Vectors', () => {
         });
     });
 
+    it('creates a request with a non-semantic correlation id', async () => {
+        const request = await verifierSDK.createRequest(['age_over_18'], 'Liquor purchase');
+        expect(request.verifierId).toBe(VERIFIER_DID);
+        expect(request.purpose).toBe('Liquor purchase');
+        expect(request.correlation_id).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        );
+    });
+
     /**
      * Helper to Create a Valid Transport Package
      */

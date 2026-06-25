@@ -937,6 +937,9 @@ function WalletApp() {
         ),
         requestedProvenClaims: [],
         origin: endpoint,
+        correlation_id:
+          (authRequest as AuthorizationRequest & { correlation_id?: string }).correlation_id ??
+          authRequest.nonce,
       };
       setCurrentRequest(policyRequest);
 
@@ -978,7 +981,17 @@ function WalletApp() {
     try {
       const res = await fetch('http://localhost:3005/credential', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...((currentRequest as (VerifierRequest & { correlation_id?: string }) | undefined)
+            ?.correlation_id
+            ? {
+                'x-correlation-id': (
+                  currentRequest as VerifierRequest & { correlation_id?: string }
+                ).correlation_id,
+              }
+            : {}),
+        },
         body: JSON.stringify({
           credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
           proof: {},

@@ -119,7 +119,11 @@ app.post('/credential/mdoc', async (req, res) => {
         return res.status(503).json({ error: 'keys_not_initialized' });
     }
 
+    const correlationId = req.headers['x-correlation-id']?.toString() ?? crypto.randomUUID();
+    res.setHeader('x-correlation-id', correlationId);
+
     console.log('📝 Received mdoc Credential Request');
+    console.log(`🔗 Correlation ID: ${correlationId}`);
 
     // In a real implementation, device_key would come from the wallet's proof of possession.
     // For PoC, we generate an ephemeral device key pair and return the public key.
@@ -186,9 +190,13 @@ app.post('/credential', async (req, res) => {
         return res.status(503).json({ error: 'keys_not_initialized' });
     }
 
+    const correlationId = req.headers['x-correlation-id']?.toString() ?? crypto.randomUUID();
+    res.setHeader('x-correlation-id', correlationId);
+
     const { credential_definition: _credential_definition, proof: _proof } = req.body as CredentialRequest; // Simplified request parsing
 
     console.log('📝 Received Credential Request');
+    console.log(`🔗 Correlation ID: ${correlationId}`);
 
     // PoC: We blindly issue an "Over 18" credential to anyone who asks
     // In reality, we would verify the 'proof' (PoP) and maybe a user session.

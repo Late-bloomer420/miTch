@@ -78,6 +78,7 @@ export interface IdentityFirewallMetadata {
  */
 export interface DisclosureDecisionMetadata {
     decision_id: string;
+    correlation_id?: string;
     verifier_did?: DID;
     verdict: 'ALLOW' | 'DENY' | 'PROMPT';
     /** ALL claims the verifier requested, raw, before policy (names only). */

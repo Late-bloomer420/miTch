@@ -199,6 +199,8 @@ export interface VerifierRequest {
     verifierId: string;
     origin?: string;
     purpose?: string;
+    /** Ephemeral request correlation ID (PII-minimal, non-semantic). */
+    correlation_id?: string;
     /** Anti-replay nonce from verifier */
     nonce?: string;
     /** EHDS usage purpose declared by the verifier */
@@ -303,6 +305,7 @@ export interface PolicyDenialResolution {
  */
 export interface DecisionCapsule {
     decision_id: string; // UUID
+    correlation_id?: string; // Ephemeral request correlation ID
     verdict: 'ALLOW' | 'DENY' | 'PROMPT';
     request_hash: string; // SHA-256 of VerifierRequest
     policy_hash: string; // SHA-256 of PolicyManifest used
