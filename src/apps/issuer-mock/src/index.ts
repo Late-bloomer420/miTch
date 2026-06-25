@@ -14,6 +14,13 @@ const allowedOrigins = new Set([
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5175',
+    // Wallet PWA dev server serves over HTTPS (self-signed) — allow the secure-context origins too.
+    'https://localhost:5173',
+    'https://localhost:5174',
+    'https://localhost:5175',
+    'https://127.0.0.1:5173',
+    'https://127.0.0.1:5174',
+    'https://127.0.0.1:5175',
 ]);
 // Restrictive CORS for local wallet development only
 app.use(cors({
@@ -21,7 +28,10 @@ app.use(cors({
         if (!origin || allowedOrigins.has(origin)) {
             return callback(null, true);
         }
-        return callback(new Error('Origin not allowed by issuer-mock CORS policy'));
+        // Deny cleanly (fail-closed) without throwing — a disallowed origin simply
+        // gets no CORS headers, rather than surfacing as a request-level error.
+        console.warn(`⛔ CORS: origin not allowed: ${origin}`);
+        return callback(null, false);
     }
 }));
 app.use(express.json());
