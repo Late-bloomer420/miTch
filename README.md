@@ -186,6 +186,7 @@ pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
 | ADRs (12) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
 | P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
 | Compliance Matrix | [docs/compliance/EUDI_CIR_MATRIX.md](docs/compliance/EUDI_CIR_MATRIX.md) |
+| Refactoring Roadmap | [docs/REFACTORING_ROADMAP.md](docs/REFACTORING_ROADMAP.md) |
 | Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |
 
 ---

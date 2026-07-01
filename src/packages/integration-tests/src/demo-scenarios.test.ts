@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PolicyEngine } from '@askmi/policy-engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import { generatePairwiseDID } from '@askmi/shared-crypto';
 import { buildVPToken } from '@askmi/oid4vp';
 import type {
@@ -218,6 +219,7 @@ describe('D-01 Scenario 2: Hospital Doctor Login — Multi-VC (PROMPT)', () => {
       verifierPattern: HOSPITAL_DID,
       allowedClaims: ['role', 'licenseId'],
       provenClaims: ['age >= 18'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresTrustedIssuer: true,
       priority: 20,
       requiresUserConsent: true, // PROMPT — doctor must approve
@@ -309,6 +311,7 @@ describe('D-01 Scenario 3: EHDS Emergency Room — Health Data (PROMPT)', () => 
       verifierPattern: HOSPITAL_ER_DID,
       allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
       provenClaims: [],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresTrustedIssuer: true,
       priority: 50,
       requiresUserConsent: true,
@@ -385,6 +388,7 @@ describe('D-01 Scenario 4: Pharmacy — ePrescription ALLOW', () => {
       verifierPattern: PHARMACY_DID,
       allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
       provenClaims: [],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 30,
       priority: 15,

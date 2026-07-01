@@ -51,6 +51,8 @@ type WalletStatus =
   | 'SHREDDED'
   | 'DENIED';
 
+type DemoScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy';
+
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
     id: 1,
@@ -130,6 +132,7 @@ function WalletApp() {
     () => !sessionStorage.getItem('guidedDemoCompleted')
   );
   const [showSecondary, setShowSecondary] = useState(false);
+  const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [flashAllow, setFlashAllow] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy Log');
   const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>(
@@ -1646,24 +1649,80 @@ function WalletApp() {
         />
       )}
 
-      {/* UX-02: Primary CTA Button */}
-      <button
-        id="btn-liquor-store"
-        onClick={() => {
-          if (status === 'SHREDDED') {
-            setStatus('IDLE');
-            setEvaluationResult(null);
-            setLogs([]);
-            addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
-          } else {
-            handleProveAge();
-          }
-        }}
-        disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
-        className={getPrimaryBtnClass()}
-      >
-        {getPrimaryBtnLabel()}
-      </button>
+      <div className="demo-section scenario-launcher" data-testid="scenario-launcher">
+        <div className="scenario-launcher__header">
+          <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
+          <span className="scenario-launcher__hint">Choose one flow</span>
+        </div>
+
+        <div className="demo-primary-grid scenario-launcher__grid">
+          <button
+            id="btn-liquor-store"
+            onClick={() => {
+              setActiveScenario('liquor-store');
+              if (status === 'SHREDDED') {
+                setStatus('IDLE');
+                setEvaluationResult(null);
+                setLogs([]);
+                addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
+              } else {
+                handleProveAge();
+              }
+            }}
+            disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
+            className={`${getPrimaryBtnClass()} btn-scenario-card btn-scenario-card--age${activeScenario === 'liquor-store' ? ' btn-scenario-card--active' : ''}`}
+            aria-current={activeScenario === 'liquor-store' ? 'true' : undefined}
+          >
+            {getPrimaryBtnLabel()}
+            <span>Proof only, no raw PII</span>
+          </button>
+
+          <button
+            id="btn-doctor-login"
+            onClick={() => {
+              setActiveScenario('doctor-login');
+              handleMultiProofDemo();
+            }}
+            className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
+            aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
+            style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
+          >
+            🏥 Doctor Login
+            <br />
+            <span className="btn-scenario-card__subtitle">High Assurance Multi-VC</span>
+          </button>
+
+          <button
+            id="btn-ehds-er"
+            onClick={() => {
+              setActiveScenario('ehds-er');
+              handleHealthAccessDemo();
+            }}
+            className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
+            aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
+            style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
+          >
+            🚑 ER Access
+            <br />
+            <span className="btn-scenario-card__subtitle">EHDS Emergency</span>
+          </button>
+
+          <button
+            id="btn-pharmacy"
+            onClick={() => {
+              setActiveScenario('pharmacy');
+              handlePharmacyDemo();
+            }}
+            className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
+            aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
+            style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
+          >
+            💊 Pharmacy
+            <br />
+            <span className="btn-scenario-card__subtitle">ePrescription</span>
+          </button>
+        </div>
+      </div>
 
       {/* UX-02: Progress bar during PROVING */}
       {status === 'PROVING' && (
@@ -1685,31 +1744,44 @@ function WalletApp() {
         </div>
       </div>
 
-      <div className="wallet-section" style={{ marginTop: 20 }}>
-        <ConsentManagerPanel
-          request={currentRequest}
-          result={evaluationResult}
-          auditEntries={recentAuditEntries}
-          privacyConsent={_privacyConsent}
-          consentReceipt={lastConsentReceipt}
-          receiptHistory={consentReceiptHistory}
-          onOpenDataFlow={() =>
-            document.getElementById('dataflow-section')?.scrollIntoView({ behavior: 'smooth' })
-          }
-        />
-      </div>
+      <div className="trace-summary" data-testid="trace-summary">
+        <div className="trace-summary__header">
+          <h3>What just happened</h3>
+          <p>Consent, compliance and local data-flow evidence for the selected wallet run.</p>
+        </div>
 
-      <div className="wallet-section" style={{ marginTop: 20 }}>
-        <ComplianceDashboard
-          onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
-          onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
-          getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
-          getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
-        />
-      </div>
+        <div className="trace-summary__steps" aria-label="Trace sequence">
+          <span data-testid="trace-step">1 Consent</span>
+          <span data-testid="trace-step">2 Compliance</span>
+          <span data-testid="trace-step">3 Data flow</span>
+        </div>
 
-      <div className="wallet-section" id="dataflow-section" style={{ marginTop: 10 }}>
-        <DataFlowPanel entries={recentAuditEntries} />
+        <div className="trace-summary__panel">
+          <ConsentManagerPanel
+            request={currentRequest}
+            result={evaluationResult}
+            auditEntries={recentAuditEntries}
+            privacyConsent={_privacyConsent}
+            consentReceipt={lastConsentReceipt}
+            receiptHistory={consentReceiptHistory}
+            onOpenDataFlow={() =>
+              document.getElementById('dataflow-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          />
+        </div>
+
+        <div className="trace-summary__panel">
+          <ComplianceDashboard
+            onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
+            onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
+            getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
+            getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
+          />
+        </div>
+
+        <div className="trace-summary__panel" id="dataflow-section">
+          <DataFlowPanel entries={recentAuditEntries} />
+        </div>
       </div>
 
       <div className="wallet-section" style={{ marginTop: 10 }}>
@@ -1758,48 +1830,8 @@ function WalletApp() {
         )}
       </div>
 
-      {/* UX-04: Demo Section with Primary / Secondary Button Hierarchy */}
       <div className="demo-section">
-        <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
-
-        {/* Primary scenarios — bigger, prominent */}
-        <div className="demo-primary-grid">
-          <button
-            id="btn-doctor-login"
-            onClick={handleMultiProofDemo}
-            className="btn-demo-primary btn-demo-primary--full"
-            style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
-          >
-            🏥 Doctor Login
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>
-              High Assurance Multi-VC
-            </span>
-          </button>
-
-          <button
-            id="btn-ehds-er"
-            onClick={handleHealthAccessDemo}
-            className="btn-demo-primary"
-            style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
-          >
-            🚑 ER Access
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>EHDS Emergency</span>
-          </button>
-
-          <button
-            id="btn-pharmacy"
-            onClick={handlePharmacyDemo}
-            className="btn-demo-primary"
-            style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
-          >
-            💊 Pharmacy
-            <br />
-            <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 400 }}>ePrescription</span>
-          </button>
-        </div>
-
+        <h3 className="demo-section-title">Advanced Tools</h3>
         {/* Secondary — collapsible */}
         <button
           className="demo-secondary-toggle"

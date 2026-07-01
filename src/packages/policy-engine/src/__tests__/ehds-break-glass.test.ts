@@ -4,6 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const POLICY: PolicyManifest = {
@@ -18,6 +19,7 @@ const POLICY: PolicyManifest = {
       allowedClaims: ['bloodGroup', 'allergies', 'emergencyContacts'],
       provenClaims: [],
       deniedClaims: ['geneticData'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,
       requiresPresence: true,
       requiresTrustedIssuer: true,
@@ -31,6 +33,7 @@ const POLICY: PolicyManifest = {
       allowedClaims: ['bloodGroup', 'allergies'],
       provenClaims: [],
       deniedClaims: [],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,
       requiresPresence: true,
       requiresTrustedIssuer: true,
@@ -44,6 +47,7 @@ const POLICY: PolicyManifest = {
       allowedClaims: ['medication'],
       provenClaims: [],
       deniedClaims: [],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 30,

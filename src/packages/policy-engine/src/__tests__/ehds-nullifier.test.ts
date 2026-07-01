@@ -7,6 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import type {
   PolicyManifest,
   VerifierRequest,
@@ -29,6 +30,7 @@ const basePolicy: PolicyManifest = {
       id: 'pharmacy-rule',
       verifierPattern: 'did:example:pharmacy*',
       allowedClaims: ['medication', 'dosage', 'patientId'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresTrustedIssuer: true,
       requiresUserConsent: false,
     },

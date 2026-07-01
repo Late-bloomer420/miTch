@@ -1,200 +1,105 @@
-# miTch Architecture Refactoring Roadmap
+# AskMI Refactoring Roadmap
 
-> **Status:** Pre-Phase 6 Gate | **Last Updated:** 2026-01-27
+> **Role:** Deferred architecture work from PoC to production hardening.
+> This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 
-## Executive Summary
+**Status:** Reference closeout for F-16/F-18
+**Last updated:** 2026-06-25
 
-This document describes the **architectural seams** for transitioning miTch from PoC to production-grade architecture. The current implementation reflects **conscious PoC consolidation** â€” deliberate trade-offs that prioritized speed-to-validation over separation of concerns.
+This file tracks larger architecture work that should not be mixed into small
+security, UX, or pilot-readiness fixes. Items here are planned or partially
+delivered work, not blockers unless `docs/BACKLOG.md` promotes them into an
+active sprint.
 
-These are **not violations**, but **intentional technical debt** with a clear repayment plan.
+## Authority
 
----
+- Operational state: [`../STATE.md`](../STATE.md)
+- Task tracking: [`BACKLOG.md`](BACKLOG.md)
+- Architecture authority map: [`DOCS_CANON.md`](DOCS_CANON.md)
+- WalletService decomposition ADR: [`03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md`](03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md)
+- Original audit finding source: [`AUDIT_2026_03.md`](AUDIT_2026_03.md)
 
-## 1. PoC Context: Conscious Consolidation
+## Closed Reference Gap
 
-### Philosophy
-The PoC phase prioritized:
-- **Rapid iteration** on cryptographic primitives
-- **End-to-end validation** of the Privacy Firewall concept
-- **Stakeholder demos** with working, tangible flows
+| Finding | Status | Roadmap placement |
+|---|---|---|
+| F-16 WalletService god object | Documented | Phase 6 wallet facade and service extraction |
+| F-18 missing refactoring roadmap | Closed | This canonical file, plus root compatibility pointer |
 
-This led to **vertical slices** where components were tightly coupled for fast feedback. This was the right call for validation, but must be addressed before scaling.
+F-16 is not a one-line fix. Treat it as an architecture extraction sequence with
+API stability gates. Do not refactor `WalletService` opportunistically while
+working on unrelated policy, UX, or demo-flow tasks.
 
-### Framing (for Reviews)
-| Current State | Interpretation |
-|---------------|----------------|
-| "God Object" in WalletService | *Conscious PoC consolidation; orchestration logic mixed with domain logic for demo velocity* |
-| Crypto + Storage mixed | *Deliberate boundary collapse to accelerate PoC; Phase 6 separates via adapters* |
-| Linear rule matching | *Sufficient for <100 rules; indexing deferred to production scale* |
+## Phase 6 Gate: WalletService Decomposition
 
-**Key Message:** These are not "violations" to apologize for â€” they are documented decisions with explicit remediation paths.
+**Current concern:** `src/apps/wallet-pwa/src/services/WalletService.ts`
 
----
+`WalletService` has historically carried credential storage, policy mediation,
+presentation generation, consent/audit bookkeeping, and recovery helpers in one
+orchestration surface. The target shape is a facade that delegates to narrower
+services while preserving the public wallet API.
 
-## 2. WalletService Decomposition: Seam Interfaces
+### Target Services
 
-### Current State
-`WalletService` (~700 LOC) is a **monolithic orchestrator** that:
-- Manages credentials
-- Evaluates policies
-- Generates presentations
-- Handles audit logging
-- Manages crypto keys
+| Extracted service | Responsibility |
+|---|---|
+| `CredentialService` / repository | Credential storage, retrieval, metadata index, selective load |
+| `PolicyService` / evaluator adapter | Request evaluation, policy state, risk score access |
+| `PresentationService` | VP generation, encryption target handling, proof output |
+| `AuditService` | Audit event writes, chain verification, export/sync helpers |
+| `RecoveryService` | Recovery fragment split/recover workflows |
+| `KeyService` | Master-key derivation, wrap/unwrap, key lifecycle boundaries |
 
-### Target Architecture (Facade Pattern)
+### Migration Rules
 
-```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                        WalletService                            â”‚
-â”‚                    (Orchestrator / Facade)                      â”‚
-â”‚                         ~150 LOC                                â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-         â”‚              â”‚              â”‚              â”‚
-         â–¼              â–¼              â–¼              â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ ICredential â”‚  â”‚   IPolicy   â”‚  â”‚IPresentationâ”‚  â”‚  IAudit     â”‚
-â”‚ Repository  â”‚  â”‚  Evaluator  â”‚  â”‚  Manager    â”‚  â”‚  Trail      â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+- Extract one seam at a time.
+- Keep `WalletService` public method signatures stable unless a dedicated
+  migration task says otherwise.
+- Add tests at the seam before moving behavior.
+- Do not change disclosure, policy verdict, or audit semantics as a side effect
+  of moving code.
+- Prefer adapter interfaces already present in the repo over new abstractions.
 
-### Seam Interfaces (Incremental Extraction)
+### Acceptance Gates
 
-#### 2.1 `ICredentialRepository`
-```typescript
-interface ICredentialRepository {
-  getAllMetadata(): Promise<StoredCredentialMetadata[]>;
-  load<T>(id: string): Promise<T | null>;
-  loadSelectiveClaims<T>(id: string, claims: string[]): Promise<Partial<T> | null>;
-  save(id: string, data: unknown, metadata: Omit<StoredCredentialMetadata, 'id'>): Promise<void>;
-  delete(id: string): Promise<void>;
-}
-```
+| Gate | Measurement |
+|---|---|
+| API stability | Existing wallet-pwa tests pass with no caller rewrites |
+| Behavior stability | Scenario disclosure outputs and audit event sequences unchanged |
+| Extraction proof | Each extracted service has focused tests |
+| Facade reduction | `WalletService` becomes mostly orchestration, not domain logic |
 
-#### 2.2 `IPolicyEvaluator`
-```typescript
-interface IPolicyEvaluator {
-  evaluate(
-    request: VerifierRequest,
-    context: EvaluationContext,
-    credentials: StoredCredentialMetadata[],
-    policy: PolicyManifest
-  ): Promise<PolicyEvaluationResult>;
-  
-  getRiskScore(verifierId: string): number;
-}
-```
+## SecureStorage Boundary
 
-#### 2.3 `IPresentationManager`
-```typescript
-interface IPresentationManager {
-  generatePresentation(
-    capsule: DecisionCapsule,
-    credentials: ICredentialRepository,
-    targetKey?: CryptoKey
-  ): Promise<{ encryptedVp: string; auditLog: string[] }>;
-}
-```
+**Current concern:** `src/packages/secure-storage/src/index.ts`
 
-#### 2.4 `IAuditTrail`
-```typescript
-interface IAuditTrail {
-  append(event: AuditEventType, subject: string, metadata?: Record<string, unknown>): Promise<void>;
-  getRecentLogs(): Promise<AuditLogEntry[]>;
-  verifyChain(): Promise<ChainVerificationResult>;
-  syncToL2(): Promise<L2Receipt>;
-}
-```
+The production target is a clear split between persistence and envelope crypto.
+This supports browser, Node test, and future native/mobile adapters without
+rewriting data minimization logic.
 
-### Migration Path (No Big-Bang)
-1. **Phase 6a:** Extract `ICredentialRepository` interface; `SecureStorage` implements it.
-2. **Phase 6b:** Extract `IPolicyEvaluator`; `PolicyEngine` implements it (already close).
-3. **Phase 6c:** Extract `IPresentationManager` from `generatePresentation()`.
-4. **Phase 6d:** `WalletService` becomes pure facade; all domain logic delegated.
+| Planned seam | Responsibility |
+|---|---|
+| `IStorageAdapter` | Store/list/delete ciphertext blobs and metadata tags |
+| `IEnvelopeCrypto` | Seal/unseal, key wrapping, key lifecycle state |
+| `ICredentialRepository` | Domain-facing credential operations |
 
----
+Related deferred findings:
 
-## 3. SecureStorage: Adapter + Crypto Boundary
+- F-07 claim-level encryption: current selective load is post-decryption
+  minimization; true claim-level encryption requires schema work.
+- F-14 key rotation: add an atomic decrypt/re-encrypt path once storage seams are
+  stable.
+- F-08 `getRawDocument()`: small hardening item, separate from the larger
+  adapter extraction.
 
-### Current State
-`SecureStorage` mixes:
-- **Persistence** (IndexedDB operations)
-- **Encryption** (AES-GCM via shared-crypto)
-- **Serialization** (JSON stringify/parse)
+## PolicyEngine Extension Point
 
-### Target Architecture
+**Current concern:** credential selection and verifier matching should stay
+simple until a product requirement forces a strategy boundary.
 
-```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                      SecureStorage                              â”‚
-â”‚                   (Composition Root)                            â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-         â”‚                              â”‚
-         â–¼                              â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚   IStorageAdapter   â”‚      â”‚    IEnvelopeCrypto      â”‚
-â”‚   (Persistence)     â”‚      â”‚    (Crypto Boundary)    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-         â”‚                              â”‚
-         â–¼                              â–¼
-  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-  â”‚ IndexedDB  â”‚                â”‚ encrypt/decryptâ”‚
-  â”‚ Adapter    â”‚                â”‚ key management â”‚
-  â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤                â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-  â”‚ InMemory   â”‚ (testing)
-  â”‚ Adapter    â”‚
-  â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-  â”‚ ReactNativeâ”‚ (mobile)
-  â”‚ Adapter    â”‚
-  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+Candidate future seam:
 
-### Interface Definitions
-
-#### 3.1 `IStorageAdapter`
-```typescript
-interface IStorageAdapter {
-  // Store raw bytes (ciphertext blobs only)
-  put(key: string, value: Uint8Array, indexTags: Record<string, string>): Promise<void>;
-  get(key: string): Promise<Uint8Array | null>;
-  delete(key: string): Promise<void>;
-  list(): Promise<Array<{ key: string; indexTags: Record<string, string> }>>;
-}
-```
-
-#### 3.2 `IEnvelopeCrypto`
-```typescript
-interface IEnvelopeCrypto {
-  // Envelope encryption (data at rest)
-  seal(plaintext: string, aad?: BufferSource): Promise<Uint8Array>;
-  unseal(ciphertext: Uint8Array, aad?: BufferSource): Promise<string>;
-  
-  // Key wrapping (data in transit)
-  wrapKey(key: CryptoKey, recipientPubKey: CryptoKey): Promise<string>;
-  
-  // Key lifecycle
-  shred(): void;
-  isActive(): boolean;
-}
-```
-
-### Portability Benefit
-| Environment | IStorageAdapter | IEnvelopeCrypto |
-|-------------|-----------------|-----------------|
-| Browser PWA | IndexedDBAdapter | WebCrypto |
-| React Native | AsyncStorageAdapter | react-native-keychain |
-| Node.js (Tests) | InMemoryAdapter | node:crypto |
-| TEE (Future) | SecureEnclaveAdapter | Hardware HSM |
-
----
-
-## 4. PolicyEngine: Strategy Extension Point
-
-### Current State
-Credential selection is hardcoded to "first matching credential".
-
-### Target Architecture
-
-```typescript
+```ts
 interface ICredentialSelectionStrategy {
   select(
     candidates: StoredCredentialMetadata[],
@@ -202,92 +107,29 @@ interface ICredentialSelectionStrategy {
     context: EvaluationContext
   ): StoredCredentialMetadata | null;
 }
-
-// Initial implementation (current behavior)
-class DefaultSelectionStrategy implements ICredentialSelectionStrategy {
-  select(candidates, requirement, context) {
-    return candidates[0] || null;
-  }
-}
-
-// Future: Privacy-first (prefer newest, least used)
-class PrivacyFirstStrategy implements ICredentialSelectionStrategy { ... }
-
-// Future: Reputation-first (prefer highest trust score)
-class ReputationFirstStrategy implements ICredentialSelectionStrategy { ... }
 ```
 
-### When To Introduce
-> **Strategy Pattern as Extension Point, not Overengineering.**
-> 
-> Currently, `DefaultSelectionStrategy` is sufficient. The interface is defined as a **future extension point** for:
-> - Multi-issuer environments (prefer trusted issuers)
-> - Privacy optimization (rotate credentials to limit linkability)
-> - Enterprise policies (reputation scoring)
+Rules:
 
-**Decision:** Define interface now; implement additional strategies only when product requirements demand.
+- Current first-compatible credential behavior is acceptable for the pilot.
+- Add a strategy only when multi-issuer or privacy-rotation requirements are
+  explicit.
+- Do not introduce reputation scoring into verifier-facing enforcement without a
+  separate design decision; AskMI remains deny-biased and scope-bound.
 
----
+## Deferred Crypto / Platform Items
 
-## 5. Refactoring Sprint: Phase 6 Gate
+| Item | Status |
+|---|---|
+| F-04 EphemeralKey unification | Mostly delivered via shared interface and conforming implementations |
+| F-05 TEE migration | Deferred; WebAuthn identity binding is delivered, session-key TEE wrapping remains platform-dependent |
+| F-07 claim-level encryption | Deferred until credential schema is stable |
+| F-14 key rotation | Deferred until storage adapter boundary is stable |
+| F-17 crypto capability check | Small hardening item, safe as its own task |
 
-### Definition of Done (DoD)
+## Scope Guard
 
-| # | Criterion | Measurement | Status |
-|---|-----------|-------------|--------|
-| 1 | **WalletService LOC** | < 200 LOC (orchestration only) | â¬œ Pending |
-| 2 | **Unit Tests without IndexedDB** | All `@askmi/secure-storage` tests run with InMemoryAdapter | â¬œ Pending |
-| 3 | **Second Storage Adapter Exists** | `InMemoryStorageAdapter` implemented and tested | â¬œ Pending |
-| 4 | **Policy Selection Swappable** | `ICredentialSelectionStrategy` interface defined; injectable | â¬œ Pending |
-| 5 | **Public API Stability** | No breaking changes to `WalletService` public methods | âœ… Verified |
-
-### Sprint Scope (Estimated: 3-5 days)
-
-#### Day 1-2: Storage Decomposition
-- [ ] Extract `IStorageAdapter` interface
-- [ ] Implement `IndexedDBAdapter` (refactor existing)
-- [ ] Implement `InMemoryAdapter` (for testing)
-- [ ] Extract `IEnvelopeCrypto` interface
-
-#### Day 3: Repository Pattern
-- [ ] Define `ICredentialRepository`
-- [ ] Refactor `SecureStorage` to implement it
-- [ ] Update WalletService to use interface
-
-#### Day 4: Policy Strategy
-- [ ] Define `ICredentialSelectionStrategy`
-- [ ] Implement `DefaultSelectionStrategy`
-- [ ] Inject strategy into PolicyEngine
-
-#### Day 5: Verification & Cleanup
-- [ ] Run full test suite with InMemoryAdapter
-- [ ] Verify WalletService < 200 LOC
-- [ ] Update ARCHITECTURE.md
-
----
-
-## 6. Risk Assessment
-
-| Risk | Mitigation |
-|------|------------|
-| Breaking pilot integrations | Interface extraction preserves existing signatures; internal refactor only |
-| Crypto boundary bugs | Extensive test coverage; no changes to algorithms, only structure |
-| Over-abstraction | Start with 2 adapters (IndexedDB + InMemory); add more only as needed |
-
----
-
-## Appendix: Code Quality Grades (PoC Context)
-
-| Component | Current Grade | Reason | Phase 6 Target |
-|-----------|---------------|--------|----------------|
-| WalletService | B- | Conscious consolidation; orchestration + domain mixed | A (Facade only) |
-| SecureStorage | B | Crypto + Persistence mixed for PoC velocity | A (Separated) |
-| PolicyEngine | B+ | Close to SOLID; strategy extraction pending | A |
-| AuditLog | A- | Already well-separated | A |
-
-> **Note:** Grades reflect *current suitability for production*, not code quality per se. PoC consolidation was a deliberate trade-off that enabled rapid validation.
-
----
-
-*Document maintained by: miTch Architecture Team*
-*Next Review: Phase 6 Kickoff*
+This roadmap is a parking lot for deliberate architecture work. It must not be
+used as permission for drive-by refactors. If a task is about security behavior,
+policy verdicts, disclosure semantics, UX, or demo runtime, keep that task
+small and leave Phase 6 refactoring for a separate branch.

@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const HDAB_POLICY: PolicyManifest = {
@@ -13,8 +14,8 @@ const HDAB_POLICY: PolicyManifest = {
     { did: 'did:example:ehealth-authority', name: 'eHealth', credentialTypes: ['PatientSummary'] },
   ],
   rules: [
-    { id: 'rule-research', verifierPattern: 'did:eu:research-*', allowedClaims: ['bloodGroup'], requiresHdabPermit: true, requiresUserConsent: true, usagePurpose: 'researchSecondary' as const, priority: 50 },
-    { id: 'rule-hospital', verifierPattern: 'hospital-*', allowedClaims: ['bloodGroup'], requiresUserConsent: true, priority: 60 },
+    { id: 'rule-research', verifierPattern: 'did:eu:research-*', allowedClaims: ['bloodGroup'], minimumLayer: ProtectionLayer.VULNERABLE, requiresHdabPermit: true, requiresUserConsent: true, usagePurpose: 'researchSecondary' as const, priority: 50 },
+    { id: 'rule-hospital', verifierPattern: 'hospital-*', allowedClaims: ['bloodGroup'], minimumLayer: ProtectionLayer.VULNERABLE, requiresUserConsent: true, priority: 60 },
   ],
 };
 

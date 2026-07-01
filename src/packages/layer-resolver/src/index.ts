@@ -172,8 +172,8 @@ export type Sensitivity = 'low' | 'medium' | 'high' | 'unclassified';
 /**
  * ENFORCEMENT map — claim/data type → minimum protection layer. Drives
  * getMinimumLayerForData and therefore the policy-engine's layer check.
- * KEPT INTENTIONALLY NARROW: extending this map changes access-control verdicts.
- * New visibility vocabulary goes in VISIBILITY_LAYER_MAP, never here.
+ * Extending this map changes access-control verdicts; every legitimate rule
+ * for newly classified VULNERABLE claims must opt into that layer explicitly.
  */
 const LAYER_MAP: Record<string, ProtectionLayer> = {
   // Layer 0 (WELT) — Universal
@@ -189,21 +189,28 @@ const LAYER_MAP: Record<string, ProtectionLayer> = {
   healthRecord: ProtectionLayer.VULNERABLE,
   medicalHistory: ProtectionLayer.VULNERABLE,
   prescription: ProtectionLayer.VULNERABLE,
+  bloodGroup: ProtectionLayer.VULNERABLE,
+  allergies: ProtectionLayer.VULNERABLE,
+  activeProblems: ProtectionLayer.VULNERABLE,
+  emergencyContacts: ProtectionLayer.VULNERABLE,
+  medication: ProtectionLayer.VULNERABLE,
+  dosageInstruction: ProtectionLayer.VULNERABLE,
+  refillsRemaining: ProtectionLayer.VULNERABLE,
   financialData: ProtectionLayer.VULNERABLE,
   bankAccount: ProtectionLayer.VULNERABLE,
   creditScore: ProtectionLayer.VULNERABLE,
   employmentRecord: ProtectionLayer.VULNERABLE,
   professionalLicense: ProtectionLayer.VULNERABLE,
+  role: ProtectionLayer.VULNERABLE,
+  licenseId: ProtectionLayer.VULNERABLE,
 };
 
 /**
  * VISIBILITY map — the enforcement map PLUS the concrete claim vocabulary used
  * in real flows, for the user-facing sensitivity view ONLY. Built as a superset
- * of LAYER_MAP so there is one shared base in one file (single authority), while
- * classifying a claim for visibility can never change an enforcement verdict.
- *
- * (The layer model proved insufficient for visibility: putting this vocabulary
- * directly in LAYER_MAP altered policy-engine layer-checks — see G-140 PR-A.)
+ * of LAYER_MAP so there is one shared base in one file (single authority).
+ * Visibility-only vocabulary can be added here only when it must not affect
+ * enforcement verdicts.
  */
 const VISIBILITY_LAYER_MAP: Record<string, ProtectionLayer> = {
   ...LAYER_MAP,
@@ -211,16 +218,6 @@ const VISIBILITY_LAYER_MAP: Record<string, ProtectionLayer> = {
   given_name: ProtectionLayer.WELT,
   family_name: ProtectionLayer.WELT,
   birth_date: ProtectionLayer.GRUNDVERSORGUNG,
-  // EHDS / health demo vocabulary
-  bloodGroup: ProtectionLayer.VULNERABLE,
-  allergies: ProtectionLayer.VULNERABLE,
-  emergencyContacts: ProtectionLayer.VULNERABLE,
-  medication: ProtectionLayer.VULNERABLE,
-  dosageInstruction: ProtectionLayer.VULNERABLE,
-  refillsRemaining: ProtectionLayer.VULNERABLE,
-  // Professional credential demo vocabulary
-  role: ProtectionLayer.VULNERABLE,
-  licenseId: ProtectionLayer.VULNERABLE,
 };
 
 /**
