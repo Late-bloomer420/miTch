@@ -77,7 +77,15 @@ describe('getMinimumLayerForData', () => {
     it('health data requires VULNERABLE', () => {
         expect(getMinimumLayerForData('healthRecord')).toBe(ProtectionLayer.VULNERABLE);
         expect(getMinimumLayerForData('prescription')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('activeProblems')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('medication')).toBe(ProtectionLayer.VULNERABLE);
         expect(getMinimumLayerForData('financialData')).toBe(ProtectionLayer.VULNERABLE);
+    });
+
+    it('professional credential claims require VULNERABLE', () => {
+        expect(getMinimumLayerForData('role')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('licenseId')).toBe(ProtectionLayer.VULNERABLE);
     });
 
     it('age/education data requires GRUNDVERSORGUNG', () => {
@@ -135,18 +143,21 @@ describe('sensitivityForData', () => {
     });
 });
 
-describe('getMinimumLayerForData (enforcement map untouched by visibility vocabulary)', () => {
+describe('getMinimumLayerForData (enforcement classifications)', () => {
     it('still defaults unmapped claims to WELT', () => {
         expect(getMinimumLayerForData('somethingUnknown')).toBe(ProtectionLayer.WELT);
     });
 
-    // Visibility-only vocabulary must NOT leak into the enforcement layer check,
-    // or it would change policy verdicts (G-140 PR-A: this exact leak broke the
-    // EHDS break-glass / geo-scope tests). Enforcement still sees these as WELT.
-    it('does NOT reclassify visibility-only vocabulary (no enforcement change)', () => {
-        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.WELT);
-        expect(getMinimumLayerForData('medication')).toBe(ProtectionLayer.WELT);
-        expect(getMinimumLayerForData('role')).toBe(ProtectionLayer.WELT);
+    it('classifies concrete health and professional demo vocabulary as VULNERABLE', () => {
+        expect(getMinimumLayerForData('bloodGroup')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('allergies')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('activeProblems')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('emergencyContacts')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('medication')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('dosageInstruction')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('refillsRemaining')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('role')).toBe(ProtectionLayer.VULNERABLE);
+        expect(getMinimumLayerForData('licenseId')).toBe(ProtectionLayer.VULNERABLE);
     });
 
     // The original enforcement entries are still classified as before.

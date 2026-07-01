@@ -2,7 +2,7 @@
  * G-03 — Wallet PWA App Tests
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { PolicyEvaluationResult } from '@askmi/shared-types';
 
 const buildSDJWTPresentationMock = vi.hoisted(() => vi.fn());
@@ -360,6 +360,117 @@ describe('G-03 — Wallet App', () => {
       );
       expect(walletServiceMockState.addIssuedCredential).toHaveBeenCalled();
     });
+  });
+
+  // ── Wallet Shell UX polish: scenario launcher + framed trace (presentation only) ──
+
+  it('groups all four scenarios in a single scenario-launcher region', async () => {
+    // The four demo scenarios were split — Prove Age at the top, the other three buried
+    // at the bottom past every trace panel. They must read as one launcher.
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    const launcher = screen.getByTestId('scenario-launcher');
+    expect(launcher).toContainElement(document.getElementById('btn-liquor-store'));
+    expect(launcher).toContainElement(document.getElementById('btn-doctor-login'));
+    expect(launcher).toContainElement(document.getElementById('btn-ehds-er'));
+    expect(launcher).toContainElement(document.getElementById('btn-pharmacy'));
+  });
+
+  it('marks a scenario as active (aria-current) once it is selected', async () => {
+    // Bootstrap the mocks so clicking the scenario runs cleanly (no unhandled verdict throw);
+    // the assertion is purely about the synchronous active-selection marking.
+    await bootstrapFetchMocks('PROMPT');
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    const doctor = document.getElementById('btn-doctor-login')!;
+    expect(doctor).not.toHaveAttribute('aria-current');
+
+    fireEvent.click(doctor);
+
+    expect(document.getElementById('btn-doctor-login')).toHaveAttribute('aria-current', 'true');
+  });
+
+  it.each([
+    [
+      'btn-liquor-store',
+      expect.objectContaining({
+        verifierId: expect.stringContaining('verifier-liquor-store'),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+      }),
+    ],
+    [
+      'btn-doctor-login',
+      expect.objectContaining({
+        verifierId: 'med-portal-login',
+        origin: 'https://portal.st-mary.med',
+        requirements: expect.arrayContaining([
+          expect.objectContaining({
+            credentialType: 'AgeCredential',
+            requestedClaims: [],
+            requestedProvenClaims: ['age >= 18'],
+          }),
+          expect.objectContaining({
+            credentialType: 'EmploymentCredential',
+            requestedClaims: ['role', 'licenseId'],
+            requestedProvenClaims: [],
+          }),
+        ]),
+      }),
+    ],
+    [
+      'btn-ehds-er',
+      expect.objectContaining({
+        verifierId: 'hospital-madrid-er-1',
+        origin: 'https://er.madrid.health',
+        requirements: [
+          expect.objectContaining({
+            credentialType: 'PatientSummary',
+            requestedClaims: ['bloodGroup', 'allergies'],
+            requestedProvenClaims: [],
+          }),
+        ],
+      }),
+    ],
+    [
+      'btn-pharmacy',
+      expect.objectContaining({
+        verifierId: 'pharmacy-berlin-center',
+        origin: 'https://pharmacy.berlin.health',
+        requirements: [
+          expect.objectContaining({
+            credentialType: 'Prescription',
+            requestedClaims: ['medication', 'dosageInstruction'],
+            requestedProvenClaims: [],
+          }),
+        ],
+      }),
+    ],
+  ])('keeps %s wired to the same wallet evaluation request', async (buttonId, expectedRequest) => {
+    await bootstrapFetchMocks('PROMPT');
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    fireEvent.click(document.getElementById(buttonId)!);
+
+    await waitFor(() => expect(walletServiceMockState.evaluateRequest).toHaveBeenCalledOnce());
+    expect(walletServiceMockState.evaluateRequest).toHaveBeenCalledWith(
+      expectedRequest,
+      expect.objectContaining({ userDID: 'did:example:wallet-user' })
+    );
+    expect(document.getElementById(buttonId)).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('frames consent, compliance and data-flow as one "What just happened" trace section', async () => {
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    const trace = screen.getByTestId('trace-summary');
+    expect(within(trace).getByText(/what just happened/i)).toBeInTheDocument();
+    expect(trace).toContainElement(document.getElementById('dataflow-section'));
+    expect(within(trace).getAllByTestId('trace-step')).toHaveLength(3);
   });
 
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {

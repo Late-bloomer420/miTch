@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import { extractCountryFromDid, isAllowedByGeoScope } from '../geo-scope';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
@@ -74,6 +75,7 @@ function makePolicy(geoScope?: string): PolicyManifest {
     verifierPattern: 'did:*:*',
     allowedClaims: ['bloodGroup', 'allergies'],
     provenClaims: [],
+    minimumLayer: ProtectionLayer.VULNERABLE,
     requiresTrustedIssuer: true,
     maxCredentialAgeDays: 365,
     requiresUserConsent: true,

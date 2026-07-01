@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
 import { createDecisionCapsule } from '../src/decisionCapsule';
+import { sha256Hex } from '../src/sha256-sync';
 import { evaluateDisclosureRequest } from '../src/evaluateDisclosureRequest';
 import { REASON_CODES } from '../src/reasonCodes';
 import type { DisclosureRequest, Policy } from '../src/types';
@@ -54,6 +56,13 @@ const requestFixture: DisclosureRequest = {
 };
 
 describe('decision capsule policy evidence', () => {
+  it('uses real SHA-256 hex output for capsule hash material (F-03)', () => {
+    const expected = createHash('sha256').update('abc').digest('hex');
+
+    expect(sha256Hex('abc')).toBe(expected);
+    expect(sha256Hex('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  });
+
   it('creates a golden PII-safe decision capsule for age verification', () => {
     const decision = evaluateDisclosureRequest(requestFixture, policyFixture);
     const capsule = createDecisionCapsule({
@@ -84,8 +93,9 @@ describe('decision capsule policy evidence', () => {
 
     expect(capsule.verifierRef).toBeTruthy();
     expect(capsule.verifierRef).not.toBe(requestFixture.verifierDid);
-    expect(capsule.inputHash).toBeTruthy();
-    expect(capsule.policyHash).toBeTruthy();
+    expect(capsule.inputHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(capsule.policyHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(capsule.capsuleId).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it('is deterministic for same decision, policy, request, and timestamp', () => {

@@ -14,6 +14,7 @@
  */
 
 import { PolicyManifest } from '@askmi/shared-types';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 
 export const DEMO_POLICY: PolicyManifest = {
   version: '1.2',
@@ -88,6 +89,7 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['role', 'licenseId'],
       provenClaims: ['age >= 18'],
       deniedClaims: ['birthDate', 'salary', 'homeAddress'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,       // ← PROMPT
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 180,
@@ -104,6 +106,7 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
       provenClaims: [],
       deniedClaims: ['insuranceId', 'financialData', 'geneticData'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,       // ← PROMPT
       requiresPresence: true,          // ← WebAuthn PFLICHT (Layer 2)
       allowBreakGlass: true,           // ← EHDS Art. 8(5): Notfall-Zugriff ohne Consent
@@ -122,6 +125,7 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['bloodGroup', 'allergies'],          // anonymisiertes Subset
       provenClaims: [],
       deniedClaims: ['emergencyContacts', 'insuranceId', 'geneticData', 'name', 'address'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,       // ← PROMPT
       requiresPresence: false,
       requiresTrustedIssuer: true,
@@ -137,6 +141,7 @@ export const DEMO_POLICY: PolicyManifest = {
       allowedClaims: ['medication', 'dosageInstruction', 'refillsRemaining'],
       provenClaims: [],
       deniedClaims: ['diagnosis', 'geneticData', 'insuranceId'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresUserConsent: true,       // ← PROMPT
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 30,        // Rezepte sind kurzlebig

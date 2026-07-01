@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { PolicyEngine, ReasonCode, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
 
 const EHDS_POLICY: PolicyManifest = {
@@ -25,6 +26,7 @@ const EHDS_POLICY: PolicyManifest = {
       allowedClaims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
       provenClaims: [],
       deniedClaims: ['insuranceId', 'financialData', 'geneticData'],
+      minimumLayer: ProtectionLayer.VULNERABLE,
       requiresTrustedIssuer: true,
       maxCredentialAgeDays: 365,
       requiresUserConsent: true,
@@ -149,6 +151,7 @@ describe('EHDS Emergency: requiresPresence flow', () => {
           allowedClaims: ['bloodGroup', 'allergies'],
           provenClaims: [],
           deniedClaims: [],
+          minimumLayer: ProtectionLayer.VULNERABLE,
           requiresUserConsent: true,
           requiresPresence: false,
           requiresTrustedIssuer: true,

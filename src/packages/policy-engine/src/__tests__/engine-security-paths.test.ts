@@ -206,6 +206,81 @@ describe('engine.ts — blockUnknownVerifiers: false', () => {
     });
 });
 
+describe('engine.ts — S-11 vulnerable claims require Layer 2 authorization', () => {
+    let engine: PolicyEngine;
+
+    beforeEach(() => {
+        engine = new PolicyEngine();
+    });
+
+    it('DENY LAYER_VIOLATION when a WELT/default verifier requests bloodGroup', async () => {
+        const policy = makePolicy({
+            trustedIssuers: [
+                { did: 'did:example:ehealth', name: 'eHealth', credentialTypes: ['PatientSummary'] },
+            ],
+            rules: [{
+                id: 'welt-health-rule',
+                verifierPattern: 'did:web:example.com',
+                allowedClaims: ['bloodGroup'],
+                provenClaims: [],
+                requiresTrustedIssuer: true,
+                requiresUserConsent: false,
+                priority: 10,
+            }],
+        });
+        const request = makeRequest({
+            requirements: [{
+                credentialType: 'PatientSummary',
+                requestedClaims: ['bloodGroup'],
+                requestedProvenClaims: [],
+            }],
+        });
+        const cred = makeCredential({
+            type: ['PatientSummary'],
+            issuer: 'did:example:ehealth',
+            claims: ['bloodGroup'],
+        });
+
+        const result = await engine.evaluate(request, ctx(), [cred], policy);
+        expect(result.verdict).toBe('DENY');
+        expect(result.reasonCodes).toContain(ReasonCode.LAYER_VIOLATION);
+    });
+
+    it('DENY LAYER_VIOLATION when a Layer-1 verifier requests licenseId', async () => {
+        const policy = makePolicy({
+            trustedIssuers: [
+                { did: 'did:example:hospital', name: 'Hospital', credentialTypes: ['EmploymentCredential'] },
+            ],
+            rules: [{
+                id: 'layer1-professional-rule',
+                verifierPattern: 'did:web:example.com',
+                minimumLayer: ProtectionLayer.GRUNDVERSORGUNG,
+                allowedClaims: ['licenseId'],
+                provenClaims: [],
+                requiresTrustedIssuer: true,
+                requiresUserConsent: false,
+                priority: 10,
+            }],
+        });
+        const request = makeRequest({
+            requirements: [{
+                credentialType: 'EmploymentCredential',
+                requestedClaims: ['licenseId'],
+                requestedProvenClaims: [],
+            }],
+        });
+        const cred = makeCredential({
+            type: ['EmploymentCredential'],
+            issuer: 'did:example:hospital',
+            claims: ['licenseId'],
+        });
+
+        const result = await engine.evaluate(request, ctx(), [cred], policy);
+        expect(result.verdict).toBe('DENY');
+        expect(result.reasonCodes).toContain(ReasonCode.LAYER_VIOLATION);
+    });
+});
+
 describe('engine.ts — strictVerifierBinding', () => {
     let engine: PolicyEngine;
 
@@ -299,6 +374,36 @@ describe('engine.ts — strictVerifierBinding', () => {
 
         const result = await engine.evaluate(request, ctx(), [makeCredential()], policy);
         expect(result.reasonCodes).not.toContain(ReasonCode.UNKNOWN_VERIFIER);
+    });
+});
+
+describe('engine.ts — F-02 verifier pattern matching is ReDoS-safe glob matching', () => {
+    let matchesPattern: (pattern: string, value: string) => boolean;
+
+    beforeEach(() => {
+        const engine = new PolicyEngine();
+        matchesPattern = (
+            engine as unknown as { matchesPattern: (pattern: string, value: string) => boolean }
+        ).matchesPattern.bind(engine);
+    });
+
+    it('treats regex metacharacters as literals, except the supported * glob wildcard', () => {
+        expect(matchesPattern('did:web:example.com', 'did:web:exampleXcom')).toBe(false);
+        expect(matchesPattern('did:web:example.com+', 'did:web:example.commmmm')).toBe(false);
+        expect(matchesPattern('did:web:*.example.com', 'did:web:shop.example.com')).toBe(true);
+    });
+
+    it('rejects pathological regex-looking patterns without evaluating them as regex', () => {
+        const started = performance.now();
+
+        expect(matchesPattern('(a+)+$', `${'a'.repeat(1000)}!`)).toBe(false);
+
+        expect(performance.now() - started).toBeLessThan(50);
+    });
+
+    it('fails closed on oversized patterns and values', () => {
+        expect(matchesPattern(`${'a'.repeat(257)}*`, 'anything')).toBe(false);
+        expect(matchesPattern('did:web:*', `did:web:${'a'.repeat(1025)}`)).toBe(false);
     });
 });
 
