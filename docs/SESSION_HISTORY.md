@@ -9,7 +9,8 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 - **Change:** Added canonical `txn_*` correlation IDs in `@askmi/shared-types` (`newCorrelationId`, `resolveCorrelationId`, validation tests). OID4VP verifier request builders and `VerifierSDK` mint them; OID4VP parser/encoder preserves them; `policy-engine` carries them into `DecisionCapsule`.
 - **Wallet/Issuer trace path:** Wallet policy/audit events now share the same correlation ID across `POLICY_EVALUATED`, `VP_GENERATED`, and Proximity `VP_SENT`; issuer-mock mirrors `x-correlation-id` on `/credential` and `/credential/mdoc`.
 - **Validation:** Targeted tests/builds for changed packages passed; repo gates passed locally: `pnpm run guard:rebrand`, `pnpm lint`, `pnpm test` (46/46 Turbo tasks).
-- **Status:** Branch `feat/g100.4-correlation-ids`; verified locally, not yet merged to `master`.
+- **Status:** Merged via PR #126 to master `da8afce` after required GitHub checks passed.
+- **Follow-on:** Started G-110.1 closeout on `docs/g110-qr-link-closeout`: existing VerifierPanel QR + "Open in wallet" behavior is being locked with all-scenario coverage and backlog truth-alignment.
 
 ### Session 18 — G-100 closure, Proof-Randomization, Passkey onboarding, Capsule-Sig root-cause (2026-06-08 … 2026-06-20)
 - **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), injectable `asOf` determinism fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102).
