@@ -99,7 +99,7 @@ geplant werden.
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| G-110.1 | 🔴 P0 | ⏳ | Verifier zeigt immer QR + „Open in Wallet“ Link | Dual Path (Scan/Click) in allen 5 Szenarien |
+| G-110.1 | 🔴 P0 | ✅ | Verifier zeigt immer QR + „Open in Wallet“ Link. Bereits in `VerifierPanel` vorhanden; am 2026-07-04 mit `VerifierPanel.test.tsx` für alle 5 Szenarien gegen SVG-QR + Wallet-Link-Parameter abgesichert. | Dual Path (Scan/Click) in allen 5 Szenarien |
 | G-110.2 | 🟡 P1 | ⏳ | Handoff-State-Machine (created/scanned/opened/completed/expired) | UX zeigt klaren Zustand + Retry |
 | G-110.3 | 🟡 P1 | ⏳ | Ablauf-/TTL-Handling für Requests | Abgelaufene Requests werden fail-closed und verständlich kommuniziert |
 
