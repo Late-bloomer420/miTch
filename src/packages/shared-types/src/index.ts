@@ -12,6 +12,9 @@ export * from './policy.js';
 // Audit Logging
 export * from './audit.js';
 
+// Correlation IDs (G-100.4) — one greppable id per transaction across services
+export * from './correlation.js';
+
 // OID4VCI API Contracts
 export * from './oid4vci.js';
 

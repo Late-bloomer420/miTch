@@ -10,7 +10,8 @@
     },
     "dependencies": {
         "@askmi/mdoc": "workspace:*",
-        "@askmi/oid4vp": "workspace:*"
+        "@askmi/oid4vp": "workspace:*",
+        "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^25.3.5",

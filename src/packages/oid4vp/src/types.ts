@@ -53,6 +53,8 @@ export interface AuthorizationRequest {
     client_id: string;
     redirect_uri: string;
     nonce: string;
+    /** Ephemeral, non-semantic transaction correlation ID for logs/audit only. */
+    correlation_id?: string;
     presentation_definition: PresentationDefinition;
     state?: string;
     response_mode?: 'direct_post' | 'direct_post.jwt' | 'fragment' | 'query';

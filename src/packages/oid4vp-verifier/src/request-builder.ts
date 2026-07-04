@@ -4,6 +4,7 @@
 
 import { randomBytes } from 'crypto';
 import type { AuthorizationRequest, PresentationDefinition } from '@askmi/oid4vp';
+import { newCorrelationId } from '@askmi/shared-types';
 
 export interface RequestBuilderOptions {
     clientId: string;
@@ -23,6 +24,7 @@ export function buildAuthorizationRequest(opts: RequestBuilderOptions): Authoriz
         client_id: opts.clientId,
         redirect_uri: opts.redirectUri,
         nonce: randomBytes(16).toString('hex'),
+        correlation_id: newCorrelationId(),
         presentation_definition: opts.definition,
         state: opts.state ?? randomBytes(8).toString('hex'),
         response_mode: opts.responseMode ?? 'direct_post',
@@ -40,6 +42,7 @@ export function encodeAuthorizationRequest(req: AuthorizationRequest): string {
         nonce: req.nonce,
         presentation_definition: JSON.stringify(req.presentation_definition),
     });
+    if (req.correlation_id) params.set('correlation_id', req.correlation_id);
     if (req.state) params.set('state', req.state);
     if (req.response_mode) params.set('response_mode', req.response_mode);
     return params.toString();

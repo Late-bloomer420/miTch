@@ -594,6 +594,9 @@ importers:
       '@askmi/oid4vp':
         specifier: workspace:*
         version: link:../oid4vp
+      '@askmi/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
     devDependencies:
       '@types/node':
         specifier: ^25.3.5

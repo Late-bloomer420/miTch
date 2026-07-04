@@ -10,7 +10,7 @@ import type {
   StoredCredentialMetadata,
   VerifierReportCard,
 } from '@askmi/shared-types';
-import { ASKMI_DEMO } from '@askmi/shared-types';
+import { ASKMI_DEMO, resolveCorrelationId } from '@askmi/shared-types';
 import { ReputationSensor } from '@askmi/wallet-core';
 import { WalletService } from './services/WalletService';
 import { ComplianceDashboard } from './components/AuditReportPanel';
@@ -940,6 +940,11 @@ function WalletApp() {
         ),
         requestedProvenClaims: [],
         origin: endpoint,
+        nonce: authRequest.nonce,
+        correlation_id: resolveCorrelationId({
+          correlationId: authRequest.correlation_id,
+          nonce: authRequest.nonce,
+        }),
       };
       setCurrentRequest(policyRequest);
 
@@ -981,7 +986,13 @@ function WalletApp() {
     try {
       const res = await fetch('http://localhost:3005/credential', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...((currentRequest?.correlation_id && {
+            'x-correlation-id': currentRequest.correlation_id,
+          }) ||
+            {}),
+        },
         body: JSON.stringify({
           credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
           proof: {},

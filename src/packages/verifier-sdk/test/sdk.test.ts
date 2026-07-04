@@ -13,6 +13,7 @@ import {
     EphemeralKey,
     canonicalStringify,
 } from '@askmi/shared-crypto';
+import { isCorrelationId } from '@askmi/shared-types';
 
 // Polyfill for Node environment if needed (Vitest usually handles this but explicit is safe)
 const crypto = globalThis.crypto;
@@ -48,6 +49,13 @@ describe('VerifierSDK Attack Vectors', () => {
             verifierDid: VERIFIER_DID,
             replayCheck: mockReplayCheck
         });
+    });
+
+    it('creates a request with a non-semantic correlation id', async () => {
+        const request = await verifierSDK.createRequest(['age_over_18'], 'Liquor purchase');
+        expect(request.verifierId).toBe(VERIFIER_DID);
+        expect(request.purpose).toBe('Liquor purchase');
+        expect(isCorrelationId(request.correlation_id)).toBe(true);
     });
 
     /**
