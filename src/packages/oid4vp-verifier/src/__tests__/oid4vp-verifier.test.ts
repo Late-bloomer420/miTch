@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildAuthorizationRequest, encodeAuthorizationRequest } from '../request-builder';
 import { verifyAuthorizationResponse, satisfiesConstraints } from '../response-verifier';
 import type { PresentationDefinition, AuthorizationResponse } from '@askmi/oid4vp';
+import { isCorrelationId } from '@askmi/shared-types';
 
 const DEFINITION: PresentationDefinition = {
     id: 'age-pd',
@@ -50,6 +51,11 @@ describe('buildAuthorizationRequest', () => {
         const r = buildAuthorizationRequest({ clientId: 'c', redirectUri: 'r', definition: DEFINITION });
         expect(r.response_mode).toBe('direct_post');
     });
+
+    it('mints a correlation id for trace grouping', () => {
+        const r = buildAuthorizationRequest({ clientId: 'c', redirectUri: 'r', definition: DEFINITION });
+        expect(isCorrelationId(r.correlation_id)).toBe(true);
+    });
 });
 
 describe('encodeAuthorizationRequest', () => {
@@ -59,6 +65,7 @@ describe('encodeAuthorizationRequest', () => {
         expect(encoded).toContain('client_id=client1');
         expect(encoded).toContain('response_type=vp_token');
         expect(encoded).toContain('presentation_definition=');
+        expect(encoded).toContain('correlation_id=');
     });
 });
 

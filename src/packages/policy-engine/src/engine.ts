@@ -713,6 +713,7 @@ export class PolicyEngine {
 
             decisionCapsule = {
                 decision_id: crypto.randomUUID(),
+                correlation_id: request.correlation_id,
                 verdict: verdict,
                 request_hash: requestHash,
                 policy_hash: policyHash,

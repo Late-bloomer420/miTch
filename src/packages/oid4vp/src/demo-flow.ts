@@ -23,7 +23,7 @@ import {
   type SDJWTVCPayload,
 } from '@askmi/shared-crypto';
 import type { JWK } from 'jose';
-import { ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
+import { ASKMI_SCENARIO_VCT, newCorrelationId } from '@askmi/shared-types';
 import type { AuthorizationRequest, PresentationDefinition, PresentationSubmission } from './types';
 
 // ─── Cross-env random helper ──────────────────────────────────────────────────
@@ -171,6 +171,7 @@ export function buildOID4VPRequest(opts: BuildRequestOpts): BuildRequestResult {
     client_id: opts.verifierClientId,
     redirect_uri: opts.redirectUri,
     nonce,
+    correlation_id: newCorrelationId(),
     presentation_definition: pd,
     response_mode: 'direct_post',
     state: randomHex(8),

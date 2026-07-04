@@ -19,7 +19,8 @@ interface DecryptedArtifact {
     };
 }
 import {
-    VerifierRequest
+    VerifierRequest,
+    newCorrelationId,
 } from '@askmi/shared-types';
 import {
     TransportPackage,
@@ -59,7 +60,8 @@ export class VerifierSDK {
             verifierId: this.config.verifierDid,
             requestedClaims,
             purpose,
-            origin: globalThis.location?.origin || 'unknown'
+            origin: globalThis.location?.origin || 'unknown',
+            correlation_id: newCorrelationId(),
         };
     }
 

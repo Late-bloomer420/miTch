@@ -48,6 +48,7 @@ export function parseAuthorizationRequest(raw: unknown): ValidationResult<Author
             client_id: r['client_id'] as string,
             redirect_uri: r['redirect_uri'] as string,
             nonce: r['nonce'] as string,
+            correlation_id: typeof r['correlation_id'] === 'string' ? r['correlation_id'] : undefined,
             presentation_definition: pdResult.value!,
             state: typeof r['state'] === 'string' ? r['state'] : undefined,
             response_mode: typeof r['response_mode'] === 'string'

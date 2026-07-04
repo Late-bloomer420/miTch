@@ -16,6 +16,7 @@ import {
   IdentityLinkability,
   IdentitySeverity,
   ASKMI_STORAGE_KEYS,
+  resolveCorrelationId,
 } from '@askmi/shared-types';
 import {
   EphemeralKey,
@@ -871,9 +872,14 @@ export class WalletService {
       for (const claim of requested) {
         requestedClaimLayers[claim] = resolveLayerForData(claim) ?? null;
       }
+      const correlationId = resolveCorrelationId({
+        correlationId: result.originalRequest?.correlation_id ?? request.correlation_id,
+        nonce: request.nonce ?? result.decisionCapsule?.nonce ?? decisionId,
+      });
 
       const metadata: DisclosureDecisionMetadata = {
         decision_id: decisionId,
+        correlation_id: correlationId,
         verifier_did: request.verifierId,
         verdict: result.verdict,
         requested_claims: requested,
@@ -1209,6 +1215,10 @@ export class WalletService {
     // Log what was shared (Data Transparency Foundation)
     await this.auditLog.append('VP_GENERATED', capsule.decision_id, {
       decision_id: capsule.decision_id,
+      correlation_id: resolveCorrelationId({
+        correlationId: capsule.correlation_id,
+        nonce: capsule.nonce ?? capsule.decision_id,
+      }),
       verifier_did: verifierDID,
       credential_types: bundles.map((b) => b.credentialType),
       claims_shared: bundles.flatMap((b) => Object.keys(b.disclosure)),
@@ -1630,11 +1640,15 @@ export class WalletService {
     credId: string,
     requestedElements: { ns: string; element: string }[],
     sessionTranscript: import('@askmi/mdoc').SessionTranscript,
-    decision?: { decisionId?: string; verifierDid?: string }
+    decision?: { decisionId?: string; correlationId?: string; verifierDid?: string }
   ): Promise<Uint8Array> {
     if (!this.storage) throw new Error('Wallet locked');
 
     const requestNonce = decision?.decisionId ?? `proximity-${crypto.randomUUID()}`;
+    const correlationId = resolveCorrelationId({
+      correlationId: decision?.correlationId,
+      nonce: requestNonce,
+    });
     const verifierDid = decision?.verifierDid ?? 'did:askmi:proximity-reader';
 
     const credData = await this.storage.load<{ _mdoc: true; docType: string; cborBase64: string }>(
@@ -1650,6 +1664,7 @@ export class WalletService {
       {
         verifierId: verifierDid,
         nonce: requestNonce,
+        correlation_id: correlationId,
         requirements: [
           {
             credentialType: credData.docType,
@@ -1717,6 +1732,10 @@ export class WalletService {
 
     await this.auditLog.append('VP_SENT', decisionId, {
       decision_id: decisionId,
+      correlation_id: resolveCorrelationId({
+        correlationId: policyResult.decisionCapsule?.correlation_id,
+        nonce: requestNonce,
+      }),
       context: 'PROXIMITY_PRESENTATION',
       docType: credData.docType,
       verifier_did: verifierDid,

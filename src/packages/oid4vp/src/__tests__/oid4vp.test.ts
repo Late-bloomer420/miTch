@@ -48,6 +48,14 @@ describe('parseAuthorizationRequest', () => {
         }
     });
 
+    it('preserves an optional correlation id', () => {
+        const result = parseAuthorizationRequest({ ...REQUEST, correlation_id: 'txn-oid4vp-test' });
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value!.correlation_id).toBe('txn-oid4vp-test');
+        }
+    });
+
     it('rejects invalid response_type', () => {
         const r = parseAuthorizationRequest({ ...REQUEST, response_type: 'code' });
         expect(r.ok).toBe(false);
