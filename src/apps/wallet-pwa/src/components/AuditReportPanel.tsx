@@ -80,12 +80,12 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
     return (
         <div className="compliance-dashboard" style={{
             padding: '24px',
-            background: '#111827',
-            borderRadius: '24px',
-            border: `1px solid ${isChainValid ? '#374151' : '#7f1d1d'}`,
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            background: '#ffffff',
+            borderRadius: '16px',
+            border: `1px solid ${isChainValid ? '#dbeafe' : '#fecaca'}`,
+            boxShadow: 'none',
             marginTop: '30px',
-            color: '#f9fafb',
+            color: '#0f172a',
             transition: 'border 0.3s ease'
         }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -113,17 +113,17 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                     Live Proof Boundary Feed
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {recentLogs.length === 0 && <div style={{ color: '#4b5563', fontStyle: 'italic', fontSize: '13px' }}>No events recorded yet.</div>}
+                    {recentLogs.length === 0 && <div style={{ color: '#64748b', fontStyle: 'italic', fontSize: '13px' }}>No events recorded yet.</div>}
                     {recentLogs.map(entry => (
                         <div key={entry.id} style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
-                            background: '#1f2937',
+                            background: '#f8fafc',
                             padding: '10px 14px',
                             borderRadius: '12px',
                             fontSize: '13px',
-                            border: '1px solid #374151'
+                            border: '1px solid #e2e8f0'
                         }}>
                             <span title={entry.action}>{getActionIcon(entry.action)}</span>
                             <div style={{ flex: 1 }}>
@@ -144,27 +144,27 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
 
             {/* T-27: DPA Reality Check (Auditor Summary) */}
             <div style={{
-                background: 'rgba(99, 102, 241, 0.05)',
-                border: '1px dashed #6366f1',
-                borderRadius: '16px',
+                background: '#f8fafc',
+                border: '1px dashed #bfdbfe',
+                borderRadius: '14px',
                 padding: '16px',
                 marginBottom: '25px'
             }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '11px', color: '#818cf8', textTransform: 'uppercase' }}>
-                    🔍 DPA Reality Check (Report Preview)
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '11px', color: '#0369a1', textTransform: 'uppercase' }}>
+                    Local Evidence Preview
                 </h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>SHREDDING FREQUENCY</div>
-                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>100%</div>
+                    <div style={{ background: '#ffffff', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>SHREDDING FREQUENCY</div>
+                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>100%</div>
                     </div>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>AVG. SHRED LATENCY</div>
-                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#c084fc' }}>~4.2s</div>
+                    <div style={{ background: '#ffffff', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>AVG. SHRED LATENCY</div>
+                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#4338ca' }}>~4.2s</div>
                     </div>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px', gridColumn: 'span 2' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>SOVEREIGNTY STATUS</div>
-                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#10b981' }}>Sovereign (No Central leakage)</div>
+                    <div style={{ background: '#ffffff', padding: '10px', borderRadius: '8px', gridColumn: 'span 2', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>SOVEREIGNTY STATUS</div>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#047857' }}>Sovereign (No Central leakage)</div>
                     </div>
                 </div>
             </div>
@@ -179,8 +179,8 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                         borderRadius: '16px',
                         border: 'none',
                         background: isChainValid
-                            ? 'linear-gradient(to right, #6366f1, #a855f7)'
-                            : '#4b5563',
+                            ? '#0369a1'
+                            : '#94a3b8',
                         color: 'white',
                         fontWeight: '700',
                         cursor: 'pointer',
@@ -212,9 +212,9 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                             width: '100%',
                             padding: '10px',
                             borderRadius: '16px',
-                            border: '1px solid #6366f1',
+                            border: '1px solid #bae6fd',
                             background: 'transparent',
-                            color: '#818cf8',
+                            color: '#0369a1',
                             fontWeight: '600',
                             cursor: 'pointer',
                             fontSize: '13px'
@@ -235,11 +235,11 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                     padding: '10px',
                     fontSize: '12px',
                     fontFamily: 'monospace',
-                    background: '#000',
+                    background: '#f8fafc',
                     borderRadius: '8px',
                     textAlign: 'center',
-                    border: '1px solid #374151',
-                    color: status.includes('❌') ? '#f87171' : (status.includes('⚠️') ? '#fbbf24' : '#34d399')
+                    border: '1px solid #e2e8f0',
+                    color: status.includes('❌') ? '#b91c1c' : (status.includes('⚠️') ? '#92400e' : '#047857')
                 }}>
                     {status}
                 </div>

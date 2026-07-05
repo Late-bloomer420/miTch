@@ -1776,9 +1776,8 @@
 /* ==========================================================================
    UX-09: Consent Manager Panel
    Stylesheet for the BEM class contract declared in
-   components/ConsentManagerPanel.tsx. Mirrors the credential-card design
-   language (dark surface, accent-blue trim, glass borders) and uses the
-   shared --accent-* / --text-* tokens from App.css for status colours.
+   components/ConsentManagerPanel.tsx. Uses the wallet trace surface language:
+   light, quiet evidence cards with status colour reserved for meaning.
    UI only — no business logic or React state is affected.
    ========================================================================== */
 
@@ -1791,13 +1790,11 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
-    border: 1px solid rgba(0, 191, 255, 0.18);
-    border-radius: 20px;
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(0, 191, 255, 0.05);
-    color: var(--text-primary);
+    background: #ffffff;
+    border: 1px solid rgba(14, 165, 233, 0.18);
+    border-radius: 14px;
+    box-shadow: none;
+    color: #0f172a;
 }
 
 .consent-manager-panel__header {
@@ -1817,7 +1814,7 @@
 .consent-manager-panel__subtitle {
     margin: 0;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: #64748b;
     line-height: 1.4;
 }
 
@@ -1838,27 +1835,27 @@
 }
 
 .consent-manager-panel__state-badge--idle {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-secondary);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
 }
 
 .consent-manager-panel__state-badge--prompt {
-    background: rgba(255, 215, 64, 0.12);
-    color: var(--accent-yellow);
-    border-color: rgba(255, 215, 64, 0.4);
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
 }
 
 .consent-manager-panel__state-badge--approved {
-    background: rgba(0, 230, 118, 0.12);
-    color: var(--accent-green);
-    border-color: rgba(0, 230, 118, 0.4);
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
 }
 
 .consent-manager-panel__state-badge--denied {
-    background: rgba(255, 82, 82, 0.12);
-    color: var(--accent-red);
-    border-color: rgba(255, 82, 82, 0.4);
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
 }
 
 /* ── Summary stat row ─────────────────────────────────────────────────────── */
@@ -1870,8 +1867,8 @@
 }
 
 .consent-manager-panel__summary > div {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 10px 12px;
 }
@@ -1880,7 +1877,7 @@
     font-size: 10px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
+    color: #64748b;
     font-weight: 600;
     margin-bottom: 4px;
 }
@@ -1888,7 +1885,7 @@
 .consent-manager-panel__value {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #0f172a;
     word-break: break-word;
 }
 
@@ -1901,8 +1898,8 @@
 }
 
 .consent-manager-panel__card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 14px 16px;
 }
@@ -1912,7 +1909,7 @@
     font-size: 12px;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: var(--accent-blue);
+    color: #0369a1;
     font-weight: 700;
 }
 
@@ -1930,39 +1927,39 @@
     font-size: 11px;
     font-weight: 600;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
 }
 
 .consent-manager-panel__chip--requested {
-    background: rgba(0, 191, 255, 0.1);
-    color: var(--accent-blue);
-    border-color: rgba(0, 191, 255, 0.35);
+    background: #e0f2fe;
+    color: #075985;
+    border-color: #bae6fd;
 }
 
 .consent-manager-panel__chip--allowed {
-    background: rgba(0, 230, 118, 0.1);
-    color: var(--accent-green);
-    border-color: rgba(0, 230, 118, 0.35);
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
 }
 
 .consent-manager-panel__chip--withheld {
-    background: rgba(255, 82, 82, 0.1);
-    color: var(--accent-red);
-    border-color: rgba(255, 82, 82, 0.35);
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
 }
 
 .consent-manager-panel__chip--signal {
-    background: rgba(255, 215, 64, 0.1);
-    color: var(--accent-yellow);
-    border-color: rgba(255, 215, 64, 0.35);
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
     cursor: help;
 }
 
 .consent-manager-panel__empty {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: #64748b;
     font-style: italic;
 }
 
@@ -1980,7 +1977,7 @@
     align-items: baseline;
     gap: 10px;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .consent-manager-panel__evidence-item:last-child {
@@ -2022,10 +2019,10 @@
 
 .consent-manager-panel__filter-input,
 .consent-manager-panel__filter-select {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
-    color: var(--text-primary);
+    color: #0f172a;
     font-size: 12px;
     padding: 8px 10px;
     min-height: 38px;
@@ -2049,8 +2046,8 @@
     gap: 8px;
     width: 100%;
     text-align: left;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 12px 14px;
     cursor: pointer;
@@ -2059,8 +2056,8 @@
 }
 
 .consent-manager-panel__history-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 191, 255, 0.3);
+    background: #f8fafc;
+    border-color: #bae6fd;
 }
 
 .consent-manager-panel__history-item:active {
@@ -2073,8 +2070,8 @@
 }
 
 .consent-manager-panel__history-item--selected {
-    border-color: rgba(0, 191, 255, 0.55);
-    background: rgba(0, 191, 255, 0.06);
+    border-color: #38bdf8;
+    background: #e0f2fe;
 }
 
 .consent-manager-panel__history-topline {
@@ -2090,7 +2087,7 @@
     flex-wrap: wrap;
     gap: 4px 12px;
     font-size: 11px;
-    color: var(--text-secondary);
+    color: #64748b;
 }
 
 /* Status badges: green SUCCESS · red DENIED · amber ERROR */
@@ -2105,21 +2102,21 @@
 }
 
 .consent-manager-panel__history-pill--success {
-    background: rgba(0, 230, 118, 0.14);
-    color: var(--accent-green);
-    border-color: rgba(0, 230, 118, 0.45);
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
 }
 
 .consent-manager-panel__history-pill--denied {
-    background: rgba(255, 82, 82, 0.14);
-    color: var(--accent-red);
-    border-color: rgba(255, 82, 82, 0.45);
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
 }
 
 .consent-manager-panel__history-pill--error {
-    background: rgba(255, 215, 64, 0.14);
-    color: var(--accent-yellow);
-    border-color: rgba(255, 215, 64, 0.45);
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
 }
 
 /* ── Pagination ───────────────────────────────────────────────────────────── */
@@ -2134,7 +2131,7 @@
 
 .consent-manager-panel__pagination-label {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: #64748b;
     font-weight: 600;
 }
 
@@ -2152,7 +2149,7 @@
     align-items: baseline;
     gap: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .consent-manager-panel__detail-block {
