@@ -301,7 +301,10 @@ describe('G-03 — Wallet App', () => {
   it('always shows the data-flow section, with no show/hide toggle (G-140 Gap D)', async () => {
     render(<App />);
     await screen.findByText('Age Credential (GovID)'); // main authenticated view
-    // Panel is permanent → its empty-state renders even with no audit logs:
+
+    // Panel is permanent through the trace summary tab, but no longer expands by default
+    // into a full extra dashboard below the consent view.
+    fireEvent.click(screen.getByRole('button', { name: /3 Data flow/i }));
     expect(screen.getByText('Noch keine Transaktionen')).toBeInTheDocument();
     // The old toggle is gone:
     expect(screen.queryByText('Datenflüsse anzeigen')).not.toBeInTheDocument();
@@ -469,8 +472,20 @@ describe('G-03 — Wallet App', () => {
 
     const trace = screen.getByTestId('trace-summary');
     expect(within(trace).getByText(/what just happened/i)).toBeInTheDocument();
-    expect(trace).toContainElement(document.getElementById('dataflow-section'));
     expect(within(trace).getAllByTestId('trace-step')).toHaveLength(3);
+    expect(within(trace).queryByText('Consent Manager')).not.toBeInTheDocument();
+
+    fireEvent.click(within(trace).getByRole('button', { name: /1 Consent/i }));
+
+    expect(within(trace).getByRole('button', { name: /1 Consent/i })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(within(trace).getByText('Consent Manager')).toBeInTheDocument();
+
+    fireEvent.click(within(trace).getByRole('button', { name: /3 Data flow/i }));
+
+    expect(trace).toContainElement(document.getElementById('dataflow-section'));
   });
 
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
@@ -486,6 +501,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
+    fireEvent.click(screen.getByRole('button', { name: /1 Consent/i }));
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
@@ -543,6 +559,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
+    fireEvent.click(screen.getByRole('button', { name: /1 Consent/i }));
 
     await screen.findByText('DENIED', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
