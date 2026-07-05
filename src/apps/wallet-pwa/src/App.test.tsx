@@ -380,6 +380,33 @@ describe('G-03 — Wallet App', () => {
     expect(launcher).toContainElement(document.getElementById('btn-pharmacy'));
   });
 
+  it('renders direct wallet section navigation', async () => {
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    const nav = screen.getByRole('navigation', { name: /wallet sections/i });
+    expect(within(nav).getByRole('link', { name: 'Credentials' })).toHaveAttribute(
+      'href',
+      '#credentials-section'
+    );
+    expect(within(nav).getByRole('link', { name: 'Requests' })).toHaveAttribute(
+      'href',
+      '#requests-section'
+    );
+    expect(within(nav).getByRole('link', { name: 'Audit' })).toHaveAttribute(
+      'href',
+      '#audit-section'
+    );
+    expect(within(nav).getByRole('link', { name: 'Trace' })).toHaveAttribute(
+      'href',
+      '#trace-section'
+    );
+    expect(within(nav).getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '#settings-section'
+    );
+  });
+
   it('marks a scenario as active (aria-current) once it is selected', async () => {
     // Bootstrap the mocks so clicking the scenario runs cleanly (no unhandled verdict throw);
     // the assertion is purely about the synchronous active-selection marking.

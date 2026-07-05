@@ -1112,6 +1112,14 @@ function WalletApp() {
         AskMI <span className="wallet-title-accent">Trusted Channel</span>
       </h1>
 
+      <nav className="wallet-nav" aria-label="Wallet sections">
+        <a href="#credentials-section">Credentials</a>
+        <a href="#requests-section">Requests</a>
+        <a href="#audit-section">Audit</a>
+        <a href="#trace-section">Trace</a>
+        <a href="#settings-section">Settings</a>
+      </nav>
+
       {/* OID4VP: incoming request banner */}
       {incomingOID4VP && (
         <div
@@ -1248,10 +1256,10 @@ function WalletApp() {
         </div>
       )}
 
-      {/* UX-03: Private credential records */}
+      {/* UX-03: Dynamic Premium Credential Cards */}
       {isWalletReady ? (
         <>
-          <div className="credential-card-list">
+          <div id="credentials-section" className="credential-card-list">
             {credentials.map((cred) => {
               let cardClass = 'credential-card--generic';
               let displayName = 'Verifiable Credential';
@@ -1667,7 +1675,7 @@ function WalletApp() {
         />
       )}
 
-      <div className="demo-section scenario-launcher" data-testid="scenario-launcher">
+      <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
         <div className="scenario-launcher__header">
           <h3 className="demo-section-title">Verifier Requests</h3>
           <span className="scenario-launcher__hint">Choose one request</span>
@@ -1747,7 +1755,7 @@ function WalletApp() {
       )}
 
       {/* UX-05: Audit Log */}
-      <div className="audit-section">
+      <div id="audit-section" className="audit-section">
         <div className="audit-header">
           <h3 className="audit-title">Immutable Audit Trace</h3>
           <button className="audit-copy-btn" onClick={handleCopyLog}>
@@ -1759,7 +1767,7 @@ function WalletApp() {
         </div>
       </div>
 
-      <div className="trace-summary" data-testid="trace-summary">
+      <div id="trace-section" className="trace-summary" data-testid="trace-summary">
         <div className="trace-summary__header">
           <div>
             <h3>Disclosure Trace</h3>
@@ -1866,7 +1874,7 @@ function WalletApp() {
         </div>
       )}
 
-      <div className="wallet-section" style={{ marginBottom: 20 }}>
+      <div id="settings-section" className="wallet-section" style={{ marginBottom: 20 }}>
         {currentPolicy && (
           <PolicyEditor
             policy={currentPolicy}
