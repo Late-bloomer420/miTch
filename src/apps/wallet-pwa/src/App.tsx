@@ -1441,82 +1441,6 @@ function WalletApp() {
             </div>
           )}
 
-          {/* OID4VCI: fetch credential from issuer-mock */}
-          <button
-            onClick={handleFetchCredential}
-            disabled={credentialStatus === 'fetching'}
-            style={{
-              width: '100%',
-              maxWidth: 400,
-              padding: '10px 0',
-              marginBottom: 24,
-              background: credentialStatus === 'done' ? '#dcfce7' : '#eff6ff',
-              border: `1px solid ${credentialStatus === 'done' ? '#86efac' : '#bfdbfe'}`,
-              borderRadius: 8,
-              color: credentialStatus === 'done' ? '#166534' : '#1d4ed8',
-              fontSize: 13,
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontFamily: 'monospace',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 6px 16px rgba(37, 99, 235, 0.08)',
-            }}
-          >
-            {credentialStatus === 'fetching'
-              ? '⏳ Fetching from Issuer (OID4VCI)…'
-              : credentialStatus === 'done'
-                ? '✅ AgeCredential from issuer-mock'
-                : credentialStatus === 'error'
-                  ? '❌ Retry — Get Test Credential'
-                  : '🎫 Get Test Credential (OID4VCI)'}
-          </button>
-
-          {import.meta.env.DEV && (
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                maxWidth: 400,
-                margin: '-12px auto 24px',
-                fontSize: 11,
-                color: 'rgba(255,255,255,0.55)',
-                cursor: 'pointer',
-              }}
-              title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
-            >
-              <input
-                type="checkbox"
-                checked={mintSingleUse}
-                onChange={(e) => setMintSingleUse(e.target.checked)}
-              />
-              <span>🧪 Dev: als Einmal-Credential ausstellen</span>
-            </label>
-          )}
-
-          {import.meta.env.DEV && (
-            <button
-              onClick={handleFetchBatch}
-              disabled={credentialStatus === 'fetching'}
-              style={{
-                width: '100%',
-                maxWidth: 400,
-                padding: '10px 0',
-                marginBottom: 24,
-                background: '#eef2ff',
-                border: '1px solid #c7d2fe',
-                borderRadius: 12,
-                color: '#4338ca',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: credentialStatus === 'fetching' ? 'not-allowed' : 'pointer',
-              }}
-              title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
-            >
-              🧪 Dev: Batch ausstellen ({BATCH_SIZE} Einmal-Credentials, eigene Holder-Keys)
-            </button>
-          )}
         </>
       ) : null}
 
@@ -1927,6 +1851,42 @@ function WalletApp() {
           >
             🇪🇸 Cross-Border
           </button>
+          <button
+            onClick={handleFetchCredential}
+            disabled={credentialStatus === 'fetching'}
+            className={`btn-demo-secondary developer-tool-button${credentialStatus === 'done' ? ' developer-tool-button--done' : ''}`}
+          >
+            {credentialStatus === 'fetching'
+              ? '⏳ Issuer request running'
+              : credentialStatus === 'done'
+                ? '✅ Test credential issued'
+                : credentialStatus === 'error'
+                  ? '↻ Retry test credential'
+                  : '🎫 Test credential'}
+          </button>
+          {import.meta.env.DEV && (
+            <label
+              className="developer-tool-toggle"
+              title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
+            >
+              <input
+                type="checkbox"
+                checked={mintSingleUse}
+                onChange={(e) => setMintSingleUse(e.target.checked)}
+              />
+              <span>Single-use credential</span>
+            </label>
+          )}
+          {import.meta.env.DEV && (
+            <button
+              onClick={handleFetchBatch}
+              disabled={credentialStatus === 'fetching'}
+              className="btn-demo-secondary developer-tool-button"
+              title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
+            >
+              Batch issue {BATCH_SIZE}
+            </button>
+          )}
         </div>
       </div>
 
