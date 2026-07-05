@@ -52,6 +52,7 @@ type WalletStatus =
   | 'DENIED';
 
 type DemoScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy';
+type TraceDetailPanel = 'consent' | 'compliance' | 'data-flow';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -133,6 +134,7 @@ function WalletApp() {
   );
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
+  const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>(null);
   const [flashAllow, setFlashAllow] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy Log');
   const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>(
@@ -251,6 +253,11 @@ function WalletApp() {
       report.metrics.overRequestingDetected ? 'warning' : 'info'
     );
   }, [currentRequest, evaluationResult?.decisionCapsule, _privacyConsent]);
+
+  const handleExportAuditReport = useCallback(() => walletRef.current.exportAuditReport(), []);
+  const handleSyncAuditToL2 = useCallback(() => walletRef.current.syncAuditToL2(), []);
+  const getRecentComplianceLogs = useCallback(() => recentAuditEntries, [recentAuditEntries]);
+  const getAuditChainStatus = useCallback(() => walletRef.current.verifyAuditChain(), []);
 
   // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
@@ -1757,42 +1764,76 @@ function WalletApp() {
 
       <div className="trace-summary" data-testid="trace-summary">
         <div className="trace-summary__header">
-          <h3>What just happened</h3>
-          <p>Consent, compliance and local data-flow evidence for the selected wallet run.</p>
+          <div>
+            <h3>What just happened</h3>
+            <p>Consent, compliance and local data-flow evidence for the selected wallet run.</p>
+          </div>
+          <span className="trace-summary__status">
+            {evaluationResult?.verdict ?? 'Idle'}
+          </span>
         </div>
 
         <div className="trace-summary__steps" aria-label="Trace sequence">
-          <span data-testid="trace-step">1 Consent</span>
-          <span data-testid="trace-step">2 Compliance</span>
-          <span data-testid="trace-step">3 Data flow</span>
+          <button
+            type="button"
+            className={`trace-summary__step${traceDetailPanel === 'consent' ? ' trace-summary__step--active' : ''}`}
+            data-testid="trace-step"
+            aria-pressed={traceDetailPanel === 'consent'}
+            onClick={() => setTraceDetailPanel('consent')}
+          >
+            <span>1 Consent</span>
+            <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+          </button>
+          <button
+            type="button"
+            className={`trace-summary__step${traceDetailPanel === 'compliance' ? ' trace-summary__step--active' : ''}`}
+            data-testid="trace-step"
+            aria-pressed={traceDetailPanel === 'compliance'}
+            onClick={() => setTraceDetailPanel('compliance')}
+          >
+            <span>2 Compliance</span>
+            <strong>{recentAuditEntries.length} events</strong>
+          </button>
+          <button
+            type="button"
+            className={`trace-summary__step${traceDetailPanel === 'data-flow' ? ' trace-summary__step--active' : ''}`}
+            data-testid="trace-step"
+            aria-pressed={traceDetailPanel === 'data-flow'}
+            onClick={() => setTraceDetailPanel('data-flow')}
+          >
+            <span>3 Data flow</span>
+            <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
+          </button>
         </div>
 
-        <div className="trace-summary__panel">
-          <ConsentManagerPanel
-            request={currentRequest}
-            result={evaluationResult}
-            auditEntries={recentAuditEntries}
-            privacyConsent={_privacyConsent}
-            consentReceipt={lastConsentReceipt}
-            receiptHistory={consentReceiptHistory}
-            onOpenDataFlow={() =>
-              document.getElementById('dataflow-section')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          />
-        </div>
-
-        <div className="trace-summary__panel">
-          <ComplianceDashboard
-            onExport={useCallback(() => walletRef.current.exportAuditReport(), [])}
-            onSyncL2={useCallback(() => walletRef.current.syncAuditToL2(), [])}
-            getRecentLogs={useCallback(() => recentAuditEntries, [recentAuditEntries])}
-            getChainStatus={useCallback(() => walletRef.current.verifyAuditChain(), [])}
-          />
-        </div>
-
-        <div className="trace-summary__panel" id="dataflow-section">
-          <DataFlowPanel entries={recentAuditEntries} />
-        </div>
+        {traceDetailPanel && (
+          <div className="trace-summary__panel">
+            {traceDetailPanel === 'consent' && (
+              <ConsentManagerPanel
+                request={currentRequest}
+                result={evaluationResult}
+                auditEntries={recentAuditEntries}
+                privacyConsent={_privacyConsent}
+                consentReceipt={lastConsentReceipt}
+                receiptHistory={consentReceiptHistory}
+                onOpenDataFlow={() => setTraceDetailPanel('data-flow')}
+              />
+            )}
+            {traceDetailPanel === 'compliance' && (
+              <ComplianceDashboard
+                onExport={handleExportAuditReport}
+                onSyncL2={handleSyncAuditToL2}
+                getRecentLogs={getRecentComplianceLogs}
+                getChainStatus={getAuditChainStatus}
+              />
+            )}
+            {traceDetailPanel === 'data-flow' && (
+              <div id="dataflow-section">
+                <DataFlowPanel entries={recentAuditEntries} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="wallet-section" style={{ marginTop: 10 }}>
