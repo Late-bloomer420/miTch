@@ -1109,7 +1109,7 @@ function WalletApp() {
   return (
     <div className="wallet-app">
       <h1 className="wallet-title">
-        AskMI <span className="wallet-title-accent">Smart Wallet</span>
+        AskMI <span className="wallet-title-accent">Trusted Channel</span>
       </h1>
 
       {/* OID4VP: incoming request banner */}
@@ -1248,7 +1248,7 @@ function WalletApp() {
         </div>
       )}
 
-      {/* UX-03: Dynamic Premium Credential Cards */}
+      {/* UX-03: Private credential records */}
       {isWalletReady ? (
         <>
           <div className="credential-card-list">
@@ -1669,8 +1669,8 @@ function WalletApp() {
 
       <div className="demo-section scenario-launcher" data-testid="scenario-launcher">
         <div className="scenario-launcher__header">
-          <h3 className="demo-section-title">🚀 Demo Scenarios</h3>
-          <span className="scenario-launcher__hint">Choose one flow</span>
+          <h3 className="demo-section-title">Verifier Requests</h3>
+          <span className="scenario-launcher__hint">Choose one request</span>
         </div>
 
         <div className="demo-primary-grid scenario-launcher__grid">
@@ -1703,7 +1703,6 @@ function WalletApp() {
             }}
             className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
             aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
-            style={{ background: 'linear-gradient(135deg, #0891b2, #0e7490)' }}
           >
             🏥 Doctor Login
             <br />
@@ -1718,7 +1717,6 @@ function WalletApp() {
             }}
             className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
             aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
-            style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}
           >
             🚑 ER Access
             <br />
@@ -1733,7 +1731,6 @@ function WalletApp() {
             }}
             className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
             aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
-            style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}
           >
             💊 Pharmacy
             <br />
@@ -1765,8 +1762,8 @@ function WalletApp() {
       <div className="trace-summary" data-testid="trace-summary">
         <div className="trace-summary__header">
           <div>
-            <h3>What just happened</h3>
-            <p>Consent, compliance and local data-flow evidence for the selected wallet run.</p>
+            <h3>Disclosure Trace</h3>
+            <p>Requested, allowed, withheld and sent evidence for the selected request.</p>
           </div>
           <span className="trace-summary__status">
             {evaluationResult?.verdict ?? 'Idle'}
@@ -1781,7 +1778,7 @@ function WalletApp() {
             aria-pressed={traceDetailPanel === 'consent'}
             onClick={() => setTraceDetailPanel('consent')}
           >
-            <span>1 Consent</span>
+            <span>1 Requested</span>
             <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
           </button>
           <button
@@ -1791,7 +1788,7 @@ function WalletApp() {
             aria-pressed={traceDetailPanel === 'compliance'}
             onClick={() => setTraceDetailPanel('compliance')}
           >
-            <span>2 Compliance</span>
+            <span>2 Allowed</span>
             <strong>{recentAuditEntries.length} events</strong>
           </button>
           <button
@@ -1801,7 +1798,7 @@ function WalletApp() {
             aria-pressed={traceDetailPanel === 'data-flow'}
             onClick={() => setTraceDetailPanel('data-flow')}
           >
-            <span>3 Data flow</span>
+            <span>3 Sent</span>
             <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
           </button>
         </div>
@@ -1883,7 +1880,7 @@ function WalletApp() {
       </div>
 
       <div className="demo-section">
-        <h3 className="demo-section-title">Advanced Tools</h3>
+        <h3 className="demo-section-title">Developer Tools</h3>
         {/* Secondary — collapsible */}
         <button
           className="demo-secondary-toggle"

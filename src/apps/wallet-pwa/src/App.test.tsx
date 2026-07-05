@@ -286,7 +286,7 @@ describe('G-03 — Wallet App', () => {
   it('renders demo section', () => {
     render(<App />);
     const demoSection =
-      screen.queryByText('🚀 Advanced Feature Demos') || screen.queryByText('🚀 Demo Scenarios');
+      screen.queryByText('🚀 Advanced Feature Demos') || screen.queryByText('Verifier Requests');
     expect(demoSection).not.toBeNull();
   });
 
@@ -304,7 +304,7 @@ describe('G-03 — Wallet App', () => {
 
     // Panel is permanent through the trace summary tab, but no longer expands by default
     // into a full extra dashboard below the consent view.
-    fireEvent.click(screen.getByRole('button', { name: /3 Data flow/i }));
+    fireEvent.click(screen.getByRole('button', { name: /3 Sent/i }));
     expect(screen.getByText('Noch keine Transaktionen')).toBeInTheDocument();
     // The old toggle is gone:
     expect(screen.queryByText('Datenflüsse anzeigen')).not.toBeInTheDocument();
@@ -466,24 +466,24 @@ describe('G-03 — Wallet App', () => {
     expect(document.getElementById(buttonId)).toHaveAttribute('aria-current', 'true');
   });
 
-  it('frames consent, compliance and data-flow as one "What just happened" trace section', async () => {
+  it('frames requested, allowed and sent evidence as one disclosure trace section', async () => {
     render(<App />);
     await screen.findByText('Age Credential (GovID)');
 
     const trace = screen.getByTestId('trace-summary');
-    expect(within(trace).getByText(/what just happened/i)).toBeInTheDocument();
+    expect(within(trace).getByText(/disclosure trace/i)).toBeInTheDocument();
     expect(within(trace).getAllByTestId('trace-step')).toHaveLength(3);
     expect(within(trace).queryByText('Consent Manager')).not.toBeInTheDocument();
 
-    fireEvent.click(within(trace).getByRole('button', { name: /1 Consent/i }));
+    fireEvent.click(within(trace).getByRole('button', { name: /1 Requested/i }));
 
-    expect(within(trace).getByRole('button', { name: /1 Consent/i })).toHaveAttribute(
+    expect(within(trace).getByRole('button', { name: /1 Requested/i })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
     expect(within(trace).getByText('Consent Manager')).toBeInTheDocument();
 
-    fireEvent.click(within(trace).getByRole('button', { name: /3 Data flow/i }));
+    fireEvent.click(within(trace).getByRole('button', { name: /3 Sent/i }));
 
     expect(trace).toContainElement(document.getElementById('dataflow-section'));
   });
@@ -501,7 +501,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
-    fireEvent.click(screen.getByRole('button', { name: /1 Consent/i }));
+    fireEvent.click(screen.getByRole('button', { name: /1 Requested/i }));
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
@@ -559,7 +559,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
-    fireEvent.click(screen.getByRole('button', { name: /1 Consent/i }));
+    fireEvent.click(screen.getByRole('button', { name: /1 Requested/i }));
 
     await screen.findByText('DENIED', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);

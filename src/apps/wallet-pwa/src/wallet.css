@@ -25,9 +25,9 @@
 
 .wallet-title {
     margin-bottom: 10px;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    letter-spacing: 0;
 }
 
 .wallet-title-accent {
@@ -40,67 +40,25 @@
     max-width: 400px;
 }
 
-/* ── UX-03: Credential Card ─────────────────────────────────────────────── */
+/* ── UX-03: Private Credential Record ───────────────────────────────────── */
 
 .credential-card {
     position: relative;
     width: 100%;
     max-width: 400px;
-    margin-bottom: 24px;
-    padding: 20px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 191, 255, 0.2);
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(0, 191, 255, 0.05);
+    padding: 16px;
+    background: #10131a;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
     overflow: hidden;
     box-sizing: border-box;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .credential-card:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(0, 191, 255, 0.15);
-}
-
-/* Hologramm Shimmer Effect */
-.credential-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        105deg,
-        transparent 30%,
-        rgba(0, 191, 255, 0.04) 38%,
-        rgba(255, 255, 255, 0.08) 42%,
-        rgba(0, 191, 255, 0.04) 46%,
-        transparent 54%
-    );
-    animation: hologramShimmer 3s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes hologramShimmer {
-    0%   { transform: translateX(-100%) rotate(-15deg); }
-    100% { transform: translateX(100%) rotate(-15deg); }
-}
-
-/* Decorative corner glow */
-.credential-card::after {
-    content: '';
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(0, 191, 255, 0.15), transparent 70%);
-    pointer-events: none;
+    background: #121722;
+    border-color: rgba(125, 211, 252, 0.26);
 }
 
 .credential-card-header {
@@ -119,16 +77,15 @@
 }
 
 .credential-trust-badge {
-    background: linear-gradient(135deg, #1b5e20, #2e7d32);
-    color: #a5d6a7;
+    background: rgba(22, 163, 74, 0.12);
+    color: #bbf7d0;
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: 999px;
     font-size: 9px;
     font-weight: 800;
-    letter-spacing: 1.5px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    border: 1px solid rgba(46, 125, 50, 0.5);
-    box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+    border: 1px solid rgba(34, 197, 94, 0.26);
 }
 
 .credential-item {
@@ -320,9 +277,9 @@
     max-width: 400px;
     margin-bottom: 50px;
     padding: 20px;
-    background: #111;
-    border-radius: 24px;
-    border: 1px solid #222;
+    background: #10131a;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
     box-sizing: border-box;
 }
 
@@ -343,7 +300,7 @@
 }
 
 .scenario-launcher__hint {
-    color: #777;
+    color: #94a3b8;
     font-size: 12px;
     font-weight: 600;
 }
@@ -369,19 +326,20 @@
 }
 
 .btn-demo-primary {
-    padding: 16px 12px;
-    border-radius: 14px;
-    border: none;
-    color: #fff;
+    padding: 14px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(125, 211, 252, 0.16);
+    color: #e2e8f0;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     line-height: 1.4;
-    text-align: center;
+    text-align: left;
     min-height: 44px;
     position: relative;
     overflow: hidden;
+    background: rgba(15, 23, 42, 0.78);
 }
 
 .btn-demo-primary::after {
@@ -393,7 +351,7 @@
 }
 
 .btn-demo-primary:hover:not(:disabled)::after {
-    background: rgba(255,255,255,0.07);
+    background: rgba(125, 211, 252, 0.05);
 }
 
 .btn-demo-primary:active:not(:disabled) {
@@ -412,16 +370,15 @@
 }
 
 .btn-scenario-card {
-    box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0);
+    box-shadow: none;
 }
 
 .btn-scenario-card[aria-current="true"],
 .btn-scenario-card--active {
-    outline: 2px solid #fbbf24;
-    outline-offset: 3px;
-    box-shadow:
-        0 0 0 1px rgba(251, 191, 36, 0.35),
-        0 10px 28px rgba(0, 0, 0, 0.3);
+    outline: none;
+    border-color: rgba(125, 211, 252, 0.5);
+    background: rgba(14, 116, 144, 0.22);
+    box-shadow: inset 3px 0 0 #7dd3fc;
 }
 
 .btn-scenario-card--age {
@@ -429,9 +386,9 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    border-radius: 14px;
+    border-radius: 10px;
 }
 
 .btn-scenario-card--age span {
@@ -1253,11 +1210,11 @@
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 12px;
-    color: #1a1a2e;
+    color: #f8fafc;
 }
 
 .dataflow-panel__empty {
-    color: #666;
+    color: #94a3b8;
     font-size: 13px;
     text-align: center;
     padding: 24px 0;
@@ -1270,15 +1227,16 @@
 }
 
 .dataflow-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #10131a;
+    border: 1px solid rgba(148, 163, 184, 0.16);
     border-radius: 10px;
     padding: 14px;
-    transition: box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .dataflow-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: #121722;
+    border-color: rgba(125, 211, 252, 0.26);
 }
 
 .dataflow-card__header {
@@ -1296,12 +1254,12 @@
 
 .dataflow-card__verifier strong {
     font-size: 14px;
-    color: #1a1a2e;
+    color: #f8fafc;
 }
 
 .dataflow-card__time {
     font-size: 11px;
-    color: #888;
+    color: #94a3b8;
 }
 
 .dataflow-card__status {
@@ -1314,8 +1272,8 @@
 .dataflow-card__shredded {
     font-size: 11px;
     font-weight: 600;
-    color: #059669;
-    background: #ecfdf5;
+    color: #bbf7d0;
+    background: rgba(22, 163, 74, 0.12);
     padding: 2px 8px;
     border-radius: 6px;
 }
@@ -1323,15 +1281,15 @@
 .dataflow-card__active {
     font-size: 11px;
     font-weight: 600;
-    color: #d97706;
-    background: #fffbeb;
+    color: #fde68a;
+    background: rgba(217, 119, 6, 0.13);
     padding: 2px 8px;
     border-radius: 6px;
 }
 
 .dataflow-card__toggle {
     font-size: 10px;
-    color: #999;
+    color: #94a3b8;
 }
 
 .dataflow-card__claims {
@@ -1349,18 +1307,28 @@
 }
 
 .dataflow-card__tag--claim {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: rgba(37, 99, 235, 0.16);
+    color: #bfdbfe;
 }
 
 .dataflow-card__tag--proven {
-    background: #f0fdf4;
-    color: #15803d;
+    background: rgba(22, 163, 74, 0.14);
+    color: #bbf7d0;
 }
 
 .dataflow-card__tag--none {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.dataflow-card__tag--withheld {
+    background: rgba(244, 63, 94, 0.14);
+    color: #fecdd3;
+}
+
+.dataflow-card__tag--identity {
+    background: rgba(217, 119, 6, 0.13);
+    color: #fde68a;
 }
 
 /* Neutral per-claim sensitivity badge (G-140 Gap D). Factual level labels,
@@ -1377,29 +1345,29 @@
 }
 
 .dataflow-card__sensitivity--low {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: rgba(148, 163, 184, 0.14);
+    color: #cbd5e1;
 }
 
 .dataflow-card__sensitivity--medium {
-    background: #fef3c7;
-    color: #92400e;
+    background: rgba(217, 119, 6, 0.16);
+    color: #fde68a;
 }
 
 .dataflow-card__sensitivity--high {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: rgba(244, 63, 94, 0.18);
+    color: #fecdd3;
 }
 
 .dataflow-card__sensitivity--unclassified {
-    background: #f3f4f6;
-    color: #9ca3af;
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
 }
 
 .dataflow-card__timeline {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -1426,13 +1394,13 @@
 .dataflow-event__dot--consent { background: #10b981; }
 
 .dataflow-event__time {
-    color: #888;
+    color: #94a3b8;
     font-size: 11px;
     min-width: 70px;
 }
 
 .dataflow-event__label {
-    color: #374151;
+    color: #cbd5e1;
 }
 
 /* Proximity Presentation View */
@@ -1568,7 +1536,7 @@
     to { transform: scale(1); opacity: 1; }
 }
 
-/* ── UX-03: Dynamic Premium Credential Cards ────────────────────────────── */
+/* ── UX-03: Private Credential Records ──────────────────────────────────── */
 
 .credential-card-list {
     display: flex;
@@ -1580,74 +1548,35 @@
 }
 
 .credential-card--govid {
-    background: linear-gradient(135deg, #0b1528 0%, #0d285c 50%, #1e40af 100%) !important;
-    border: 1px solid rgba(59, 130, 246, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(30, 64, 175, 0.3),
-        0 0 0 1px rgba(59, 130, 246, 0.1);
+    border-left: 3px solid #60a5fa !important;
 }
 
 .credential-card--employment {
-    background: linear-gradient(135deg, #021a11 0%, #06402b 50%, #065f46 100%) !important;
-    border: 1px solid rgba(16, 185, 129, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(6, 95, 70, 0.3),
-        0 0 0 1px rgba(16, 185, 129, 0.1);
+    border-left: 3px solid #34d399 !important;
 }
 
 .credential-card--summary {
-    background: linear-gradient(135deg, #2b0505 0%, #580c0c 50%, #7f1d1d 100%) !important;
-    border: 1px solid rgba(239, 68, 68, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(127, 29, 29, 0.3),
-        0 0 0 1px rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #f87171 !important;
 }
 
 .credential-card--prescription {
-    background: linear-gradient(135deg, #1e053a 0%, #3b0764 50%, #5b21b6 100%) !important;
-    border: 1px solid rgba(139, 92, 246, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(91, 33, 182, 0.3),
-        0 0 0 1px rgba(139, 92, 246, 0.1);
+    border-left: 3px solid #a78bfa !important;
 }
 
 .credential-card--mdl {
-    background: linear-gradient(135deg, #1f0b00 0%, #3e1500 50%, #7c2d12 100%) !important;
-    border: 1px solid rgba(249, 115, 22, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(124, 45, 18, 0.3),
-        0 0 0 1px rgba(249, 115, 22, 0.1);
+    border-left: 3px solid #fb923c !important;
 }
 
 .credential-card--generic {
-    background: linear-gradient(135deg, #121214 0%, #1c1c1f 50%, #27272a 100%) !important;
-    border: 1px solid rgba(113, 113, 122, 0.35) !important;
-    box-shadow: 
-        0 8px 32px rgba(39, 39, 42, 0.3),
-        0 0 0 1px rgba(113, 113, 122, 0.1);
+    border-left: 3px solid #94a3b8 !important;
 }
 
-/* Card Smart Chip Design */
 .credential-card-chip {
-    width: 38px;
-    height: 26px;
-    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-    border-radius: 6px;
-    margin-bottom: 14px;
-    position: relative;
-    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
-    border: 1px solid #a16207;
-}
-
-.credential-card-chip::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 8px;
-    width: 20px;
-    height: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
+    width: 42px;
+    height: 4px;
+    background: rgba(125, 211, 252, 0.32);
+    border-radius: 999px;
+    margin-bottom: 12px;
 }
 
 /* Micro-Claims badge layout */
@@ -1659,14 +1588,14 @@
 }
 
 .credential-card-claim-badge {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.85);
+    background: rgba(15, 23, 42, 0.78);
+    color: rgba(226, 232, 240, 0.86);
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 10px;
     font-family: monospace;
     font-weight: 550;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 /* ==========================================================================

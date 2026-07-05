@@ -90,7 +90,7 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
         }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>
-                    🛡️ Compliance Center
+                    Local Audit Evidence
                 </h3>
                 <div style={{
                     display: 'flex',
@@ -104,7 +104,7 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                     fontWeight: 'bold'
                 }}>
                     <span className="pulse-dot" style={{ background: isChainValid ? '#10b981' : '#f87171' }}></span>
-                    {isChainValid ? 'CHAIN SECURE' : 'INTEGRITY ALERT'}
+                    {isChainValid ? 'Local chain verified' : 'Integrity alert'}
                 </div>
             </header>
 
