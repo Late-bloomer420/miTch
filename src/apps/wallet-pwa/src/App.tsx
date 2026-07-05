@@ -1303,43 +1303,22 @@ function WalletApp() {
                   </div>
 
                   {cred.singleUse && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: cred.consumedAt ? '#fca5a5' : '#fde68a',
-                        marginBottom: 8,
-                      }}
-                    >
+                    <div className={`credential-single-use ${cred.consumedAt ? 'credential-single-use--consumed' : ''}`}>
                       {cred.consumedAt
                         ? '🔥 Einmal-Credential — verbraucht (nicht wiederverwendbar)'
                         : '🔁 Einmal-Credential — wird nach Vorlage verbraucht'}
                     </div>
                   )}
 
-                  <div
-                    className="credential-item"
-                    style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}
-                  >
-                    <span className="credential-icon" style={{ fontSize: 24, marginRight: 12 }}>
+                  <div className="credential-item credential-card-main">
+                    <span className="credential-icon credential-card-main__icon">
                       {icon}
                     </span>
                     <div>
-                      <div
-                        className="credential-name"
-                        style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}
-                      >
+                      <div className="credential-name credential-card-main__name">
                         {displayName}
                       </div>
-                      <div
-                        className="credential-issuer"
-                        style={{
-                          fontSize: 11,
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                        }}
-                      >
+                      <div className="credential-issuer credential-card-main__issuer">
                         {cred.issuer}
                       </div>
                     </div>

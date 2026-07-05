@@ -98,7 +98,7 @@
     border-radius: 20px;
     border: 1px solid rgba(0, 191, 255, 0.2);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 8px 24px rgba(0, 0, 0, 0.28),
         0 0 0 1px rgba(0, 191, 255, 0.05);
     overflow: hidden;
     contain: paint;
@@ -109,7 +109,7 @@
 .credential-card:hover {
     transform: translateY(-2px);
     box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 12px 30px rgba(0, 0, 0, 0.34),
         0 0 0 1px rgba(0, 191, 255, 0.15);
 }
 
@@ -122,13 +122,13 @@
     background: linear-gradient(
         105deg,
         transparent 30%,
-        rgba(0, 191, 255, 0.04) 38%,
-        rgba(255, 255, 255, 0.08) 42%,
-        rgba(0, 191, 255, 0.04) 46%,
+        rgba(0, 191, 255, 0.03) 38%,
+        rgba(255, 255, 255, 0.06) 42%,
+        rgba(0, 191, 255, 0.03) 46%,
         transparent 54%
     );
     background-size: 240% 100%;
-    animation: hologramShimmer 3s ease-in-out infinite;
+    animation: hologramShimmer 5s ease-in-out infinite;
     pointer-events: none;
 }
 
@@ -1716,11 +1716,44 @@
     margin-bottom: 24px;
 }
 
+.credential-single-use {
+    margin-bottom: 8px;
+    color: #fde68a;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.credential-single-use--consumed {
+    color: #fca5a5;
+}
+
+.credential-card-main {
+    margin-bottom: 14px;
+}
+
+.credential-card-main__icon {
+    margin-right: 12px;
+    font-size: 24px;
+}
+
+.credential-card-main__name {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.credential-card-main__issuer {
+    color: rgba(255, 255, 255, 0.6);
+    font-family: monospace;
+    font-size: 11px;
+    word-break: break-all;
+}
+
 .credential-card--govid {
     background: linear-gradient(135deg, #0b1528 0%, #0d285c 50%, #1e40af 100%) !important;
     border: 1px solid rgba(59, 130, 246, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(30, 64, 175, 0.3),
+        0 8px 24px rgba(30, 64, 175, 0.24),
         0 0 0 1px rgba(59, 130, 246, 0.1);
 }
 
@@ -1728,7 +1761,7 @@
     background: linear-gradient(135deg, #021a11 0%, #06402b 50%, #065f46 100%) !important;
     border: 1px solid rgba(16, 185, 129, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(6, 95, 70, 0.3),
+        0 8px 24px rgba(6, 95, 70, 0.24),
         0 0 0 1px rgba(16, 185, 129, 0.1);
 }
 
@@ -1736,7 +1769,7 @@
     background: linear-gradient(135deg, #2b0505 0%, #580c0c 50%, #7f1d1d 100%) !important;
     border: 1px solid rgba(239, 68, 68, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(127, 29, 29, 0.3),
+        0 8px 24px rgba(127, 29, 29, 0.24),
         0 0 0 1px rgba(239, 68, 68, 0.1);
 }
 
@@ -1744,7 +1777,7 @@
     background: linear-gradient(135deg, #1e053a 0%, #3b0764 50%, #5b21b6 100%) !important;
     border: 1px solid rgba(139, 92, 246, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(91, 33, 182, 0.3),
+        0 8px 24px rgba(91, 33, 182, 0.24),
         0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
@@ -1752,7 +1785,7 @@
     background: linear-gradient(135deg, #1f0b00 0%, #3e1500 50%, #7c2d12 100%) !important;
     border: 1px solid rgba(249, 115, 22, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(124, 45, 18, 0.3),
+        0 8px 24px rgba(124, 45, 18, 0.24),
         0 0 0 1px rgba(249, 115, 22, 0.1);
 }
 
@@ -1760,7 +1793,7 @@
     background: linear-gradient(135deg, #121214 0%, #1c1c1f 50%, #27272a 100%) !important;
     border: 1px solid rgba(113, 113, 122, 0.35) !important;
     box-shadow:
-        0 8px 32px rgba(39, 39, 42, 0.3),
+        0 8px 24px rgba(39, 39, 42, 0.24),
         0 0 0 1px rgba(113, 113, 122, 0.1);
 }
 
