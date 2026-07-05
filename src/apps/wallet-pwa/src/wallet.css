@@ -50,7 +50,7 @@
     justify-content: center;
     gap: 6px;
     width: 100%;
-    max-width: 520px;
+    max-width: 560px;
     margin: 0 auto 18px;
     padding: 6px;
     border: 1px solid rgba(14, 165, 233, 0.18);
@@ -376,6 +376,10 @@
     margin-bottom: 20px;
 }
 
+.advanced-section {
+    margin-bottom: 32px;
+}
+
 .scenario-launcher__header {
     display: flex;
     align-items: baseline;
@@ -579,6 +583,16 @@
 .btn-demo-secondary:focus-visible {
     outline: 2px solid var(--accent-blue);
     outline-offset: 2px;
+}
+
+.btn-demo-secondary--biometric {
+    border-color: rgba(162, 28, 175, 0.24);
+    color: #7e22ce;
+}
+
+.btn-demo-secondary--recovery {
+    border-color: rgba(6, 71, 68, 0.24);
+    color: #047857;
 }
 
 .developer-tool-button {

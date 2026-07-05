@@ -1112,13 +1112,16 @@ function WalletApp() {
         AskMI <span className="wallet-title-accent">Trusted Channel</span>
       </h1>
 
-      <nav className="wallet-nav" aria-label="Wallet sections">
-        <a href="#credentials-section">Credentials</a>
-        <a href="#requests-section">Requests</a>
-        <a href="#audit-section">Audit</a>
-        <a href="#trace-section">Trace</a>
-        <a href="#settings-section">Settings</a>
-      </nav>
+      {isWalletReady && (
+        <nav className="wallet-nav" aria-label="Wallet sections">
+          <a href="#credentials-section">Credentials</a>
+          <a href="#requests-section">Requests</a>
+          <a href="#audit-section">Audit</a>
+          <a href="#trace-section">Trace</a>
+          <a href="#settings-section">Settings</a>
+          <a href="#advanced-section">Advanced</a>
+        </nav>
+      )}
 
       {/* OID4VP: incoming request banner */}
       {incomingOID4VP && (
@@ -1746,7 +1749,7 @@ function WalletApp() {
 
       <div className="wallet-section" style={{ marginTop: 10 }}>
         <button onClick={() => setShowSovereignty(!showSovereignty)} className="btn-demo-secondary">
-          {showSovereignty ? 'Sovereignty Center schließen' : 'Sovereignty Center öffnen'}
+          {showSovereignty ? 'Hide data-flow summary' : 'Show data-flow summary'}
         </button>
         {showSovereignty && (
           <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
@@ -1772,7 +1775,7 @@ function WalletApp() {
               cursor: 'pointer',
             }}
           >
-            ♻️ Reset Wallet (start over as new device)
+            Reset device wallet
           </button>
         </div>
       )}
@@ -1790,29 +1793,27 @@ function WalletApp() {
         )}
       </div>
 
-      <div className="demo-section">
-        <h3 className="demo-section-title">Developer Tools</h3>
+      <div id="advanced-section" className="demo-section advanced-section">
+        <h3 className="demo-section-title">Advanced Tools</h3>
         {/* Secondary — collapsible */}
         <button
           className="demo-secondary-toggle"
           onClick={() => setShowSecondary((s) => !s)}
           aria-expanded={showSecondary}
         >
-          {showSecondary ? '▲ Hide' : '▼ More Demos'}
+          {showSecondary ? 'Hide advanced tools' : 'Show advanced tools'}
         </button>
 
         <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
           <button
             onClick={handleWebAuthnDemo}
-            className="btn-demo-secondary"
-            style={{ borderColor: '#a21caf44', color: '#d8b4fe' }}
+            className="btn-demo-secondary btn-demo-secondary--biometric"
           >
             🔐 Biometric (WebAuthn)
           </button>
           <button
             onClick={handleRecoveryTest}
-            className="btn-demo-secondary"
-            style={{ borderColor: '#06474444', color: '#86efac' }}
+            className="btn-demo-secondary btn-demo-secondary--recovery"
           >
             🛡️ Social Recovery
           </button>
@@ -1878,7 +1879,7 @@ function WalletApp() {
             setGuidedDemoActive(true);
           }}
         >
-          ▶ Start Guided Demo
+          Start guided flow
         </button>
       )}
 
