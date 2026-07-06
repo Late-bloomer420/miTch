@@ -12,6 +12,28 @@
 
 /* ── UX-01: Layout & Container ─────────────────────────────────────────── */
 
+:root {
+    --wallet-content-max: 920px;
+    --wallet-column-max: 640px;
+    --wallet-phone-max: 400px;
+    --wallet-surface: rgba(255, 255, 255, 0.88);
+    --wallet-surface-solid: #ffffff;
+    --wallet-surface-muted: #f8fafc;
+    --wallet-border: rgba(14, 165, 233, 0.18);
+    --wallet-border-strong: rgba(14, 165, 233, 0.34);
+    --wallet-text: #0f172a;
+    --wallet-text-muted: #64748b;
+    --wallet-accent: #0369a1;
+    --wallet-accent-soft: #e0f2fe;
+    --wallet-danger: #dc2626;
+    --wallet-success: #047857;
+    --wallet-warning: #92400e;
+    --wallet-radius-sm: 8px;
+    --wallet-radius-md: 12px;
+    --wallet-radius-lg: 16px;
+    --wallet-shadow-panel: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
 .wallet-app {
     display: flex;
     flex-direction: column;
@@ -26,11 +48,11 @@
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 249, 255, 0.88)),
         radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.12), transparent 34%);
-    color: #0f172a;
+    color: var(--wallet-text);
 }
 
 .wallet-title {
-    margin-bottom: 10px;
+    margin-bottom: 4px;
     font-size: 24px;
     font-weight: 700;
     letter-spacing: 0;
@@ -39,6 +61,15 @@
 .wallet-title-accent {
     font-weight: 800;
     color: #0070f3;
+}
+
+.wallet-subtitle {
+    max-width: var(--wallet-content-max);
+    margin: 0 auto 14px;
+    color: var(--wallet-text-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
 }
 
 .wallet-nav {
@@ -50,12 +81,12 @@
     justify-content: center;
     gap: 6px;
     width: 100%;
-    max-width: 560px;
+    max-width: var(--wallet-content-max);
     margin: 0 auto 18px;
     padding: 6px;
-    border: 1px solid rgba(14, 165, 233, 0.18);
+    border: 1px solid var(--wallet-border);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.88);
+    background: var(--wallet-surface);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     backdrop-filter: blur(12px);
 }
@@ -76,14 +107,122 @@
 
 .wallet-nav a:hover,
 .wallet-nav a:focus-visible {
-    background: #e0f2fe;
+    background: var(--wallet-accent-soft);
     color: #0c4a6e;
     outline: none;
 }
 
+.wallet-section-rail {
+    justify-content: space-between;
+}
+
+.wallet-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: var(--wallet-content-max);
+    margin: 0 auto 20px;
+}
+
+.wallet-overview__item {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-lg);
+    background: var(--wallet-surface);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    color: inherit;
+    text-decoration: none;
+}
+
+.wallet-overview__item span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--wallet-text-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wallet-overview__item strong {
+    display: block;
+    color: var(--wallet-text);
+    font-size: 13px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
 .wallet-section {
     width: 100%;
-    max-width: 400px;
+    max-width: var(--wallet-column-max);
+}
+
+.wallet-panel {
+    width: 100%;
+    max-width: var(--wallet-content-max);
+    box-sizing: border-box;
+    margin: 0 auto 20px;
+    padding: 18px;
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-lg);
+    background: var(--wallet-surface);
+    box-shadow: var(--wallet-shadow-panel);
+}
+
+.wallet-section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.wallet-section-heading p,
+.wallet-section-heading h2 {
+    margin: 0;
+}
+
+.wallet-section-heading p {
+    color: var(--wallet-text-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.wallet-section-heading h2 {
+    color: var(--wallet-text);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.wallet-section-heading span {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--wallet-accent-soft);
+    color: var(--wallet-accent);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.wallet-flow-stack {
+    display: grid;
+    grid-template-columns: minmax(280px, 400px) minmax(320px, 1fr);
+    align-items: start;
+    gap: 20px;
+    width: 100%;
+    max-width: var(--wallet-content-max);
+    margin: 0 auto 20px;
+}
+
+.wallet-flow-stack .trace-summary {
+    grid-column: 1 / -1;
 }
 
 /* ── UX-03: Credential Card ─────────────────────────────────────────────── */
@@ -91,8 +230,8 @@
 .credential-card {
     position: relative;
     width: 100%;
-    max-width: 400px;
-    margin-bottom: 24px;
+    max-width: var(--wallet-phone-max);
+    margin-bottom: 0;
     padding: 20px;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     border-radius: 20px;
@@ -362,21 +501,22 @@
 
 .demo-section {
     width: 100%;
-    max-width: 400px;
-    margin-bottom: 50px;
+    max-width: var(--wallet-column-max);
+    margin-bottom: 0;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.82);
-    border-radius: 16px;
-    border: 1px solid rgba(14, 165, 233, 0.18);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    background: var(--wallet-surface);
+    border-radius: var(--wallet-radius-lg);
+    border: 1px solid var(--wallet-border);
+    box-shadow: var(--wallet-shadow-panel);
     box-sizing: border-box;
 }
 
 .scenario-launcher {
-    margin-bottom: 20px;
+    min-height: 100%;
 }
 
 .advanced-section {
+    max-width: var(--wallet-column-max);
     margin-bottom: 32px;
 }
 
@@ -630,8 +770,15 @@
 
 .audit-section {
     width: 100%;
-    max-width: 400px;
-    margin-top: 20px;
+    max-width: var(--wallet-column-max);
+    min-height: 100%;
+    margin-top: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    background: var(--wallet-surface);
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-lg);
+    box-shadow: var(--wallet-shadow-panel);
 }
 
 .audit-header {
@@ -760,14 +907,14 @@
 
 .trace-summary {
     width: 100%;
-    max-width: 640px;
-    margin: 20px auto 0;
+    max-width: var(--wallet-content-max);
+    margin: 0 auto;
     padding: 18px;
     box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(14, 165, 233, 0.18);
-    border-radius: 16px;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    background: var(--wallet-surface);
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-lg);
+    box-shadow: var(--wallet-shadow-panel);
 }
 
 .trace-summary__header {
@@ -1221,23 +1368,24 @@
 /* Start Guided Demo button */
 .btn-start-demo {
     width: 100%;
-    max-width: 400px;
+    max-width: none;
     padding: 11px 18px;
     margin-bottom: 12px;
     background: transparent;
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--wallet-border-strong);
     border-radius: 10px;
-    color: #555;
+    color: var(--wallet-accent);
     cursor: pointer;
     font-size: 13px;
+    font-weight: 700;
     transition: all 0.2s;
     min-height: 44px;
 }
 
 .btn-start-demo:hover {
-    border-color: #444;
-    color: #888;
-    background: rgba(255,255,255,0.02);
+    border-color: #38bdf8;
+    color: #075985;
+    background: #f0f9ff;
 }
 
 .btn-start-demo:focus-visible {
@@ -1256,6 +1404,47 @@
         font-size: 24px;
     }
 
+    .wallet-subtitle {
+        margin-bottom: 10px;
+        font-size: 12px;
+    }
+
+    .wallet-section-rail {
+        justify-content: center;
+        border-radius: 18px;
+    }
+
+    .wallet-overview {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .wallet-overview__item {
+        padding: 10px 12px;
+    }
+
+    .wallet-panel {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .wallet-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .wallet-flow-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .credential-card-list {
+        grid-template-columns: 1fr;
+    }
+
     .btn-primary {
         font-size: 16px;
         padding: 16px;
@@ -1270,8 +1459,35 @@
         border-radius: 18px;
     }
 
+    .audit-section {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
     .audit-log-container {
         font-size: 11px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 860px) {
+    .wallet-overview,
+    .wallet-panel,
+    .wallet-flow-stack,
+    .trace-summary {
+        max-width: var(--wallet-column-max);
+    }
+
+    .wallet-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .wallet-flow-stack {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .credential-card-list {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1722,12 +1938,13 @@
 /* ── UX-03: Dynamic Premium Credential Cards ────────────────────────────── */
 
 .credential-card-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-items: center;
     gap: 16px;
     width: 100%;
-    max-width: 400px;
-    margin-bottom: 24px;
+    max-width: 100%;
+    margin: 0 auto 18px;
 }
 
 .credential-single-use {
@@ -1850,6 +2067,12 @@
     font-family: monospace;
     font-weight: 550;
     border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 860px) {
+    .credential-card-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ==========================================================================

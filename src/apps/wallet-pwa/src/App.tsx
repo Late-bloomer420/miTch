@@ -1111,9 +1111,14 @@ function WalletApp() {
       <h1 className="wallet-title">
         AskMI <span className="wallet-title-accent">Trusted Channel</span>
       </h1>
+      {isWalletReady && (
+        <p className="wallet-subtitle">
+          A local wallet for credentials, verifier requests and disclosure evidence.
+        </p>
+      )}
 
       {isWalletReady && (
-        <nav className="wallet-nav" aria-label="Wallet sections">
+        <nav className="wallet-nav wallet-section-rail" aria-label="Wallet sections">
           <a href="#credentials-section">Credentials</a>
           <a href="#requests-section">Requests</a>
           <a href="#audit-section">Audit</a>
@@ -1121,6 +1126,23 @@ function WalletApp() {
           <a href="#settings-section">Settings</a>
           <a href="#advanced-section">Advanced</a>
         </nav>
+      )}
+
+      {isWalletReady && (
+        <section className="wallet-overview" aria-label="Wallet overview">
+          <a className="wallet-overview__item" href="#credentials-section">
+            <span>Wallet</span>
+            <strong>{credentials.length} credentials</strong>
+          </a>
+          <a className="wallet-overview__item" href="#requests-section">
+            <span>Request</span>
+            <strong>{activeScenario.replace(/-/g, ' ')}</strong>
+          </a>
+          <a className="wallet-overview__item" href="#trace-section">
+            <span>Evidence</span>
+            <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+          </a>
+        </section>
       )}
 
       {/* OID4VP: incoming request banner */}
@@ -1261,7 +1283,15 @@ function WalletApp() {
 
       {/* UX-03: Dynamic Premium Credential Cards */}
       {isWalletReady ? (
-        <>
+        <section className="wallet-panel wallet-panel--credentials" aria-labelledby="credentials-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Identity Wallet</p>
+              <h2 id="credentials-heading">Credentials</h2>
+            </div>
+            <span>{credentials.length} stored</span>
+          </div>
+
           <div id="credentials-section" className="credential-card-list">
             {credentials.map((cred) => {
               let cardClass = 'credential-card--generic';
@@ -1423,7 +1453,7 @@ function WalletApp() {
             </div>
           )}
 
-        </>
+        </section>
       ) : null}
 
       {/* ConsentModal */}
@@ -1581,171 +1611,173 @@ function WalletApp() {
         />
       )}
 
-      <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
-        <div className="scenario-launcher__header">
-          <h3 className="demo-section-title">Verifier Requests</h3>
-          <span className="scenario-launcher__hint">Choose one request</span>
-        </div>
-
-        <div className="demo-primary-grid scenario-launcher__grid">
-          <button
-            id="btn-liquor-store"
-            onClick={() => {
-              setActiveScenario('liquor-store');
-              if (status === 'SHREDDED') {
-                setStatus('IDLE');
-                setEvaluationResult(null);
-                setLogs([]);
-                addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
-              } else {
-                handleProveAge();
-              }
-            }}
-            disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
-            className={`${getPrimaryBtnClass()} btn-scenario-card btn-scenario-card--age${activeScenario === 'liquor-store' ? ' btn-scenario-card--active' : ''}`}
-            aria-current={activeScenario === 'liquor-store' ? 'true' : undefined}
-          >
-            {getPrimaryBtnLabel()}
-            <span>Proof only, no raw PII</span>
-          </button>
-
-          <button
-            id="btn-doctor-login"
-            onClick={() => {
-              setActiveScenario('doctor-login');
-              handleMultiProofDemo();
-            }}
-            className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
-            aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
-          >
-            🏥 Doctor Login
-            <br />
-            <span className="btn-scenario-card__subtitle">High Assurance Multi-VC</span>
-          </button>
-
-          <button
-            id="btn-ehds-er"
-            onClick={() => {
-              setActiveScenario('ehds-er');
-              handleHealthAccessDemo();
-            }}
-            className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
-            aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
-          >
-            🚑 ER Access
-            <br />
-            <span className="btn-scenario-card__subtitle">EHDS Emergency</span>
-          </button>
-
-          <button
-            id="btn-pharmacy"
-            onClick={() => {
-              setActiveScenario('pharmacy');
-              handlePharmacyDemo();
-            }}
-            className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
-            aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
-          >
-            💊 Pharmacy
-            <br />
-            <span className="btn-scenario-card__subtitle">ePrescription</span>
-          </button>
-        </div>
-      </div>
-
-      {/* UX-02: Progress bar during PROVING */}
-      {status === 'PROVING' && (
-        <div className="proving-progress wallet-section">
-          <div className="proving-progress-bar" />
-        </div>
-      )}
-
-      {/* UX-05: Audit Log */}
-      <div id="audit-section" className="audit-section">
-        <div className="audit-header">
-          <h3 className="audit-title">Immutable Audit Trace</h3>
-          <button className="audit-copy-btn" onClick={handleCopyLog}>
-            {copyLabel}
-          </button>
-        </div>
-        <div className="audit-log-container" ref={logContainerRef}>
-          {logs.map(renderLogLine)}
-        </div>
-      </div>
-
-      <div id="trace-section" className="trace-summary" data-testid="trace-summary">
-        <div className="trace-summary__header">
-          <div>
-            <h3>Disclosure Trace</h3>
-            <p>Requested, allowed, withheld and sent evidence for the selected request.</p>
+      <section className="wallet-flow-stack" aria-label="Request and evidence workflow">
+        <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
+          <div className="scenario-launcher__header">
+            <h3 className="demo-section-title">Verifier Requests</h3>
+            <span className="scenario-launcher__hint">Choose one request</span>
           </div>
-          <span className="trace-summary__status">
-            {evaluationResult?.verdict ?? 'Idle'}
-          </span>
+
+          <div className="demo-primary-grid scenario-launcher__grid">
+            <button
+              id="btn-liquor-store"
+              onClick={() => {
+                setActiveScenario('liquor-store');
+                if (status === 'SHREDDED') {
+                  setStatus('IDLE');
+                  setEvaluationResult(null);
+                  setLogs([]);
+                  addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
+                } else {
+                  handleProveAge();
+                }
+              }}
+              disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
+              className={`${getPrimaryBtnClass()} btn-scenario-card btn-scenario-card--age${activeScenario === 'liquor-store' ? ' btn-scenario-card--active' : ''}`}
+              aria-current={activeScenario === 'liquor-store' ? 'true' : undefined}
+            >
+              {getPrimaryBtnLabel()}
+              <span>Proof only, no raw PII</span>
+            </button>
+
+            <button
+              id="btn-doctor-login"
+              onClick={() => {
+                setActiveScenario('doctor-login');
+                handleMultiProofDemo();
+              }}
+              className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
+              aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
+            >
+              🏥 Doctor Login
+              <br />
+              <span className="btn-scenario-card__subtitle">High Assurance Multi-VC</span>
+            </button>
+
+            <button
+              id="btn-ehds-er"
+              onClick={() => {
+                setActiveScenario('ehds-er');
+                handleHealthAccessDemo();
+              }}
+              className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
+              aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
+            >
+              🚑 ER Access
+              <br />
+              <span className="btn-scenario-card__subtitle">EHDS Emergency</span>
+            </button>
+
+            <button
+              id="btn-pharmacy"
+              onClick={() => {
+                setActiveScenario('pharmacy');
+                handlePharmacyDemo();
+              }}
+              className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
+              aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
+            >
+              💊 Pharmacy
+              <br />
+              <span className="btn-scenario-card__subtitle">ePrescription</span>
+            </button>
+          </div>
         </div>
 
-        <div className="trace-summary__steps" aria-label="Trace sequence">
-          <button
-            type="button"
-            className={`trace-summary__step${traceDetailPanel === 'consent' ? ' trace-summary__step--active' : ''}`}
-            data-testid="trace-step"
-            aria-pressed={traceDetailPanel === 'consent'}
-            onClick={() => setTraceDetailPanel('consent')}
-          >
-            <span>1 Requested</span>
-            <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
-          </button>
-          <button
-            type="button"
-            className={`trace-summary__step${traceDetailPanel === 'compliance' ? ' trace-summary__step--active' : ''}`}
-            data-testid="trace-step"
-            aria-pressed={traceDetailPanel === 'compliance'}
-            onClick={() => setTraceDetailPanel('compliance')}
-          >
-            <span>2 Allowed</span>
-            <strong>{recentAuditEntries.length} events</strong>
-          </button>
-          <button
-            type="button"
-            className={`trace-summary__step${traceDetailPanel === 'data-flow' ? ' trace-summary__step--active' : ''}`}
-            data-testid="trace-step"
-            aria-pressed={traceDetailPanel === 'data-flow'}
-            onClick={() => setTraceDetailPanel('data-flow')}
-          >
-            <span>3 Sent</span>
-            <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
-          </button>
-        </div>
-
-        {traceDetailPanel && (
-          <div className="trace-summary__panel">
-            {traceDetailPanel === 'consent' && (
-              <ConsentManagerPanel
-                request={currentRequest}
-                result={evaluationResult}
-                auditEntries={recentAuditEntries}
-                privacyConsent={_privacyConsent}
-                consentReceipt={lastConsentReceipt}
-                receiptHistory={consentReceiptHistory}
-                onOpenDataFlow={() => setTraceDetailPanel('data-flow')}
-              />
-            )}
-            {traceDetailPanel === 'compliance' && (
-              <ComplianceDashboard
-                onExport={handleExportAuditReport}
-                onSyncL2={handleSyncAuditToL2}
-                getRecentLogs={getRecentComplianceLogs}
-                getChainStatus={getAuditChainStatus}
-              />
-            )}
-            {traceDetailPanel === 'data-flow' && (
-              <div id="dataflow-section">
-                <DataFlowPanel entries={recentAuditEntries} />
-              </div>
-            )}
+        {/* UX-02: Progress bar during PROVING */}
+        {status === 'PROVING' && (
+          <div className="proving-progress wallet-section">
+            <div className="proving-progress-bar" />
           </div>
         )}
-      </div>
+
+        {/* UX-05: Audit Log */}
+        <div id="audit-section" className="audit-section">
+          <div className="audit-header">
+            <h3 className="audit-title">Immutable Audit Trace</h3>
+            <button className="audit-copy-btn" onClick={handleCopyLog}>
+              {copyLabel}
+            </button>
+          </div>
+          <div className="audit-log-container" ref={logContainerRef}>
+            {logs.map(renderLogLine)}
+          </div>
+        </div>
+
+        <div id="trace-section" className="trace-summary" data-testid="trace-summary">
+          <div className="trace-summary__header">
+            <div>
+              <h3>Disclosure Trace</h3>
+              <p>Requested, allowed, withheld and sent evidence for the selected request.</p>
+            </div>
+            <span className="trace-summary__status">
+              {evaluationResult?.verdict ?? 'Idle'}
+            </span>
+          </div>
+
+          <div className="trace-summary__steps" aria-label="Trace sequence">
+            <button
+              type="button"
+              className={`trace-summary__step${traceDetailPanel === 'consent' ? ' trace-summary__step--active' : ''}`}
+              data-testid="trace-step"
+              aria-pressed={traceDetailPanel === 'consent'}
+              onClick={() => setTraceDetailPanel('consent')}
+            >
+              <span>1 Requested</span>
+              <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+            </button>
+            <button
+              type="button"
+              className={`trace-summary__step${traceDetailPanel === 'compliance' ? ' trace-summary__step--active' : ''}`}
+              data-testid="trace-step"
+              aria-pressed={traceDetailPanel === 'compliance'}
+              onClick={() => setTraceDetailPanel('compliance')}
+            >
+              <span>2 Allowed</span>
+              <strong>{recentAuditEntries.length} events</strong>
+            </button>
+            <button
+              type="button"
+              className={`trace-summary__step${traceDetailPanel === 'data-flow' ? ' trace-summary__step--active' : ''}`}
+              data-testid="trace-step"
+              aria-pressed={traceDetailPanel === 'data-flow'}
+              onClick={() => setTraceDetailPanel('data-flow')}
+            >
+              <span>3 Sent</span>
+              <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
+            </button>
+          </div>
+
+          {traceDetailPanel && (
+            <div className="trace-summary__panel">
+              {traceDetailPanel === 'consent' && (
+                <ConsentManagerPanel
+                  request={currentRequest}
+                  result={evaluationResult}
+                  auditEntries={recentAuditEntries}
+                  privacyConsent={_privacyConsent}
+                  consentReceipt={lastConsentReceipt}
+                  receiptHistory={consentReceiptHistory}
+                  onOpenDataFlow={() => setTraceDetailPanel('data-flow')}
+                />
+              )}
+              {traceDetailPanel === 'compliance' && (
+                <ComplianceDashboard
+                  onExport={handleExportAuditReport}
+                  onSyncL2={handleSyncAuditToL2}
+                  getRecentLogs={getRecentComplianceLogs}
+                  getChainStatus={getAuditChainStatus}
+                />
+              )}
+              {traceDetailPanel === 'data-flow' && (
+                <div id="dataflow-section">
+                  <DataFlowPanel entries={recentAuditEntries} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="wallet-section" style={{ marginTop: 10 }}>
         <button onClick={() => setShowSovereignty(!showSovereignty)} className="btn-demo-secondary">
@@ -1795,6 +1827,17 @@ function WalletApp() {
 
       <div id="advanced-section" className="demo-section advanced-section">
         <h3 className="demo-section-title">Advanced Tools</h3>
+        {status === 'IDLE' && !guidedDemoActive && (
+          <button
+            className="btn-start-demo"
+            onClick={() => {
+              sessionStorage.removeItem('guidedDemoCompleted');
+              setGuidedDemoActive(true);
+            }}
+          >
+            Start guided flow
+          </button>
+        )}
         {/* Secondary — collapsible */}
         <button
           className="demo-secondary-toggle"
@@ -1869,19 +1912,6 @@ function WalletApp() {
           )}
         </div>
       </div>
-
-      {/* Start Guided Demo button */}
-      {status === 'IDLE' && !guidedDemoActive && (
-        <button
-          className="btn-start-demo"
-          onClick={() => {
-            sessionStorage.removeItem('guidedDemoCompleted');
-            setGuidedDemoActive(true);
-          }}
-        >
-          Start guided flow
-        </button>
-      )}
 
       <GuidedDemoMode
         isActive={guidedDemoActive && status === 'IDLE'}
