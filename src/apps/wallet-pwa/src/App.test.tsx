@@ -173,7 +173,19 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
   );
 }
 
-async function openWalletPage(name: 'Credentials' | 'Requests' | 'Trace' | 'Audit' | 'Settings' | 'Advanced') {
+async function openWalletPage(
+  name:
+    | 'Credentials'
+    | 'Requests'
+    | 'Trace'
+    | 'Sovereignty'
+    | 'Documents'
+    | 'Proximity'
+    | 'Renderer'
+    | 'Audit'
+    | 'Settings'
+    | 'Advanced'
+) {
   await screen.findByText('Age Credential (GovID)');
   fireEvent.click(screen.getByRole('button', { name }));
 }
@@ -410,6 +422,38 @@ describe('G-03 — Wallet App', () => {
       'page'
     );
     expect(screen.getByTestId('trace-summary')).toBeInTheDocument();
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Sovereignty' }));
+    expect(within(nav).getByRole('button', { name: 'Sovereignty' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getAllByRole('heading', { name: 'Sovereignty Center' }).length).toBeGreaterThan(
+      0
+    );
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Documents' }));
+    expect(within(nav).getByRole('button', { name: 'Documents' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('heading', { name: 'Documents' })).toBeInTheDocument();
+    expect(screen.getByText(/Document Signing/)).toBeInTheDocument();
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Proximity' }));
+    expect(within(nav).getByRole('button', { name: 'Proximity' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('heading', { name: 'Proximity' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start proximity preview' })).toBeInTheDocument();
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Renderer' }));
+    expect(within(nav).getByRole('button', { name: 'Renderer' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('heading', { name: 'Credential Renderer' })).toBeInTheDocument();
   });
 
   it('marks a scenario as active (aria-current) once it is selected', async () => {

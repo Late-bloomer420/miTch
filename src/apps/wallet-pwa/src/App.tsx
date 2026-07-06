@@ -20,6 +20,7 @@ import { PrivacyAuditModal } from './components/PrivacyAuditModal';
 import { PrivacyContext, PrivacyConsent } from './services/PrivacyAuditService';
 import { ConsentModal } from './components/ConsentModal';
 import { ConsentManagerPanel } from './components/ConsentManagerPanel';
+import { CredentialCard } from './components/CredentialCard';
 import { CONFIG } from './config';
 import {
   appendConsentReceiptHistory,
@@ -35,6 +36,9 @@ import {
 import type { ConsentReceipt } from '@askmi/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
+import { SovereigntyCenter } from './components/SovereigntyCenter';
+import { DocumentsTab } from './components/DocumentsTab';
+import { ProximityView } from './components/ProximityView';
 import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
@@ -52,7 +56,17 @@ type WalletStatus =
 
 type DemoScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy';
 type TraceDetailPanel = 'consent' | 'compliance' | 'data-flow';
-type WalletPage = 'credentials' | 'requests' | 'trace' | 'audit' | 'settings' | 'advanced';
+type WalletPage =
+  | 'credentials'
+  | 'requests'
+  | 'trace'
+  | 'sovereignty'
+  | 'documents'
+  | 'proximity'
+  | 'renderer'
+  | 'audit'
+  | 'settings'
+  | 'advanced';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -132,6 +146,7 @@ function WalletApp() {
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
+  const [showProximityPreview, setShowProximityPreview] = useState(false);
   const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
   const [flashAllow, setFlashAllow] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy Log');
@@ -1121,6 +1136,10 @@ function WalletApp() {
             ['credentials', 'Credentials'],
             ['requests', 'Requests'],
             ['trace', 'Trace'],
+            ['sovereignty', 'Sovereignty'],
+            ['documents', 'Documents'],
+            ['proximity', 'Proximity'],
+            ['renderer', 'Renderer'],
             ['audit', 'Audit'],
             ['settings', 'Settings'],
             ['advanced', 'Advanced'],
@@ -1794,6 +1813,95 @@ function WalletApp() {
           </div>
           </div>
         )}
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'sovereignty' && (
+        <section className="wallet-panel" aria-labelledby="sovereignty-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Local Insight</p>
+              <h2 id="sovereignty-heading">Sovereignty Center</h2>
+            </div>
+            <span>{recentAuditEntries.length} events</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <SovereigntyCenter
+              auditEntries={recentAuditEntries}
+              onClose={() => setActiveWalletPage('trace')}
+            />
+          </div>
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'documents' && (
+        <section className="wallet-panel" aria-labelledby="documents-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Local Signing</p>
+              <h2 id="documents-heading">Documents</h2>
+            </div>
+            <span>Device-only</span>
+          </div>
+          <DocumentsTab
+            onSign={async (payload) => {
+              const result = await walletRef.current.signData(payload);
+              addLog(`📄 Document proof signed: ${payload.description}`, 'success');
+              return result;
+            }}
+          />
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'proximity' && (
+        <section className="wallet-panel" aria-labelledby="proximity-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Offline Presentation</p>
+              <h2 id="proximity-heading">Proximity</h2>
+            </div>
+            <span>ISO 18013-5</span>
+          </div>
+          <div className="wallet-empty-state">
+            <h3>Proximity Presentation</h3>
+            <p>
+              Start the existing ISO 18013-5 mock flow and inspect the QR handoff surface.
+            </p>
+            <button className="btn-start-demo" onClick={() => setShowProximityPreview(true)}>
+              Start proximity preview
+            </button>
+          </div>
+        </section>
+      )}
+
+      {showProximityPreview && (
+        <ProximityView
+          wallet={walletRef.current}
+          onComplete={() => setShowProximityPreview(false)}
+          onCancel={() => setShowProximityPreview(false)}
+        />
+      )}
+
+      {isWalletReady && activeWalletPage === 'renderer' && (
+        <section className="wallet-panel" aria-labelledby="renderer-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Legacy Visual Renderer</p>
+              <h2 id="renderer-heading">Credential Renderer</h2>
+            </div>
+            <span>{credentials.length} previews</span>
+          </div>
+          <div className="credential-card-list">
+            {credentials.map((cred) => (
+              <CredentialCard
+                key={cred.id}
+                id={cred.id}
+                name={cred.type?.find((type) => type !== 'VerifiableCredential') ?? 'Credential'}
+                issuer={cred.issuer}
+                claims={Object.fromEntries((cred.claims ?? []).map((claim) => [claim, 'sample']))}
+              />
+            ))}
+          </div>
         </section>
       )}
 
