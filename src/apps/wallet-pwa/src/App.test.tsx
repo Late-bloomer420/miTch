@@ -37,6 +37,11 @@ const walletServiceMockState = vi.hoisted(() => ({
   getRecentAuditLogs: vi.fn().mockReturnValue([]),
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
   resetWallet: vi.fn().mockResolvedValue(undefined),
+  deleteCredential: vi.fn().mockResolvedValue(true),
+  requestDataErasure: vi
+    .fn()
+    .mockResolvedValue({ success: true, message: 'Erasure request sent.' }),
+  reportRelyingParty: vi.fn().mockResolvedValue({ success: true, message: 'Report submitted.' }),
   addIssuedCredential: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -196,6 +201,25 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
   window.history.replaceState({}, '', '/');
+  walletServiceMockState.getCredentials.mockResolvedValue([
+    {
+      id: 'vc-age-789',
+      issuer: 'did:example:gov-issuer',
+      type: ['VerifiableCredential', 'AgeCredential'],
+      issuedAt: new Date().toISOString(),
+      claims: ['birthDate', 'age'],
+    },
+  ]);
+  walletServiceMockState.getRecentAuditLogs.mockReturnValue([]);
+  walletServiceMockState.deleteCredential.mockResolvedValue(true);
+  walletServiceMockState.requestDataErasure.mockResolvedValue({
+    success: true,
+    message: 'Erasure request sent.',
+  });
+  walletServiceMockState.reportRelyingParty.mockResolvedValue({
+    success: true,
+    message: 'Report submitted.',
+  });
 });
 
 describe('G-03 — Wallet App', () => {
@@ -207,6 +231,19 @@ describe('G-03 — Wallet App', () => {
   it('renders credential card with Age Credential', async () => {
     render(<App />);
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
+  });
+
+  it('deletes a single credential from the visible wallet card', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<App />);
+
+    await screen.findByText('Age Credential (GovID)');
+    fireEvent.click(screen.getByRole('button', { name: /Delete Age Credential/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.deleteCredential).toHaveBeenCalledWith('vc-age-789');
+    });
+    expect(walletServiceMockState.getCredentials).toHaveBeenCalledTimes(2);
   });
 
   it('first run shows a framed welcome screen and does NOT auto-fire the passkey ceremony (G-130.1 Task 3)', async () => {
@@ -562,6 +599,67 @@ describe('G-03 — Wallet App', () => {
     fireEvent.click(within(trace).getByRole('button', { name: /3 Sent/i }));
 
     expect(trace).toContainElement(document.getElementById('dataflow-section'));
+  });
+
+  it('wires data-flow erasure action to the wallet service', async () => {
+    walletServiceMockState.getRecentAuditLogs.mockReturnValue([
+      {
+        id: 'audit-erasure',
+        timestamp: '2026-03-15T10:00:00Z',
+        action: 'VP_SENT',
+        previousHash: '0'.repeat(64),
+        currentHash: 'a'.repeat(64),
+        metadata: {
+          decision_id: 'decision-erasure',
+          context: 'PROXIMITY_PRESENTATION',
+          verifier_did: 'did:askmi:verifier-liquor-store',
+          claims_requested: ['age'],
+          claims_shared: ['age'],
+          erasure_endpoint: 'https://verifier.test/erase',
+        },
+      },
+    ]);
+
+    render(<App />);
+    await openWalletPage('Trace');
+    fireEvent.click(screen.getByText('Liquor Store'));
+    fireEvent.click(screen.getByRole('button', { name: /Löschung anfordern/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.requestDataErasure).toHaveBeenCalledWith('decision-erasure');
+    });
+  });
+
+  it('wires data-flow reporting action to the wallet service', async () => {
+    vi.spyOn(window, 'prompt').mockReturnValue('Over-requesting observed');
+    walletServiceMockState.getRecentAuditLogs.mockReturnValue([
+      {
+        id: 'audit-report',
+        timestamp: '2026-03-15T10:00:00Z',
+        action: 'VP_SENT',
+        previousHash: '0'.repeat(64),
+        currentHash: 'a'.repeat(64),
+        metadata: {
+          decision_id: 'decision-report',
+          context: 'PROXIMITY_PRESENTATION',
+          verifier_did: 'did:askmi:verifier-liquor-store',
+          claims_requested: ['age', 'healthRecord'],
+          claims_shared: ['age'],
+        },
+      },
+    ]);
+
+    render(<App />);
+    await openWalletPage('Trace');
+    fireEvent.click(screen.getByText('Liquor Store'));
+    fireEvent.click(screen.getByRole('button', { name: /Melden/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.reportRelyingParty).toHaveBeenCalledWith(
+        'decision-report',
+        'Over-requesting observed'
+      );
+    });
   });
 
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {

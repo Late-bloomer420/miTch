@@ -317,6 +317,31 @@
     box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
 }
 
+.credential-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.credential-delete-btn {
+    border: 1px solid rgba(248, 113, 113, 0.38);
+    background: rgba(127, 29, 29, 0.22);
+    color: #fecaca;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.credential-delete-btn:hover {
+    border-color: rgba(248, 113, 113, 0.68);
+    background: rgba(153, 27, 27, 0.34);
+}
+
 .credential-item {
     display: flex;
     align-items: center;

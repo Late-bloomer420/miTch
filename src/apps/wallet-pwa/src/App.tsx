@@ -271,6 +271,71 @@ function WalletApp() {
   const handleSyncAuditToL2 = useCallback(() => walletRef.current.syncAuditToL2(), []);
   const getRecentComplianceLogs = useCallback(() => recentAuditEntries, [recentAuditEntries]);
   const getAuditChainStatus = useCallback(() => walletRef.current.verifyAuditChain(), []);
+  const handleDataFlowAction = useCallback(
+    async (type: 'erasure' | 'report', decisionId: string) => {
+      try {
+        if (type === 'erasure') {
+          const result = await walletRef.current.requestDataErasure(decisionId);
+          addLog(`✅ ${result.message}`, result.success ? 'success' : 'warning');
+          return;
+        }
+
+        const reason =
+          typeof window !== 'undefined' && typeof window.prompt === 'function'
+            ? window.prompt(
+                'Why should this verifier be reported?',
+                'Suspicious relying party behavior'
+              )
+            : 'Suspicious relying party behavior';
+        if (reason === null) {
+          addLog('ℹ️ Relying party report cancelled.', 'info');
+          return;
+        }
+
+        const result = await walletRef.current.reportRelyingParty(
+          decisionId,
+          reason.trim() || 'Suspicious relying party behavior'
+        );
+        addLog(`✅ ${result.message}`, result.success ? 'success' : 'warning');
+      } catch (e) {
+        addLog(
+          `❌ Data-flow action failed: ${e instanceof Error ? e.message : String(e)}`,
+          'error'
+        );
+      }
+    },
+    []
+  );
+
+  const handleDeleteCredential = useCallback(
+    async (credential: StoredCredentialMetadata) => {
+      const label =
+        credential.type?.find((type) => type !== 'VerifiableCredential') ?? credential.id;
+      const confirmed =
+        typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm(
+              `Delete ${label}?\n\nThis removes only this credential from the local wallet. This cannot be undone.`
+            )
+          : true;
+      if (!confirmed) return;
+
+      try {
+        const removed = await walletRef.current.deleteCredential(credential.id);
+        if (removed) {
+          await loadWalletCredentials();
+          addLog(`🗑️ Deleted credential ${label}.`, 'warning');
+        } else {
+          addLog(`⚠️ Credential ${label} was not found in the wallet.`, 'warning');
+        }
+      } catch (e) {
+        addLog(
+          `❌ Credential delete failed: ${e instanceof Error ? e.message : String(e)}`,
+          'error'
+        );
+      }
+    },
+    []
+  );
 
   // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
@@ -1361,7 +1426,18 @@ function WalletApp() {
                 <div key={cred.id} className={`credential-card ${cardClass}`}>
                   <div className="credential-card-header">
                     <span className="credential-card-label">{subText}</span>
-                    <span className="credential-trust-badge">✓ Trusted</span>
+                    <div className="credential-card-actions">
+                      <span className="credential-trust-badge">✓ Trusted</span>
+                      <button
+                        type="button"
+                        className="credential-delete-btn"
+                        onClick={() => handleDeleteCredential(cred)}
+                        aria-label={`Delete ${displayName}`}
+                        title="Delete this credential"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
 
                   {cred.singleUse && (
@@ -1791,7 +1867,7 @@ function WalletApp() {
               )}
               {traceDetailPanel === 'data-flow' && (
                 <div id="dataflow-section">
-                  <DataFlowPanel entries={recentAuditEntries} />
+                  <DataFlowPanel entries={recentAuditEntries} onAction={handleDataFlowAction} />
                 </div>
               )}
             </div>
