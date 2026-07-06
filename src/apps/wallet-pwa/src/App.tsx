@@ -35,7 +35,6 @@ import {
 import type { ConsentReceipt } from '@askmi/oid4vp';
 import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
-import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { LandingPage } from './LandingPage';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
@@ -122,19 +121,16 @@ function WalletApp() {
   const [currentPolicy, setCurrentPolicy] = useState<PolicyManifest | null>(null);
   const [currentRequest, setCurrentRequest] = useState<VerifierRequest | null>(null);
   const [showPrivacyAudit, setShowPrivacyAudit] = useState(false);
-  const [showSovereignty, setShowSovereignty] = useState(false);
   const [_privacyConsent, setPrivacyConsent] = useState<PrivacyConsent | null>(null);
   const [, setReputationReports] = useState<VerifierReportCard[]>([]);
   const [lastConsentReceipt, setLastConsentReceipt] = useState<ConsentReceipt | null>(null);
   const [consentReceiptHistory, setConsentReceiptHistory] = useState(() =>
     loadConsentReceiptHistory()
   );
-  const [guidedDemoActive, setGuidedDemoActive] = useState<boolean>(
-    () => !sessionStorage.getItem('guidedDemoCompleted')
-  );
+  const [guidedDemoActive, setGuidedDemoActive] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
-  const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>(null);
+  const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
   const [flashAllow, setFlashAllow] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy Log');
   const [credentialStatus, setCredentialStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>(
@@ -1109,11 +1105,11 @@ function WalletApp() {
   return (
     <div className="wallet-app">
       <h1 className="wallet-title">
-        AskMI <span className="wallet-title-accent">Trusted Channel</span>
+        AskMI <span className="wallet-title-accent">Wallet</span>
       </h1>
       {isWalletReady && (
         <p className="wallet-subtitle">
-          A local wallet for credentials, verifier requests and disclosure evidence.
+          Credentials, verifier requests and data flows stay local and visible.
         </p>
       )}
 
@@ -1139,7 +1135,7 @@ function WalletApp() {
             <strong>{activeScenario.replace(/-/g, ' ')}</strong>
           </a>
           <a className="wallet-overview__item" href="#trace-section">
-            <span>Evidence</span>
+            <span>Flow</span>
             <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
           </a>
         </section>
@@ -1287,7 +1283,7 @@ function WalletApp() {
           <div className="wallet-section-heading">
             <div>
               <p>Identity Wallet</p>
-              <h2 id="credentials-heading">Credentials</h2>
+              <h2 id="credentials-heading">Private Cards</h2>
             </div>
             <span>{credentials.length} stored</span>
           </div>
@@ -1615,7 +1611,7 @@ function WalletApp() {
         <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
           <div className="scenario-launcher__header">
             <h3 className="demo-section-title">Verifier Requests</h3>
-            <span className="scenario-launcher__hint">Choose one request</span>
+            <span className="scenario-launcher__hint">Choose request</span>
           </div>
 
           <div className="demo-primary-grid scenario-launcher__grid">
@@ -1691,24 +1687,11 @@ function WalletApp() {
           </div>
         )}
 
-        {/* UX-05: Audit Log */}
-        <div id="audit-section" className="audit-section">
-          <div className="audit-header">
-            <h3 className="audit-title">Immutable Audit Trace</h3>
-            <button className="audit-copy-btn" onClick={handleCopyLog}>
-              {copyLabel}
-            </button>
-          </div>
-          <div className="audit-log-container" ref={logContainerRef}>
-            {logs.map(renderLogLine)}
-          </div>
-        </div>
-
         <div id="trace-section" className="trace-summary" data-testid="trace-summary">
           <div className="trace-summary__header">
             <div>
               <h3>Disclosure Trace</h3>
-              <p>Requested, allowed, withheld and sent evidence for the selected request.</p>
+              <p>What was requested, allowed, withheld and sent.</p>
             </div>
             <span className="trace-summary__status">
               {evaluationResult?.verdict ?? 'Idle'}
@@ -1777,21 +1760,20 @@ function WalletApp() {
             </div>
           )}
         </div>
-      </section>
 
-      <div className="wallet-section" style={{ marginTop: 10 }}>
-        <button onClick={() => setShowSovereignty(!showSovereignty)} className="btn-demo-secondary">
-          {showSovereignty ? 'Hide data-flow summary' : 'Show data-flow summary'}
-        </button>
-        {showSovereignty && (
-          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
-            <SovereigntyCenter
-              auditEntries={recentAuditEntries}
-              onClose={() => setShowSovereignty(false)}
-            />
+        {/* UX-05: Audit Log */}
+        <div id="audit-section" className="audit-section">
+          <div className="audit-header">
+            <h3 className="audit-title">Local Audit</h3>
+            <button className="audit-copy-btn" onClick={handleCopyLog}>
+              {copyLabel}
+            </button>
           </div>
-        )}
-      </div>
+          <div className="audit-log-container" ref={logContainerRef}>
+            {logs.map(renderLogLine)}
+          </div>
+        </div>
+      </section>
 
       {isWalletReady && (
         <div className="wallet-section" style={{ marginTop: 10, textAlign: 'center' }}>
@@ -1812,7 +1794,7 @@ function WalletApp() {
         </div>
       )}
 
-      <div id="settings-section" className="wallet-section" style={{ marginBottom: 20 }}>
+      <div id="settings-section" className="wallet-section wallet-settings-section">
         {currentPolicy && (
           <PolicyEditor
             policy={currentPolicy}

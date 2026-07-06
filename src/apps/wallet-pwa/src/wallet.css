@@ -13,10 +13,10 @@
 /* ── UX-01: Layout & Container ─────────────────────────────────────────── */
 
 :root {
-    --wallet-content-max: 920px;
-    --wallet-column-max: 640px;
-    --wallet-phone-max: 400px;
-    --wallet-surface: rgba(255, 255, 255, 0.88);
+    --wallet-content-max: 860px;
+    --wallet-column-max: 600px;
+    --wallet-phone-max: 380px;
+    --wallet-surface: rgba(255, 255, 255, 0.92);
     --wallet-surface-solid: #ffffff;
     --wallet-surface-muted: #f8fafc;
     --wallet-border: rgba(14, 165, 233, 0.18);
@@ -30,8 +30,8 @@
     --wallet-warning: #92400e;
     --wallet-radius-sm: 8px;
     --wallet-radius-md: 12px;
-    --wallet-radius-lg: 16px;
-    --wallet-shadow-panel: 0 14px 34px rgba(15, 23, 42, 0.08);
+    --wallet-radius-lg: 14px;
+    --wallet-shadow-panel: 0 10px 26px rgba(15, 23, 42, 0.07);
 }
 
 .wallet-app {
@@ -40,21 +40,19 @@
     align-items: center;
     width: 100%;
     min-height: 100vh;
-    padding: 20px;
+    padding: 18px;
     padding-bottom: env(safe-area-inset-bottom, 20px);
     padding-top: env(safe-area-inset-top, 20px);
     box-sizing: border-box;
     overflow-x: hidden;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 249, 255, 0.88)),
-        radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.12), transparent 34%);
+    background: linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%);
     color: var(--wallet-text);
 }
 
 .wallet-title {
-    margin-bottom: 4px;
-    font-size: 24px;
-    font-weight: 700;
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 760;
     letter-spacing: 0;
 }
 
@@ -79,15 +77,15 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
     max-width: var(--wallet-content-max);
-    margin: 0 auto 18px;
-    padding: 6px;
+    margin: 0 auto 16px;
+    padding: 5px;
     border: 1px solid var(--wallet-border);
     border-radius: 999px;
     background: var(--wallet-surface);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
     backdrop-filter: blur(12px);
 }
 
@@ -96,11 +94,11 @@
     align-items: center;
     justify-content: center;
     min-height: 30px;
-    padding: 0 10px;
+    padding: 0 9px;
     border-radius: 999px;
     color: #075985;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 760;
     text-decoration: none;
     white-space: nowrap;
 }
@@ -119,19 +117,19 @@
 .wallet-overview {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
     width: 100%;
     max-width: var(--wallet-content-max);
-    margin: 0 auto 20px;
+    margin: 0 auto 16px;
 }
 
 .wallet-overview__item {
     min-width: 0;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border: 1px solid var(--wallet-border);
-    border-radius: var(--wallet-radius-lg);
+    border-radius: var(--wallet-radius-md);
     background: var(--wallet-surface);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
     color: inherit;
     text-decoration: none;
 }
@@ -166,8 +164,8 @@
     width: 100%;
     max-width: var(--wallet-content-max);
     box-sizing: border-box;
-    margin: 0 auto 20px;
-    padding: 18px;
+    margin: 0 auto 16px;
+    padding: 16px;
     border: 1px solid var(--wallet-border);
     border-radius: var(--wallet-radius-lg);
     background: var(--wallet-surface);
@@ -213,15 +211,15 @@
 
 .wallet-flow-stack {
     display: grid;
-    grid-template-columns: minmax(280px, 400px) minmax(320px, 1fr);
+    grid-template-columns: minmax(260px, 340px) minmax(320px, 1fr);
     align-items: start;
-    gap: 20px;
+    gap: 14px;
     width: 100%;
     max-width: var(--wallet-content-max);
-    margin: 0 auto 20px;
+    margin: 0 auto 16px;
 }
 
-.wallet-flow-stack .trace-summary {
+.wallet-flow-stack .audit-section {
     grid-column: 1 / -1;
 }
 
@@ -771,9 +769,9 @@
 .audit-section {
     width: 100%;
     max-width: var(--wallet-column-max);
-    min-height: 100%;
+    min-height: 0;
     margin-top: 0;
-    padding: 20px;
+    padding: 16px;
     box-sizing: border-box;
     background: var(--wallet-surface);
     border: 1px solid var(--wallet-border);
@@ -800,11 +798,11 @@
 }
 
 .audit-copy-btn {
-    padding: 4px 10px;
-    background: transparent;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
-    color: #555;
+    padding: 5px 10px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #475569;
     font-size: 11px;
     cursor: pointer;
     transition: all 0.2s;
@@ -812,8 +810,8 @@
 }
 
 .audit-copy-btn:hover {
-    border-color: #444;
-    color: #aaa;
+    border-color: #38bdf8;
+    color: #0369a1;
 }
 
 .audit-copy-btn:focus-visible {
@@ -828,7 +826,7 @@
     padding: 14px;
     border-radius: 10px;
     border: 1px solid rgba(14, 165, 233, 0.18);
-    max-height: 220px;
+    max-height: 180px;
     overflow-y: auto;
     scroll-behavior: smooth;
     color: #e2e8f0;
@@ -909,7 +907,7 @@
     width: 100%;
     max-width: var(--wallet-content-max);
     margin: 0 auto;
-    padding: 18px;
+    padding: 16px;
     box-sizing: border-box;
     background: var(--wallet-surface);
     border: 1px solid var(--wallet-border);
@@ -922,13 +920,13 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .trace-summary__header h3 {
     margin: 0 0 4px;
     color: #0f172a;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
 }
 
@@ -955,8 +953,8 @@
 .trace-summary__steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 7px;
+    margin-bottom: 12px;
 }
 
 .trace-summary__step {
@@ -965,8 +963,8 @@
     align-items: center;
     justify-content: center;
     gap: 3px;
-    min-height: 56px;
-    padding: 9px 10px;
+    min-height: 50px;
+    padding: 8px 9px;
     border: 1px solid rgba(14, 165, 233, 0.18);
     border-radius: 8px;
     background: rgba(248, 250, 252, 0.88);
@@ -1016,6 +1014,17 @@
 .trace-summary__panel {
     margin-top: 0;
     min-width: 0;
+}
+
+.wallet-settings-section {
+    max-width: var(--wallet-content-max);
+    margin-bottom: 16px;
+}
+
+.wallet-settings-section .policy-editor {
+    margin-top: 0 !important;
+    border-radius: var(--wallet-radius-lg) !important;
+    box-shadow: var(--wallet-shadow-panel) !important;
 }
 
 .trace-summary__panel .consent-manager-panel,
@@ -1398,10 +1407,11 @@
 @media (max-width: 480px) {
     .wallet-app {
         padding: 12px;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 82px);
     }
 
     .wallet-title {
-        font-size: 24px;
+        font-size: 21px;
     }
 
     .wallet-subtitle {
@@ -1410,18 +1420,42 @@
     }
 
     .wallet-section-rail {
-        justify-content: center;
+        position: fixed;
+        top: auto;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom, 10px));
+        left: 10px;
+        justify-content: space-between;
+        width: auto;
+        max-width: none;
+        margin: 0;
         border-radius: 18px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+    }
+
+    .wallet-nav a {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0 4px;
+        font-size: 10px;
     }
 
     .wallet-overview {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
         margin-bottom: 14px;
     }
 
     .wallet-overview__item {
-        padding: 10px 12px;
+        padding: 9px 8px;
+    }
+
+    .wallet-overview__item span {
+        font-size: 9px;
+    }
+
+    .wallet-overview__item strong {
+        font-size: 11px;
     }
 
     .wallet-panel {
@@ -1437,7 +1471,7 @@
     .wallet-flow-stack {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
         margin-bottom: 14px;
     }
 
@@ -1455,17 +1489,35 @@
     }
 
     .demo-section {
-        padding: 16px;
-        border-radius: 18px;
+        padding: 14px;
+        border-radius: 14px;
     }
 
     .audit-section {
-        padding: 16px;
-        border-radius: 18px;
+        padding: 14px;
+        border-radius: 14px;
     }
 
     .audit-log-container {
         font-size: 11px;
+    }
+
+    .trace-summary__steps {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .trace-summary__step {
+        align-items: center;
+        min-height: 48px;
+        padding: 7px 5px;
+    }
+
+    .trace-summary__step span {
+        font-size: 9px;
+    }
+
+    .trace-summary__step strong {
+        font-size: 10px;
     }
 }
 
@@ -1938,13 +1990,23 @@
 /* ── UX-03: Dynamic Premium Credential Cards ────────────────────────────── */
 
 .credential-card-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-items: center;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 16px;
     width: 100%;
     max-width: 100%;
-    margin: 0 auto 18px;
+    margin: 0 auto 12px;
+    padding: 2px 2px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+
+.credential-card-list .credential-card {
+    flex: 0 0 min(100%, var(--wallet-phone-max));
+    scroll-snap-align: center;
 }
 
 .credential-single-use {
@@ -2071,7 +2133,7 @@
 
 @media (max-width: 860px) {
     .credential-card-list {
-        grid-template-columns: 1fr;
+        gap: 12px;
     }
 }
 
