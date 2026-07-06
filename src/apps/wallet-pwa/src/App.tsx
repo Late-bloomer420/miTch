@@ -52,6 +52,7 @@ type WalletStatus =
 
 type DemoScenarioId = 'liquor-store' | 'doctor-login' | 'ehds-er' | 'pharmacy';
 type TraceDetailPanel = 'consent' | 'compliance' | 'data-flow';
+type WalletPage = 'credentials' | 'requests' | 'trace' | 'audit' | 'settings' | 'advanced';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -130,6 +131,7 @@ function WalletApp() {
   const [guidedDemoActive, setGuidedDemoActive] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
+  const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
   const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
   const [flashAllow, setFlashAllow] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy Log');
@@ -1115,29 +1117,41 @@ function WalletApp() {
 
       {isWalletReady && (
         <nav className="wallet-nav wallet-section-rail" aria-label="Wallet sections">
-          <a href="#credentials-section">Credentials</a>
-          <a href="#requests-section">Requests</a>
-          <a href="#audit-section">Audit</a>
-          <a href="#trace-section">Trace</a>
-          <a href="#settings-section">Settings</a>
-          <a href="#advanced-section">Advanced</a>
+          {[
+            ['credentials', 'Credentials'],
+            ['requests', 'Requests'],
+            ['trace', 'Trace'],
+            ['audit', 'Audit'],
+            ['settings', 'Settings'],
+            ['advanced', 'Advanced'],
+          ].map(([page, label]) => (
+            <button
+              key={page}
+              type="button"
+              className={activeWalletPage === page ? 'wallet-nav__item--active' : undefined}
+              aria-current={activeWalletPage === page ? 'page' : undefined}
+              onClick={() => setActiveWalletPage(page as WalletPage)}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
       )}
 
       {isWalletReady && (
         <section className="wallet-overview" aria-label="Wallet overview">
-          <a className="wallet-overview__item" href="#credentials-section">
+          <div className="wallet-overview__item">
             <span>Wallet</span>
             <strong>{credentials.length} credentials</strong>
-          </a>
-          <a className="wallet-overview__item" href="#requests-section">
+          </div>
+          <div className="wallet-overview__item">
             <span>Request</span>
             <strong>{activeScenario.replace(/-/g, ' ')}</strong>
-          </a>
-          <a className="wallet-overview__item" href="#trace-section">
+          </div>
+          <div className="wallet-overview__item">
             <span>Flow</span>
             <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
-          </a>
+          </div>
         </section>
       )}
 
@@ -1278,7 +1292,7 @@ function WalletApp() {
       )}
 
       {/* UX-03: Dynamic Premium Credential Cards */}
-      {isWalletReady ? (
+      {isWalletReady && activeWalletPage === 'credentials' ? (
         <section className="wallet-panel wallet-panel--credentials" aria-labelledby="credentials-heading">
           <div className="wallet-section-heading">
             <div>
@@ -1607,8 +1621,10 @@ function WalletApp() {
         />
       )}
 
-      <section className="wallet-flow-stack" aria-label="Request and evidence workflow">
-        <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
+      {isWalletReady && ['requests', 'trace', 'audit'].includes(activeWalletPage) && (
+        <section className="wallet-flow-stack" aria-label="Wallet page">
+          {activeWalletPage === 'requests' && (
+            <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
           <div className="scenario-launcher__header">
             <h3 className="demo-section-title">Verifier Requests</h3>
             <span className="scenario-launcher__hint">Choose request</span>
@@ -1678,16 +1694,18 @@ function WalletApp() {
               <span className="btn-scenario-card__subtitle">ePrescription</span>
             </button>
           </div>
-        </div>
+            </div>
+          )}
 
         {/* UX-02: Progress bar during PROVING */}
-        {status === 'PROVING' && (
+        {activeWalletPage === 'requests' && status === 'PROVING' && (
           <div className="proving-progress wallet-section">
             <div className="proving-progress-bar" />
           </div>
         )}
 
-        <div id="trace-section" className="trace-summary" data-testid="trace-summary">
+        {activeWalletPage === 'trace' && (
+          <div id="trace-section" className="trace-summary" data-testid="trace-summary">
           <div className="trace-summary__header">
             <div>
               <h3>Disclosure Trace</h3>
@@ -1759,10 +1777,12 @@ function WalletApp() {
               )}
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* UX-05: Audit Log */}
-        <div id="audit-section" className="audit-section">
+        {activeWalletPage === 'audit' && (
+          <div id="audit-section" className="audit-section">
           <div className="audit-header">
             <h3 className="audit-title">Local Audit</h3>
             <button className="audit-copy-btn" onClick={handleCopyLog}>
@@ -1772,10 +1792,12 @@ function WalletApp() {
           <div className="audit-log-container" ref={logContainerRef}>
             {logs.map(renderLogLine)}
           </div>
-        </div>
-      </section>
+          </div>
+        )}
+        </section>
+      )}
 
-      {isWalletReady && (
+      {isWalletReady && activeWalletPage === 'settings' && (
         <div className="wallet-section" style={{ marginTop: 10, textAlign: 'center' }}>
           <button
             onClick={handleResetWallet}
@@ -1794,6 +1816,7 @@ function WalletApp() {
         </div>
       )}
 
+      {isWalletReady && activeWalletPage === 'settings' && (
       <div id="settings-section" className="wallet-section wallet-settings-section">
         {currentPolicy && (
           <PolicyEditor
@@ -1806,7 +1829,9 @@ function WalletApp() {
           />
         )}
       </div>
+      )}
 
+      {isWalletReady && activeWalletPage === 'advanced' && (
       <div id="advanced-section" className="demo-section advanced-section">
         <h3 className="demo-section-title">Advanced Tools</h3>
         {status === 'IDLE' && !guidedDemoActive && (
@@ -1894,6 +1919,7 @@ function WalletApp() {
           )}
         </div>
       </div>
+      )}
 
       <GuidedDemoMode
         isActive={guidedDemoActive && status === 'IDLE'}

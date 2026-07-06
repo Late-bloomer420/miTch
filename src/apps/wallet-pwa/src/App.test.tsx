@@ -173,6 +173,11 @@ async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
   );
 }
 
+async function openWalletPage(name: 'Credentials' | 'Requests' | 'Trace' | 'Audit' | 'Settings' | 'Advanced') {
+  await screen.findByText('Age Credential (GovID)');
+  fireEvent.click(screen.getByRole('button', { name }));
+}
+
 beforeEach(() => {
   vi.restoreAllMocks();
   sessionStorage.clear();
@@ -278,20 +283,23 @@ describe('G-03 — Wallet App', () => {
     expect(webAuthnServiceMock.clearRegistration).not.toHaveBeenCalled();
   });
 
-  it('renders the primary action button', () => {
+  it('renders the primary action button on the Requests page', async () => {
     render(<App />);
+    await openWalletPage('Requests');
     expect(document.getElementById('btn-liquor-store')).not.toBeNull();
   });
 
-  it('renders demo section', () => {
+  it('renders request section as its own wallet page', async () => {
     render(<App />);
+    await openWalletPage('Requests');
     const demoSection =
       screen.queryByText('🚀 Advanced Feature Demos') || screen.queryByText('Verifier Requests');
     expect(demoSection).not.toBeNull();
   });
 
-  it('renders Doctor Login, EHDS, Pharmacy and Age Check demo button IDs', () => {
+  it('renders Doctor Login, EHDS, Pharmacy and Age Check request button IDs', async () => {
     render(<App />);
+    await openWalletPage('Requests');
     expect(document.getElementById('btn-doctor-login')).not.toBeNull();
     expect(document.getElementById('btn-pharmacy')).not.toBeNull();
     expect(document.getElementById('btn-ehds-er')).not.toBeNull();
@@ -300,11 +308,10 @@ describe('G-03 — Wallet App', () => {
 
   it('always shows the data-flow section, with no show/hide toggle (G-140 Gap D)', async () => {
     render(<App />);
-    await screen.findByText('Age Credential (GovID)'); // main authenticated view
+    await openWalletPage('Trace');
 
-    // Panel is permanent through the trace summary tab, but no longer expands by default
-    // into a full extra dashboard below the consent view.
-    fireEvent.click(screen.getByRole('button', { name: /3 Sent/i }));
+    // Panel is permanent on the Trace page, but no longer expands by default into a
+    // full extra dashboard below the credential view.
     expect(screen.getByText('Noch keine Transaktionen')).toBeInTheDocument();
     // The old toggle is gone:
     expect(screen.queryByText('Datenflüsse anzeigen')).not.toBeInTheDocument();
@@ -368,10 +375,10 @@ describe('G-03 — Wallet App', () => {
   // ── Wallet Shell UX polish: scenario launcher + framed trace (presentation only) ──
 
   it('groups all four scenarios in a single scenario-launcher region', async () => {
-    // The four demo scenarios were split — Prove Age at the top, the other three buried
-    // at the bottom past every trace panel. They must read as one launcher.
+    // The four verifier request examples belong on one dedicated page, not mixed through
+    // the wallet, trace, audit, or settings pages.
     render(<App />);
-    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Requests');
 
     const launcher = screen.getByTestId('scenario-launcher');
     expect(launcher).toContainElement(document.getElementById('btn-liquor-store'));
@@ -380,31 +387,29 @@ describe('G-03 — Wallet App', () => {
     expect(launcher).toContainElement(document.getElementById('btn-pharmacy'));
   });
 
-  it('renders direct wallet section navigation', async () => {
+  it('renders direct wallet page navigation', async () => {
     render(<App />);
     await screen.findByText('Age Credential (GovID)');
 
     const nav = screen.getByRole('navigation', { name: /wallet sections/i });
-    expect(within(nav).getByRole('link', { name: 'Credentials' })).toHaveAttribute(
-      'href',
-      '#credentials-section'
+    expect(within(nav).getByRole('button', { name: 'Credentials' })).toHaveAttribute(
+      'aria-current',
+      'page'
     );
-    expect(within(nav).getByRole('link', { name: 'Requests' })).toHaveAttribute(
-      'href',
-      '#requests-section'
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Requests' }));
+    expect(within(nav).getByRole('button', { name: 'Requests' })).toHaveAttribute(
+      'aria-current',
+      'page'
     );
-    expect(within(nav).getByRole('link', { name: 'Audit' })).toHaveAttribute(
-      'href',
-      '#audit-section'
+    expect(screen.getByTestId('scenario-launcher')).toBeInTheDocument();
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Trace' }));
+    expect(within(nav).getByRole('button', { name: 'Trace' })).toHaveAttribute(
+      'aria-current',
+      'page'
     );
-    expect(within(nav).getByRole('link', { name: 'Trace' })).toHaveAttribute(
-      'href',
-      '#trace-section'
-    );
-    expect(within(nav).getByRole('link', { name: 'Settings' })).toHaveAttribute(
-      'href',
-      '#settings-section'
-    );
+    expect(screen.getByTestId('trace-summary')).toBeInTheDocument();
   });
 
   it('marks a scenario as active (aria-current) once it is selected', async () => {
@@ -412,7 +417,7 @@ describe('G-03 — Wallet App', () => {
     // the assertion is purely about the synchronous active-selection marking.
     await bootstrapFetchMocks('PROMPT');
     render(<App />);
-    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Requests');
 
     const doctor = document.getElementById('btn-doctor-login')!;
     expect(doctor).not.toHaveAttribute('aria-current');
@@ -481,7 +486,7 @@ describe('G-03 — Wallet App', () => {
   ])('keeps %s wired to the same wallet evaluation request', async (buttonId, expectedRequest) => {
     await bootstrapFetchMocks('PROMPT');
     render(<App />);
-    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Requests');
 
     fireEvent.click(document.getElementById(buttonId)!);
 
@@ -495,7 +500,7 @@ describe('G-03 — Wallet App', () => {
 
   it('frames requested, allowed and sent evidence as one disclosure trace section', async () => {
     render(<App />);
-    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Trace');
 
     const trace = screen.getByTestId('trace-summary');
     expect(within(trace).getByText(/disclosure trace/i)).toBeInTheDocument();
@@ -528,6 +533,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Trace' }));
     fireEvent.click(screen.getByRole('button', { name: /1 Requested/i }));
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
@@ -586,6 +592,7 @@ describe('G-03 — Wallet App', () => {
     const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
     await waitFor(() => expect(acceptButton).not.toBeDisabled());
     fireEvent.click(acceptButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Trace' }));
     fireEvent.click(screen.getByRole('button', { name: /1 Requested/i }));
 
     await screen.findByText('DENIED', { selector: '.consent-manager-panel__history-pill' });
