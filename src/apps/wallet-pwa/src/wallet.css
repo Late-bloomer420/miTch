@@ -543,8 +543,21 @@
 }
 
 .advanced-section {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0;
+}
+
+.wallet-tools-page {
+    width: 100%;
     max-width: var(--wallet-column-max);
-    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.wallet-tools-panel {
+    gap: 16px;
 }
 
 .scenario-launcher__header {

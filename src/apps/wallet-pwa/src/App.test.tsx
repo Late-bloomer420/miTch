@@ -194,8 +194,7 @@ async function openWalletPage(
     | 'Renderer'
     | 'Audit'
     | 'Settings'
-    | 'Advanced'
-    | 'Dev'
+    | 'Tools'
 ) {
   await screen.findByText('Age Credential (GovID)');
   fireEvent.click(screen.getByRole('button', { name }));
@@ -532,13 +531,29 @@ describe('G-03 — Wallet App', () => {
       'page'
     );
     expect(screen.getByRole('heading', { name: 'Credential Renderer' })).toBeInTheDocument();
+
+    fireEvent.click(within(nav).getByRole('button', { name: 'Tools' }));
+    expect(within(nav).getByRole('button', { name: 'Tools' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: 'Dev' })).not.toBeInTheDocument();
   });
 
-  it('renders the dev workbench and wires the deep-link parser', async () => {
+  it('combines advanced tools and dev workbench on the Tools page', async () => {
     render(<App />);
-    await openWalletPage('Dev');
+    await openWalletPage('Tools');
 
+    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start guided flow' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'DEV Workbench' })).toBeInTheDocument();
+  });
+
+  it('wires the dev deep-link parser from the Tools page', async () => {
+    render(<App />);
+    await openWalletPage('Tools');
+
     fireEvent.click(screen.getByRole('button', { name: /Parse \+ evaluate/i }));
 
     await waitFor(() => {

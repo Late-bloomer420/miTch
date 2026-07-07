@@ -67,8 +67,7 @@ type WalletPage =
   | 'renderer'
   | 'audit'
   | 'settings'
-  | 'advanced'
-  | 'dev';
+  | 'tools';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -1334,8 +1333,7 @@ function WalletApp() {
             ['renderer', 'Renderer'],
             ['audit', 'Audit'],
             ['settings', 'Settings'],
-            ['advanced', 'Advanced'],
-            ...(import.meta.env.DEV ? ([['dev', 'Dev']] as const) : []),
+            ['tools', 'Tools'],
           ].map(([page, label]) => (
             <button
               key={page}
@@ -2143,159 +2141,170 @@ function WalletApp() {
       </div>
       )}
 
-      {isWalletReady && activeWalletPage === 'advanced' && (
-      <div id="advanced-section" className="demo-section advanced-section">
-        <h3 className="demo-section-title">Advanced Tools</h3>
-        {status === 'IDLE' && !guidedDemoActive && (
-          <button
-            className="btn-start-demo"
-            onClick={() => {
-              sessionStorage.removeItem('guidedDemoCompleted');
-              setGuidedDemoActive(true);
-            }}
-          >
-            Start guided flow
-          </button>
-        )}
-        {/* Secondary — collapsible */}
-        <button
-          className="demo-secondary-toggle"
-          onClick={() => setShowSecondary((s) => !s)}
-          aria-expanded={showSecondary}
-        >
-          {showSecondary ? 'Hide advanced tools' : 'Show advanced tools'}
-        </button>
-
-        <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
-          <button
-            onClick={handleWebAuthnDemo}
-            className="btn-demo-secondary btn-demo-secondary--biometric"
-          >
-            🔐 Biometric (WebAuthn)
-          </button>
-          <button
-            onClick={handleRecoveryTest}
-            className="btn-demo-secondary btn-demo-secondary--recovery"
-          >
-            🛡️ Social Recovery
-          </button>
-          <button
-            onClick={handleResearchDemo}
-            disabled={status !== 'IDLE'}
-            className="btn-demo-secondary"
-          >
-            🔬 Research Data
-          </button>
-          <button
-            onClick={handleCrossBorderDemo}
-            disabled={status !== 'IDLE'}
-            className="btn-demo-secondary"
-          >
-            🇪🇸 Cross-Border
-          </button>
-          <button
-            onClick={handleFetchCredential}
-            disabled={credentialStatus === 'fetching'}
-            className={`btn-demo-secondary developer-tool-button${credentialStatus === 'done' ? ' developer-tool-button--done' : ''}`}
-          >
-            {credentialStatus === 'fetching'
-              ? '⏳ Issuer request running'
-              : credentialStatus === 'done'
-                ? '✅ Test credential issued'
-                : credentialStatus === 'error'
-                  ? '↻ Retry test credential'
-                  : '🎫 Test credential'}
-          </button>
-          {import.meta.env.DEV && (
-            <label
-              className="developer-tool-toggle"
-              title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
-            >
-              <input
-                type="checkbox"
-                checked={mintSingleUse}
-                onChange={(e) => setMintSingleUse(e.target.checked)}
-              />
-              <span>Single-use credential</span>
-            </label>
-          )}
-          {import.meta.env.DEV && (
-            <button
-              onClick={handleFetchBatch}
-              disabled={credentialStatus === 'fetching'}
-              className="btn-demo-secondary developer-tool-button"
-              title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
-            >
-              Batch issue {BATCH_SIZE}
-            </button>
-          )}
-        </div>
-      </div>
-      )}
-
-      {import.meta.env.DEV && isWalletReady && activeWalletPage === 'dev' && (
-        <section className="wallet-panel wallet-dev-panel" aria-labelledby="dev-heading">
+      {isWalletReady && activeWalletPage === 'tools' && (
+      <section className="wallet-tools-page" aria-labelledby="tools-heading">
+        <div className="wallet-panel wallet-tools-panel">
           <div className="wallet-section-heading">
             <div>
-              <p>Local Developer Tools</p>
-              <h2 id="dev-heading">DEV Workbench</h2>
+              <p>Advanced Wallet Tools</p>
+              <h2 id="tools-heading">Tools</h2>
             </div>
-            <span>dev-only</span>
+            <span>advanced</span>
           </div>
 
-          <div className="dev-tool-status" role="status">
-            {devToolStatus}
-          </div>
-
-          <div className="dev-tool-grid">
-            <section className="dev-tool-card" aria-labelledby="dev-deeplink-heading">
-              <h3 id="dev-deeplink-heading">Deep Link Parser</h3>
-              <textarea
-                value={devDeepLinkInput}
-                onChange={(e) => setDevDeepLinkInput(e.target.value)}
-                rows={3}
-                aria-label="DEV deep link input"
-              />
-              <button type="button" className="btn-demo-secondary" onClick={handleDevParseDeepLink}>
-                Parse + evaluate
-              </button>
-            </section>
-
-            <section className="dev-tool-card" aria-labelledby="dev-credential-heading">
-              <h3 id="dev-credential-heading">Credential Probes</h3>
-              <button type="button" className="btn-demo-secondary" onClick={handleDevSeedMalicious}>
-                Seed malicious credential
-              </button>
-              <button type="button" className="btn-demo-secondary" onClick={handleDevCorruptCredential}>
-                Corrupt credential probe
-              </button>
-            </section>
-
-            <section className="dev-tool-card" aria-labelledby="dev-policy-heading">
-              <h3 id="dev-policy-heading">Policy Stress</h3>
-              <button type="button" className="btn-demo-secondary" onClick={handleDevExplosion}>
-                Run policy explosion
-              </button>
-            </section>
-
-            <section className="dev-tool-card" aria-labelledby="dev-raw-heading">
-              <h3 id="dev-raw-heading">Raw Document Inspector</h3>
-              <input
-                value={devRawCredentialId}
-                onChange={(e) => setDevRawCredentialId(e.target.value)}
-                placeholder={credentials[0]?.id ?? 'credential id'}
-                aria-label="Credential id for raw document inspection"
-              />
+          <div id="advanced-section" className="demo-section advanced-section">
+            {status === 'IDLE' && !guidedDemoActive && (
               <button
-                type="button"
-                className="btn-demo-secondary"
-                onClick={handleDevInspectRawCredential}
+                className="btn-start-demo"
+                onClick={() => {
+                  sessionStorage.removeItem('guidedDemoCompleted');
+                  setGuidedDemoActive(true);
+                }}
               >
-                Inspect summary
+                Start guided flow
               </button>
-            </section>
+            )}
+            {/* Secondary — collapsible */}
+            <button
+              className="demo-secondary-toggle"
+              onClick={() => setShowSecondary((s) => !s)}
+              aria-expanded={showSecondary}
+            >
+              {showSecondary ? 'Hide advanced tools' : 'Show advanced tools'}
+            </button>
+
+            <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
+              <button
+                onClick={handleWebAuthnDemo}
+                className="btn-demo-secondary btn-demo-secondary--biometric"
+              >
+                🔐 Biometric (WebAuthn)
+              </button>
+              <button
+                onClick={handleRecoveryTest}
+                className="btn-demo-secondary btn-demo-secondary--recovery"
+              >
+                🛡️ Social Recovery
+              </button>
+              <button
+                onClick={handleResearchDemo}
+                disabled={status !== 'IDLE'}
+                className="btn-demo-secondary"
+              >
+                🔬 Research Data
+              </button>
+              <button
+                onClick={handleCrossBorderDemo}
+                disabled={status !== 'IDLE'}
+                className="btn-demo-secondary"
+              >
+                🇪🇸 Cross-Border
+              </button>
+              <button
+                onClick={handleFetchCredential}
+                disabled={credentialStatus === 'fetching'}
+                className={`btn-demo-secondary developer-tool-button${credentialStatus === 'done' ? ' developer-tool-button--done' : ''}`}
+              >
+                {credentialStatus === 'fetching'
+                  ? '⏳ Issuer request running'
+                  : credentialStatus === 'done'
+                    ? '✅ Test credential issued'
+                    : credentialStatus === 'error'
+                      ? '↻ Retry test credential'
+                      : '🎫 Test credential'}
+              </button>
+              {import.meta.env.DEV && (
+                <label
+                  className="developer-tool-toggle"
+                  title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
+                >
+                  <input
+                    type="checkbox"
+                    checked={mintSingleUse}
+                    onChange={(e) => setMintSingleUse(e.target.checked)}
+                  />
+                  <span>Single-use credential</span>
+                </label>
+              )}
+              {import.meta.env.DEV && (
+                <button
+                  onClick={handleFetchBatch}
+                  disabled={credentialStatus === 'fetching'}
+                  className="btn-demo-secondary developer-tool-button"
+                  title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
+                >
+                  Batch issue {BATCH_SIZE}
+                </button>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
+
+        {import.meta.env.DEV && (
+          <section className="wallet-panel wallet-dev-panel" aria-labelledby="dev-heading">
+            <div className="wallet-section-heading">
+              <div>
+                <p>Local Developer Tools</p>
+                <h2 id="dev-heading">DEV Workbench</h2>
+              </div>
+              <span>dev-only</span>
+            </div>
+
+            <div className="dev-tool-status" role="status">
+              {devToolStatus}
+            </div>
+
+            <div className="dev-tool-grid">
+              <section className="dev-tool-card" aria-labelledby="dev-deeplink-heading">
+                <h3 id="dev-deeplink-heading">Deep Link Parser</h3>
+                <textarea
+                  value={devDeepLinkInput}
+                  onChange={(e) => setDevDeepLinkInput(e.target.value)}
+                  rows={3}
+                  aria-label="DEV deep link input"
+                />
+                <button type="button" className="btn-demo-secondary" onClick={handleDevParseDeepLink}>
+                  Parse + evaluate
+                </button>
+              </section>
+
+              <section className="dev-tool-card" aria-labelledby="dev-credential-heading">
+                <h3 id="dev-credential-heading">Credential Probes</h3>
+                <button type="button" className="btn-demo-secondary" onClick={handleDevSeedMalicious}>
+                  Seed malicious credential
+                </button>
+                <button type="button" className="btn-demo-secondary" onClick={handleDevCorruptCredential}>
+                  Corrupt credential probe
+                </button>
+              </section>
+
+              <section className="dev-tool-card" aria-labelledby="dev-policy-heading">
+                <h3 id="dev-policy-heading">Policy Stress</h3>
+                <button type="button" className="btn-demo-secondary" onClick={handleDevExplosion}>
+                  Run policy explosion
+                </button>
+              </section>
+
+              <section className="dev-tool-card" aria-labelledby="dev-raw-heading">
+                <h3 id="dev-raw-heading">Raw Document Inspector</h3>
+                <input
+                  value={devRawCredentialId}
+                  onChange={(e) => setDevRawCredentialId(e.target.value)}
+                  placeholder={credentials[0]?.id ?? 'credential id'}
+                  aria-label="Credential id for raw document inspection"
+                />
+                <button
+                  type="button"
+                  className="btn-demo-secondary"
+                  onClick={handleDevInspectRawCredential}
+                >
+                  Inspect summary
+                </button>
+              </section>
+            </div>
+          </section>
+        )}
+      </section>
       )}
 
       <GuidedDemoMode
