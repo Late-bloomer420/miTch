@@ -1,3 +1,5 @@
+import { tMedical } from '../i18n/medical-terms';
+
 export type LanguageCode = 'de' | 'en' | 'es' | 'nl';
 
 // Get language from browser or default to EN
@@ -78,6 +80,8 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
 };
 
 export function translateClaim(claimKey: string, lang: LanguageCode = getBrowserLanguage()): string {
+    const medicalTerm = tMedical(claimKey, lang);
+    if (medicalTerm !== claimKey) return medicalTerm;
     return CLAIM_DICTIONARY[lang]?.[claimKey] || claimKey;
 }
 

@@ -233,6 +233,25 @@ describe('G-03 — Wallet App', () => {
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
   });
 
+  it('uses localized medical claim labels on visible credential cards', async () => {
+    vi.spyOn(window.navigator, 'language', 'get').mockReturnValue('de-DE');
+    walletServiceMockState.getCredentials.mockResolvedValue([
+      {
+        id: 'vc-patient-summary',
+        issuer: 'did:example:ehds-issuer',
+        type: ['VerifiableCredential', 'PatientSummary'],
+        issuedAt: new Date().toISOString(),
+        claims: ['bloodGroup', 'allergies', 'activeProblems', 'emergencyContacts'],
+      },
+    ]);
+
+    render(<App />);
+
+    expect(await screen.findByText('EHDS Patient Health Summary')).toBeInTheDocument();
+    expect(screen.getByText(/Blutgruppe/)).toBeInTheDocument();
+    expect(screen.getByText(/Allergien/)).toBeInTheDocument();
+  });
+
   it('deletes a single credential from the visible wallet card', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<App />);

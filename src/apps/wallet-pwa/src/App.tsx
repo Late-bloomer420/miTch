@@ -40,6 +40,7 @@ import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { DocumentsTab } from './components/DocumentsTab';
 import { ProximityView } from './components/ProximityView';
 import { LandingPage } from './LandingPage';
+import { translateClaim } from './utils/i18n';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
 
@@ -1466,8 +1467,8 @@ function WalletApp() {
 
                   <div className="credential-card-claims">
                     {(cred.claims || []).map((claim) => (
-                      <span key={claim} className="credential-card-claim-badge">
-                        • {claim}
+                      <span key={claim} className="credential-card-claim-badge" title={claim}>
+                        • {translateClaim(claim)}
                       </span>
                     ))}
                   </div>
