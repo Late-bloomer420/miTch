@@ -42,6 +42,11 @@ const walletServiceMockState = vi.hoisted(() => ({
     .fn()
     .mockResolvedValue({ success: true, message: 'Erasure request sent.' }),
   reportRelyingParty: vi.fn().mockResolvedValue({ success: true, message: 'Report submitted.' }),
+  parseDeepLinkRequest: vi.fn(),
+  seedMalicious: vi.fn().mockResolvedValue(undefined),
+  corruptCredential: vi.fn().mockResolvedValue(undefined),
+  evaluateAgainstExplosion: vi.fn(),
+  getRawCredentialDocument: vi.fn().mockResolvedValue({ envelope: 'encrypted' }),
   addIssuedCredential: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -190,6 +195,7 @@ async function openWalletPage(
     | 'Audit'
     | 'Settings'
     | 'Advanced'
+    | 'Dev'
 ) {
   await screen.findByText('Age Credential (GovID)');
   fireEvent.click(screen.getByRole('button', { name }));
@@ -210,6 +216,7 @@ beforeEach(() => {
       claims: ['birthDate', 'age'],
     },
   ]);
+  walletServiceMockState.evaluateRequest.mockResolvedValue(makePromptResult('ALLOW'));
   walletServiceMockState.getRecentAuditLogs.mockReturnValue([]);
   walletServiceMockState.deleteCredential.mockResolvedValue(true);
   walletServiceMockState.requestDataErasure.mockResolvedValue({
@@ -220,6 +227,21 @@ beforeEach(() => {
     success: true,
     message: 'Report submitted.',
   });
+  walletServiceMockState.parseDeepLinkRequest.mockResolvedValue({
+    verifierId: 'did:askmi:verifier-liquor-store',
+    nonce: 'dev-nonce-001',
+    requirements: [
+      {
+        credentialType: 'VerifiableCredential',
+        requestedClaims: ['age'],
+        requestedProvenClaims: ['age >= 18'],
+      },
+    ],
+  });
+  walletServiceMockState.seedMalicious.mockResolvedValue(undefined);
+  walletServiceMockState.corruptCredential.mockResolvedValue(undefined);
+  walletServiceMockState.evaluateAgainstExplosion.mockResolvedValue(makePromptResult('ALLOW'));
+  walletServiceMockState.getRawCredentialDocument.mockResolvedValue({ envelope: 'encrypted' });
 });
 
 describe('G-03 — Wallet App', () => {
@@ -510,6 +532,22 @@ describe('G-03 — Wallet App', () => {
       'page'
     );
     expect(screen.getByRole('heading', { name: 'Credential Renderer' })).toBeInTheDocument();
+  });
+
+  it('renders the dev workbench and wires the deep-link parser', async () => {
+    render(<App />);
+    await openWalletPage('Dev');
+
+    expect(screen.getByRole('heading', { name: 'DEV Workbench' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Parse \+ evaluate/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.parseDeepLinkRequest).toHaveBeenCalledWith(
+        expect.stringContaining('mitch://present')
+      );
+      expect(walletServiceMockState.evaluateRequest).toHaveBeenCalled();
+    });
+    expect(await screen.findByText(/Parsed did:askmi:verifier-liquor-store/)).toBeInTheDocument();
   });
 
   it('marks a scenario as active (aria-current) once it is selected', async () => {

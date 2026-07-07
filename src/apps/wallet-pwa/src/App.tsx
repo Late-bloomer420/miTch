@@ -67,7 +67,8 @@ type WalletPage =
   | 'renderer'
   | 'audit'
   | 'settings'
-  | 'advanced';
+  | 'advanced'
+  | 'dev';
 
 const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   {
@@ -184,6 +185,11 @@ function WalletApp() {
   // as single-use. The constraint is fixed at issuance, never mutated in-wallet.
   // Dev-only (see import.meta.env.DEV); tree-shaken from production builds.
   const [mintSingleUse, setMintSingleUse] = useState(false);
+  const [devDeepLinkInput, setDevDeepLinkInput] = useState(
+    'mitch://present?verifier=did:askmi:verifier-liquor-store&nonce=dev-nonce-001'
+  );
+  const [devRawCredentialId, setDevRawCredentialId] = useState('');
+  const [devToolStatus, setDevToolStatus] = useState('DEV tools are local-only and do not send data.');
 
   // G-120: Listen for Auth Popup messages from opener window
   useEffect(() => {
@@ -1142,6 +1148,126 @@ function WalletApp() {
     }
   };
 
+  const handleDevParseDeepLink = async () => {
+    try {
+      const request = await walletRef.current.parseDeepLinkRequest(devDeepLinkInput);
+      if (!request) {
+        const message = 'Deep link ignored: unsupported scheme or invalid URL.';
+        setDevToolStatus(message);
+        addLog(`⚠️ DEV: ${message}`, 'warning');
+        return;
+      }
+
+      setCurrentRequest(request);
+      const result = await walletRef.current.evaluateRequest(request, {
+        timestamp: Date.now(),
+        userDID: 'did:example:wallet-user',
+      });
+      setEvaluationResult(result);
+      setTraceDetailPanel('consent');
+      const message = `Parsed ${request.verifierId} → ${result.verdict}`;
+      setDevToolStatus(message);
+      addLog(`🧪 DEV: ${message}`, result.verdict === 'DENY' ? 'warning' : 'success');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setDevToolStatus(`Deep link parse failed: ${message}`);
+      addLog(`❌ DEV deep link parse failed: ${message}`, 'error');
+    }
+  };
+
+  const handleDevSeedMalicious = async () => {
+    try {
+      await walletRef.current.seedMalicious();
+      await loadWalletCredentials();
+      setActiveWalletPage('credentials');
+      setDevToolStatus('Malicious test credential seeded into the local wallet.');
+      addLog('🧪 DEV: Malicious test credential seeded.', 'warning');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setDevToolStatus(`Malicious seed failed: ${message}`);
+      addLog(`❌ DEV malicious seed failed: ${message}`, 'error');
+    }
+  };
+
+  const handleDevCorruptCredential = async () => {
+    const confirmed =
+      typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm(
+            'Run the credential corruption probe?\n\nThis is dev-only and may intentionally break a local test credential.'
+          )
+        : true;
+    if (!confirmed) return;
+
+    try {
+      await walletRef.current.corruptCredential();
+      await loadWalletCredentials();
+      setDevToolStatus('Credential corruption probe executed.');
+      addLog('🧪 DEV: Credential corruption probe executed.', 'warning');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setDevToolStatus(`Corruption probe failed safely: ${message}`);
+      addLog(`⚠️ DEV corruption probe failed safely: ${message}`, 'warning');
+    }
+  };
+
+  const handleDevExplosion = async () => {
+    const request: VerifierRequest =
+      currentRequest ?? {
+        verifierId: 'did:askmi:verifier-dev-explosion',
+        origin: 'https://dev.askmi.local',
+        requirements: [
+          {
+            credentialType: 'AgeCredential',
+            requestedClaims: ['age'],
+            requestedProvenClaims: [],
+          },
+        ],
+      };
+
+    try {
+      const start = performance.now();
+      const result = await walletRef.current.evaluateAgainstExplosion(request, {
+        timestamp: Date.now(),
+        userDID: 'did:example:wallet-user',
+      });
+      const duration = Math.round(performance.now() - start);
+      setEvaluationResult(result);
+      const message = `Policy explosion benchmark: ${result.verdict} in ${duration}ms`;
+      setDevToolStatus(message);
+      addLog(`🧪 DEV: ${message}`, 'info');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setDevToolStatus(`Policy explosion failed: ${message}`);
+      addLog(`❌ DEV policy explosion failed: ${message}`, 'error');
+    }
+  };
+
+  const handleDevInspectRawCredential = async () => {
+    const id = devRawCredentialId.trim() || credentials[0]?.id;
+    if (!id) {
+      const message = 'No credential id available for raw inspection.';
+      setDevToolStatus(message);
+      addLog(`⚠️ DEV: ${message}`, 'warning');
+      return;
+    }
+
+    try {
+      const raw = await walletRef.current.getRawCredentialDocument(id);
+      const json = JSON.stringify(raw ?? null);
+      const keys =
+        raw && typeof raw === 'object'
+          ? Object.keys(raw as unknown as Record<string, unknown>)
+          : [];
+      const message = `Raw document ${id}: ${json.length} bytes, keys: ${keys.join(', ') || 'none'}`;
+      setDevToolStatus(message);
+      addLog(`🧪 DEV: ${message}`, 'info');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setDevToolStatus(`Raw document inspect failed: ${message}`);
+      addLog(`❌ DEV raw document inspect failed: ${message}`, 'error');
+    }
+  };
+
   // UX-02: primary button classes
   const getPrimaryBtnClass = () => {
     const base = 'btn-primary';
@@ -1209,6 +1335,7 @@ function WalletApp() {
             ['audit', 'Audit'],
             ['settings', 'Settings'],
             ['advanced', 'Advanced'],
+            ...(import.meta.env.DEV ? ([['dev', 'Dev']] as const) : []),
           ].map(([page, label]) => (
             <button
               key={page}
@@ -2104,6 +2231,71 @@ function WalletApp() {
           )}
         </div>
       </div>
+      )}
+
+      {import.meta.env.DEV && isWalletReady && activeWalletPage === 'dev' && (
+        <section className="wallet-panel wallet-dev-panel" aria-labelledby="dev-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Local Developer Tools</p>
+              <h2 id="dev-heading">DEV Workbench</h2>
+            </div>
+            <span>dev-only</span>
+          </div>
+
+          <div className="dev-tool-status" role="status">
+            {devToolStatus}
+          </div>
+
+          <div className="dev-tool-grid">
+            <section className="dev-tool-card" aria-labelledby="dev-deeplink-heading">
+              <h3 id="dev-deeplink-heading">Deep Link Parser</h3>
+              <textarea
+                value={devDeepLinkInput}
+                onChange={(e) => setDevDeepLinkInput(e.target.value)}
+                rows={3}
+                aria-label="DEV deep link input"
+              />
+              <button type="button" className="btn-demo-secondary" onClick={handleDevParseDeepLink}>
+                Parse + evaluate
+              </button>
+            </section>
+
+            <section className="dev-tool-card" aria-labelledby="dev-credential-heading">
+              <h3 id="dev-credential-heading">Credential Probes</h3>
+              <button type="button" className="btn-demo-secondary" onClick={handleDevSeedMalicious}>
+                Seed malicious credential
+              </button>
+              <button type="button" className="btn-demo-secondary" onClick={handleDevCorruptCredential}>
+                Corrupt credential probe
+              </button>
+            </section>
+
+            <section className="dev-tool-card" aria-labelledby="dev-policy-heading">
+              <h3 id="dev-policy-heading">Policy Stress</h3>
+              <button type="button" className="btn-demo-secondary" onClick={handleDevExplosion}>
+                Run policy explosion
+              </button>
+            </section>
+
+            <section className="dev-tool-card" aria-labelledby="dev-raw-heading">
+              <h3 id="dev-raw-heading">Raw Document Inspector</h3>
+              <input
+                value={devRawCredentialId}
+                onChange={(e) => setDevRawCredentialId(e.target.value)}
+                placeholder={credentials[0]?.id ?? 'credential id'}
+                aria-label="Credential id for raw document inspection"
+              />
+              <button
+                type="button"
+                className="btn-demo-secondary"
+                onClick={handleDevInspectRawCredential}
+              >
+                Inspect summary
+              </button>
+            </section>
+          </div>
+        </section>
       )}
 
       <GuidedDemoMode

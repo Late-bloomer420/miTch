@@ -793,6 +793,65 @@
     accent-color: #0369a1;
 }
 
+.wallet-dev-panel {
+    gap: 14px;
+}
+
+.dev-tool-status {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    line-height: 1.45;
+    box-sizing: border-box;
+}
+
+.dev-tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.dev-tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.dev-tool-card h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.dev-tool-card input,
+.dev-tool-card textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 9px 10px;
+    color: #0f172a;
+    background: #f8fafc;
+    font: inherit;
+    font-size: 12px;
+}
+
+.dev-tool-card textarea {
+    resize: vertical;
+}
+
 /* ── UX-05: Audit Log ────────────────────────────────────────────────────── */
 
 .audit-section {
@@ -2149,6 +2208,10 @@
 
 @media (max-width: 860px) {
     .credential-card-list {
+        grid-template-columns: 1fr;
+    }
+
+    .dev-tool-grid {
         grid-template-columns: 1fr;
     }
 }
