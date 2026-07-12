@@ -53,10 +53,18 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 |---|---|---|---|---|---|---|
 | T-1 | Policy Engine | Claim-Name-Injection (Path Traversal, Wildcards, Template-Injection) | Smart Policy Engine | Whitelist-basierte Input Validation: nur alphanumerisch + Underscore/Hyphen; rejects `../`, `.`, `/`, `*`, `$`, >128 Zeichen | belegt | `policy-engine/src/__tests__/input-validation.test.ts` — "rejects path traversal", "rejects wildcards", etc. |
 | T-2 | Policy Engine | Protokoll-Downgrade (Replay-Protection, Step-Up abverhandeln) | Smart Policy Engine | Capability Negotiation: Security-kritische Flags → DENY bei Mismatch; DOWNGRADE_ATTACK Deny-Code | belegt | `policy-engine/src/__tests__/capability-negotiation.test.ts` — "DENY: unsafe downgrade attempt is rejected" |
-| T-3 | Anti-Replay | Replay einer Präsentation (Nonce-Wiederverwendung) | Smart Policy Engine | Atomare Nonce-Konsumierung; zweite Verwendung → DENY (NONCE_REPLAY); Audience-Scoping | belegt | `poc-hardened/src/__tests__/nonceStore.test.ts` — "second use of same nonce returns replay" |
-| T-4 | Anti-Replay | Abgelaufene / manipulierte Timestamps | Smart Policy Engine | Request-Expiry mit 90s Clock-Skew-Toleranz; ungültiges Datum → fail-closed expired | belegt | `poc-hardened/src/__tests__/requestGuards.test.ts` — "isExpired returns true for invalid date string" |
+| T-3 | Anti-Replay | Replay einer Präsentation (Nonce-Wiederverwendung) | Smart Policy Engine | Atomare Nonce-Konsumierung; zweite Verwendung → DENY (`DENY_BINDING_NONCE_REPLAY`); Audience-Scoping | belegt | `shared-crypto/test/presentation-binding.test.ts` — "replay same nonce → DENY" (BindingNonceStore) und "replay same presentation → DENY" (validateBinding) |
+| T-4 | Anti-Replay | Abgelaufene / manipulierte Timestamps | Smart Policy Engine | TTL-basierte Binding-Expiry (Default 5 min) mit ±30s Clock-Skew-Toleranz; abgelaufen/manipuliert → DENY (`DENY_BINDING_EXPIRED`) | belegt | `shared-crypto/test/presentation-binding.test.ts` — "expired nonce (beyond skew) → DENY", "clock skew beyond tolerance → DENY", "nonce within clock skew → ALLOW" |
 | T-5 | Audit Log | Manipulation der Audit-Kette (Einfügen, Löschen, Umordnen, Signatur-Swap) | Crypto-Shredding | Hash-Chain + Per-Entry-Signatur + Report-Signatur; 6 Angriffsvektoren getestet | belegt | `audit-log/test/adversarial_audit.test.ts` — "Payload Tampering detected", "Cherry-Picking detected", "Reordering detected", "Signature Swap detected" |
 | T-6 | Policy Engine | ALLOW ohne nachvollziehbare Grundlage | Smart Policy Engine | Allow Assertion Grounding: ALLOW erfordert ruleId + reason + policy_hash; ohne → ALLOW_WITHOUT_EVIDENCE | belegt | `policy-engine/src/__tests__/allow-assertion.test.ts` — "fails for ALLOW with no evidence" |
+
+> **Anti-Replay Evidenz-Umzug (2026-07-07):** T-3/T-4 verwiesen zuvor auf das
+> archivierte PoC-Paket `@askmi/poc-hardened` (`nonceStore.test.ts` /
+> `requestGuards.test.ts`). Das produktive Anti-Replay lebt in
+> `shared-crypto/src/nonce-store.ts` (`BindingNonceStore` + `validateBinding`,
+> TTL + Audience-Binding + Clock-Skew, `DENY_BINDING_NONCE_REPLAY` /
+> `DENY_BINDING_EXPIRED`) und ist dort belegt (`presentation-binding.test.ts`,
+> 20/20 grün, 2026-07-07). Damit hängt kein Threat-Beleg mehr an `poc-hardened`.
 
 ### R — Repudiation
 

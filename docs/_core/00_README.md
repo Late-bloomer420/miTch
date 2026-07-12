@@ -25,6 +25,9 @@ Rechtlich: DSGVO-konform durch Konstruktion, nicht durch Versprechen.
 | [05_LEGAL.md](05_LEGAL.md) | DSGVO-Basis & Crypto-Shredding | Bindend |
 | [06_OPEN_DECISIONS.md](06_OPEN_DECISIONS.md) | Offene Entscheidungen | Aktiv |
 | [07_ROADMAP.md](07_ROADMAP.md) | Was als nächstes kommt | Aktiv |
+| [08_EU_BOUNDARIES.md](08_EU_BOUNDARIES.md) | Grenzen der EU-Systeme (EUDI/AV-App/Business Wallet) | Bindend |
+| [09_LAYER2_VISIBILITY_PLAN.md](09_LAYER2_VISIBILITY_PLAN.md) | Layer-2 Sichtbarkeit (G-140) | Aktiv |
+| [10_KEY_PROTECTION_REALITY.md](10_KEY_PROTECTION_REALITY.md) | Krypto-Realität: Software vs. WebAuthn vs. geplantes TEE | Bindend |
 
 ---
 
