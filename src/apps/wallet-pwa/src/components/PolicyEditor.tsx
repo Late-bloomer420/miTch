@@ -84,17 +84,18 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
     return (
         <div className="policy-editor" style={{
             padding: '24px',
-            background: '#111827',
-            borderRadius: '24px',
-            border: '1px solid #374151',
-            color: '#f9fafb',
-            marginTop: '30px'
+            background: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '20px',
+            border: '1px solid rgba(14, 165, 233, 0.18)',
+            color: '#0f172a',
+            marginTop: '30px',
+            boxShadow: '0 14px 34px rgba(15, 23, 42, 0.08)'
         }}>
             <header style={{ marginBottom: '20px' }}>
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>⚖️</span> Governance Settings
                 </h3>
-                <p style={{ fontSize: '13px', color: '#9ca3af', margin: '8px 0 0 0' }}>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '8px 0 0 0' }}>
                     Manage which issuers you trust and how your data is protected.
                 </p>
             </header>
@@ -110,7 +111,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            background: 'rgba(248, 113, 113, 0.05)',
+                            background: '#fff1f2',
                             padding: '10px 16px',
                             borderRadius: '12px',
                             border: '1px solid rgba(248, 113, 113, 0.2)'
@@ -128,7 +129,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                         <input
                             id="veto-input"
                             placeholder="e.g. evil-tracker.com"
-                            style={{ flex: 1, background: '#000', border: '1px solid #374151', color: 'white', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
+                            style={{ flex: 1, background: '#fff', border: '1px solid #fecdd3', color: '#0f172a', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     addBlockedVerifier(e.currentTarget.value);
@@ -142,7 +143,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                                 addBlockedVerifier(input.value);
                                 input.value = '';
                             }}
-                            style={{ background: '#374151', color: 'white', border: 'none', padding: '0 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}
+                            style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', padding: '0 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}
                         >
                             Block
                         </button>
@@ -151,7 +152,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
             </div>
 
             {/* Global Settings */}
-            <div style={{ marginBottom: '25px', padding: '16px', background: '#1f2937', borderRadius: '16px', border: '1px solid #374151', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ marginBottom: '25px', padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #dbeafe', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <div style={{ fontWeight: '600', fontSize: '14px' }}>Block Unknown Verifiers</div>
@@ -163,7 +164,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             width: '44px',
                             height: '24px',
                             borderRadius: '12px',
-                            background: policy.globalSettings?.blockUnknownVerifiers ? '#10b981' : '#374151',
+                            background: policy.globalSettings?.blockUnknownVerifiers ? '#10b981' : '#cbd5e1',
                             border: 'none',
                             position: 'relative',
                             cursor: 'pointer',
@@ -183,7 +184,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                     </button>
                 </div>
 
-                <div style={{ height: '1px', background: '#374151', margin: '4px 0' }} />
+                <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }} />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -205,7 +206,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             width: '44px',
                             height: '24px',
                             borderRadius: '12px',
-                            background: policy.globalSettings?.denySecondaryUse ? '#ef4444' : '#374151',
+                            background: policy.globalSettings?.denySecondaryUse ? '#ef4444' : '#cbd5e1',
                             border: 'none',
                             position: 'relative',
                             cursor: 'pointer',
@@ -247,7 +248,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             width: '44px',
                             height: '24px',
                             borderRadius: '12px',
-                            background: (policy.globalSettings?.denySecondaryUseCountries || []).includes('*') ? '#f59e0b' : '#374151',
+                            background: (policy.globalSettings?.denySecondaryUseCountries || []).includes('*') ? '#f59e0b' : '#cbd5e1',
                             border: 'none',
                             position: 'relative',
                             cursor: 'pointer',
@@ -267,15 +268,15 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                     </button>
                 </div>
 
-                <div style={{ height: '1px', background: '#374151', margin: '4px 0' }} />
+                <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }} />
 
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <div>
+                <div style={{ overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        <div style={{ minWidth: 0, flex: '1 1 180px' }}>
                             <div style={{ fontWeight: '600', fontSize: '14px', color: '#60a5fa' }}>Biometric Session Timeout</div>
                             <div style={{ fontSize: '11px', color: '#6b7280' }}>How long Face ID/Touch ID remains valid before asking again.</div>
                         </div>
-                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#60a5fa' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#60a5fa', flexShrink: 0 }}>
                             {policy.globalSettings?.requireConsentTimeoutMinutes === 0 ? 'Always ask' :
                                 `${policy.globalSettings?.requireConsentTimeoutMinutes || 5} min`}
                         </div>
@@ -303,7 +304,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
 
             {/* Trusted Issuers */}
             <div style={{ marginBottom: '25px' }}>
-                <h4 style={{ fontSize: '12px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                <h4 style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
                     Trusted Issuers
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -312,10 +313,10 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            background: '#1f2937',
+                            background: '#f8fafc',
                             padding: '12px 16px',
                             borderRadius: '12px',
-                            border: '1px solid #374151'
+                            border: '1px solid #dbeafe'
                         }}>
                             <div>
                                 <div style={{ fontWeight: '600', fontSize: '13px' }}>{issuer.name}</div>
@@ -345,19 +346,19 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                 </div>
 
                 {/* Add Issuer Form */}
-                <div style={{ marginTop: '12px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px dashed #374151' }}>
+                <div style={{ marginTop: '12px', padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #bfdbfe' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
                         <input
                             placeholder="Issuer Name (e.g. MyBank)"
                             value={newIssuer.name}
                             onChange={e => setNewIssuer({ ...newIssuer, name: e.target.value })}
-                            style={{ background: '#000', border: '1px solid #374151', color: 'white', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
+                            style={{ background: '#fff', border: '1px solid #bfdbfe', color: '#0f172a', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
                         />
                         <input
                             placeholder="DID (did:example:...)"
                             value={newIssuer.did}
                             onChange={e => setNewIssuer({ ...newIssuer, did: e.target.value })}
-                            style={{ background: '#000', border: '1px solid #374151', color: 'white', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
+                            style={{ background: '#fff', border: '1px solid #bfdbfe', color: '#0f172a', padding: '8px', borderRadius: '8px', fontSize: '12px' }}
                         />
                     </div>
                     <button
@@ -365,9 +366,9 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy: initialPolic
                         style={{
                             width: '100%',
                             padding: '8px',
-                            background: '#374151',
-                            color: 'white',
-                            border: 'none',
+                            background: '#e0f2fe',
+                            color: '#075985',
+                            border: '1px solid #bae6fd',
                             borderRadius: '8px',
                             fontSize: '12px',
                             fontWeight: '600',
