@@ -1,6 +1,8 @@
 # WebAuthn Fail-Closed — Finding & Fix (2026-07-12)
 
-**Status:** Fix landed (Increment 1 of 2). Branch `fix/webauthn-fail-closed` off `master`.
+**Status:** Increment 1 fixed `webauthn.ts`; Increment 2 wires the real wallet
+identity-key gate via `IdentityKeyGuardian`. Branch `fix/webauthn-fail-closed`
+off `master`.
 **Invariant enforced:** North-Star **Fail-Closed** ("ambiguity = DENY") applied to the
 hardware-bound identity key. See also `docs/_core/10_KEY_PROTECTION_REALITY.md`
 (arriving via PR #130) for the honest crypto-protection baseline.
@@ -56,17 +58,49 @@ unrelated** timing failures (`did.test.ts` DENY-on-timeout, `pqc.test.ts` SLH-DS
 also fail on clean `master` (confirmed by re-running the two files with the fix stashed);
 neither file imports `webauthn`.
 
-## What remains (Increment 2 — not in this branch)
-- **Point 1** (`WalletService.ts:461-476`): the inline software `policyPrivateKey` used
-  for DecisionCapsule signing when no passkey exists. This is a larger design change
-  (the demo currently *needs* a software signer to run without a passkey). Options:
-  gate high-assurance operations behind a required `HARDWARE_BOUND` level (fail-closed
-  DENY otherwise), and/or route key acquisition through `KeyGuardian` so the level is
-  explicit and checkable.
+## Increment 2 — WalletService/KeyGuardian wiring
+Point 1 is now closed for DecisionCapsule signing.
+
+- New `shared-crypto/src/IdentityKeyGuardian.ts` is the concrete key-protection
+  bridge used by the wallet. It implements the `KeyGuardian` contract and exposes
+  the selected identity-key protection level.
+- If a WebAuthn/passkey identity key is registered, DecisionCapsules are signed via
+  `WebAuthnService.signWithIdentityKey()` and annotated as
+  `wallet_attestation_method:'webauthn'`,
+  `wallet_attestation_protection:'HARDWARE_BOUND'`, `encoding:'base64'`.
+- If WebAuthn is available but no identity key is registered, signing fails with
+  `HARDWARE_IDENTITY_REQUIRED`. No session software key is created as a substitute.
+- The software signer remains only for runtimes where WebAuthn is not available
+  at all (Node/tests/legacy), and capsules are explicitly annotated as
+  `SOFTWARE_EPHEMERAL` / `software-fallback` / `hex`.
+- `generatePresentation()` now enforces those annotations. Software capsules must
+  pass the existing local ECDSA verification; hardware-bound capsules must carry
+  the WebAuthn/HARDWARE_BOUND metadata and no longer trip the old
+  `Missing Policy Key` path.
+
+### Tests that lock Increment 2
+`wallet-pwa/src/__tests__/WalletService.test.ts`:
+1. Node/test software attestations are explicitly marked `SOFTWARE_EPHEMERAL`.
+2. Browser/WebAuthn available + no registered identity key rejects with
+   `HARDWARE_IDENTITY_REQUIRED`.
+3. Registered WebAuthn identity key path calls `signWithIdentityKey()` and produces
+   a `HARDWARE_BOUND` capsule attestation.
+
+Verification: WalletService 41/41 green; `shared-crypto` targeted WebAuthn/KeyGuardian
+tests 12/12 green; `shared-crypto` lint clean; `shared-types` build clean;
+`wallet-pwa` production build clean.
+
+## What remains after Increment 2
 - **Point 4** (`verifyPresence`): make the verifier reject `method:'software-fallback'`
-  in production paths.
-- **Level propagation:** stop discarding `PresenceProof.method`; surface protection
-  level to callers so a policy can enforce it.
+  in production paths. This needs the full proof object, not the legacy bare string.
+- **Presence level propagation:** `provePresence()` still returns only `.signature`
+  for compatibility; callers that need assurance must use `provePresenceDetailed()`
+  and enforce `method:'webauthn'`.
+- **WebAuthn assertion verification:** the current wallet-side hardware attestation
+  is fail-closed against software downgrade, but it is not a full server-side
+  WebAuthn assertion verifier. That belongs in the verifier/native hook work where
+  public key, authenticatorData, clientDataJSON, signature counter, rpId and origin
+  can be checked together.
 
 These are tracked here rather than fixed silently, to keep the increment small and the
 security-critical change reviewable.

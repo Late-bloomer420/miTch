@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
+import { KeyProtectionLevel, WebAuthnService } from '@askmi/shared-crypto';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
@@ -64,6 +65,76 @@ describe('WalletService — Initialization', () => {
     expect(creds.length).toBeGreaterThan(0); // re-seeded from clean slate
 
     resetSpy.mockRestore();
+  });
+});
+
+describe('WalletService — Identity key protection gate', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function evaluateAge(wallet: WalletService) {
+    return wallet.evaluateRequest(
+      {
+        verifierId: 'did:askmi:verifier-liquor-store',
+        nonce: crypto.randomUUID(),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+        origin: 'http://localhost:3004',
+        serviceEndpoint: 'http://localhost:3004/present',
+      },
+      { userAgent: 'test-agent', timestamp: Date.now() }
+    );
+  }
+
+  it('annotates Node/test software attestations explicitly as SOFTWARE_EPHEMERAL', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(false);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const result = await evaluateAge(wallet);
+
+    expect(result.verdict).toBe('ALLOW');
+    expect(result.decisionCapsule?.wallet_attestation).toBeTruthy();
+    expect(result.decisionCapsule?.wallet_attestation_method).toBe('software-fallback');
+    expect(result.decisionCapsule?.wallet_attestation_protection).toBe(
+      KeyProtectionLevel.SOFTWARE_EPHEMERAL
+    );
+    expect(result.decisionCapsule?.wallet_attestation_encoding).toBe('hex');
+  });
+
+  it('fails closed instead of signing with software when WebAuthn is available but no identity key is registered', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    await expect(evaluateAge(wallet)).rejects.toThrow(/HARDWARE_IDENTITY_REQUIRED/);
+  });
+
+  it('uses the registered WebAuthn identity key for policy capsule attestation', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(true);
+    const signSpy = vi
+      .spyOn(WebAuthnService, 'signWithIdentityKey')
+      .mockResolvedValue(btoa('hardware-attestation'));
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const result = await evaluateAge(wallet);
+
+    expect(result.verdict).toBe('ALLOW');
+    expect(signSpy).toHaveBeenCalled();
+    expect(result.decisionCapsule?.wallet_attestation).toBe(btoa('hardware-attestation'));
+    expect(result.decisionCapsule?.wallet_attestation_method).toBe('webauthn');
+    expect(result.decisionCapsule?.wallet_attestation_protection).toBe(
+      KeyProtectionLevel.HARDWARE_BOUND
+    );
+    expect(result.decisionCapsule?.wallet_attestation_encoding).toBe('base64');
   });
 });
 

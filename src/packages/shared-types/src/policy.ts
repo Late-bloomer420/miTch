@@ -340,6 +340,9 @@ export interface DecisionCapsule {
     requires_presence: boolean; // If true, Must trigger Biometric/Passkey
     expires_at: string; // ISO 8601
     wallet_attestation?: string; // Signature or TEE proof
+    wallet_attestation_method?: 'webauthn' | 'software-fallback';
+    wallet_attestation_protection?: 'SOFTWARE_EPHEMERAL' | 'SOFTWARE_PERSISTED' | 'HARDWARE_BOUND';
+    wallet_attestation_encoding?: 'hex' | 'base64';
     presence_proof?: string; // WebAuthn/Passkey signature over decision_id
 
     /** CIR 2024/2982: Persisted erasure endpoint for later use */
