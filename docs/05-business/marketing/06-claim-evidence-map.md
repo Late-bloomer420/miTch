@@ -30,10 +30,9 @@ Evidence:
 Evidence:
 
 - `src/packages/shared-types/src/audit.ts`
-- `src/packages/audit-log/src/index.ts`
+- `src/packages/audit-log/src/index.ts` (`AuditLog.append` — immutable event log)
+- `src/packages/audit-log/src/verify.ts` (`verifyAuditReport` — hash-chain + per-entry & report signatures; detects tampering/cherry-picking/reordering)
 - `src/packages/audit-log/L2_ANCHOR_SPEC.md`
-- `src/packages/poc-hardened/src/api/eventLog.ts`
-- `src/packages/poc-hardened/src/api/auditVerify.ts`
 
 ### Claim: the wallet shows requested, allowed, withheld
 

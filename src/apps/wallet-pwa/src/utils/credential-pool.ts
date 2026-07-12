@@ -10,12 +10,16 @@
  * wallet avoids re-using one credential's stable issuer signature / cnf holder
  * key as a cross-verifier correlator.
  *
- * This module is pure and storage-agnostic: it decides WHICH member to use and
- * tracks consumption. Wiring into WalletService storage is a later increment.
+ * The pure core decides WHICH member to use and tracks consumption. The wallet
+ * bridge `selectPoolMembersForPresentation` (bottom of file) maps stored
+ * credential metadata onto that core so WalletService can narrow each pool to a
+ * single member before policy evaluation (Increment 2 wiring).
  *
  * Honesty boundary: this delivers unlinkability through NON-REUSE, not through
  * cryptographic multi-show unlinkability (that would be BBS+, deferred).
  */
+
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 /** How a pool is consumed. */
 export type CredentialPoolPolicy = 'single_use' | 'reuse';
@@ -105,4 +109,43 @@ export function markMemberUsed(
 export function poolStats(members: CredentialPoolMember[]): CredentialPoolStats {
   const used = members.reduce((n, m) => (m.usedAt !== null ? n + 1 : n), 0);
   return { total: members.length, used, available: members.length - used };
+}
+
+// --- Wallet bridge (Increment 2) --------------------------------------------
+
+/**
+ * Narrow a presentation selection set so each batch-issued pool (grouped by
+ * `poolId`) contributes exactly ONE member — the oldest unused one, per
+ * `selectPoolMember(single_use)`. This realizes the pool's non-reuse purpose:
+ * without it, all unused members of a pool stay visible to the policy engine
+ * and the stable per-member holder binding could leak across verifiers.
+ *
+ * - Standalone credentials (no `poolId`) pass through unchanged.
+ * - A fully-consumed pool contributes nothing (fail-closed non-reuse).
+ * - Pure: the input is never mutated; output preserves input order with the
+ *   non-selected pool members removed.
+ *
+ * Compose after `selectablePresentationCredentials` (which drops already-
+ * consumed single-use credentials) — the two together give: consumed members
+ * invisible, and each remaining pool reduced to one presentable member.
+ */
+export function selectPoolMembersForPresentation<T extends StoredCredentialMetadata>(
+  metas: T[]
+): T[] {
+  const poolIds = new Set<string>();
+  for (const m of metas) {
+    if (m.poolId) poolIds.add(m.poolId);
+  }
+  if (poolIds.size === 0) return metas.slice();
+
+  const survivingPooledIds = new Set<string>();
+  for (const poolId of poolIds) {
+    const asMembers: CredentialPoolMember[] = metas
+      .filter((m) => m.poolId === poolId)
+      .map((m) => ({ id: m.id, issuedAt: m.issuedAt, usedAt: m.consumedAt ?? null }));
+    const chosen = selectPoolMember(asMembers, 'single_use').member;
+    if (chosen) survivingPooledIds.add(chosen.id);
+  }
+
+  return metas.filter((m) => !m.poolId || survivingPooledIds.has(m.id));
 }

@@ -42,6 +42,7 @@ import {
   markConsumed,
   selectablePresentationCredentials,
 } from '../utils/single-use';
+import { selectPoolMembersForPresentation } from '../utils/credential-pool';
 import { putKey as putHolderKeyDb, getKey as getHolderKeyDb, deleteKey as deleteHolderKeyDb } from '../utils/crypto-db';
 import { ProofOfExistence } from './DocumentService';
 import { evaluatePredicates, CommonPredicates, type PredicateRequest } from '@askmi/predicates';
@@ -778,8 +779,12 @@ export class WalletService {
   ): Promise<PolicyEvaluationResult> {
     if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
 
-    // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
-    const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
+    // Fail-closed non-reuse: consumed single-use credentials are invisible, and each
+    // batch-issued pool is narrowed to a single presentable member (oldest unused) so a
+    // per-member holder binding cannot leak across verifiers (Proof-Randomization, U-12).
+    const credentials = selectPoolMembersForPresentation(
+      selectablePresentationCredentials(await this.storage.getAllMetadata())
+    );
     const basePolicy = this.getPolicy();
 
     const explodedRules = Array.from({ length: 500 }).map((_, i) => ({
@@ -816,8 +821,12 @@ export class WalletService {
   ): Promise<PolicyEvaluationResult> {
     if (!this.storage || !this.policyEngine) throw new Error('Wallet locked');
 
-    // Fail-closed non-reuse: a consumed single-use credential is invisible to selection.
-    const credentials = selectablePresentationCredentials(await this.storage.getAllMetadata());
+    // Fail-closed non-reuse: consumed single-use credentials are invisible, and each
+    // batch-issued pool is narrowed to a single presentable member (oldest unused) so a
+    // per-member holder binding cannot leak across verifiers (Proof-Randomization, U-12).
+    const credentials = selectPoolMembersForPresentation(
+      selectablePresentationCredentials(await this.storage.getAllMetadata())
+    );
 
     const result = await this.policyEngine.evaluate(
       request,

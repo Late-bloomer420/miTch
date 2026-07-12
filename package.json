@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build --filter=!@askmi/poc-hardened",
     "build:pnpm": "pnpm -r --filter ./src/packages/* build",
     "build:topo": "pnpm -r --filter ./src/packages/* --sort build",
     "build:all": "pnpm -r --filter ./src/packages/* build && pnpm -r --filter ./src/apps/* build",
@@ -18,11 +18,11 @@
     "dev:verifier": "pnpm --filter verifier-backend dev",
     "demo": "bash dev-demo.sh",
     "demo:win": "powershell -ExecutionPolicy Bypass -File dev-demo.ps1",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint --filter=!@askmi/poc-hardened",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "guard:rebrand": "node scripts/guard-active-rebrand.mjs",
     "guard:archived-imports": "node scripts/guard-archived-imports.mjs",
-    "test": "turbo run test",
+    "test": "turbo run test --filter=!@askmi/poc-hardened",
     "test:golden": "pnpm --filter @askmi/integration-tests exec vitest run src/fail-closed-golden.test.ts",
     "clean": "turbo run clean",
     "clean:pnpm": "pnpm -r --filter ./src/packages/* clean"
