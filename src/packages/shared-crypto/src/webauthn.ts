@@ -74,8 +74,10 @@ async function savePasskeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist passkey metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
@@ -107,8 +109,10 @@ async function saveIdentityKeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist identity-key metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
