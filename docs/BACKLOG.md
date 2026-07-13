@@ -22,6 +22,8 @@
 
 **Update 2026-07-01 (S-11 Enforcement-Layer geschlossen):** S-11 ist im Arbeitsstand geschlossen und heute validiert. Die konkreten Health-/Professional-Claims (`bloodGroup`, `allergies`, `activeProblems`, `emergencyContacts`, `medication`, `dosageInstruction`, `refillsRemaining`, `role`, `licenseId`) sind jetzt im Enforcement-`LAYER_MAP` als `VULNERABLE` klassifiziert; die Visibility bleibt ein Superset fuer display-only Claims. Legitime Doctor/EHDS/Research/Pharmacy-Regeln deklarieren explizit `minimumLayer: VULNERABLE`, sodass Consent, Presence, Break-Glass, HDAB und Geo-Scope nicht durch fruehe `LAYER_VIOLATION`s kurzgeschlossen werden. Negative Regression: WELT/default-Verifier bekommen `bloodGroup` nicht, Layer-1-Verifier bekommen `licenseId` nicht. Validierung: `pnpm --filter @askmi/layer-resolver test`, `pnpm --filter @askmi/policy-engine test`, `pnpm --filter @askmi/integration-tests exec vitest run src/demo-scenarios.test.ts`, `pnpm test` (46/46 Turbo-Tasks) und `pnpm guard:rebrand` gruen.
 
+**Update 2026-07-13 (Dead-Code-Sichtung — parked, nicht gelöscht):** Eine knip-Sichtung fand eine in sich geschlossene, aber **nirgends verdrahtete** Komponenten-Insel in `wallet-pwa`, die de facto die **schon getrackte** Visual-Rendering-Arbeit ist (E-45 / V-01–V-04) bzw. Proximity-UX (G-110). Kein `App.tsx`-Pfad importiert die Wurzeln. **Bewusst behalten** (TODO-Marker im Code, Backlog-Referenz), nicht entfernt: `components/SecureIframeRenderer.tsx` (V-02, sandboxed CSP-iframe), `components/CredentialRenderer.tsx` (V-01 renderMethod + V-03 svg-mustache + V-04 digestMultibase), `components/CredentialCard.tsx` (E-45 branded card), `components/ProximityView.tsx` + `services/ProximityService.ts` (G-110 / E-11 ISO-18013-5 Proximity-UI), `components/DocumentsTab.tsx` (Proof-of-Existence-Tab, `DocumentService` bleibt anderweitig genutzt). Deshalb bleiben auch die zugehörigen Deps `mustache`/`@types/mustache` (CredentialRenderer) und `qrcode.react` (ProximityView) deklariert. **Aufgeräumt:** ungenutzte `i18n/medical-terms.ts` in `utils/i18n.ts` konsolidiert (E-38/T-C3, war Dublette der `CLAIM_DICTIONARY`); ungenutzte `jose`-Dependency aus `verifier-demo/backend` und `@askmi/revocation-statuslist` entfernt. `@simplewebauthn/*` in `webauthn-verifier` bleibt bewusst deklariert (per ADR-009 für die künftige vollständige Signatur-Verifikation reserviert).
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -276,12 +278,14 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 
+> **Hinweis (2026-07-13):** Eine **nicht verdrahtete** Referenz-Implementierung dieser Zeilen existiert bereits im Code (parked, TODO-Marker): `wallet-pwa/src/components/CredentialRenderer.tsx` (V-01 `renderMethod`, V-03 svg-mustache, V-04 `verifyDigestMultibase`), `wallet-pwa/src/components/SecureIframeRenderer.tsx` (V-02 sandboxed CSP-iframe), `wallet-pwa/src/components/CredentialCard.tsx` (Branded Card). Offen = Einbindung in die Wallet-UI, nicht Neubau.
+
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
-| V-01 | 🟡 | `renderMethod` Property Support in SD-JWT VC Parser | W3C VC-Render |
-| V-02 | 🟡 | Sandboxed Iframe Renderer mit strikter CSP (No-Tracking Enforcement) | W3C §4.2 |
-| V-03 | 🟢 | `svg-mustache` Template-Engine Integration für Branded Cards | W3C §3.1.1 |
-| V-04 | 🟢 | Cryptographic Digest Verification (`digestMultibase`) für Templates | W3C §3.1.3 |
+| V-01 | 🟡 | `renderMethod` Property Support in SD-JWT VC Parser — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C VC-Render |
+| V-02 | 🟡 | Sandboxed Iframe Renderer mit strikter CSP (No-Tracking Enforcement) — Impl. parked in `SecureIframeRenderer.tsx` (unwired) | W3C §4.2 |
+| V-03 | 🟢 | `svg-mustache` Template-Engine Integration für Branded Cards — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C §3.1.1 |
+| V-04 | 🟢 | Cryptographic Digest Verification (`digestMultibase`) für Templates — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C §3.1.3 |
 
 ---
 

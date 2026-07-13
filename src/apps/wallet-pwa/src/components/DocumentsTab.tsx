@@ -1,3 +1,6 @@
+// TODO(backlog): Proof-of-existence "Documents" tab. Implemented but not yet wired into
+// the wallet UI (no live importer); DocumentService is still used elsewhere. See
+// docs/BACKLOG.md "Phase 5 — Visual & Branding" / wallet UX. Do not delete: parked.
 import React, { useState } from 'react';
 import { DocumentService, ProofOfExistence } from '../services/DocumentService';
 
