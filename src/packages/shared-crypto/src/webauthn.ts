@@ -266,7 +266,14 @@ export class WebAuthnService {
   static async signWithIdentityKey(data: string): Promise<string> {
     const meta = await loadIdentityKeyMeta();
     if (!meta || meta.credentialId === 'software-fallback') {
-      // Fallback auf Software wenn kein HW-Key registriert
+      // Fail-closed: a software signature must NEVER stand in for the
+      // hardware-bound identity key when WebAuthn is available. Only Node/test/
+      // legacy environments (no navigator.credentials) may use the fallback.
+      if (isWebAuthnAvailable()) {
+        throw new Error(
+          'IDENTITY_KEY_NOT_REGISTERED: refusing software fallback while WebAuthn is available — register the hardware identity key first.'
+        );
+      }
       const proof = await SoftwareFallback.sign(data);
       return proof.signature;
     }
@@ -494,9 +501,13 @@ export class WebAuthnService {
         }
       }
 
-      // Fallback: Software-Signatur (degraded mode)
-      console.error('[WebAuthn] Assertion failed, falling back to software:', err);
-      return SoftwareFallback.sign(decisionId);
+      // Fail-closed: when WebAuthn is available, an assertion failure must NOT
+      // silently degrade to a software signature — an induced error would
+      // otherwise bypass the hardware-bound key. Surface the error instead.
+      console.error('[WebAuthn] Assertion failed (fail-closed, not downgrading):', err);
+      throw new Error(
+        `WEBAUTHN_ASSERTION_FAILED: ${(err as Error)?.message ?? 'unknown error'}`
+      );
     }
 
     const response = assertion.response as AuthenticatorAssertionResponse;

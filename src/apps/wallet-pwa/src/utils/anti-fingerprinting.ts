@@ -38,7 +38,6 @@ function sortJsonValue(value: unknown): unknown {
  * Works with both strings (like JWE) and objects.
  */
 export function padPayload(data: string | Record<string, unknown>, blockSize: number = 4096): string {
-  let basePayload: string;
   let obj: Record<string, unknown>;
 
   if (typeof data === 'string') {
@@ -52,7 +51,7 @@ export function padPayload(data: string | Record<string, unknown>, blockSize: nu
     obj = data;
   }
 
-  basePayload = JSON.stringify(obj);
+  const basePayload = JSON.stringify(obj);
 
   if (basePayload.length >= blockSize) {
     blockSize = Math.ceil((basePayload.length + 512) / 1024) * 1024;

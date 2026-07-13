@@ -10,6 +10,10 @@ export function getBrowserLanguage(): LanguageCode {
 }
 
 // ── Medical Claim Translations ────────────────────────────────────────────────
+// EHDS Compliance (T-C3): localized medical terms for the Wallet UI, incl. a few
+// common medical *values* (e.g. Penicillin, Asthma) alongside claim *keys*.
+// Consolidated from the former i18n/medical-terms.ts (SNOMED CT / LOINC-oriented)
+// so there is a single source of truth for medical labels.
 const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
     en: {
         'bloodGroup': 'Blood Group',
@@ -25,7 +29,10 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'emergencyContacts': 'Emergency Contacts',
         'medication': 'Medication',
         'dosageInstruction': 'Dosage Instruction',
-        'refillsRemaining': 'Refills Remaining'
+        'refillsRemaining': 'Refills Remaining',
+        // medical values (EHDS T-C3)
+        'Penicillin': 'Penicillin',
+        'Asthma': 'Asthma'
     },
     de: {
         'bloodGroup': 'Blutgruppe',
@@ -41,7 +48,10 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'emergencyContacts': 'Notfallkontakte',
         'medication': 'Medikation',
         'dosageInstruction': 'Dosierungsanweisung',
-        'refillsRemaining': 'Verbleibende Rezepte'
+        'refillsRemaining': 'Verbleibende Rezepte',
+        // medical values (EHDS T-C3)
+        'Penicillin': 'Penicillin',
+        'Asthma': 'Asthma'
     },
     es: {
         'bloodGroup': 'Grupo Sanguíneo',
@@ -57,7 +67,10 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'emergencyContacts': 'Contactos de Emergencia',
         'medication': 'Medicamentos',
         'dosageInstruction': 'Instrucciones de Dosis',
-        'refillsRemaining': 'Recargas Restantes'
+        'refillsRemaining': 'Recargas Restantes',
+        // medical values (EHDS T-C3)
+        'Penicillin': 'Penicilina',
+        'Asthma': 'Asma'
     },
     nl: {
         'bloodGroup': 'Bloedgroep',
@@ -73,7 +86,10 @@ const CLAIM_DICTIONARY: Record<LanguageCode, Record<string, string>> = {
         'emergencyContacts': 'Contacten voor Noodgevallen',
         'medication': 'Medicatie',
         'dosageInstruction': 'Doseringsinstructie',
-        'refillsRemaining': 'Resterende Navullingen'
+        'refillsRemaining': 'Resterende Navullingen',
+        // medical values (EHDS T-C3)
+        'Penicillin': 'Penicilline',
+        'Asthma': 'Astma'
     }
 };
 

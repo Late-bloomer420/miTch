@@ -25,6 +25,8 @@ import {
   canonicalStringify,
   RecoveryService,
   WebAuthnService,
+  IdentityKeyGuardian,
+  KeyProtectionLevel,
   signData,
   sha256,
   resolveDID,
@@ -372,7 +374,7 @@ export class WalletService {
   private auditLog: AuditLog;
   private policyEngine: PolicyEngine | null = null;
   private policyPublicKey: CryptoKey | null = null;
-  private policyPrivateKey: CryptoKey | null = null; // Identity Private Key (Phase 0)
+  private identityKeyGuardian = new IdentityKeyGuardian();
   private policyManifest: PolicyManifest | null = null;
   private initialized = false;
   private initPromise: Promise<void> | null = null;
@@ -451,48 +453,49 @@ export class WalletService {
             console.warn('⚠️ Failed to persist audit key marker');
           }
 
-          // 3. Identity Keys (Phase 0 -> T-31: Hardware-Bound)
-          const _IDENTITY_KEY_ID = 'identity-keys-v1';
-
-          // Check if a hardware identity key is already registered
+          // 3. Identity Keys. Hardware-bound WebAuthn is the real root of trust.
+          // Software is created only for Node/test runtimes where WebAuthn cannot run.
           const hasHardwareIdentity = await WebAuthnService.isIdentityRegistered();
+          const hardwareAvailable = await this.identityKeyGuardian.isHardwareAvailable?.();
 
           if (hasHardwareIdentity) {
             console.log('🛡️ Hardware-bound Identity Key detected (LoA High)');
-            this.policyPublicKey = null; // We use the HW key for signing
-          } else {
-            console.log('✨ Creating SESSION-SCOPED Identity Keypair (RAM only)...');
-            const keys = await globalThis.crypto.subtle.generateKey(
-              { name: 'ECDSA', namedCurve: 'P-256' },
-              false, // extractable: false
-              ['sign', 'verify']
-            );
-            this.policyPrivateKey = keys.privateKey;
-            this.policyPublicKey = keys.publicKey;
+            this.policyPublicKey = null; // WebAuthn assertion verification is not a local ECDSA verify.
+          } else if (hardwareAvailable) {
+            this.policyPublicKey = null;
             console.warn(
-              '⚠️ Phase-0: Using software identity keys. Upgrade to HW-binding for LoA High.'
+              '🛑 Hardware identity key required. Register the platform passkey before signing policy decisions.'
             );
+          } else {
+            console.log('✨ Creating NODE/TEST software Identity Keypair (RAM only)...');
+            await this.identityKeyGuardian.ensureSoftwareKey();
+            this.policyPublicKey = await this.identityKeyGuardian.getSoftwarePublicKey();
           }
 
           // Initialize Policy Engine
           step = 'initPolicyEngine';
           this.policyEngine = new PolicyEngine(async (capsule: DecisionCapsule) => {
+            const level = await this.identityKeyGuardian.getLevel();
+            const hardwareAvailable = await this.identityKeyGuardian.isHardwareAvailable?.();
+            if (level !== KeyProtectionLevel.HARDWARE_BOUND && hardwareAvailable) {
+              throw new Error(
+                'HARDWARE_IDENTITY_REQUIRED: WebAuthn is available, but no hardware identity key is registered.'
+              );
+            }
+
+            capsule.wallet_attestation_method =
+              level === KeyProtectionLevel.HARDWARE_BOUND ? 'webauthn' : 'software-fallback';
+            capsule.wallet_attestation_protection = level;
+            capsule.wallet_attestation_encoding =
+              level === KeyProtectionLevel.HARDWARE_BOUND ? 'base64' : 'hex';
+
             const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
             const payload = canonicalStringify(toSign);
-
-            if (await WebAuthnService.isIdentityRegistered()) {
-              // Use Hardware Key
-              const signature = await WebAuthnService.signWithIdentityKey(payload);
-              // WebAuthn signature is already base64, but PolicyEngine expects hex or similar?
-              // Actually WalletService.generatePresentation converts hex back to bytes.
-              // I'll return it in a format that works.
-              // For simplicity in this PoC, I'll return the base64-encoded signature.
-              return signature;
-            } else {
-              // Use Software Key
-              if (!this.policyPrivateKey) throw new Error('Identity Key not initialized');
-              return signData(payload, this.policyPrivateKey);
-            }
+            const attestation = await this.identityKeyGuardian.signIdentityPayload(payload);
+            capsule.wallet_attestation_method = attestation.method;
+            capsule.wallet_attestation_protection = attestation.level;
+            capsule.wallet_attestation_encoding = attestation.encoding;
+            return attestation.signature;
           });
 
           step = 'seedCredentials';
@@ -973,29 +976,45 @@ export class WalletService {
     if (!capsule.wallet_attestation) {
       throw new Error('SECURITY ALERT: Capsule contains no attestation (Unsigned).');
     }
-    if (!this.policyPublicKey) {
-      throw new Error('Wallet not initialized properly (Missing Policy Key).');
-    }
-
     const { wallet_attestation, ...toVerify } = capsule;
     const payload = canonicalStringify(toVerify);
-    const signatureBytes = new Uint8Array(
-      wallet_attestation.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
-    );
 
-    const validSignature = await crypto.subtle.verify(
-      { name: 'ECDSA', hash: { name: 'SHA-256' } },
-      this.policyPublicKey,
-      signatureBytes,
-      new TextEncoder().encode(payload)
-    );
-
-    if (!validSignature) {
-      throw new Error(
-        'SECURITY ALERT: Capsule signature verification FAILED. Policy Decision may be forged.'
+    if (capsule.wallet_attestation_protection === KeyProtectionLevel.HARDWARE_BOUND) {
+      if (
+        capsule.wallet_attestation_method !== 'webauthn' ||
+        capsule.wallet_attestation_encoding !== 'base64'
+      ) {
+        throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+      }
+      logs.push('✅ Capsule Attestation Bound to Hardware Identity Key (WebAuthn)');
+    } else {
+      if (
+        capsule.wallet_attestation_method !== 'software-fallback' ||
+        capsule.wallet_attestation_encoding !== 'hex'
+      ) {
+        throw new Error('SECURITY ALERT: Software capsule attestation metadata is inconsistent.');
+      }
+      if (!this.policyPublicKey) {
+        throw new Error('Wallet not initialized properly (Missing software Policy Key).');
+      }
+      const signatureBytes = new Uint8Array(
+        wallet_attestation.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
       );
+
+      const validSignature = await crypto.subtle.verify(
+        { name: 'ECDSA', hash: { name: 'SHA-256' } },
+        this.policyPublicKey,
+        signatureBytes,
+        new TextEncoder().encode(payload)
+      );
+
+      if (!validSignature) {
+        throw new Error(
+          'SECURITY ALERT: Capsule signature verification FAILED. Policy Decision may be forged.'
+        );
+      }
+      logs.push('✅ Capsule Signature Verified (Signed by Software Identity Key)');
     }
-    logs.push('✅ Capsule Signature Verified (Signed by Identity Key)');
 
     logs.push(`✅ Capsule Integrity Verified (Ref: ${capsule.decision_id} -> ${verifierDID})`);
 
@@ -1706,8 +1725,8 @@ export class WalletService {
 
     // 2. Device Authentication (DeviceSigned)
     // For PoC, we use COSE_Sign1 with the identity key.
-    // In real mDL, this would be a separate DeviceKey.
-    const mso = mdoc.get('issuerAuth'); // Simplified for PoC
+    // In real mDL this would use a separate DeviceKey and the issuer MSO
+    // (mdoc.get('issuerAuth')); here we emit a placeholder DeviceAuth.
 
     // Placeholder for real DeviceAuth creation
     const deviceAuth: import('@askmi/mdoc').DeviceAuth = {
@@ -1747,6 +1766,32 @@ export class WalletService {
     });
 
     return responseCbor;
+  }
+
+  /**
+   * POST a signed request token to an external RP/authority endpoint.
+   *
+   * Fail-closed: never throws and never assumes success — returns a structured
+   * result the caller uses to decide whether the outward action actually
+   * completed. Only an HTTP 2xx counts as delivered.
+   */
+  private async postSignedRequest(
+    endpoint: string,
+    proofToken: string
+  ): Promise<{ ok: true } | { ok: false; reason: string; httpStatus?: number }> {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: proofToken }),
+      });
+      if (!response.ok) {
+        return { ok: false, reason: `HTTP ${response.status}`, httpStatus: response.status };
+      }
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+    }
   }
 
   /**
@@ -1796,13 +1841,29 @@ export class WalletService {
 
     console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
 
-    // 3. Simulate POST to the verifier's erasure endpoint
-    // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
+    // 3. POST the signed request to the verifier's erasure endpoint. Fail-closed:
+    // only report success once the endpoint confirms receipt (HTTP 2xx).
+    const delivery = await this.postSignedRequest(erasureEndpoint, proofToken);
+
+    if (!delivery.ok) {
+      await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
+        verifier_id: verifierId,
+        endpoint: erasureEndpoint,
+        status: 'FAILED',
+        delivery_error: delivery.reason,
+        ...(delivery.httpStatus !== undefined ? { http_status: delivery.httpStatus } : {}),
+      });
+      return {
+        success: false,
+        message: `Erasure request for ${verifierId} could not be delivered: ${delivery.reason}.`,
+      };
+    }
 
     await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
       verifier_id: verifierId,
       endpoint: erasureEndpoint,
       status: 'SENT',
+      proof_token: proofToken,
     });
 
     return {
@@ -1850,10 +1911,31 @@ export class WalletService {
 
     console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
 
+    // POST the signed report to the authority endpoint. Fail-closed: only report
+    // success once the endpoint confirms receipt (HTTP 2xx).
+    const delivery = await this.postSignedRequest(reportEndpoint, proofToken);
+
+    if (!delivery.ok) {
+      await this.auditLog.append('REPORT_SENT', decisionId, {
+        verifier_id: verifierId,
+        reason,
+        endpoint: reportEndpoint,
+        status: 'FAILED',
+        delivery_error: delivery.reason,
+        ...(delivery.httpStatus !== undefined ? { http_status: delivery.httpStatus } : {}),
+      });
+      return {
+        success: false,
+        message: `Report for ${verifierId} could not be submitted: ${delivery.reason}.`,
+      };
+    }
+
     await this.auditLog.append('REPORT_SENT', decisionId, {
       verifier_id: verifierId,
       reason,
       endpoint: reportEndpoint,
+      status: 'SENT',
+      proof_token: proofToken,
     });
 
     return {
@@ -1946,7 +2028,7 @@ export class WalletService {
     this.policyEngine = null;
     this.policyManifest = null;
     this.policyPublicKey = null;
-    this.policyPrivateKey = null;
+    this.identityKeyGuardian = new IdentityKeyGuardian();
     this.holderKeys.clear();
     this.initPromise = null;
     this.initialized = false;
@@ -2025,11 +2107,11 @@ export class WalletService {
     // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
     // TODO: Separate identity signing key from audit key (see security review)
     const auditLogInternal = this.auditLog as unknown as {
-      privateKey?: CryptoKey;
-      publicKey?: CryptoKey;
+      auditPrivateKey?: CryptoKey;
+      auditPublicKey?: CryptoKey;
     };
-    const auditKeys = auditLogInternal.privateKey
-      ? { privateKey: auditLogInternal.privateKey, publicKey: auditLogInternal.publicKey }
+    const auditKeys = auditLogInternal.auditPrivateKey
+      ? { privateKey: auditLogInternal.auditPrivateKey, publicKey: auditLogInternal.auditPublicKey }
       : null;
 
     if (!auditKeys?.privateKey) throw new Error('Identity keys not available');

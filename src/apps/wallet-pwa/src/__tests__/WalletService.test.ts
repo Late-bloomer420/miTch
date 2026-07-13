@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
+import { KeyProtectionLevel, WebAuthnService } from '@askmi/shared-crypto';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
@@ -64,6 +65,76 @@ describe('WalletService — Initialization', () => {
     expect(creds.length).toBeGreaterThan(0); // re-seeded from clean slate
 
     resetSpy.mockRestore();
+  });
+});
+
+describe('WalletService — Identity key protection gate', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function evaluateAge(wallet: WalletService) {
+    return wallet.evaluateRequest(
+      {
+        verifierId: 'did:askmi:verifier-liquor-store',
+        nonce: crypto.randomUUID(),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+        origin: 'http://localhost:3004',
+        serviceEndpoint: 'http://localhost:3004/present',
+      },
+      { userAgent: 'test-agent', timestamp: Date.now() }
+    );
+  }
+
+  it('annotates Node/test software attestations explicitly as SOFTWARE_EPHEMERAL', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(false);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const result = await evaluateAge(wallet);
+
+    expect(result.verdict).toBe('ALLOW');
+    expect(result.decisionCapsule?.wallet_attestation).toBeTruthy();
+    expect(result.decisionCapsule?.wallet_attestation_method).toBe('software-fallback');
+    expect(result.decisionCapsule?.wallet_attestation_protection).toBe(
+      KeyProtectionLevel.SOFTWARE_EPHEMERAL
+    );
+    expect(result.decisionCapsule?.wallet_attestation_encoding).toBe('hex');
+  });
+
+  it('fails closed instead of signing with software when WebAuthn is available but no identity key is registered', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    await expect(evaluateAge(wallet)).rejects.toThrow(/HARDWARE_IDENTITY_REQUIRED/);
+  });
+
+  it('uses the registered WebAuthn identity key for policy capsule attestation', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(true);
+    const signSpy = vi
+      .spyOn(WebAuthnService, 'signWithIdentityKey')
+      .mockResolvedValue(btoa('hardware-attestation'));
+
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const result = await evaluateAge(wallet);
+
+    expect(result.verdict).toBe('ALLOW');
+    expect(signSpy).toHaveBeenCalled();
+    expect(result.decisionCapsule?.wallet_attestation).toBe(btoa('hardware-attestation'));
+    expect(result.decisionCapsule?.wallet_attestation_method).toBe('webauthn');
+    expect(result.decisionCapsule?.wallet_attestation_protection).toBe(
+      KeyProtectionLevel.HARDWARE_BOUND
+    );
+    expect(result.decisionCapsule?.wallet_attestation_encoding).toBe('base64');
   });
 });
 
@@ -888,5 +959,105 @@ describe('WalletService — Layer-2 visibility (G-140 PR1): log all requested cl
     expect(layers['bloodGroup']).toBe(2); // VULNERABLE
     expect(layers['age']).toBe(1); // GRUNDVERSORGUNG
     expect(layers['totallyUnknownClaim']).toBeNull(); // unclassified
+  });
+});
+
+describe('WalletService — GDPR outward actions (fail-closed delivery)', () => {
+  const DECISION = 'decision-erase-001';
+  type WithAudit = { auditLog: import('@askmi/audit-log').AuditLog };
+  const audit = (w: WalletService) => (w as unknown as WithAudit).auditLog;
+  const lastEntry = (w: WalletService, action: string) =>
+    audit(w)
+      .getRecentEntries(100)
+      .find((e) => e.action === action);
+
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    // Seed the originating transaction that the erasure/report flow looks up.
+    await audit(wallet).append('VP_SENT', DECISION, {
+      decision_id: DECISION,
+      erasure_endpoint: 'https://rp.example/erase',
+      report_endpoint: 'https://authority.example/report',
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('erasure: reports success only after 2xx and records the signed proof in the audit trail', async () => {
+    let sentBody: { token: string } | null = null;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        sentBody = JSON.parse(init!.body as string);
+        return { ok: true, status: 200 } as Response;
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(true);
+    // The signed proof token is actually transmitted, not discarded…
+    expect(typeof sentBody!.token).toBe('string');
+    expect(sentBody!.token.length).toBeGreaterThan(0);
+    // …and retained in the immutable audit trail for accountability.
+    const entry = lastEntry(wallet, 'ERASURE_REQUESTED');
+    expect(entry?.metadata?.status).toBe('SENT');
+    expect(entry?.metadata?.proof_token).toBe(sentBody!.token);
+  });
+
+  it('erasure: fails closed on an HTTP error — no false "sent successfully"', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503 }) as Response));
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/503/);
+    expect(lastEntry(wallet, 'ERASURE_REQUESTED')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('erasure: fails closed when the network throws', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('network down');
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/network down/);
+    expect(lastEntry(wallet, 'ERASURE_REQUESTED')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('report: fails closed when delivery to the authority throws', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('authority unreachable');
+      })
+    );
+
+    const res = await wallet.reportRelyingParty(DECISION, 'over-asking');
+
+    expect(res.success).toBe(false);
+    expect(lastEntry(wallet, 'REPORT_SENT')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('report: succeeds and records the signed proof once the authority confirms', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200 }) as Response));
+
+    const res = await wallet.reportRelyingParty(DECISION, 'over-asking');
+
+    expect(res.success).toBe(true);
+    const entry = lastEntry(wallet, 'REPORT_SENT');
+    expect(entry?.metadata?.status).toBe('SENT');
+    expect(typeof entry?.metadata?.proof_token).toBe('string');
   });
 });
