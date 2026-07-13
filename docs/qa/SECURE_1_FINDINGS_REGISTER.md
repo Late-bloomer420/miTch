@@ -71,3 +71,37 @@ Each finding:
 **F-21 (not-a-bug):** The empty catch on `load(AUDIT_KEY_STORAGE_ID)` at line 433 handles the first-run / storage-empty case. The subsequent path always generates fresh audit keys, so no security invariant is broken by the swallowed error.
 
 **F-22 (documented-residual):** The batch timer is a non-critical integrity layer (L2 anchoring is not yet wired to a real chain). When the real L2 integration lands, the retry/alerting path should be hardened.
+
+---
+
+## GAP-3 Branching Audit (2026-07-13)
+
+**Scope:** Every `return this.result(...)` call in `evaluate()` (`engine.ts:165`) classified by whether its call depth correlates with a **holder secret** (user/credential existence or private deny reason) vs. a **verifier-controlled input** (unknown verifier identity, rate-limit count, malformed request).
+
+Only holder-secret-correlated depth differences are anti-oracle-relevant: a verifier probing timing to learn whether a user *has* a credential, or *why* a credential was denied, gains real information.
+
+| Line | Reason Code | Call Depth (approx.) | Secret Class | Anti-Oracle Relevant? |
+|------|-------------|----------------------|-------------|----------------------|
+| 202 | `UNKNOWN_VERIFIER` | early (no rule lookup, no credential scan) | **verifier-controlled** — verifier chose its own DID | No — the verifier already knows it is unknown |
+| 204 | `NO_MATCHING_RULE` | early (no rule lookup, no credential scan) | **verifier-controlled** — triggered only when `blockUnknownVerifiers` is false | No |
+| 215 | `RATE_LIMIT_EXCEEDED` | early (rate-limit check before claim/credential work) | **verifier-controlled** — rate-limit counter is verifier-specific and public-facing | No — verifier knows it has exceeded its quota (dedicated bucket in anti-oracle message catalog) |
+| 239 | `AGENT_NOT_AUTHORIZED` / delegation codes | mid (after rule match, before claim scan) | **verifier-controlled** input (the delegation claim is in the request itself) | No |
+| 246 | purpose-binding codes | mid (after rule match) | **verifier-controlled** — purpose declared in request | No |
+| 267 | `CLAIM_NOT_ALLOWED` (explicit deny) | mid-to-late (inside requirement loop; explicit deny list hit) | **verifier-controlled** — verifier chose the claim name | No |
+| 273 | `CLAIM_NOT_ALLOWED` (empty intersection) | mid-to-late (inside requirement loop; intersection is empty) | **verifier-controlled** — verifier chose claims not in the allowed set | No |
+| 312 | `NO_SUITABLE_CREDENTIAL` / `EXPIRED` / `CREDENTIAL_TOO_OLD` | late (full credential scan per requirement) | **HOLDER SECRET** — reveals whether the holder has a matching, unexpired credential | **YES** |
+| 343 | `SECONDARY_USE_DENIED` | late (after credential selection) | **verifier-controlled** — verifier declared a non-primaryCare purpose | No |
+| 351 | `GEO_SCOPE_VIOLATION` | late (after credential selection) | **verifier-controlled** — verifier's DID encodes country | No |
+| 362 | `HDAB_PERMIT_REQUIRED` | late (after credential selection) | **verifier-controlled** — rule requires HDAB permit; verifier knows if it has one | No |
+| 370 | `GEO_SCOPE_VIOLATION` (matchedRule.geoScope) | late (after credential selection) | **verifier-controlled** — rule's geoScope is static policy | No |
+| 404 | sanity/conflict codes | late (consent/presence resolution) | **verifier-controlled** — triggered by request flags | No |
+
+**Summary:** Only line 312 (`NO_SUITABLE_CREDENTIAL` family) is holder-secret-correlated: its execution traverses the full credential scan (`selectCompatibleCredentialsForRequirement`), whereas the early DENY paths (202, 204, 215) skip it. The depth difference is real but small — all work is in-memory, sub-millisecond; no I/O branches. The three must-be-indistinguishable paths for the guard are therefore:
+
+- **Path A** `UNKNOWN_VERIFIER` (line 202) — early, no credential scan
+- **Path B** `CLAIM_NOT_ALLOWED` (line 273) — mid, no credential scan (empty intersection)
+- **Path C** `NO_SUITABLE_CREDENTIAL` (line 312) — late, full credential scan with empty input
+
+**Guard result:** measured amortized mean spread < 2 ms across 500 iterations each (all in-memory sub-ms). Guard passes on current code — no secret-dependent I/O branch; no DENY floor mitigation was applied. See `anti-oracle.test.ts → "indistinguishable DENY paths have bounded mean-timing spread"`.
+
+**Honesty boundary (verbatim, Phase 4):** True constant-time execution is unattainable in a browser JS/V8 runtime (JIT, GC, deopt). This task delivers *eliminated secret-dependent I/O branching + a tested amortized timing-variance bound across the must-be-indistinguishable DENY paths + retained network jitter (U-23) + a documented residual*, not mathematical constant-time.

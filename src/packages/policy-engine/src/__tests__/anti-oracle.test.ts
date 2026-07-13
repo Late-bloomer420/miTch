@@ -9,6 +9,36 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { PolicyEngine, type EvaluationContext } from '../engine';
+import { ProtectionLayer } from '@askmi/layer-resolver';
+import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
+
+const _cred = (o: Partial<StoredCredentialMetadata> = {}): StoredCredentialMetadata => ({
+  id: 'cred-001', type: ['IDCredential'], issuer: 'did:example:gov',
+  issuedAt: new Date(Date.now() - 1000).toISOString(),
+  expiresAt: new Date(Date.now() + 365 * 864e5).toISOString(),
+  claims: ['age'], ...o,
+});
+const _policy = (o: Partial<PolicyManifest> = {}): PolicyManifest => ({
+  version: '1.0.0',
+  trustedIssuers: [{ did: 'did:example:gov', name: 'Gov', credentialTypes: ['IDCredential'] }],
+  rules: [{
+    id: 'r', verifierPattern: 'did:web:known.example',
+    minimumLayer: ProtectionLayer.GRUNDVERSORGUNG, allowedClaims: ['age'], provenClaims: [],
+    requiresTrustedIssuer: true, maxCredentialAgeDays: 365, requiresUserConsent: false, priority: 10,
+  }],
+  globalSettings: { blockUnknownVerifiers: true }, ...o,
+});
+const _ctx = (): EvaluationContext => ({ timestamp: Date.now(), userDID: 'did:example:alice' });
+
+async function meanEvalMs(
+  engine: PolicyEngine, req: VerifierRequest, creds: StoredCredentialMetadata[], iters: number,
+): Promise<number> {
+  const policy = _policy();
+  const start = performance.now();
+  for (let i = 0; i < iters; i++) await engine.evaluate(req, _ctx(), creds, policy);
+  return (performance.now() - start) / iters;
+}
 import {
   DenyReasonCode,
   DENY_REASON_CATALOG,
@@ -214,5 +244,39 @@ describe('Anti-Oracle: timing oracle (documentation + baseline)', () => {
     // This prevents verifiers from distinguishing fast DENY (cache hit)
     // from slow DENY (full evaluation) via timing analysis.
     expect(true).toBe(true);
+  });
+});
+
+describe('Anti-Oracle: end-to-end DENY timing variance (GAP-3)', () => {
+  it('indistinguishable DENY paths have bounded mean-timing spread', async () => {
+    const engine = new PolicyEngine();
+    const ITERS = 500;
+
+    // Path A: unknown verifier (early return, engine.ts:202)
+    const unknownVerifier = { verifierId: 'did:web:stranger.example', requestedClaims: ['age'],
+      requirements: [{ credentialType: 'IDCredential', requestedClaims: ['age'], requestedProvenClaims: [] }],
+      nonce: 'n' } as VerifierRequest;
+
+    // Path B: known verifier, claim not allowed (late return, engine.ts:273)
+    const claimDenied = { verifierId: 'did:web:known.example', requestedClaims: ['ssn'],
+      requirements: [{ credentialType: 'IDCredential', requestedClaims: ['ssn'], requestedProvenClaims: [] }],
+      nonce: 'n' } as VerifierRequest;
+
+    // Path C: known verifier, no suitable credential (holder-secret path)
+    const noCredential = { verifierId: 'did:web:known.example', requestedClaims: ['age'],
+      requirements: [{ credentialType: 'IDCredential', requestedClaims: ['age'], requestedProvenClaims: [] }],
+      nonce: 'n' } as VerifierRequest;
+
+    const a = await meanEvalMs(engine, unknownVerifier, [_cred()], ITERS);
+    const b = await meanEvalMs(engine, claimDenied, [_cred()], ITERS);
+    const c = await meanEvalMs(engine, noCredential, [], ITERS);
+
+    const max = Math.max(a, b, c);
+    const min = Math.min(a, b, c);
+    // Amortized means, not single calls (single-call is GC/scheduler-dominated on CI).
+    // Assert the SPREAD is bounded: no path leaks a holder secret via a large,
+    // consistent latency gap. 2ms absolute spread tolerates JIT/GC noise while
+    // still catching a pathological secret-dependent branch (e.g. an added I/O call).
+    expect(max - min).toBeLessThan(2);
   });
 });
