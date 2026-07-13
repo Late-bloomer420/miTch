@@ -475,10 +475,29 @@ describe('WalletService — Policy Persistence', () => {
         { did: 'did:example:new-issuer', name: 'Test Issuer', credentialTypes: ['TestCred'] },
       ],
     };
-    wallet.savePolicy(modified);
+    await wallet.savePolicy(modified);
 
     const retrieved = wallet.getPolicy();
     expect(retrieved.trustedIssuers.some((i) => i.did === 'did:example:new-issuer')).toBe(true);
+  });
+
+  it('savePolicy rejects and surfaces persistence failure (fail-closed)', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const saveSpy = vi
+      .spyOn(SecureStorage.prototype, 'save')
+      .mockRejectedValueOnce(new Error('Disk full'));
+
+    const before = wallet.getPolicy();
+    const modified = { ...before, version: 'tampered' };
+
+    await expect(wallet.savePolicy(modified)).rejects.toThrow('Disk full');
+
+    // In-memory state must NOT have been mutated on failure (consistency)
+    expect(wallet.getPolicy().version).toBe(before.version);
+
+    saveSpy.mockRestore();
   });
 
   it('stores the policy manifest outside the credential list', async () => {
@@ -892,7 +911,7 @@ describe('WalletService — Layer-2 visibility (G-140 PR1): log all requested cl
   it('logs every raw requested claim — including over-asked ones — on evaluateRequest', async () => {
     const wallet = makeWallet();
     await wallet.initialize(PIN, SALT);
-    wallet.savePolicy(withOverAskRule(wallet.getPolicy()));
+    await wallet.savePolicy(withOverAskRule(wallet.getPolicy()));
 
     await wallet.evaluateRequest(
       {

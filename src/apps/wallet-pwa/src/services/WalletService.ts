@@ -615,12 +615,11 @@ export class WalletService {
     return this.policyManifest ?? DEFAULT_POLICY;
   }
 
-  savePolicy(policy: PolicyManifest) {
-    this.policyManifest = policy;
-    if (!this.storage) return;
-    void this.persistPolicy(policy).catch((err) => {
-      console.error('[WalletService] Failed to persist policy manifest', err);
-    });
+  async savePolicy(policy: PolicyManifest): Promise<void> {
+    if (this.storage) {
+      await this.persistPolicy(policy); // throws on failure → caller learns
+    }
+    this.policyManifest = policy; // only after a successful (or no-storage) persist
   }
 
   private async ensureSeeded() {
