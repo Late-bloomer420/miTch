@@ -61,3 +61,17 @@ describe('WebAuthn software fallback still works when WebAuthn is UNAVAILABLE (N
     expect(sig.length).toBeGreaterThan(0);
   });
 });
+
+describe('F-03: verifyPresence() retired false-success stub', () => {
+  it('rejects with a "retired" / "must not be used" error instead of resolving true', async () => {
+    await expect(
+      WebAuthnService.verifyPresence('decision-abc', 'any-non-empty-attestation'),
+    ).rejects.toThrow(/retired|must not be used/i);
+  });
+
+  it('rejects even when attestation is empty', async () => {
+    await expect(WebAuthnService.verifyPresence('decision-abc', '')).rejects.toThrow(
+      /retired|must not be used/i,
+    );
+  });
+});
