@@ -254,6 +254,37 @@ function WalletApp() {
     );
   }, [currentRequest, evaluationResult?.decisionCapsule, _privacyConsent]);
 
+  // Wire the DataFlow panel's per-transaction GDPR controls to the wallet.
+  // Fail-closed surfacing: the wallet only reports success after the endpoint
+  // confirms delivery, and any failure (or unexpected throw) is shown to the
+  // user rather than swallowed.
+  const handleDataFlowAction = useCallback(
+    async (type: 'erasure' | 'report', decisionId: string) => {
+      try {
+        if (type === 'erasure') {
+          addLog(`🗑️ Datenlöschung (DSGVO Art. 17) für Transaktion angefordert…`, 'info');
+          const res = await walletRef.current.requestDataErasure(decisionId);
+          addLog(res.message, res.success ? 'success' : 'error');
+        } else {
+          const reason = window.prompt(
+            'Grund der Meldung an die Aufsichtsbehörde:',
+            'Über-Anfrage / Verdacht auf Missbrauch'
+          );
+          if (reason === null) {
+            addLog('🚩 Meldung abgebrochen.', 'info');
+            return;
+          }
+          addLog('🚩 Verifier wird der Aufsichtsbehörde gemeldet…', 'info');
+          const res = await walletRef.current.reportRelyingParty(decisionId, reason);
+          addLog(res.message, res.success ? 'success' : 'error');
+        }
+      } catch (e) {
+        addLog(`❌ Aktion fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      }
+    },
+    []
+  );
+
   const handleExportAuditReport = useCallback(() => walletRef.current.exportAuditReport(), []);
   const handleSyncAuditToL2 = useCallback(() => walletRef.current.syncAuditToL2(), []);
   const getRecentComplianceLogs = useCallback(() => recentAuditEntries, [recentAuditEntries]);
@@ -1829,7 +1860,7 @@ function WalletApp() {
             )}
             {traceDetailPanel === 'data-flow' && (
               <div id="dataflow-section">
-                <DataFlowPanel entries={recentAuditEntries} />
+                <DataFlowPanel entries={recentAuditEntries} onAction={handleDataFlowAction} />
               </div>
             )}
           </div>
