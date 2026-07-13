@@ -4,6 +4,15 @@
 
 import type { AuthorizationResponse, PresentationDefinition, ValidationResult } from '@askmi/oid4vp';
 import { validateSubmission, parseVPToken } from '@askmi/oid4vp';
+import {
+    validateSDJWTVC,
+    validateKeyBindingJWT,
+} from '@askmi/shared-crypto';
+
+// The JWK type originates in jose (a transitive dependency via @askmi/shared-crypto).
+// We re-derive the holder-key union from the public API of validateKeyBindingJWT so
+// we do not need to add jose as a direct devDependency.
+type IssuerOrHolderKey = Parameters<typeof validateKeyBindingJWT>[1];
 
 // ─── Nonce Store (in-memory, replace with persistent store in prod) ─
 
@@ -32,22 +41,80 @@ export interface VerifyResponseOptions {
     expectedState?: string;
     definition: PresentationDefinition;
     skipNonceCheck?: boolean; // for testing only
+    // NEW — cryptographic verification (opt-in; default off preserves structural behaviour)
+    verifyCredentialSignatures?: boolean;
+    resolveIssuerKey?: (iss: string) => Promise<IssuerOrHolderKey | null>;
+    expectedAudience?: string; // verifier client_id, for KB-JWT aud binding
 }
 
 export interface VerificationResult {
     valid: boolean;
     credentials: string[];
     errors: string[];
+    signaturesVerified: boolean; // NEW — never let a caller be misled about whether crypto ran
+}
+
+/**
+ * Decode a base64url-encoded string to a UTF-8 string.
+ * Returns null on any decoding failure.
+ */
+function decodeBase64url(input: string): string | null {
+    try {
+        // Restore standard base64 padding/chars
+        const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+        return atob(padded);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Extract the `iss` claim from the first part of a compact SD-JWT VC
+ * (the issuer JWT, before the first `~`). Does NOT verify the signature.
+ * Returns null if the payload cannot be decoded or `iss` is absent.
+ */
+function extractIssFromSDJWT(credential: string): string | null {
+    // SD-JWT format: <issuerJwt>~<disc1>~...~[kbJwt]
+    const jwtPart = credential.split('~')[0];
+    const segments = jwtPart.split('.');
+    if (segments.length < 3) return null;
+    const payloadJson = decodeBase64url(segments[1]);
+    if (payloadJson === null) return null;
+    try {
+        const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+        const iss = payload['iss'];
+        return typeof iss === 'string' && iss.length > 0 ? iss : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Return true when `segment` looks like a compact JWT (contains exactly two dots).
+ */
+function isCompactJWT(segment: string): boolean {
+    return segment.split('.').length === 3;
 }
 
 /**
  * Verify an OID4VP Authorization Response.
  * Checks: nonce, state, submission matches definition, credential count.
+ * Optionally (step 6) verifies cryptographic issuer signatures and KB-JWTs.
  */
-export function verifyAuthorizationResponse(
+export async function verifyAuthorizationResponse(
     opts: VerifyResponseOptions
-): VerificationResult {
-    const { response, expectedNonce, expectedState, definition, skipNonceCheck } = opts;
+): Promise<VerificationResult> {
+    const {
+        response,
+        expectedNonce,
+        expectedState,
+        definition,
+        skipNonceCheck,
+        verifyCredentialSignatures,
+        resolveIssuerKey,
+        expectedAudience,
+    } = opts;
     const errors: string[] = [];
 
     // 1. Nonce check
@@ -81,7 +148,92 @@ export function verifyAuthorizationResponse(
         );
     }
 
-    return { valid: errors.length === 0, credentials: nonEmptyCredentials, errors };
+    // 6. Cryptographic verification (only when opts.verifyCredentialSignatures === true)
+    let signaturesVerified = false;
+
+    if (verifyCredentialSignatures) {
+        if (!resolveIssuerKey) {
+            // Fail-closed: requested but no resolver provided
+            errors.push(
+                'signature verification requested but no issuer key resolver provided'
+            );
+        } else {
+            let allPassed = nonEmptyCredentials.length > 0;
+
+            for (const credential of nonEmptyCredentials) {
+                // a. Decode issuer-JWT payload (WITHOUT verifying) to read `iss`
+                const iss = extractIssFromSDJWT(credential);
+                if (iss === null) {
+                    errors.push(
+                        `Cannot decode issuer JWT payload for credential (unknown format)`
+                    );
+                    allPassed = false;
+                    continue;
+                }
+
+                // b. Resolve issuer key
+                const issuerKey = await resolveIssuerKey(iss);
+                if (issuerKey === null) {
+                    errors.push(`no key for issuer ${iss}`);
+                    allPassed = false;
+                    continue;
+                }
+
+                // c. Verify issuer signature via validateSDJWTVC
+                const vcResult = await validateSDJWTVC(credential, issuerKey);
+                if (!vcResult.ok) {
+                    errors.push(...vcResult.errors);
+                    allPassed = false;
+                    continue;
+                }
+
+                // d. KB-JWT verification if present
+                // SD-JWT format: <issuerJwt>~[disc1~disc2~...]~[kbJwt]
+                // Split on '~', last segment is KB-JWT candidate if it looks like a JWT
+                const parts = credential.split('~');
+                // parts[0] = issuerJwt, parts[1..n-2] = disclosures, parts[n-1] = kbJwt or ''
+                const lastSegment = parts[parts.length - 1];
+                if (lastSegment.length > 0 && isCompactJWT(lastSegment)) {
+                    const kbJwt = lastSegment;
+                    // sdJwtWithDisclosures = everything before the final kbJwt segment
+                    // i.e. parts[0]~parts[1]~...~parts[n-2]~ (with trailing tilde)
+                    const sdJwtWithDisclosures = parts.slice(0, parts.length - 1).join('~') + '~';
+
+                    // Use the cnf.jwk directly from the verified SD-JWT VC payload.
+                    // extractCNFPublicKey returns a platform key type (CryptoKey / KeyObject)
+                    // which may not be instanceof CryptoKey in Node.js; using the JWK avoids
+                    // the platform-key-type ambiguity inside validateKeyBindingJWT.
+                    const cnfJwk = vcResult.payload!.cnf?.jwk;
+                    if (!cnfJwk) {
+                        errors.push(
+                            `KB-JWT present but no cnf.jwk in SD-JWT VC payload for issuer ${iss}`
+                        );
+                        allPassed = false;
+                        continue;
+                    }
+
+                    const kbResult = await validateKeyBindingJWT(kbJwt, cnfJwk as IssuerOrHolderKey, {
+                        expectedAud: expectedAudience ?? '',
+                        expectedNonce,
+                        sdJwtWithDisclosures,
+                    });
+                    if (!kbResult.ok) {
+                        errors.push(...kbResult.errors);
+                        allPassed = false;
+                    }
+                }
+            }
+
+            signaturesVerified = allPassed;
+        }
+    }
+
+    return {
+        valid: errors.length === 0,
+        credentials: nonEmptyCredentials,
+        errors,
+        signaturesVerified,
+    };
 }
 
 /**
