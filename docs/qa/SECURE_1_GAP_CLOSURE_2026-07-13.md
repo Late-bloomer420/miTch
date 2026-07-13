@@ -69,19 +69,19 @@ could diverge from persistent state silently.
 `verifyPresence()` returned `true` for any non-empty attestation string without
 cryptographic verification. Zero call sites; risk was latent, not live.
 Tombstoned: now throws fail-closed.
-**Tests:** `shared-crypto/src/__tests__/webauthn.test.ts` — F-03 fail-closed on verifyPresence.
+**Tests:** `src/packages/shared-crypto/test/webauthn-fail-closed.test.ts` — F-03 fail-closed on verifyPresence.
 
 ### F-04 — `isAllowedByGeoScope()` double fail-open (commit 8bf997e)
 Line 17: returned `true` when country was undetermined ("fail-open for geo only").
 Line 22: returned `true` as default for unrecognised `geoScope` value.
 Both violate the fail-closed invariant; both corrected to DENY.
-**Tests:** `policy-engine/src/__tests__/geo-scope.test.ts` — F-04 fail-closed paths.
+**Tests:** `src/packages/policy-engine/src/__tests__/ehds-geo-scope.test.ts` — F-04 fail-closed paths.
 
 ### F-16 + F-18 — IndexedDB error swallow (commit fb764bb)
 `savePasskeyMeta()` and `saveIdentityKeyMeta()` had empty `catch` blocks ("will be ignored").
 Failed saves caused `isIdentityRegistered()` to return `false` on next load, silently
 downgrading the security level.
-**Tests:** `shared-crypto/src/__tests__/webauthn.test.ts` — F-16/F-18 rethrow tests.
+**Tests:** `src/packages/shared-crypto/test/webauthn-save-failclosed.test.ts` — F-16/F-18 rethrow tests.
 
 ### F-14 — Real credential signature verification (commits 74d2e12 + 703f06d)
 `verifyAuthorizationResponse()` previously checked only structural submission constraints.
@@ -91,7 +91,7 @@ New options: `verifyCredentialSignatures`, `resolveIssuerKey`, `expectedAudience
 New result field: `signaturesVerified`.
 Fail-closed on missing resolver, null/wrong key, KB-JWT mismatch, or unknown format.
 Opt-in; existing structural-only callers remain backward-compatible.
-**Tests:** `oid4vp-verifier/src/__tests__/` — 7 new TDD crypto tests (RED→GREEN);
+**Tests:** `src/packages/oid4vp-verifier/src/__tests__/response-verifier.crypto.test.ts` — 7 new TDD crypto tests (RED→GREEN);
 60 total tests pass; build clean.
 Package counts during sprint: oid4vp-verifier 60.
 
