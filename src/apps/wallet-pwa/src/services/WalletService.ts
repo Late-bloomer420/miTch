@@ -1637,8 +1637,8 @@ export class WalletService {
    * Get the persistent identity public key for device engagement.
    */
   getIdentityPublicKey(): CryptoKey | null {
-    const auditLogInternal = this.auditLog as unknown as { publicKey?: CryptoKey };
-    return auditLogInternal.publicKey || null;
+    const auditLogInternal = this.auditLog as unknown as { auditPublicKey?: CryptoKey };
+    return auditLogInternal.auditPublicKey || null;
   }
 
   /**

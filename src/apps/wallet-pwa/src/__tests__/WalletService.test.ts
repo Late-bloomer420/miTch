@@ -1061,3 +1061,18 @@ describe('WalletService — GDPR outward actions (fail-closed delivery)', () => 
     expect(typeof entry?.metadata?.proof_token).toBe('string');
   });
 });
+
+// F-01 regression: getIdentityPublicKey() must return the real CryptoKey, not null.
+// The prior implementation read `publicKey` instead of `auditPublicKey`, silently
+// returning null and disabling device-engagement / proximity paths.
+describe('WalletService — F-01 getIdentityPublicKey returns the real key (not null)', () => {
+  it('returns a non-null CryptoKey after initialization with audit keys set', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+
+    const key = wallet.getIdentityPublicKey();
+
+    expect(key, 'getIdentityPublicKey() must not return null after init').not.toBeNull();
+    expect(key).toBeInstanceOf(CryptoKey);
+  });
+});
