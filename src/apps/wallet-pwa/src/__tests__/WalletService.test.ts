@@ -961,3 +961,103 @@ describe('WalletService — Layer-2 visibility (G-140 PR1): log all requested cl
     expect(layers['totallyUnknownClaim']).toBeNull(); // unclassified
   });
 });
+
+describe('WalletService — GDPR outward actions (fail-closed delivery)', () => {
+  const DECISION = 'decision-erase-001';
+  type WithAudit = { auditLog: import('@askmi/audit-log').AuditLog };
+  const audit = (w: WalletService) => (w as unknown as WithAudit).auditLog;
+  const lastEntry = (w: WalletService, action: string) =>
+    audit(w)
+      .getRecentEntries(100)
+      .find((e) => e.action === action);
+
+  let wallet: WalletService;
+
+  beforeEach(async () => {
+    wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    // Seed the originating transaction that the erasure/report flow looks up.
+    await audit(wallet).append('VP_SENT', DECISION, {
+      decision_id: DECISION,
+      erasure_endpoint: 'https://rp.example/erase',
+      report_endpoint: 'https://authority.example/report',
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('erasure: reports success only after 2xx and records the signed proof in the audit trail', async () => {
+    let sentBody: { token: string } | null = null;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        sentBody = JSON.parse(init!.body as string);
+        return { ok: true, status: 200 } as Response;
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(true);
+    // The signed proof token is actually transmitted, not discarded…
+    expect(typeof sentBody!.token).toBe('string');
+    expect(sentBody!.token.length).toBeGreaterThan(0);
+    // …and retained in the immutable audit trail for accountability.
+    const entry = lastEntry(wallet, 'ERASURE_REQUESTED');
+    expect(entry?.metadata?.status).toBe('SENT');
+    expect(entry?.metadata?.proof_token).toBe(sentBody!.token);
+  });
+
+  it('erasure: fails closed on an HTTP error — no false "sent successfully"', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503 }) as Response));
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/503/);
+    expect(lastEntry(wallet, 'ERASURE_REQUESTED')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('erasure: fails closed when the network throws', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('network down');
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/network down/);
+    expect(lastEntry(wallet, 'ERASURE_REQUESTED')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('report: fails closed when delivery to the authority throws', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('authority unreachable');
+      })
+    );
+
+    const res = await wallet.reportRelyingParty(DECISION, 'over-asking');
+
+    expect(res.success).toBe(false);
+    expect(lastEntry(wallet, 'REPORT_SENT')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('report: succeeds and records the signed proof once the authority confirms', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200 }) as Response));
+
+    const res = await wallet.reportRelyingParty(DECISION, 'over-asking');
+
+    expect(res.success).toBe(true);
+    const entry = lastEntry(wallet, 'REPORT_SENT');
+    expect(entry?.metadata?.status).toBe('SENT');
+    expect(typeof entry?.metadata?.proof_token).toBe('string');
+  });
+});

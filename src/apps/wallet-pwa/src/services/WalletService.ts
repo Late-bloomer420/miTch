@@ -1769,6 +1769,32 @@ export class WalletService {
   }
 
   /**
+   * POST a signed request token to an external RP/authority endpoint.
+   *
+   * Fail-closed: never throws and never assumes success — returns a structured
+   * result the caller uses to decide whether the outward action actually
+   * completed. Only an HTTP 2xx counts as delivered.
+   */
+  private async postSignedRequest(
+    endpoint: string,
+    proofToken: string
+  ): Promise<{ ok: true } | { ok: false; reason: string; httpStatus?: number }> {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: proofToken }),
+      });
+      if (!response.ok) {
+        return { ok: false, reason: `HTTP ${response.status}`, httpStatus: response.status };
+      }
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
    * Request the erasure of personal data from a Relying Party (CIR 2024/2982 I9).
    * This is a wallet-initiated flow that sends an authenticated deletion request.
    */
@@ -1815,13 +1841,29 @@ export class WalletService {
 
     console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
 
-    // 3. Simulate POST to the verifier's erasure endpoint
-    // await fetch(erasureEndpoint, { method: 'POST', body: JSON.stringify({ token: proofToken }) });
+    // 3. POST the signed request to the verifier's erasure endpoint. Fail-closed:
+    // only report success once the endpoint confirms receipt (HTTP 2xx).
+    const delivery = await this.postSignedRequest(erasureEndpoint, proofToken);
+
+    if (!delivery.ok) {
+      await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
+        verifier_id: verifierId,
+        endpoint: erasureEndpoint,
+        status: 'FAILED',
+        delivery_error: delivery.reason,
+        ...(delivery.httpStatus !== undefined ? { http_status: delivery.httpStatus } : {}),
+      });
+      return {
+        success: false,
+        message: `Erasure request for ${verifierId} could not be delivered: ${delivery.reason}.`,
+      };
+    }
 
     await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
       verifier_id: verifierId,
       endpoint: erasureEndpoint,
       status: 'SENT',
+      proof_token: proofToken,
     });
 
     return {
@@ -1869,10 +1911,31 @@ export class WalletService {
 
     console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
 
+    // POST the signed report to the authority endpoint. Fail-closed: only report
+    // success once the endpoint confirms receipt (HTTP 2xx).
+    const delivery = await this.postSignedRequest(reportEndpoint, proofToken);
+
+    if (!delivery.ok) {
+      await this.auditLog.append('REPORT_SENT', decisionId, {
+        verifier_id: verifierId,
+        reason,
+        endpoint: reportEndpoint,
+        status: 'FAILED',
+        delivery_error: delivery.reason,
+        ...(delivery.httpStatus !== undefined ? { http_status: delivery.httpStatus } : {}),
+      });
+      return {
+        success: false,
+        message: `Report for ${verifierId} could not be submitted: ${delivery.reason}.`,
+      };
+    }
+
     await this.auditLog.append('REPORT_SENT', decisionId, {
       verifier_id: verifierId,
       reason,
       endpoint: reportEndpoint,
+      status: 'SENT',
+      proof_token: proofToken,
     });
 
     return {
@@ -2044,11 +2107,11 @@ export class WalletService {
     // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
     // TODO: Separate identity signing key from audit key (see security review)
     const auditLogInternal = this.auditLog as unknown as {
-      privateKey?: CryptoKey;
-      publicKey?: CryptoKey;
+      auditPrivateKey?: CryptoKey;
+      auditPublicKey?: CryptoKey;
     };
-    const auditKeys = auditLogInternal.privateKey
-      ? { privateKey: auditLogInternal.privateKey, publicKey: auditLogInternal.publicKey }
+    const auditKeys = auditLogInternal.auditPrivateKey
+      ? { privateKey: auditLogInternal.auditPrivateKey, publicKey: auditLogInternal.auditPublicKey }
       : null;
 
     if (!auditKeys?.privateKey) throw new Error('Identity keys not available');
