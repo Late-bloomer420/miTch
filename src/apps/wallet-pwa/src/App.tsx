@@ -1905,9 +1905,18 @@ function WalletApp() {
           <PolicyEditor
             policy={currentPolicy}
             onSave={(p) => {
-              walletRef.current.savePolicy(p);
-              setCurrentPolicy(p);
-              addLog('⚖️ User Policy updated and persisted', 'success');
+              walletRef.current
+                .savePolicy(p)
+                .then(() => {
+                  setCurrentPolicy(p);
+                  addLog('⚖️ User Policy updated and persisted', 'success');
+                })
+                .catch((e: unknown) => {
+                  addLog(
+                    `❌ Policy save failed: ${e instanceof Error ? e.message : String(e)}`,
+                    'error',
+                  );
+                });
             }}
           />
         )}

@@ -33,7 +33,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   }),
   syncAuditToL2: vi.fn().mockResolvedValue({}),
   verifyAuditChain: vi.fn().mockResolvedValue({ valid: true }),
-  savePolicy: vi.fn(),
+  savePolicy: vi.fn().mockResolvedValue(undefined),
   getRecentAuditLogs: vi.fn().mockReturnValue([]),
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
   resetWallet: vi.fn().mockResolvedValue(undefined),

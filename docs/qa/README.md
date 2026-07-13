@@ -19,5 +19,7 @@
 | [`BIG_AUDIT_SCENARIO_FIXTURES_2026-06-04.md`](BIG_AUDIT_SCENARIO_FIXTURES_2026-06-04.md) | 2026-06-04 | Big-audit slice: demo-scenario fixtures (S2-04). |
 | [`BIG_AUDIT_STATUSLIST_FIXTURES_2026-06-04.md`](BIG_AUDIT_STATUSLIST_FIXTURES_2026-06-04.md) | 2026-06-04 | Big-audit slice: StatusList test fixtures (S2-05). |
 | [`CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](CAPSULE_SIG_ROOTCAUSE_2026-06-18.md) | 2026-06-18 | Root-cause + resolution of the "capsule signature verification failures" (AskMI↔miTch rebrand AAD drift, not a crypto defect). |
+| [`SECURE_1_FINDINGS_REGISTER.md`](SECURE_1_FINDINGS_REGISTER.md) | 2026-07-13 | SECURE-1 sprint: full findings register (22 findings — 6 fix + F-14 real cred-sig verification + 7 documented-residual + 9 not-a-bug) with per-finding rationale and GAP-3 branching taxonomy. |
+| [`SECURE_1_GAP_CLOSURE_2026-07-13.md`](SECURE_1_GAP_CLOSURE_2026-07-13.md) | 2026-07-13 | SECURE-1 gap-closure QA evidence: per-fix commits + tests, GAP-3 guard result + honesty boundary, GAP-2 reconciliation, verified final validation (46/46 turbo tasks, 0 errors/7 pre-existing warnings, guard passed). |
 
 _Sighting (H-10): index added 2026-06-24; all entries confirmed as dated evidence records, none acting as task-tracking._

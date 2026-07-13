@@ -74,8 +74,10 @@ async function savePasskeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist passkey metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
@@ -107,8 +109,10 @@ async function saveIdentityKeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist identity-key metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
@@ -595,12 +599,16 @@ export class WebAuthnService {
   }
 
   /**
-   * Legacy-Kompatibilität: Verifier-seitige Verifikation.
-   * In Production: Verifier prüft authenticatorData + signature gegen Public Key.
-   * Hier: strukturelle Plausibilitätsprüfung (kein Server-Key verfügbar).
+   * @deprecated Not a real presence verifier. This method never performed
+   * cryptographic verification and has been retired to fail-closed. Use
+   * `@askmi/webauthn-verifier` (WebAuthnNativeVerifier) for real WebAuthn
+   * presence/assertion verification.
    */
-  static async verifyPresence(decisionId: string, attestation: string): Promise<boolean> {
-    return attestation.length > 0;
+  static async verifyPresence(_decisionId: string, _attestation: string): Promise<boolean> {
+    throw new Error(
+      'WebAuthnService.verifyPresence is a retired non-cryptographic stub and must not be used. ' +
+        'Use @askmi/webauthn-verifier (WebAuthnNativeVerifier) for real presence verification.',
+    );
   }
 
   /**

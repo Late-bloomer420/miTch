@@ -68,8 +68,8 @@ function uniqueNonce(): string {
 
 describe('verifyAuthorizationResponse', () => {
     describe('valid responses', () => {
-        it('accepts a well-formed response (skipNonceCheck)', () => {
-            const result = verifyAuthorizationResponse({
+        it('accepts a well-formed response (skipNonceCheck)', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'state-abc',
@@ -80,10 +80,11 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.errors).toHaveLength(0);
             expect(result.credentials).toHaveLength(1);
             expect(result.credentials[0]).toBe(VALID_VP_TOKEN);
+            expect(result.signaturesVerified).toBe(false);
         });
 
-        it('accepts response without expectedState check', () => {
-            const result = verifyAuthorizationResponse({
+        it('accepts response without expectedState check', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ state: 'anything' }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
@@ -92,9 +93,9 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.valid).toBe(true);
         });
 
-        it('passes nonce check with fresh nonce', () => {
+        it('passes nonce check with fresh nonce', async () => {
             const nonce = uniqueNonce();
-            const result = verifyAuthorizationResponse({
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: nonce,
                 expectedState: 'state-abc',
@@ -106,11 +107,11 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('nonce replay detection', () => {
-        it('rejects replayed nonce', () => {
+        it('rejects replayed nonce', async () => {
             const nonce = uniqueNonce();
 
             // First use should pass
-            const r1 = verifyAuthorizationResponse({
+            const r1 = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: nonce,
                 expectedState: 'state-abc',
@@ -119,7 +120,7 @@ describe('verifyAuthorizationResponse', () => {
             expect(r1.valid).toBe(true);
 
             // Second use should detect replay
-            const r2 = verifyAuthorizationResponse({
+            const r2 = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: nonce,
                 expectedState: 'state-abc',
@@ -129,14 +130,14 @@ describe('verifyAuthorizationResponse', () => {
             expect(r2.errors).toContain('Nonce replay detected');
         });
 
-        it('allows different nonces', () => {
-            const r1 = verifyAuthorizationResponse({
+        it('allows different nonces', async () => {
+            const r1 = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'state-abc',
                 definition: DEFINITION,
             });
-            const r2 = verifyAuthorizationResponse({
+            const r2 = await verifyAuthorizationResponse({
                 response: buildResponse(),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'state-abc',
@@ -148,8 +149,8 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('state mismatch', () => {
-        it('rejects when state does not match', () => {
-            const result = verifyAuthorizationResponse({
+        it('rejects when state does not match', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ state: 'wrong-state' }),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'state-abc',
@@ -160,8 +161,8 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.errors.some(e => e.includes('State mismatch'))).toBe(true);
         });
 
-        it('rejects when state is undefined but expected', () => {
-            const result = verifyAuthorizationResponse({
+        it('rejects when state is undefined but expected', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ state: undefined }),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'state-abc',
@@ -172,8 +173,8 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.errors.some(e => e.includes('State mismatch'))).toBe(true);
         });
 
-        it('includes expected and actual values in error message', () => {
-            const result = verifyAuthorizationResponse({
+        it('includes expected and actual values in error message', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ state: 'actual-state' }),
                 expectedNonce: uniqueNonce(),
                 expectedState: 'expected-state',
@@ -186,8 +187,8 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('submission validation', () => {
-        it('rejects when definition_id does not match', () => {
-            const result = verifyAuthorizationResponse({
+        it('rejects when definition_id does not match', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({
                     presentation_submission: buildSubmission({ definition_id: 'wrong-id' }),
                 }),
@@ -199,8 +200,8 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.errors.some(e => e.includes('mismatch'))).toBe(true);
         });
 
-        it('rejects when required descriptor is missing from map', () => {
-            const result = verifyAuthorizationResponse({
+        it('rejects when required descriptor is missing from map', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({
                     presentation_submission: buildSubmission({
                         descriptor_map: [], // missing required age-descriptor
@@ -216,8 +217,8 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('VP token validation', () => {
-        it('rejects empty vp_token string', () => {
-            const result = verifyAuthorizationResponse({
+        it('rejects empty vp_token string', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ vp_token: '' }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
@@ -227,14 +228,14 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.errors.some(e => e.includes('no credentials'))).toBe(true);
         });
 
-        it('accepts W3C VP object with verifiableCredential', () => {
+        it('accepts W3C VP object with verifiableCredential', async () => {
             const vpObject = {
                 '@context': ['https://www.w3.org/2018/credentials/v1'],
                 type: ['VerifiablePresentation'],
                 verifiableCredential: [VALID_VP_TOKEN],
                 holder: 'did:example:holder',
             };
-            const result = verifyAuthorizationResponse({
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ vp_token: vpObject as VerifiablePresentation }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
@@ -244,14 +245,14 @@ describe('verifyAuthorizationResponse', () => {
             expect(result.credentials).toContain(VALID_VP_TOKEN);
         });
 
-        it('rejects W3C VP object with empty verifiableCredential', () => {
+        it('rejects W3C VP object with empty verifiableCredential', async () => {
             const vpObject = {
                 '@context': ['https://www.w3.org/2018/credentials/v1'],
                 type: ['VerifiablePresentation'],
                 verifiableCredential: [],
                 holder: 'did:example:holder',
             };
-            const result = verifyAuthorizationResponse({
+            const result = await verifyAuthorizationResponse({
                 response: buildResponse({ vp_token: vpObject as VerifiablePresentation }),
                 expectedNonce: uniqueNonce(),
                 definition: DEFINITION,
@@ -262,9 +263,9 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('credential count vs descriptor count', () => {
-        it('rejects when fewer credentials than descriptors', () => {
+        it('rejects when fewer credentials than descriptors', async () => {
             // Multi-descriptor definition requires 2 credentials, but we only supply 1
-            const result = verifyAuthorizationResponse({
+            const result = await verifyAuthorizationResponse({
                 response: {
                     vp_token: VALID_VP_TOKEN, // single credential string
                     presentation_submission: {
@@ -287,8 +288,8 @@ describe('verifyAuthorizationResponse', () => {
     });
 
     describe('multiple simultaneous errors', () => {
-        it('collects all errors (state + submission + empty token)', () => {
-            const result = verifyAuthorizationResponse({
+        it('collects all errors (state + submission + empty token)', async () => {
+            const result = await verifyAuthorizationResponse({
                 response: {
                     vp_token: '',
                     presentation_submission: buildSubmission({ definition_id: 'wrong' }),

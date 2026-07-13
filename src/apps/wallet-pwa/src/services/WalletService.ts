@@ -615,12 +615,12 @@ export class WalletService {
     return this.policyManifest ?? DEFAULT_POLICY;
   }
 
-  savePolicy(policy: PolicyManifest) {
-    this.policyManifest = policy;
-    if (!this.storage) return;
-    void this.persistPolicy(policy).catch((err) => {
-      console.error('[WalletService] Failed to persist policy manifest', err);
-    });
+  async savePolicy(policy: PolicyManifest): Promise<void> {
+    if (this.storage) {
+      await this.persistPolicy(policy); // throws on failure → caller learns
+    }
+    // no persistent storage (ephemeral session) — in-memory only
+    this.policyManifest = policy; // only after a successful (or no-storage) persist
   }
 
   private async ensureSeeded() {
@@ -1637,8 +1637,8 @@ export class WalletService {
    * Get the persistent identity public key for device engagement.
    */
   getIdentityPublicKey(): CryptoKey | null {
-    const auditLogInternal = this.auditLog as unknown as { publicKey?: CryptoKey };
-    return auditLogInternal.publicKey || null;
+    const auditLogInternal = this.auditLog as unknown as { auditPublicKey?: CryptoKey };
+    return auditLogInternal.auditPublicKey || null;
   }
 
   /**
