@@ -12,6 +12,12 @@ import { describe, it, expect } from 'vitest';
 import { PolicyEngine, type EvaluationContext } from '../engine';
 import { ProtectionLayer } from '@askmi/layer-resolver';
 import type { PolicyManifest, VerifierRequest, StoredCredentialMetadata } from '@askmi/shared-types';
+import {
+  DenyReasonCode,
+  DENY_REASON_CATALOG,
+  getDenyMessage,
+  getVerifierDenyMessage,
+} from '../deny-reason-codes';
 
 const _cred = (o: Partial<StoredCredentialMetadata> = {}): StoredCredentialMetadata => ({
   id: 'cred-001', type: ['IDCredential'], issuer: 'did:example:gov',
@@ -39,12 +45,6 @@ async function meanEvalMs(
   for (let i = 0; i < iters; i++) await engine.evaluate(req, _ctx(), creds, policy);
   return (performance.now() - start) / iters;
 }
-import {
-  DenyReasonCode,
-  DENY_REASON_CATALOG,
-  getDenyMessage,
-  getVerifierDenyMessage,
-} from '../deny-reason-codes';
 
 describe('Anti-Oracle: verifier message bucketing', () => {
   /**
@@ -230,34 +230,21 @@ describe('Anti-Oracle: timing oracle (documentation + baseline)', () => {
     // ceiling that still catches a genuine pathological-slowness regression.
     expect(perCall).toBeLessThan(0.1);
   });
-
-  it('DOCUMENTED: response-level timing padding is required for Phase 6', () => {
-    // This test exists to document the requirement.
-    // The actual implementation of constant-time response padding
-    // is deferred to Phase 6 (see spec 108 §3.4).
-    //
-    // When implementing, the PolicyEngine.evaluate() method should:
-    // 1. Record start time
-    // 2. Compute result
-    // 3. Pad to FLOOR_MS (e.g., 50ms) before returning
-    //
-    // This prevents verifiers from distinguishing fast DENY (cache hit)
-    // from slow DENY (full evaluation) via timing analysis.
-    expect(true).toBe(true);
-  });
 });
 
 describe('Anti-Oracle: end-to-end DENY timing variance (GAP-3)', () => {
   it('indistinguishable DENY paths have bounded mean-timing spread', async () => {
     const engine = new PolicyEngine();
+    const policy = _policy();
     const ITERS = 500;
+    const WARMUP = 20;
 
     // Path A: unknown verifier (early return, engine.ts:202)
     const unknownVerifier = { verifierId: 'did:web:stranger.example', requestedClaims: ['age'],
       requirements: [{ credentialType: 'IDCredential', requestedClaims: ['age'], requestedProvenClaims: [] }],
       nonce: 'n' } as VerifierRequest;
 
-    // Path B: known verifier, claim not allowed (late return, engine.ts:273)
+    // Path B: known verifier, claim not allowed (mid-to-late return, engine.ts:273)
     const claimDenied = { verifierId: 'did:web:known.example', requestedClaims: ['ssn'],
       requirements: [{ credentialType: 'IDCredential', requestedClaims: ['ssn'], requestedProvenClaims: [] }],
       nonce: 'n' } as VerifierRequest;
@@ -267,9 +254,39 @@ describe('Anti-Oracle: end-to-end DENY timing variance (GAP-3)', () => {
       requirements: [{ credentialType: 'IDCredential', requestedClaims: ['age'], requestedProvenClaims: [] }],
       nonce: 'n' } as VerifierRequest;
 
-    const a = await meanEvalMs(engine, unknownVerifier, [_cred()], ITERS);
-    const b = await meanEvalMs(engine, claimDenied, [_cred()], ITERS);
-    const c = await meanEvalMs(engine, noCredential, [], ITERS);
+    const credA = [_cred()];
+    const credB = [_cred()];
+    const credC: StoredCredentialMetadata[] = [];
+
+    // Warm-up: discard results so JIT-compilation cost doesn't bias the first
+    // path measured in the timed loop below.
+    for (let i = 0; i < WARMUP; i++) {
+      await engine.evaluate(unknownVerifier, _ctx(), credA, policy);
+      await engine.evaluate(claimDenied, _ctx(), credB, policy);
+      await engine.evaluate(noCredential, _ctx(), credC, policy);
+    }
+
+    // Interleaved sampling: each iteration measures A, then B, then C so that
+    // GC/scheduler pauses are shared across all three paths rather than
+    // systematically biasing one batch.
+    let totalA = 0, totalB = 0, totalC = 0;
+    for (let i = 0; i < ITERS; i++) {
+      let t = performance.now();
+      await engine.evaluate(unknownVerifier, _ctx(), credA, policy);
+      totalA += performance.now() - t;
+
+      t = performance.now();
+      await engine.evaluate(claimDenied, _ctx(), credB, policy);
+      totalB += performance.now() - t;
+
+      t = performance.now();
+      await engine.evaluate(noCredential, _ctx(), credC, policy);
+      totalC += performance.now() - t;
+    }
+
+    const a = totalA / ITERS;
+    const b = totalB / ITERS;
+    const c = totalC / ITERS;
 
     const max = Math.max(a, b, c);
     const min = Math.min(a, b, c);
