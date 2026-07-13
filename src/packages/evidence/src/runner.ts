@@ -43,8 +43,9 @@ export const vitestExecutor: TestExecutor = async (claim) => {
   }
   const args = ['--filter', claim.pnpmFilter, 'exec', 'vitest', 'run', claim.testFile];
   if (claim.testNamePattern) args.push('-t', claim.testNamePattern);
-  const res = spawnSync('pnpm', args, { cwd: root, encoding: 'utf8', shell: true });
+  const cmd = ['pnpm', ...args].join(' ');
+  const res = spawnSync(cmd, { cwd: root, encoding: 'utf8', shell: true });
   if (res.status === 0) return { status: 'PASS', detail: `${claim.pnpmFilter} ${claim.testFile}` };
-  const tail = (res.stdout || '').split('\n').slice(-8).join('\n');
+  const tail = ((res.stdout || '') + (res.stderr || '')).split('\n').slice(-8).join('\n');
   return { status: 'FAIL', detail: `exit ${res.status}: ${tail}` };
 };
