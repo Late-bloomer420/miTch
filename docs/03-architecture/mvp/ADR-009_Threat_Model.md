@@ -57,6 +57,10 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 | T-4 | Anti-Replay | Abgelaufene / manipulierte Timestamps | Smart Policy Engine | Request-Expiry mit 90s Clock-Skew-Toleranz; ungültiges Datum → fail-closed expired | belegt | `poc-hardened/src/__tests__/requestGuards.test.ts` — "isExpired returns true for invalid date string" |
 | T-5 | Audit Log | Manipulation der Audit-Kette (Einfügen, Löschen, Umordnen, Signatur-Swap) | Crypto-Shredding | Hash-Chain + Per-Entry-Signatur + Report-Signatur; 6 Angriffsvektoren getestet | belegt | `audit-log/test/adversarial_audit.test.ts` — "Payload Tampering detected", "Cherry-Picking detected", "Reordering detected", "Signature Swap detected" |
 | T-6 | Policy Engine | ALLOW ohne nachvollziehbare Grundlage | Smart Policy Engine | Allow Assertion Grounding: ALLOW erfordert ruleId + reason + policy_hash; ohne → ALLOW_WITHOUT_EVIDENCE | belegt | `policy-engine/src/__tests__/allow-assertion.test.ts` — "fails for ALLOW with no evidence" |
+| T-7 | Wallet / Policy | Policy-Persistenz fire-and-forget — Fehler bei `savePolicy()` stumm verschluckt | Smart Policy Engine | **SECURE-1 F-02:** `savePolicy()` war `void …catch(console.error)` — In-Memory-State konnte lautlos von persistiertem State divergieren. Jetzt `async`, persist-before-mutate, Fehler werden nach oben gegeben (commit 6fb7e08). | belegt | `wallet-pwa/src/__tests__/WalletService.test.ts` — F-02 persist-before-mutate test |
+| T-8 | Wallet / Crypto | `getIdentityPublicKey()` las falsches Feld — gab immer `null` zurück | Crypto-Shredding | **SECURE-1 F-01:** Cast `{ publicKey? }` vs. tatsächliches Feld `auditPublicKey` in `AuditLog.setAuditKeys()` — Key-Lookup scheiterte lautlos. Korrigiert auf `auditPublicKey` (commit 14ab393). | belegt | `wallet-pwa/src/__tests__/WalletService.test.ts` — F-01 key-field regression test |
+| T-9 | Shared-Crypto / WebAuthn | `WebAuthnService.verifyPresence()` false-success stub — gab `true` ohne kryptografische Prüfung | Human-in-the-Loop | **SECURE-1 F-03:** Zero-caller `@deprecated` Stub tombstoned → wirft jetzt fail-closed (commit dc0bdca). Kein aktiver Bypass (0 Call-Sites), latentes Risiko für künftige Aufrufer eliminiert. | belegt | `shared-crypto/src/__tests__/webauthn.test.ts` — F-03 fail-closed on verifyPresence |
+| T-10 | Shared-Crypto / WebAuthn | IndexedDB-Fehler in `savePasskeyMeta()` / `saveIdentityKeyMeta()` stumm verschluckt | Human-in-the-Loop | **SECURE-1 F-16/F-18:** Leere `catch`-Blöcke ließen fehlgeschlagene Meta-Saves unbemerkt — `isIdentityRegistered()` würde danach `false` liefern und das Security-Level lautlos senken. Jetzt: fail-closed rethrow (commit fb764bb). | belegt | `shared-crypto/src/__tests__/webauthn.test.ts` — F-16/F-18 rethrow tests |
 
 ### R — Repudiation
 
@@ -75,10 +79,11 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 | I-3 | Pairwise DIDs | Key-Material nach Session-Ende extrahierbar | Crypto-Shredding | Pairwise-DID-Keys: destroy() → isShredded()=true; sign() nach destroy() → throws; 50 Concurrent Interactions sicher | belegt | `shared-crypto/test/pairwise-did.test.ts` — "signing key is zeroed after destroy()", "50 concurrent interactions each shredded" |
 | I-4 | SecureStorage | Credential-Daten im Klartext auf Disk | Crypto-Shredding | AES-256-GCM Encryption at Rest; Raw Storage enthält kein Klartext-PII; falscher Schlüssel → Decryption Failed | belegt | `secure-storage/test/persistence.test.ts` — "encrypted at rest — raw storage contains no plaintext PII", "wrong key → decryption fails" |
 | I-5 | Policy Engine | Pairwise-DID in DENY-Response leakt Nutzer-Identität | Blind Provider | DENY-Verdict enthält keine pairwise_did; nur ALLOW/PROMPT erhalten DID | belegt | `policy-engine/src/__tests__/pairwise-did-proof.test.ts` — "DENY verdict does NOT include pairwise_did" |
-| I-6 | Policy Engine | Datenabfluss in nicht-adäquate Jurisdiktionen | Blind Provider | GDPR-Transfer-Check: EU→EU erlaubt, nicht-adäquat → blockiert; ISO-3166-Whitelist | belegt | `policy-engine/src/__tests__/jurisdiction.test.ts` — "checkGDPRDataTransfer blocks non-adequate countries" |
+| I-6 | Policy Engine | Datenabfluss in nicht-adäquate Jurisdiktionen | Blind Provider | GDPR-Transfer-Check: EU→EU erlaubt, nicht-adäquat → blockiert; ISO-3166-Whitelist; **SECURE-1 F-04:** `isAllowedByGeoScope()` war doppelt fail-open (undetermined country + unknown scope → jeweils `true`); beide Pfade jetzt fail-closed DENY (commit 8bf997e) | belegt | `policy-engine/src/__tests__/jurisdiction.test.ts` — "checkGDPRDataTransfer blocks non-adequate countries"; `policy-engine/src/__tests__/geo-scope.test.ts` — F-04 fail-closed paths |
 | I-7 | Revocation | Widerrufs-Status unbekannt → Credential trotzdem akzeptiert | Smart Policy Engine | Fail-Closed: High-Risk → DENY bei fetch-Fehler; Revocation unavailable → DENY (never ALLOW) | belegt | `integration-tests/src/fail-closed-golden.test.ts` — "network error → DENY, never ALLOW" |
 | I-8 | Wallet UI / DataFlow | Browser-/OS-/Netzwerk-Layer-Tracker greifen auf Identifier-Oberflächen zu, ohne dass der Nutzer es sieht | Human-in-the-Loop | Identity Firewall: `IDENTITY_ACCESS_DETECTED`-Audit-Events mit PII-minimaler `IdentityFirewallMetadata` (sanitisiertes `actor_label`, keine Roh-Cookies/IPs/UA-Strings); literal `blocked: false` (informierend, nicht blockend); DataFlowPanel-Badge + Timeline-Eintrag | belegt | Sprint 1 Abschlussreview 2026-06-07 — `wallet-pwa/src/__tests__/WalletService.test.ts`, `DataFlowPanel.test.tsx`; `data-flow/src/__tests__/service.test.ts` (Kategorie `identity`); siehe `docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md` |
 | I-9 | Wallet / OID4VP | Cross-Verifier-Korrelation über stabile Holder-Bindings (`cnf`) und wiederverwendete Issuer-Signaturen | Blind Provider | Ephemeral Holder Binding: `generateHolderBinding()` (P-256, non-extractable) erzeugt pro Batch-Member einen frischen Holder-Key → distinkte `cnf`-JWKs; Single-Use Credential Pool (`credential-pool.ts`) mit FIFO-Auswahl und fail-closed Exhaustion; Honesty-Boundary: Unlinkability durch Nicht-Wiederverwendung, nicht durch Multi-Show-Krypto (BBS+ deferred) | belegt | `shared-crypto/src/holder-binding.test.ts` (Cross-Binding-Negativtest); `wallet-pwa/src/__tests__/credential-pool.test.ts`; siehe `docs/tasks/SPRINT_PROOF_RANDOMIZATION.md` |
+| I-10 | OID4VP Verifier | Credential-Authentizität nur strukturell geprüft — Issuer-Signatur nie kryptografisch verifiziert | Smart Policy Engine | **SECURE-1 F-14:** `verifyAuthorizationResponse()` ist jetzt async und verdrahtet `validateSDJWTVC` + `validateKeyBindingJWT` aus `@askmi/shared-crypto`. Neue Opts `verifyCredentialSignatures`, `resolveIssuerKey`, `expectedAudience`; neues Ergebnisfeld `signaturesVerified`. Fail-closed bei fehlendem Resolver, Null-/falschem Key, KB-JWT-Mismatch oder unbekanntem Format. Opt-in; strukturelle Prüfung rückwärtskompatibel (commit 703f06d). | belegt | `oid4vp-verifier/src/__tests__/` — 7 TDD-Crypto-Tests (RED→GREEN), 60 Tests gesamt grün |
 
 ### D — Denial of Service
 
@@ -102,12 +107,12 @@ EUDI-CIR und DSGVO Art. 32 verlangen explizit ein Risiko-Assessment. Dieses ADR 
 
 | Manifest-Prinzip | STRIDE-Einträge | Abdeckung |
 |---|---|---|
-| **Smart Policy Engine** | S-1, S-2, S-3, S-4, T-1, T-2, T-3, T-4, T-6, I-1, I-7, D-1, D-2, D-3, E-2, R-3 | Alle 6 STRIDE-Kategorien |
-| **Crypto-Shredding** | T-5, R-1, R-2, I-3, I-4 | T, R, I |
-| **Blind Provider** | I-2, I-5, I-6, I-9, D-4 | I, D |
-| **Human-in-the-Loop** | D-2, E-1, I-8 | D, E, I |
+| **Smart Policy Engine** | S-1, S-2, S-3, S-4, T-1, T-2, T-3, T-4, T-6, T-7, I-1, I-6, I-7, I-10, D-1, D-2, D-3, E-2, R-3 | Alle 6 STRIDE-Kategorien |
+| **Crypto-Shredding** | T-5, T-8, R-1, R-2, I-3, I-4 | T, R, I |
+| **Blind Provider** | I-2, I-5, I-6, I-9, I-10, D-4 | I, D |
+| **Human-in-the-Loop** | D-2, E-1, I-8, T-9, T-10 | D, E, I, T |
 
-Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
+Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile. **SECURE-1 ergänzte T-7–T-10 und I-10** (5 neue Einträge, alle belegt).
 
 ---
 
@@ -147,7 +152,7 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 - **(belegt)** Anti-Fingerprinting (siehe D-4): Header-/JSON-Normalisierung, Payload-Padding, Network Timing Jitter (legacy U-22/U-23) reduzieren Linkability gegen passive Beobachter zwischen Verifiern.
   → `wallet-pwa/src/__tests__/anti-fingerprinting.test.ts`.
 
-**Residualrisiko (teilweise belegt):** Dedizierter Anti-Oracle-Timing-Test (Verifier kann via Latenz interne Code-Pfade unterscheiden — siehe GAP-3) bleibt offen; U-23 Jitter reduziert die Auswertbarkeit, ersetzt aber kein Konstanz-Garantie-Modell. Echte kryptografische Multi-Show-Unlinkability eines einzelnen Credentials (BBS+ / blinded issuance) ist explizit deferred (siehe Sprint-Plan; U-10/U-13 als Future-Phase).
+**Residualrisiko (mitigated, documented residual):** SECURE-1 (GAP-3): Anti-Oracle-Timing-Varianz-Regressions-Guard hinzugefügt; Branching-Audit fand keinen sekretabhängigen I/O-Branch auf dem Entscheidungspfad; U-23 Network Timing Jitter bleibt erhalten. **Honesty boundary:** Echte Konstant-Zeit-Ausführung ist in einer Browser-JS/V8-Runtime (JIT, GC, Deopt) unerreichbar. SECURE-1 liefert einen getesteten bounded-variance Guard + beibehaltenen Jitter + dokumentiertes Residual — **keine mathematische Konstant-Zeit-Garantie**. Siehe `anti-oracle.test.ts → "indistinguishable DENY paths have bounded mean-timing spread"`. Echte kryptografische Multi-Show-Unlinkability eines einzelnen Credentials (BBS+ / blinded issuance) ist explizit deferred (siehe Sprint-Plan; U-10/U-13 als Future-Phase).
 
 ### Szenario 3: Device-Loss
 
@@ -162,7 +167,7 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 - **(belegt)** Credential-Deletion tatsächlich wirksam
   → `secure-storage/test/persistence.test.ts`: "delete credential → actually removed from storage"
 
-**Residualrisiko (offen):** Recovery-Flow nach Device-Loss nicht implementiert. Weder Remote-Wipe noch Guardian-basierte Recovery vorhanden. ADR-006 (Recovery Strategy) ist PROPOSED, aber nicht umgesetzt.
+**Residualrisiko (geschlossen mit Residual — SECURE-1 GAP-2 Korrektur):** `src/packages/shared-crypto/src/recovery.ts` implementiert echtes Shamir Secret Sharing (2-of-3 über GF(2⁸)) als „Trust Circle" Social Recovery und ist in `WalletService.ts` + `App.tsx` verdrahtet (QA-Evidenz: `docs/qa/WALLET_RECOVERY_RC_2026-06-04.md`). Der frühere ADR-009-Eintrag „Recovery nicht implementiert" war veraltet. **Verbleibendes Residual:** kein Remote-Wipe (Hardware-seitig nicht lösbar ohne TEE, siehe GAP-1); Guardian-Trust-Annahmen (Social-Recovery-Modell setzt vertrauenswürdige Kontakte voraus). ADR-006 (Recovery Strategy) weiterhin PROPOSED für die formale Governance.
 
 ---
 
@@ -170,10 +175,10 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 
 | # | Gap | Prio | Status | Mitigation-Pfad |
 |---|---|---|---|---|
-| GAP-1 | JavaScript-Runtime bietet keine physische RAM-Löschung; `TypedArray.fill(0)` ist best-effort | 🟡 | Dokumentiert, kein Fix in Browser möglich | TEE-Integration (ADR-010, deferred) |
-| GAP-2 | Recovery bei Device-Loss nicht implementiert (kein Remote-Wipe, kein Guardian) | 🟡 | Dokumentiert, nicht umgesetzt | ADR-006 (PROPOSED) |
-| GAP-3 | Timing-Side-Channel bei Anti-Oracle: verschiedene Code-Pfade können unterschiedliche Latenz haben | 🟡 | Teilweise belegt — Network Timing Jitter (U-23, `anti-fingerprinting.ts`) reduziert Auswertbarkeit. Dedizierter Anti-Oracle-Konstanzzeit-Test bleibt offen. | Konstante Verarbeitungszeit (Phase 3+) zusätzlich zum Jitter |
-| GAP-4 | Externer Security Review nicht durchgeführt | 🔴 | Menschliche Vorbedingung für ACCEPTED | Reviewer zuweisen + Review durchführen |
+| GAP-1 | JavaScript-Runtime bietet keine physische RAM-Löschung; `TypedArray.fill(0)` ist best-effort | 🟡 | **Offen** — kein Fix in Browser möglich | TEE-Integration (ADR-010, deferred) |
+| GAP-2 | Recovery bei Device-Loss — kein Remote-Wipe, kein Guardian *(früherer Stand: nicht implementiert)* | 🟢 | **Geschlossen mit Residual (2026-07-13)** — Shamir Secret Sharing (2-of-3, GF(2⁸)) als Trust-Circle-Social-Recovery in `shared-crypto/src/recovery.ts` implementiert und in `WalletService.ts` + `App.tsx` verdrahtet (QA: `docs/qa/WALLET_RECOVERY_RC_2026-06-04.md`). Residual: kein Remote-Wipe (TEE-Vorbedingung, GAP-1); Guardian-Trust-Annahmen. | ADR-006 (PROPOSED) für formale Governance; Remote-Wipe folgt GAP-1 / ADR-010 |
+| GAP-3 | Timing-Side-Channel bei Anti-Oracle: verschiedene Code-Pfade können unterschiedliche Latenz haben | 🟡 | **Mitigiert, dokumentiertes Residual (2026-07-13)** — SECURE-1: Branching-Audit fand keinen sekretabhängigen I/O-Branch; bounded-variance Regressions-Guard (`anti-oracle.test.ts → "indistinguishable DENY paths have bounded mean-timing spread"`, < 2 ms amortisierter Mean-Spread über 500 Iterationen); U-23 Network Timing Jitter beibehalten. **Honesty boundary:** Echte Konstant-Zeit-Ausführung ist in einer Browser-JS/V8-Runtime (JIT, GC, Deopt) unerreichbar — SECURE-1 liefert einen getesteten bounded-variance Guard + dokumentiertes Residual, keine mathematische Konstant-Zeit-Garantie. | Kein weiterer Code-Mitigation nötig; Residual akzeptiert und dokumentiert |
+| GAP-4 | Externer Security Review nicht durchgeführt | 🔴 | **Offen** — menschliche Vorbedingung für `Accepted` ohne Zusatz | Reviewer zuweisen + Review durchführen (SECURE-2) |
 
 ---
 
@@ -182,12 +187,12 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile.
 | Kriterium | Status | Begründung |
 |---|---|---|
 | STRIDE-Tabelle deckt alle 4 Manifest-Prinzipien | **Erfüllt** | Alle 4 Prinzipien haben belegte STRIDE-Zeilen (siehe Manifest-Prinzip-Abdeckung) |
-| Mind. 12 Mitigations mit Test-Vektoren | **Erfüllt** | 25 STRIDE-Einträge (22 + I-8/I-9/D-4 aus Sprint 1 & Proof-Randomization), alle mit Evidenz-Status "belegt" und verifizierter Testdatei-/Sprint-Referenz |
-| Gap-Analyse < 5 offene Risiken | **Erfüllt** | 4 Gaps dokumentiert (1× 🔴, 3× 🟡) |
+| Mind. 12 Mitigations mit Test-Vektoren | **Erfüllt** | 31 STRIDE-Einträge (22 Baseline + I-8/I-9/D-4 Sprint 1 & Proof-Randomization + T-7/T-8/T-9/T-10/I-6-ergänzt/I-10 SECURE-1), alle mit Evidenz-Status "belegt" und verifizierter Testdatei-/Sprint-Referenz |
+| Gap-Analyse < 5 offene Risiken | **Erfüllt** | 4 Gaps: GAP-1 🟡 offen, GAP-2 🟢 geschlossen mit Residual, GAP-3 🟡 mitigiert mit dokumentiertem Residual, GAP-4 🔴 offen — effektiv 2 ungelöste Risiken (GAP-1 🟡, GAP-4 🔴) |
 | 3 Test-Szenarien | **Erfüllt** | Cold-Boot, Verifier-Collusion, Device-Loss — jeweils mit belegten Mitigations + Residualrisiken |
-| Review durch Architecture Lead + 1 externer Security Reviewer | **Nicht erfüllt** | Menschliche Aktion, kein Reviewer zugewiesen |
+| Review durch Architecture Lead + 1 externer Security Reviewer | **Nicht erfüllt** | Menschliche Aktion, kein Reviewer zugewiesen (GAP-4 🔴) |
 
-**Konsequenz (2026-06-08):** ADR-009 ist **Accepted (technical) — pending external review**. Vollständiges `Accepted` erst nach:
+**Konsequenz (aktualisiert 2026-07-13):** ADR-009 ist **Accepted (technical) — pending external review**. SECURE-1 schließt GAP-2 (Recovery implementiert) und mitigiert GAP-3 (bounded-variance Guard + dokumentiertes Residual). GAP-1 (Browser-RAM) und GAP-4 (externer Review) bleiben offen. Vollständiges `Accepted` erst nach:
 1. Externer Security Reviewer bestätigt STRIDE-Tabelle + Gap-Analyse (GAP-4 🔴)
 2. Architecture Lead Sign-Off
 
@@ -224,3 +229,4 @@ Siehe Task S-10 im BACKLOG (Phase 3). Dieses ADR dokumentiert ausschließlich vo
 + 2026-03-13: Initial Proposal (PROPOSED)
 + 2026-03-18: STRIDE-Tabelle vollständig (22 Einträge, alle belegt), 3 Test-Szenarien, Gap-Analyse (4 Gaps), Fail-Closed Acceptance-Bewertung. Status bleibt PROPOSED (externer Review offen).
 + 2026-06-08: Sprint-1-Mitigations (Identity Firewall → I-8) und Sprint-Proof-Randomization-Mitigations (Ephemeral Holder Binding + Single-Use Pool → I-9) als STRIDE-Zeilen integriert; D-4 (Traffic-Analyse → Anti-Fingerprinting) ergänzt; Verifier-Collusion-Szenario Residualrisiko aktualisiert (Jitter ist belegt); GAP-3 auf "teilweise belegt" runtergestuft; Manifest-Prinzip-Abdeckung um I-8/I-9/D-4 erweitert. Status: **Accepted (technical) — pending external review** (GAP-4 🔴 bleibt). Siehe `docs/tasks/SPRINT_04_THREAT_MODEL_FINALIZATION.md`.
++ 2026-07-13: **SECURE-1 Reconciliation.** (1) **GAP-2 korrigiert:** `shared-crypto/src/recovery.ts` implementiert echtes Shamir-Secret-Sharing (2-of-3, GF(2⁸)) Trust-Circle-Recovery, verdrahtet in `WalletService.ts` + `App.tsx`; GAP-2-Status auf „geschlossen mit Residual" (kein Remote-Wipe; Guardian-Trust-Annahmen). (2) **GAP-3 mitigiert:** SECURE-1 fand keinen sekretabhängigen I/O-Branch; bounded-variance Regressions-Guard hinzugefügt; Residual dokumentiert (echte Konstant-Zeit in V8 unerreichbar). (3) **STRIDE erweitert:** 5 neue Einträge (T-7 policy-persist, T-8 key-field-mismatch, T-9 WebAuthn-false-success-stub, T-10 IndexedDB-swallow, I-10 credential-sig-verification) aus SECURE-1 F-01/F-02/F-03/F-14/F-16/F-18. I-6 um F-04 fail-closed geo-scope ergänzt. (4) **Fail-Closed-Acceptance-Tabelle** auf 31 STRIDE-Einträge + neue GAP-Statuszeilen aktualisiert. GAP-1 🟡 und GAP-4 🔴 bleiben offen. Verifiziert: 46/46 Turbo-Tasks grün (2026-07-13). Siehe `docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md`.
