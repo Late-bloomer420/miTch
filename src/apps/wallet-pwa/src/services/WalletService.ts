@@ -619,6 +619,7 @@ export class WalletService {
     if (this.storage) {
       await this.persistPolicy(policy); // throws on failure → caller learns
     }
+    // no persistent storage (ephemeral session) — in-memory only
     this.policyManifest = policy; // only after a successful (or no-storage) persist
   }
 

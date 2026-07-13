@@ -236,4 +236,81 @@ describe('verifyAuthorizationResponse — crypto verification', () => {
         expect(result.valid).toBe(true);
         expect(result.signaturesVerified).toBe(false);
     });
+
+    // ─── F-14: throwing resolveIssuerKey must NOT reject the outer promise ────
+
+    it('F-14a) resolveIssuerKey throws → RESOLVES to {valid:false, signaturesVerified:false}, does NOT reject', async () => {
+        const issuerJwt = await issueSDJWTVC(vcPayload(), issuerKeyPair.privateKey);
+        const credential = `${issuerJwt}~`;
+
+        // This resolver throws instead of returning null — must be caught fail-closed
+        const throwingResolver = async (_iss: string): Promise<never> => {
+            throw new Error('DNS resolution failed');
+        };
+
+        // Must RESOLVE (not reject) — this is the critical fail-closed assertion
+        const result = await verifyAuthorizationResponse({
+            response: buildResp(credential),
+            expectedNonce: `nonce-f14a-${Date.now()}`,
+            expectedState: 'state-crypto',
+            definition: DEFINITION,
+            skipNonceCheck: true,
+            verifyCredentialSignatures: true,
+            resolveIssuerKey: throwingResolver,
+            expectedAudience: VERIFIER_AUD,
+        });
+
+        expect(result.valid).toBe(false);
+        expect(result.signaturesVerified).toBe(false);
+        expect(result.errors.some((e) => e.includes('crypto verification error'))).toBe(true);
+    });
+
+    it('F-14b) validateSDJWTVC throws (simulated via bad credential shape) → RESOLVES fail-closed', async () => {
+        // A resolver that returns a key but the credential is shaped to make validateSDJWTVC throw
+        // We simulate this by returning a key from a different pair so an internal jose error may surface
+        const badCredential = 'eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL2lzc3Vlci5hc2ttaS5kZW1vIn0.badsig~';
+
+        const result = await verifyAuthorizationResponse({
+            response: buildResp(badCredential),
+            expectedNonce: `nonce-f14b-${Date.now()}`,
+            expectedState: 'state-crypto',
+            definition: DEFINITION,
+            skipNonceCheck: true,
+            verifyCredentialSignatures: true,
+            resolveIssuerKey: async (_iss: string) => issuerKeyPair.publicKey,
+            expectedAudience: VERIFIER_AUD,
+        });
+
+        // Must resolve fail-closed regardless of the internal error type
+        expect(result.valid).toBe(false);
+        expect(result.signaturesVerified).toBe(false);
+    });
+
+    // ─── F-14c: KB-JWT present but no expectedAudience → explicit fail-closed ─
+
+    it('F-14c) KB-JWT present but expectedAudience not provided → fail-closed with clear error', async () => {
+        const cnf = await buildCNFClaim(holderKeyPair.publicKey);
+        const issuerJwt = await issueSDJWTVC(vcPayload(cnf as { jwk: JsonWebKey }), issuerKeyPair.privateKey);
+        const sdJwtWithDisclosures = `${issuerJwt}~`;
+        const kbJwt = await createKeyBindingJWT(
+            { aud: VERIFIER_AUD, nonce: NONCE, sdJwtWithDisclosures },
+            holderKeyPair.privateKey
+        );
+        const credential = `${sdJwtWithDisclosures}${kbJwt}`;
+
+        const result = await verifyAuthorizationResponse({
+            response: buildResp(credential, NONCE),
+            expectedNonce: NONCE,
+            expectedState: 'state-crypto',
+            definition: DEFINITION,
+            skipNonceCheck: true,
+            verifyCredentialSignatures: true,
+            resolveIssuerKey: async (_iss: string) => issuerKeyPair.publicKey,
+            // expectedAudience intentionally omitted
+        });
+
+        expect(result.valid).toBe(false);
+        expect(result.signaturesVerified).toBe(false);
+        expect(result.errors.some((e) => e.includes('expectedAudience'))).toBe(true);
+    });
 });

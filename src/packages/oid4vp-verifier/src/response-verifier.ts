@@ -171,56 +171,81 @@ export async function verifyAuthorizationResponse(
                     continue;
                 }
 
-                // b. Resolve issuer key
-                const issuerKey = await resolveIssuerKey(iss);
-                if (issuerKey === null) {
-                    errors.push(`no key for issuer ${iss}`);
+                // b–d. Per-credential crypto work: catch ALL thrown exceptions fail-closed.
+                // Any exception from resolveIssuerKey, validateSDJWTVC, or validateKeyBindingJWT
+                // is converted to an error entry rather than propagating out of the function.
+                let credPassed = true;
+                try {
+                    // b. Resolve issuer key
+                    const issuerKey = await resolveIssuerKey(iss);
+                    if (issuerKey === null) {
+                        errors.push(`no key for issuer ${iss}`);
+                        credPassed = false;
+                    } else {
+                        // c. Verify issuer signature via validateSDJWTVC
+                        const vcResult = await validateSDJWTVC(credential, issuerKey);
+                        if (!vcResult.ok) {
+                            errors.push(...vcResult.errors);
+                            credPassed = false;
+                        } else {
+                            // d. KB-JWT verification if present
+                            // SD-JWT format: <issuerJwt>~[disc1~disc2~...]~[kbJwt]
+                            // Split on '~', last segment is KB-JWT candidate if it looks like a JWT
+                            const parts = credential.split('~');
+                            // parts[0] = issuerJwt, parts[1..n-2] = disclosures, parts[n-1] = kbJwt or ''
+                            const lastSegment = parts[parts.length - 1];
+                            if (lastSegment.length > 0 && isCompactJWT(lastSegment)) {
+                                const kbJwt = lastSegment;
+                                // sdJwtWithDisclosures = everything before the final kbJwt segment
+                                // i.e. parts[0]~parts[1]~...~parts[n-2]~ (with trailing tilde)
+                                const sdJwtWithDisclosures = parts.slice(0, parts.length - 1).join('~') + '~';
+
+                                // Fail-closed: KB-JWT aud binding requires expectedAudience to be set.
+                                if (!expectedAudience) {
+                                    errors.push(
+                                        'KB-JWT present but no expectedAudience configured for aud binding'
+                                    );
+                                    credPassed = false;
+                                } else {
+                                    // Use the cnf.jwk directly from the verified SD-JWT VC payload.
+                                    // extractCNFPublicKey returns a platform key type (CryptoKey / KeyObject)
+                                    // which may not be instanceof CryptoKey in Node.js; using the JWK avoids
+                                    // the platform-key-type ambiguity inside validateKeyBindingJWT.
+                                    const cnfJwk = vcResult.payload!.cnf?.jwk;
+                                    if (!cnfJwk) {
+                                        errors.push(
+                                            `KB-JWT present but no cnf.jwk in SD-JWT VC payload for issuer ${iss}`
+                                        );
+                                        credPassed = false;
+                                    } else {
+                                        const kbResult = await validateKeyBindingJWT(
+                                            kbJwt,
+                                            cnfJwk as IssuerOrHolderKey,
+                                            {
+                                                expectedAud: expectedAudience,
+                                                expectedNonce,
+                                                sdJwtWithDisclosures,
+                                            }
+                                        );
+                                        if (!kbResult.ok) {
+                                            errors.push(...kbResult.errors);
+                                            credPassed = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (err: unknown) {
+                    // Any thrown exception from resolveIssuerKey / validateSDJWTVC /
+                    // validateKeyBindingJWT is caught here and converted to a fail-closed error.
+                    const msg = err instanceof Error ? err.message : String(err);
+                    errors.push(`${iss} crypto verification error: ${msg}`);
+                    credPassed = false;
+                }
+                if (!credPassed) {
                     allPassed = false;
                     continue;
-                }
-
-                // c. Verify issuer signature via validateSDJWTVC
-                const vcResult = await validateSDJWTVC(credential, issuerKey);
-                if (!vcResult.ok) {
-                    errors.push(...vcResult.errors);
-                    allPassed = false;
-                    continue;
-                }
-
-                // d. KB-JWT verification if present
-                // SD-JWT format: <issuerJwt>~[disc1~disc2~...]~[kbJwt]
-                // Split on '~', last segment is KB-JWT candidate if it looks like a JWT
-                const parts = credential.split('~');
-                // parts[0] = issuerJwt, parts[1..n-2] = disclosures, parts[n-1] = kbJwt or ''
-                const lastSegment = parts[parts.length - 1];
-                if (lastSegment.length > 0 && isCompactJWT(lastSegment)) {
-                    const kbJwt = lastSegment;
-                    // sdJwtWithDisclosures = everything before the final kbJwt segment
-                    // i.e. parts[0]~parts[1]~...~parts[n-2]~ (with trailing tilde)
-                    const sdJwtWithDisclosures = parts.slice(0, parts.length - 1).join('~') + '~';
-
-                    // Use the cnf.jwk directly from the verified SD-JWT VC payload.
-                    // extractCNFPublicKey returns a platform key type (CryptoKey / KeyObject)
-                    // which may not be instanceof CryptoKey in Node.js; using the JWK avoids
-                    // the platform-key-type ambiguity inside validateKeyBindingJWT.
-                    const cnfJwk = vcResult.payload!.cnf?.jwk;
-                    if (!cnfJwk) {
-                        errors.push(
-                            `KB-JWT present but no cnf.jwk in SD-JWT VC payload for issuer ${iss}`
-                        );
-                        allPassed = false;
-                        continue;
-                    }
-
-                    const kbResult = await validateKeyBindingJWT(kbJwt, cnfJwk as IssuerOrHolderKey, {
-                        expectedAud: expectedAudience ?? '',
-                        expectedNonce,
-                        sdJwtWithDisclosures,
-                    });
-                    if (!kbResult.ok) {
-                        errors.push(...kbResult.errors);
-                        allPassed = false;
-                    }
                 }
             }
 

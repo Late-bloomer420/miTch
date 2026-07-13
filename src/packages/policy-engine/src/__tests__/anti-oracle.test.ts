@@ -37,15 +37,6 @@ const _policy = (o: Partial<PolicyManifest> = {}): PolicyManifest => ({
 });
 const _ctx = (): EvaluationContext => ({ timestamp: Date.now(), userDID: 'did:example:alice' });
 
-async function meanEvalMs(
-  engine: PolicyEngine, req: VerifierRequest, creds: StoredCredentialMetadata[], iters: number,
-): Promise<number> {
-  const policy = _policy();
-  const start = performance.now();
-  for (let i = 0; i < iters; i++) await engine.evaluate(req, _ctx(), creds, policy);
-  return (performance.now() - start) / iters;
-}
-
 describe('Anti-Oracle: verifier message bucketing', () => {
   /**
    * These deny codes MUST all produce the same verifier-facing message.
