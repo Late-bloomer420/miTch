@@ -93,7 +93,7 @@ Fail-closed on missing resolver, null/wrong key, KB-JWT mismatch, or unknown for
 Opt-in; existing structural-only callers remain backward-compatible.
 **Tests:** `src/packages/oid4vp-verifier/src/__tests__/response-verifier.crypto.test.ts` — 7 new TDD crypto tests (RED→GREEN);
 60 total tests pass; build clean.
-Package counts during sprint: oid4vp-verifier 60.
+Package counts during sprint: oid4vp-verifier 63.
 
 ---
 
@@ -170,7 +170,7 @@ test output — they are the authoritative, point-in-time evidence for this spri
 | `pnpm test` | **46/46 turbo tasks green** |
 | `pnpm lint` | **0 errors, 7 warnings** — all 7 are pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, present since the SECURE-1 baseline (Task 0); count unchanged 7→7; SECURE-1 introduced **zero new warnings** |
 | `pnpm guard:rebrand` | **passed** |
-| Per-package (sprint) | policy-engine 325 tests, shared-crypto 273 tests, wallet-pwa 185 tests, oid4vp-verifier 60 tests |
+| Per-package (sprint) | policy-engine 325 tests, shared-crypto 273 tests, wallet-pwa 185 tests, oid4vp-verifier 63 tests |
 
 ---
 
