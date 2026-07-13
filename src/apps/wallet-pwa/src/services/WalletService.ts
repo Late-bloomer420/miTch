@@ -1725,8 +1725,8 @@ export class WalletService {
 
     // 2. Device Authentication (DeviceSigned)
     // For PoC, we use COSE_Sign1 with the identity key.
-    // In real mDL, this would be a separate DeviceKey.
-    const mso = mdoc.get('issuerAuth'); // Simplified for PoC
+    // In real mDL this would use a separate DeviceKey and the issuer MSO
+    // (mdoc.get('issuerAuth')); here we emit a placeholder DeviceAuth.
 
     // Placeholder for real DeviceAuth creation
     const deviceAuth: import('@askmi/mdoc').DeviceAuth = {
