@@ -1,0 +1,29 @@
+{
+  "name": "@askmi/evidence",
+  "version": "0.1.0",
+  "description": "Security evidence harness for AskMI — claim→test map, runner, report",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": { "askmi-evidence": "./dist/cli.js" },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "clean": "rimraf dist",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "evidence": "tsx src/cli.ts"
+  },
+  "keywords": ["AskMI", "security", "evidence", "audit"],
+  "author": "Late-bloomer420 <jonas.f.meyer@googlemail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "rimraf": "^5.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.8"
+  }
+}
