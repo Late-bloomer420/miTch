@@ -591,6 +591,9 @@ importers:
       '@askmi/oid4vp':
         specifier: workspace:*
         version: link:../oid4vp
+      '@askmi/shared-crypto':
+        specifier: workspace:*
+        version: link:../shared-crypto
       '@askmi/shared-types':
         specifier: workspace:*
         version: link:../shared-types
