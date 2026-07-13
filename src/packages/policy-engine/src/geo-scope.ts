@@ -14,12 +14,12 @@ export const ADEQUACY_COUNTRIES = new Set([
 ]);
 
 export function isAllowedByGeoScope(geoScope: string, countryCode: string | null): boolean {
-  if (!countryCode) return true; // Can't determine → allow (fail-open for geo only)
+  if (!countryCode) return false; // Can't determine country → DENY (fail-closed)
   if (geoScope === 'global') return true;
   const upper = countryCode.toUpperCase();
   if (geoScope === 'eu-only') return EU_EEA_COUNTRIES.has(upper);
   if (geoScope === 'eu-plus-adequacy') return EU_EEA_COUNTRIES.has(upper) || ADEQUACY_COUNTRIES.has(upper);
-  return true;
+  return false; // Unrecognized geoScope → DENY (fail-closed)
 }
 
 export function extractCountryFromDid(did: string): string | null {

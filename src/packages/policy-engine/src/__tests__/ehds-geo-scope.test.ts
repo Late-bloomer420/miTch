@@ -35,8 +35,8 @@ describe('isAllowedByGeoScope', () => {
     expect(isAllowedByGeoScope('global', 'CN')).toBe(true);
   });
 
-  it('allows null country (fail-open)', () => {
-    expect(isAllowedByGeoScope('eu-only', null)).toBe(true);
+  it('denies null/undetermined country (fail-closed)', () => {
+    expect(isAllowedByGeoScope('eu-only', null)).toBe(false);
   });
 
   it('eu-only allows EU/EEA countries', () => {
@@ -54,8 +54,8 @@ describe('isAllowedByGeoScope', () => {
     expect(isAllowedByGeoScope('eu-plus-adequacy', 'US')).toBe(false);
   });
 
-  it('unknown scope allows everything', () => {
-    expect(isAllowedByGeoScope('unknown-scope', 'CN')).toBe(true);
+  it('unknown scope denies (fail-closed)', () => {
+    expect(isAllowedByGeoScope('unknown-scope', 'CN')).toBe(false);
   });
 });
 
