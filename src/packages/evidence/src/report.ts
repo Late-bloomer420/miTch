@@ -22,8 +22,13 @@ export async function generateReport(
   const errored = count(results, 'ERROR');
   const residual = count(results, 'RESIDUAL');
 
+  // Escape for a Markdown table cell: backslash FIRST (so it is not doubled by
+  // later escapes), then the pipe delimiter, then flatten newlines.
+  const mdCell = (s: string): string =>
+    s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+
   const rows = results
-    .map((r) => `| ${r.id} | ${r.category} | ${r.status} | ${r.claim.replace(/\|/g, '\\|')} |`)
+    .map((r) => `| ${mdCell(r.id)} | ${r.category} | ${r.status} | ${mdCell(r.claim)} |`)
     .join('\n');
 
   const markdown = `# AskMI Security Evidence Report
