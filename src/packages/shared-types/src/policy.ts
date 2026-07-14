@@ -392,9 +392,10 @@ export interface InteractionMetadata {
 
 /**
  * Supported credential encoding formats.
- * 'sd-jwt' = SD-JWT VC (current default), 'mso_mdoc' = ISO 18013-5 mdoc (CBOR/COSE).
+ * 'sd-jwt' = SD-JWT VC (current default), 'mso_mdoc' = ISO 18013-5 mdoc (CBOR/COSE),
+ * 'sd-jwt-vc' = full SD-JWT VC string with holder key (ADOPT-0a).
  */
-export type CredentialFormat = 'sd-jwt' | 'mso_mdoc';
+export type CredentialFormat = 'sd-jwt' | 'mso_mdoc' | 'sd-jwt-vc';
 
 export interface StoredCredentialMetadata {
     id: string;

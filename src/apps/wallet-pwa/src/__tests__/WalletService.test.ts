@@ -1095,3 +1095,15 @@ describe('WalletService — F-01 getIdentityPublicKey returns the real key (not 
     expect(key).toBeInstanceOf(CryptoKey);
   });
 });
+
+describe('WalletService — ADOPT-0a: SD-JWT VC full round-trip storage', () => {
+  it('stores and round-trips a full SD-JWT VC + holder key (not just claims)', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    const holder = { kty: 'EC', crv: 'P-256', x: 'AA', y: 'BB', d: 'CC' } as JsonWebKey;
+    await wallet.addSdJwtVc('vc-1', 'issuerJwt~disc1~disc2~', holder, { singleUse: true });
+    const got = await wallet.getSdJwtVc('vc-1');
+    expect(got?.sdJwtVc).toBe('issuerJwt~disc1~disc2~');
+    expect(got?.holderPrivateJwk.d).toBe('CC');
+  });
+});

@@ -1580,6 +1580,53 @@ export class WalletService {
   }
 
   /**
+   * Store a full SD-JWT VC string together with the holder private key
+   * (ADOPT-0a: "real storage" — not just the decoded claims).
+   *
+   * The credential data is `{ sdJwtVc, holderPrivateJwk }` so
+   * `getSdJwtVc` can reconstruct the exact issuer token for presentation.
+   */
+  async addSdJwtVc(
+    id: string,
+    sdJwtVc: string,
+    holderPrivateJwk: JsonWebKey,
+    opts: { singleUse?: boolean; poolId?: string } = {}
+  ): Promise<void> {
+    await this.ensureSeeded();
+    if (!this.storage) throw new Error('Wallet locked');
+    const meta: StoredCredentialMetadata = {
+      id,
+      issuer: 'did:web:localhost%3A3005',
+      type: ['VerifiableCredential', 'AgeCredential'],
+      issuedAt: new Date().toISOString(),
+      claims: ['dateOfBirth', 'isOver18'],
+      format: 'sd-jwt-vc',
+      ...(opts.singleUse ? { singleUse: true } : {}),
+      ...(opts.poolId ? { poolId: opts.poolId } : {}),
+    };
+    await this.storage.save(id, { sdJwtVc, holderPrivateJwk }, meta);
+    await this.auditLog.append('KEY_USED', id, {
+      context: 'OID4VCI_ISSUANCE_SDJWT',
+      issuer: meta.issuer,
+    });
+  }
+
+  /**
+   * Retrieve a stored SD-JWT VC and its holder private key.
+   * Returns null if the credential is not found or is not an SD-JWT VC.
+   */
+  async getSdJwtVc(
+    id: string
+  ): Promise<{ sdJwtVc: string; holderPrivateJwk: JsonWebKey } | null> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const data = (await this.storage.load(id)) as
+      | { sdJwtVc?: string; holderPrivateJwk?: JsonWebKey }
+      | null;
+    if (!data?.sdJwtVc || !data.holderPrivateJwk) return null;
+    return { sdJwtVc: data.sdJwtVc, holderPrivateJwk: data.holderPrivateJwk };
+  }
+
+  /**
    * Record PII-minimal Identity Firewall transparency events for a proof flow.
    */
   async recordIdentityFirewallEvents(
