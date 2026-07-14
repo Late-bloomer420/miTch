@@ -63,11 +63,14 @@ Each report file includes a SHA-256 integrity hash of its JSON sibling. To recom
 node -e "
 const crypto = require('crypto');
 const fs = require('fs');
+# Replace EVIDENCE_<timestamp>.json with the filename of your latest report under docs/qa/evidence-reports/
 const json = fs.readFileSync('docs/qa/evidence-reports/EVIDENCE_2026-07-14T00-04-05-971Z.json');
 console.log(crypto.createHash('sha256').update(json).digest('hex'));
 "
 # Must match the hash in the .md report header
 ```
+
+> **Note:** The filename `EVIDENCE_2026-07-14T00-04-05-971Z.json` is illustrative. Use the filename of your latest report found under `docs/qa/evidence-reports/` (files are named `EVIDENCE_<timestamp>.json`).
 
 ---
 
@@ -78,8 +81,10 @@ console.log(crypto.createHash('sha256').update(json).digest('hex'));
 | Proven claims | 10 |
 | Residual (documented open items) | 2 |
 | Failed claims | 0 |
-| SECURE-1 findings fixed | 14 of 22 |
-| SECURE-1 documented residuals | 6 (F-05, F-06, F-15, F-19, F-20, F-22) |
+| SECURE-1 sweep | 22 findings — 7 fixed (fail-closed), 9 not-a-bug, 6 documented-residual |
+| SECURE-1 fixed (F-01, F-02, F-03, F-04, F-14, F-16, F-18) | 7 |
+| SECURE-1 not-a-bug (F-07 – F-13, F-17, F-21) | 9 |
+| SECURE-1 documented-residual (F-05, F-06, F-15, F-19, F-20, F-22) | 6 |
 | External security review | Not yet performed (GAP-4) |
 
 See [RESIDUALS.md](./RESIDUALS.md) for the full open-items register.
