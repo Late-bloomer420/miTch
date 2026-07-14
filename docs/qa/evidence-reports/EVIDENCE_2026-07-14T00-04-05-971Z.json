@@ -1,0 +1,92 @@
+{
+  "generatedAt": "2026-07-14T00:04:05.971Z",
+  "toolVersions": {
+    "node": "v24.16.0"
+  },
+  "results": [
+    {
+      "id": "SECURE1-F03",
+      "claim": "WebAuthn verifyPresence stub fails closed (no false presence proof)",
+      "category": "fail-closed",
+      "status": "PASS",
+      "detail": "@askmi/shared-crypto test/webauthn-fail-closed.test.ts"
+    },
+    {
+      "id": "SECURE1-F04",
+      "claim": "Geo-scope denies on undetermined country / unknown scope (fail-closed)",
+      "category": "fail-closed",
+      "status": "PASS",
+      "detail": "@askmi/policy-engine src/__tests__/ehds-geo-scope.test.ts"
+    },
+    {
+      "id": "SECURE1-F16-18",
+      "claim": "Passkey/identity-key metadata save failures fail closed (rethrow)",
+      "category": "fail-closed",
+      "status": "PASS",
+      "detail": "@askmi/shared-crypto test/webauthn-save-failclosed.test.ts"
+    },
+    {
+      "id": "SECURE1-F14",
+      "claim": "OID4VP verifier cryptographically verifies SD-JWT VC + KB-JWT (fail-closed)",
+      "category": "fail-closed",
+      "status": "PASS",
+      "detail": "@askmi/oid4vp-verifier src/__tests__/response-verifier.crypto.test.ts"
+    },
+    {
+      "id": "SECURE1-GAP3",
+      "claim": "Anti-oracle DENY-path timing variance bounded (no secret-dependent branch)",
+      "category": "stride",
+      "status": "PASS",
+      "detail": "@askmi/policy-engine src/__tests__/anti-oracle.test.ts"
+    },
+    {
+      "id": "STRIDE-T1",
+      "claim": "Claim-name injection rejected (whitelist input validation)",
+      "category": "stride",
+      "status": "PASS",
+      "detail": "@askmi/policy-engine src/__tests__/input-validation.test.ts"
+    },
+    {
+      "id": "STRIDE-T2",
+      "claim": "Unsafe capability downgrade denied",
+      "category": "stride",
+      "status": "PASS",
+      "detail": "@askmi/policy-engine src/__tests__/capability-negotiation.test.ts"
+    },
+    {
+      "id": "STRIDE-T5",
+      "claim": "Audit-chain tampering detected (hash chain + signatures)",
+      "category": "stride",
+      "status": "PASS",
+      "detail": "@askmi/audit-log test/adversarial_audit.test.ts"
+    },
+    {
+      "id": "STRIDE-I2",
+      "claim": "Cross-verifier correlation prevented (pairwise-ephemeral DIDs)",
+      "category": "unlinkability",
+      "status": "PASS",
+      "detail": "@askmi/shared-crypto test/unlinkability.test.ts"
+    },
+    {
+      "id": "STRIDE-I1",
+      "claim": "Anti-oracle: verifier cannot distinguish deny reasons (≤4 buckets)",
+      "category": "stride",
+      "status": "PASS",
+      "detail": "@askmi/policy-engine src/__tests__/anti-oracle.test.ts"
+    },
+    {
+      "id": "GAP-1",
+      "claim": "Physical RAM wipe unattainable in browser JS/V8 (TEE deferred)",
+      "category": "fail-closed",
+      "status": "RESIDUAL",
+      "detail": "Browser runtime limit; TEE integration deferred (ADR-010)."
+    },
+    {
+      "id": "GAP-4",
+      "claim": "External security review not yet performed",
+      "category": "fail-closed",
+      "status": "RESIDUAL",
+      "detail": "Human precondition; this pack prepares for it (SECURE-2), not the review itself."
+    }
+  ]
+}

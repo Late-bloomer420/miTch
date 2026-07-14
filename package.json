@@ -25,7 +25,8 @@
     "test": "turbo run test",
     "test:golden": "pnpm --filter @askmi/integration-tests exec vitest run src/fail-closed-golden.test.ts",
     "clean": "turbo run clean",
-    "clean:pnpm": "pnpm -r --filter ./src/packages/* clean"
+    "clean:pnpm": "pnpm -r --filter ./src/packages/* clean",
+    "evidence": "pnpm --filter @askmi/evidence exec tsx src/cli.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
