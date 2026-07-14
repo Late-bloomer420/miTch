@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
-import { KeyProtectionLevel, WebAuthnService } from '@askmi/shared-crypto';
+import { KeyProtectionLevel, WebAuthnService, issueSDJWTVC, buildCNFClaim, generateHolderBinding } from '@askmi/shared-crypto';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
@@ -1124,5 +1124,56 @@ describe('WalletService — ADOPT-0a: fetchAndStoreSdJwtVc', () => {
     expect(body.proof.jwk.kty).toBeTruthy();          // holder PoP sent
     const got = await wallet.getSdJwtVc(id);
     expect(got?.sdJwtVc).toBe('issuerJwt~d1~');         // raw credential stored
+  });
+});
+
+describe('WalletService — ADOPT-0a: validateStoredIssuerSignature + unlinkability', () => {
+  /**
+   * Build a minimal ES256 JWT manually using WebCrypto (avoids the jsdom cross-realm
+   * TextEncoder/Uint8Array issue that prevents calling jose's SignJWT directly in the
+   * jsdom test environment). The resulting compact JWT is structurally valid and has a
+   * real ECDSA-P256 signature verifiable by jose's jwtVerify.
+   */
+  async function buildMinimalJwt(payload: Record<string, unknown>, privateKey: CryptoKey): Promise<string> {
+    const b64url = (obj: unknown) =>
+      btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const b64urlBytes = (bytes: Uint8Array) =>
+      btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    const header = b64url({ alg: 'ES256', typ: 'vc+sd-jwt' });
+    const body = b64url(payload);
+    const signingInput = new TextEncoder().encode(`${header}.${body}`);
+    const rawSig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, signingInput);
+    return `${header}.${body}.${b64urlBytes(new Uint8Array(rawSig))}`;
+  }
+
+  it('validates a stored credential against the resolved issuer key; a swapped key fails', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    // Build a real issuer-signed credential in-test
+    const issuer = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const holderKey = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const holderPublicJwk = await crypto.subtle.exportKey('jwk', holderKey.publicKey);
+    const iat = Math.floor(Date.now() / 1000);
+    const jwtPayload = {
+      iss: 'did:web:localhost%3A3005',
+      vct: 'https://credentials.example/age',
+      iat,
+      _sd_alg: 'sha-256',
+      cnf: { jwk: holderPublicJwk },
+    };
+    const jwt = await buildMinimalJwt(jwtPayload, issuer.privateKey);
+    await wallet.addSdJwtVc('vc-2', `${jwt}~`, { kty: 'EC', crv: 'P-256', x: 'a', y: 'b', d: 'c' } as JsonWebKey, {});
+    const good = await wallet.validateStoredIssuerSignature('vc-2', async () => issuer.publicKey);
+    expect(good).toBe(true);
+    const other = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const bad = await wallet.validateStoredIssuerSignature('vc-2', async () => other.publicKey);
+    expect(bad).toBe(false);
+  });
+
+  it('two issued credentials carry distinct holder cnf (unlinkability)', async () => {
+    const a = await generateHolderBinding();
+    const b = await generateHolderBinding();
+    expect(JSON.stringify(a.cnf.jwk)).not.toBe(JSON.stringify(b.cnf.jwk));
   });
 });
