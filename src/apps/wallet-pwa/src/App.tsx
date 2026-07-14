@@ -1017,54 +1017,17 @@ function WalletApp() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
-  // OID4VCI: fetch a test credential from issuer-mock
+  // OID4VCI: fetch a test credential from issuer-mock (ADOPT-0a: real holder PoP + raw SD-JWT VC storage)
   const handleFetchCredential = async () => {
     setCredentialStatus('fetching');
-    addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
+    addLog('🎫 Fetching credential from issuer-mock (OID4VCI + holder PoP)...', 'info');
     try {
-      const res = await fetch('http://localhost:3005/credential', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...((currentRequest?.correlation_id && {
-            'x-correlation-id': currentRequest.correlation_id,
-          }) ||
-            {}),
-        },
-        body: JSON.stringify({
-          credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
-          proof: {},
-        }),
-      });
-      if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
-      const data = (await res.json()) as { credential?: string; error?: string };
-      if (!data.credential) throw new Error(data.error ?? 'No credential in response');
-
-      // Decode JWT payload (header.payload.sig)
-      const parts = data.credential.split('.');
-      if (parts.length < 2) throw new Error('Invalid JWT format');
-      const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-      const payload = JSON.parse(payloadJson) as Record<string, unknown>;
-      const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
-      const subject = (vcPayload?.credentialSubject ??
-        payload['credentialSubject'] ??
-        {}) as Record<string, unknown>;
-
-      const credId = `vc-issuer-${Date.now()}`;
-      await walletRef.current.addIssuedCredential(
-        credId,
-        subject,
-        'did:web:localhost%3A3005',
-        undefined,
-        import.meta.env.DEV && mintSingleUse
-      );
+      const credId = await walletRef.current.fetchAndStoreSdJwtVc();
       await loadWalletCredentials();
 
       setCredentialStatus('done');
       addLog(
-        `✅ AgeCredential received from issuer-mock and stored (${credId})${
-          import.meta.env.DEV && mintSingleUse ? ' — minted single-use 🔁' : ''
-        }`,
+        `✅ SD-JWT VC received from issuer-mock and stored with holder binding (${credId})`,
         'success'
       );
     } catch (e) {

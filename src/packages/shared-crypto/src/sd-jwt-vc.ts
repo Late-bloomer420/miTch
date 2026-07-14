@@ -359,6 +359,36 @@ function validateIssuerClaims(payload: Partial<SDJWTVCPayload>): void {
     if (!isURI(payload.vct)) throw new Error(`SD-JWT VC: vct must be a URI, got ${payload.vct}`);
 }
 
+// ─── SD-JWT Disclosure Generator ─────────────────────────────────────────────
+
+function base64urlEncode(bytes: Uint8Array): string {
+    let bin = '';
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Build SD-JWT selective-disclosure entries per IETF SD-JWT: for each claim a
+ * salted `[salt, name, value]` disclosure and its base64url(sha256) digest.
+ * The issuer puts `_sd` in the payload (claim omitted from the clear) and hands
+ * the holder the `disclosures`.
+ */
+export async function createSDJWTDisclosures(
+    claims: Record<string, unknown>
+): Promise<{ _sd: string[]; disclosures: string[] }> {
+    const _sd: string[] = [];
+    const disclosures: string[] = [];
+    for (const [name, value] of Object.entries(claims)) {
+        const salt = base64urlEncode(crypto.getRandomValues(new Uint8Array(16)));
+        const disclosure = base64urlEncode(new TextEncoder().encode(JSON.stringify([salt, name, value])));
+        disclosures.push(disclosure);
+        _sd.push(await sha256Base64url(disclosure));
+    }
+    return { _sd, disclosures };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 async function sha256Base64url(input: string): Promise<string> {
     const data = new TextEncoder().encode(input);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);

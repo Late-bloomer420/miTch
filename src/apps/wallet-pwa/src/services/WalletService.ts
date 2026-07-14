@@ -33,7 +33,9 @@ import {
   detectKeyAlgorithm,
   generateHolderBinding,
   createKeyBindingJWT,
+  validateSDJWTVC,
   type HolderBinding,
+  type JWK,
 } from '@askmi/shared-crypto';
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
@@ -1577,6 +1579,118 @@ export class WalletService {
       issuer: issuerDid,
       docType,
     });
+  }
+
+  /**
+   * ADOPT-0a: Fetch a single SD-JWT VC from the issuer with a fresh holder PoP.
+   *
+   * Generates a single-use extractable P-256 holder key pair, POSTs its public
+   * JWK as `proof.jwk` to the issuer endpoint, and stores the returned raw
+   * SD-JWT VC string together with the holder private JWK via `addSdJwtVc`.
+   * Returns the storage id of the newly stored credential.
+   */
+  async fetchAndStoreSdJwtVc(
+    issuerEndpoint = 'http://localhost:3005/credential'
+  ): Promise<string> {
+    // Generate an extractable holder key pair so the private JWK can be serialised
+    // and durably stored (unlike the non-extractable batch-binding keys).
+    const holderKeyPair = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true, // extractable — needed to serialise privateJwk for storage
+      ['sign', 'verify']
+    );
+    const publicJwk = await crypto.subtle.exportKey('jwk', holderKeyPair.publicKey);
+    const privateJwk = await crypto.subtle.exportKey('jwk', holderKeyPair.privateKey);
+
+    const res = await fetch(issuerEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proof: { jwk: publicJwk },
+        credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
+      }),
+    });
+    if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
+    const data = (await res.json()) as { credential?: string; error?: string };
+    if (!data.credential) throw new Error(data.error ?? 'No credential in response');
+
+    const id = `vc-sdjwt-${Date.now()}`;
+    await this.addSdJwtVc(id, data.credential, privateJwk, { singleUse: true });
+    return id;
+  }
+
+  /**
+   * Store a full SD-JWT VC string together with the holder private key
+   * (ADOPT-0a: "real storage" — not just the decoded claims).
+   *
+   * The credential data is `{ sdJwtVc, holderPrivateJwk }` so
+   * `getSdJwtVc` can reconstruct the exact issuer token for presentation.
+   */
+  async addSdJwtVc(
+    id: string,
+    sdJwtVc: string,
+    holderPrivateJwk: JsonWebKey,
+    opts: { singleUse?: boolean; poolId?: string } = {}
+  ): Promise<void> {
+    await this.ensureSeeded();
+    if (!this.storage) throw new Error('Wallet locked');
+    const meta: StoredCredentialMetadata = {
+      id,
+      issuer: 'did:web:localhost%3A3005',
+      type: ['VerifiableCredential', 'AgeCredential'],
+      issuedAt: new Date().toISOString(),
+      claims: ['dateOfBirth', 'isOver18'],
+      format: 'sd-jwt-vc',
+      ...(opts.singleUse ? { singleUse: true } : {}),
+      ...(opts.poolId ? { poolId: opts.poolId } : {}),
+    };
+    await this.storage.save(id, { sdJwtVc, holderPrivateJwk }, meta);
+    await this.auditLog.append('KEY_USED', id, {
+      context: 'OID4VCI_ISSUANCE_SDJWT',
+      issuer: meta.issuer,
+    });
+  }
+
+  /**
+   * Retrieve a stored SD-JWT VC and its holder private key.
+   * Returns null if the credential is not found or is not an SD-JWT VC.
+   */
+  async getSdJwtVc(
+    id: string
+  ): Promise<{ sdJwtVc: string; holderPrivateJwk: JsonWebKey } | null> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const data = (await this.storage.load(id)) as
+      | { sdJwtVc?: string; holderPrivateJwk?: JsonWebKey }
+      | null;
+    if (!data?.sdJwtVc || !data.holderPrivateJwk) return null;
+    return { sdJwtVc: data.sdJwtVc, holderPrivateJwk: data.holderPrivateJwk };
+  }
+
+  /**
+   * ADOPT-0a: Validate the stored SD-JWT VC's issuer signature using a caller-supplied
+   * key resolver (trust-list injection point).
+   *
+   * Loads the credential via getSdJwtVc, extracts the issuer JWT (everything before
+   * the first `~`), decodes the `iss` claim from the JWT payload, resolves the issuer
+   * public key via `resolveIssuerKey`, and verifies the signature with validateSDJWTVC.
+   * Returns true only if the signature check succeeds (fail-closed).
+   */
+  async validateStoredIssuerSignature(
+    id: string,
+    resolveIssuerKey: (iss: string) => Promise<CryptoKey | JWK | null>
+  ): Promise<boolean> {
+    const stored = await this.getSdJwtVc(id);
+    if (!stored) return false;
+    try {
+      const issuerJwt = stored.sdJwtVc.split('~')[0];
+      const iss = JSON.parse(atob(issuerJwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).iss as string;
+      const key = await resolveIssuerKey(iss);
+      if (!key) return false;
+      const r = await validateSDJWTVC(issuerJwt, key as CryptoKey | JWK);
+      return r.ok === true;
+    } catch {
+      return false;
+    }
   }
 
   /**

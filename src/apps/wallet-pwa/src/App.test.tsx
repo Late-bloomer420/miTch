@@ -38,6 +38,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
   resetWallet: vi.fn().mockResolvedValue(undefined),
   addIssuedCredential: vi.fn().mockResolvedValue(undefined),
+  fetchAndStoreSdJwtVc: vi.fn().mockResolvedValue('vc-sdjwt-mock-001'),
 }));
 
 vi.mock('./components/SecureZone', () => ({
@@ -345,23 +346,14 @@ describe('G-03 — Wallet App', () => {
     // Only the initial load needs to be empty (so the CTA renders); the post-fetch reload
     // can fall back to the default mock. Using ...Once avoids leaking an override into later tests.
     walletServiceMockState.getCredentials.mockResolvedValueOnce([]);
-    const vcPayload = btoa(JSON.stringify({ vc: { credentialSubject: { age: 21 } } }));
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ credential: `h.${vcPayload}.s` }),
-    });
-    vi.stubGlobal('fetch', fetchMock);
 
     render(<App />);
 
     fireEvent.click(await screen.findByRole('button', { name: /Get my credential/i }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/credential'),
-        expect.objectContaining({ method: 'POST' })
-      );
-      expect(walletServiceMockState.addIssuedCredential).toHaveBeenCalled();
+      // ADOPT-0a: handler now delegates to fetchAndStoreSdJwtVc (holder PoP + raw SD-JWT VC storage)
+      expect(walletServiceMockState.fetchAndStoreSdJwtVc).toHaveBeenCalled();
     });
   });
 
