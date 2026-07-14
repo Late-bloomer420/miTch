@@ -63,7 +63,7 @@ Each report file includes a SHA-256 integrity hash of its JSON sibling. To recom
 node -e "
 const crypto = require('crypto');
 const fs = require('fs');
-# Replace EVIDENCE_<timestamp>.json with the filename of your latest report under docs/qa/evidence-reports/
+// Replace EVIDENCE_<timestamp>.json with the filename of your latest report under docs/qa/evidence-reports/
 const json = fs.readFileSync('docs/qa/evidence-reports/EVIDENCE_2026-07-14T00-04-05-971Z.json');
 console.log(crypto.createHash('sha256').update(json).digest('hex'));
 "

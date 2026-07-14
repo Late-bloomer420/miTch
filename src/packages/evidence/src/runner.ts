@@ -44,6 +44,10 @@ export const vitestExecutor: TestExecutor = async (claim) => {
   const args = ['--filter', claim.pnpmFilter, 'exec', 'vitest', 'run', claim.testFile];
   if (claim.testNamePattern) args.push('-t', claim.testNamePattern);
   const cmd = ['pnpm', ...args].join(' ');
+  // NOTE: cmd is shell-joined (shell:true) to avoid Node DEP0190 and resolve Windows pnpm.cmd.
+  // All values come from the internal manifest, never user input. If a future claim uses
+  // testNamePattern with shell metacharacters, de-shell this (spawn pnpm.cmd with an args array,
+  // shell:false) before relying on it.
   const res = spawnSync(cmd, { cwd: root, encoding: 'utf8', shell: true });
   if (res.status === 0) return { status: 'PASS', detail: `${claim.pnpmFilter} ${claim.testFile}` };
   const tail = ((res.stdout || '') + (res.stderr || '')).split('\n').slice(-8).join('\n');

@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   mkdirSync(dir, { recursive: true });
   const stamp = now.toISOString().replace(/[:.]/g, '-');
   writeFileSync(join(dir, `EVIDENCE_${stamp}.md`), markdown);
-  writeFileSync(join(dir, `EVIDENCE_${stamp}.json`), json);
+  writeFileSync(join(dir, `EVIDENCE_${stamp}.json`), json + '\n');
 
   const failed = results.filter((r) => r.status === 'FAIL' || r.status === 'ERROR');
   const proven = results.filter((r) => r.status === 'PASS').length;
