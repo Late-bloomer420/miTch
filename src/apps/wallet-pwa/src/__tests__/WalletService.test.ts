@@ -1127,6 +1127,26 @@ describe('WalletService — ADOPT-0a: fetchAndStoreSdJwtVc', () => {
   });
 });
 
+describe('WalletService — ADOPT-0a: validateStoredIssuerSignature fail-closed on corrupt credential', () => {
+  it('resolves to false (does NOT reject) when the stored SD-JWT VC is malformed/corrupt', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    // Store a credential whose issuer JWT is not a valid base64-encoded JWT payload.
+    // This causes JSON.parse(atob(...)) to throw — the method must catch it and return false.
+    const dummyHolderJwk = { kty: 'EC', crv: 'P-256', x: 'AA', y: 'BB', d: 'CC' } as JsonWebKey;
+    await wallet.addSdJwtVc('vc-bad', 'not-a-jwt~', dummyHolderJwk, {});
+    const someKey = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign', 'verify']
+    );
+    // Must resolve to false, not reject/throw.
+    await expect(
+      wallet.validateStoredIssuerSignature('vc-bad', async () => someKey.publicKey)
+    ).resolves.toBe(false);
+  });
+});
+
 describe('WalletService — ADOPT-0a: validateStoredIssuerSignature + unlinkability', () => {
   /**
    * Build a minimal ES256 JWT manually using WebCrypto (avoids the jsdom cross-realm

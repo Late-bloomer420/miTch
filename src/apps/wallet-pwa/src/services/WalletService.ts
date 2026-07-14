@@ -35,6 +35,7 @@ import {
   createKeyBindingJWT,
   validateSDJWTVC,
   type HolderBinding,
+  type JWK,
 } from '@askmi/shared-crypto';
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
@@ -1676,18 +1677,20 @@ export class WalletService {
    */
   async validateStoredIssuerSignature(
     id: string,
-    resolveIssuerKey: (iss: string) => Promise<CryptoKey | JsonWebKey | null>
+    resolveIssuerKey: (iss: string) => Promise<CryptoKey | JWK | null>
   ): Promise<boolean> {
     const stored = await this.getSdJwtVc(id);
     if (!stored) return false;
-    const issuerJwt = stored.sdJwtVc.split('~')[0];
-    const iss = JSON.parse(atob(issuerJwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).iss as string;
-    const key = await resolveIssuerKey(iss);
-    if (!key) return false;
-    // Cast: JsonWebKey is structurally compatible with jose's JWK for the purpose of key import.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const r = await validateSDJWTVC(issuerJwt, key as any);
-    return r.ok === true;
+    try {
+      const issuerJwt = stored.sdJwtVc.split('~')[0];
+      const iss = JSON.parse(atob(issuerJwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).iss as string;
+      const key = await resolveIssuerKey(iss);
+      if (!key) return false;
+      const r = await validateSDJWTVC(issuerJwt, key as CryptoKey | JWK);
+      return r.ok === true;
+    } catch {
+      return false;
+    }
   }
 
   /**
