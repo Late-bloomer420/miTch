@@ -89,6 +89,12 @@ importers:
       '@types/node':
         specifier: ^20.19.33
         version: 20.19.33
+      '@types/supertest':
+        specifier: ^2.0.16
+        version: 2.0.16
+      supertest:
+        specifier: ^6.3.4
+        version: 6.3.4
       tsx:
         specifier: ^4.7.0
         version: 4.21.0
@@ -1778,6 +1784,7 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
+    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-gnu@4.62.2':

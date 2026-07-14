@@ -1,13 +1,18 @@
 import cors from 'cors';
-import express from 'express';
-import { generateKeyPair, signVC } from '@askmi/shared-crypto';
+import express, { type Express } from 'express';
+import {
+    generateKeyPair,
+    buildCNFClaim,
+    createSDJWTDisclosures,
+    issueSDJWTVC,
+} from '@askmi/shared-crypto';
 import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@askmi/mdoc';
 import type { ValidityInfo } from '@askmi/mdoc';
 import { newCorrelationId } from '@askmi/shared-types';
-import type { AgeCredential, CredentialRequest, CredentialResponse } from '@askmi/shared-types';
+import type { CredentialResponse } from '@askmi/shared-types';
 import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
-const app = express();
+export const app: Express = express();
 const allowedOrigins = new Set([
     'http://localhost:5173',
     'http://localhost:5174',
@@ -42,12 +47,15 @@ app.use(express.static('public'));
 let issuerKeys: CryptoKeyPair | null = null;
 const ISSUER_DID = 'did:web:localhost%3A3005'; // encoding : to %3A for did:web
 
-// Initialize keys on startup
+// Initialize keys on startup — resolved before any request is handled.
+// Exported as `ready` so tests can await key initialisation without binding a port.
 async function initKeys() {
     console.log('🔑 Generating Issuer Keys...');
     issuerKeys = await generateKeyPair();
     console.log('✅ Issuer Keys Ready (ECDSA P-256)');
 }
+
+export const ready: Promise<void> = initKeys();
 
 app.get('/health', (req, res) => {
     res.json({
@@ -204,53 +212,45 @@ app.post('/credential', async (req, res) => {
     const correlationId = req.headers['x-correlation-id']?.toString() ?? newCorrelationId();
     res.setHeader('x-correlation-id', correlationId);
 
-    const { credential_definition: _credential_definition, proof: _proof } = req.body as CredentialRequest; // Simplified request parsing
-
     console.log('📝 Received Credential Request');
     console.log(`🔗 Correlation ID: ${correlationId}`);
 
-    // PoC: We blindly issue an "Over 18" credential to anyone who asks
-    // In reality, we would verify the 'proof' (PoP) and maybe a user session.
-
-    const now = new Date();
-
-    // Construct the VC payload
-    const vcPayload: Omit<AgeCredential, 'proof'> = {
-        '@context': [
-            'https://www.w3.org/2018/credentials/v1',
-            'https://mitch.example/contexts/age/v1'
-        ],
-        id: `urn:uuid:${crypto.randomUUID()}`,
-        type: ['VerifiableCredential', 'AgeCredential'],
-        issuer: { id: ISSUER_DID, name: 'State Liquor Authority' },
-        issuanceDate: now.toISOString(),
-        renderMethod: [
-            {
-                id: `http://localhost:${PORT}/templates/age-credential.svg`,
-                type: 'TemplateRenderMethod',
-                format: 'svg-mustache'
-            }
-        ],
-        credentialSubject: {
-            id: 'did:key:zUnknownHolderForKeyBindingPoC', // Placeholder, normally extracted from request proof
-            dateOfBirth: '1990-01-01',
-            isOver18: true
-        }
-    };
+    // Fail-closed: a holder proof with a valid JWK is required.
+    const holderJwk = (req.body?.proof?.jwk) as JsonWebKey | undefined;
+    if (!holderJwk || !holderJwk.kty) {
+        return res.status(400).json({ error: 'holder_proof_required' });
+    }
 
     try {
-        // Sign the credential
-        const signedVC = await signVC(vcPayload, issuerKeys.privateKey);
+        const holderPub = await crypto.subtle.importKey(
+            'jwk',
+            holderJwk,
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true,
+            ['verify'],
+        );
+        const cnf = await buildCNFClaim(holderPub);
+        const { _sd, disclosures } = await createSDJWTDisclosures({ dateOfBirth: '1990-01-01', isOver18: true });
+        const issuerJwt = await issueSDJWTVC(
+            {
+                iss: ISSUER_DID,
+                vct: 'https://askmi.demo/vct/age-credential',
+                iat: Math.floor(Date.now() / 1000),
+                cnf,
+                _sd,
+            },
+            issuerKeys.privateKey,
+        );
+        const credential = `${issuerJwt}~${disclosures.join('~')}~`;
 
-        // Return standard OID4VCI response
         const response: CredentialResponse = {
-            format: 'jwt_vc_json',
-            credential: signedVC.proof?.jwt || '', // Return the JWT string
+            format: 'vc+sd-jwt',
+            credential,
             c_nonce: crypto.randomUUID(),
-            c_nonce_expires_in: 86400
+            c_nonce_expires_in: 86400,
         };
 
-        console.log('✅ Credential Issued:', vcPayload.id);
+        console.log('✅ SD-JWT VC Issued (holder-bound, cnf key binding)');
         return res.json(response);
 
     } catch (error) {
@@ -285,8 +285,12 @@ app.post('/credential/batch', async (req, res) => {
 
 const PORT = process.env.PORT || 3005;
 
-// Start server and init keys
-app.listen(PORT, async () => {
-    await initKeys();
-    console.log(`Issuer Mock listening on http://localhost:${PORT}`);
-});
+// Start server only when running directly (not during Vitest test execution).
+// Tests import `app` + `ready` directly and use supertest — no port binding needed.
+if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
+    ready.then(() => {
+        app.listen(PORT, () => {
+            console.log(`Issuer Mock listening on http://localhost:${PORT}`);
+        });
+    });
+}
