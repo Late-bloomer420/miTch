@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
-import { KeyProtectionLevel, WebAuthnService, issueSDJWTVC, buildCNFClaim, generateHolderBinding } from '@askmi/shared-crypto';
+import { KeyProtectionLevel, WebAuthnService, generateHolderBinding } from '@askmi/shared-crypto';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
