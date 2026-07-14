@@ -426,6 +426,9 @@ importers:
 
   src/packages/evidence:
     devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.33
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
@@ -437,7 +440,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.8
-        version: 4.1.8(@types/node@25.3.5)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@6.4.3(@types/node@25.3.5)(tsx@4.21.0))
+        version: 4.1.8(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@6.4.3(@types/node@20.19.33)(tsx@4.21.0))
 
   src/packages/integration-tests:
     dependencies:
