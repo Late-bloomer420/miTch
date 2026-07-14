@@ -1107,3 +1107,22 @@ describe('WalletService — ADOPT-0a: SD-JWT VC full round-trip storage', () => 
     expect(got?.holderPrivateJwk.d).toBe('CC');
   });
 });
+
+describe('WalletService — ADOPT-0a: fetchAndStoreSdJwtVc', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetchAndStoreSdJwtVc sends a holder PoP and stores the returned credential', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ format: 'vc+sd-jwt', credential: 'issuerJwt~d1~' }), { status: 200 })
+    );
+    const id = await wallet.fetchAndStoreSdJwtVc();
+    const body = JSON.parse((spy.mock.calls[0][1] as RequestInit).body as string);
+    expect(body.proof.jwk.kty).toBeTruthy();          // holder PoP sent
+    const got = await wallet.getSdJwtVc(id);
+    expect(got?.sdJwtVc).toBe('issuerJwt~d1~');         // raw credential stored
+  });
+});

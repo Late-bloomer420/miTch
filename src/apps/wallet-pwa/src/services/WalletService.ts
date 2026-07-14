@@ -1580,6 +1580,44 @@ export class WalletService {
   }
 
   /**
+   * ADOPT-0a: Fetch a single SD-JWT VC from the issuer with a fresh holder PoP.
+   *
+   * Generates a single-use extractable P-256 holder key pair, POSTs its public
+   * JWK as `proof.jwk` to the issuer endpoint, and stores the returned raw
+   * SD-JWT VC string together with the holder private JWK via `addSdJwtVc`.
+   * Returns the storage id of the newly stored credential.
+   */
+  async fetchAndStoreSdJwtVc(
+    issuerEndpoint = 'http://localhost:3005/credential'
+  ): Promise<string> {
+    // Generate an extractable holder key pair so the private JWK can be serialised
+    // and durably stored (unlike the non-extractable batch-binding keys).
+    const holderKeyPair = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true, // extractable — needed to serialise privateJwk for storage
+      ['sign', 'verify']
+    );
+    const publicJwk = await crypto.subtle.exportKey('jwk', holderKeyPair.publicKey);
+    const privateJwk = await crypto.subtle.exportKey('jwk', holderKeyPair.privateKey);
+
+    const res = await fetch(issuerEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proof: { jwk: publicJwk },
+        credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
+      }),
+    });
+    if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
+    const data = (await res.json()) as { credential?: string; error?: string };
+    if (!data.credential) throw new Error(data.error ?? 'No credential in response');
+
+    const id = `vc-sdjwt-${Date.now()}`;
+    await this.addSdJwtVc(id, data.credential, privateJwk, { singleUse: true });
+    return id;
+  }
+
+  /**
    * Store a full SD-JWT VC string together with the holder private key
    * (ADOPT-0a: "real storage" — not just the decoded claims).
    *
