@@ -2187,6 +2187,22 @@ export class WalletService {
   }
 
   /**
+   * ADOPT-0b: Return the id of the most recently stored SD-JWT VC credential,
+   * or null if none exists. Used by presentOID4VP to locate the real credential
+   * to present instead of fabricating one from SCENARIO_CLAIMS.
+   *
+   * Fail-closed: returns null (never throws) when no sd-jwt-vc credential is found.
+   */
+  async getLatestSdJwtVcId(): Promise<string | null> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const metadata = await this.storage.getAllMetadata();
+    const sdJwtVcs = metadata
+      .filter((m) => m.format === 'sd-jwt-vc')
+      .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+    return sdJwtVcs.length > 0 ? sdJwtVcs[0].id : null;
+  }
+
+  /**
    * Load a specific credential's decrypted payload.
    */
   async loadCredential<T = Record<string, unknown>>(id: string): Promise<T | null> {

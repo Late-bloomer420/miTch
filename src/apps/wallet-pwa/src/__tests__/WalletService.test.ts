@@ -1192,6 +1192,43 @@ describe('WalletService — ADOPT-0b: presentStoredSdJwtVc', () => {
   });
 });
 
+describe('WalletService — ADOPT-0b: getLatestSdJwtVcId', () => {
+  it('returns null when no sd-jwt-vc credential is stored', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    // Default seeded credentials have no sd-jwt-vc format, so this must be null.
+    const id = await wallet.getLatestSdJwtVcId();
+    expect(id).toBeNull();
+  });
+
+  it('returns the id of the stored sd-jwt-vc after one is added', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    const holder = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const holderJwk = await crypto.subtle.exportKey('jwk', holder.privateKey);
+    await wallet.addSdJwtVc('vc-adopt0b-001', 'hdr.pl.sig~', holderJwk, {});
+
+    const id = await wallet.getLatestSdJwtVcId();
+    expect(id).toBe('vc-adopt0b-001');
+  });
+
+  it('returns the most recently issued sd-jwt-vc when multiple are stored', async () => {
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    const holder = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const holderJwk = await crypto.subtle.exportKey('jwk', holder.privateKey);
+
+    // Store first credential, then a second one (later issuedAt)
+    await wallet.addSdJwtVc('vc-older', 'hdr.pl.sig~', holderJwk, {});
+    // Small delay to ensure distinct issuedAt timestamps
+    await new Promise((r) => setTimeout(r, 5));
+    await wallet.addSdJwtVc('vc-newer', 'hdr.pl.sig~', holderJwk, {});
+
+    const id = await wallet.getLatestSdJwtVcId();
+    expect(id).toBe('vc-newer');
+  });
+});
+
 describe('WalletService — ADOPT-0a: validateStoredIssuerSignature + unlinkability', () => {
   /**
    * Build a minimal ES256 JWT manually using WebCrypto (avoids the jsdom cross-realm
