@@ -230,7 +230,14 @@ app.post('/credential', async (req, res) => {
             ['verify'],
         );
         const cnf = await buildCNFClaim(holderPub);
-        const { _sd, disclosures } = await createSDJWTDisclosures({ dateOfBirth: '1990-01-01', isOver18: true });
+        // Disclose `age` (what the demo liquor-store presentation_definition
+        // requests: $.age) alongside dateOfBirth/isOver18, so a real presentation
+        // can selectively disclose the requested claim.
+        const { _sd, disclosures } = await createSDJWTDisclosures({
+            age: 24,
+            dateOfBirth: '2000-01-01',
+            isOver18: true,
+        });
         const issuerJwt = await issueSDJWTVC(
             {
                 iss: ISSUER_DID,
