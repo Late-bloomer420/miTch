@@ -34,6 +34,7 @@ import {
   generateHolderBinding,
   createKeyBindingJWT,
   validateSDJWTVC,
+  buildSdJwtPresentation,
   type HolderBinding,
   type JWK,
 } from '@askmi/shared-crypto';
@@ -1667,6 +1668,34 @@ export class WalletService {
   }
 
   /**
+   * ADOPT-0b: Build a real SD-JWT presentation from a stored SD-JWT VC.
+   *
+   * Loads the stored SD-JWT VC + holder private JWK via `getSdJwtVc`, imports
+   * the holder key as a non-extractable signing key, and delegates to
+   * `buildSdJwtPresentation` (Task 1) to perform selective disclosure and
+   * append the Key Binding JWT.
+   *
+   * Fail-closed: returns null immediately when the credential is not found in
+   * storage — never throws on a missing credential.
+   */
+  async presentStoredSdJwtVc(
+    credentialId: string,
+    requestedClaimNames: string[],
+    opts: { aud: string; nonce: string }
+  ): Promise<{ vpToken: string; disclosedClaims: Record<string, unknown> } | null> {
+    const stored = await this.getSdJwtVc(credentialId);
+    if (!stored) return null;
+    const holderKey = await crypto.subtle.importKey(
+      'jwk',
+      stored.holderPrivateJwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign']
+    );
+    return buildSdJwtPresentation(stored.sdJwtVc, requestedClaimNames, holderKey, opts);
+  }
+
+  /**
    * ADOPT-0a: Validate the stored SD-JWT VC's issuer signature using a caller-supplied
    * key resolver (trust-list injection point).
    *
@@ -2155,6 +2184,22 @@ export class WalletService {
     if (!this.storage) throw new Error('Wallet locked');
     const metadata = await this.storage.getAllMetadata();
     return metadata.filter((item) => item.id !== POLICY_STORAGE_ID);
+  }
+
+  /**
+   * ADOPT-0b: Return the id of the most recently stored SD-JWT VC credential,
+   * or null if none exists. Used by presentOID4VP to locate the real credential
+   * to present instead of fabricating one from SCENARIO_CLAIMS.
+   *
+   * Fail-closed: returns null (never throws) when no sd-jwt-vc credential is found.
+   */
+  async getLatestSdJwtVcId(): Promise<string | null> {
+    if (!this.storage) throw new Error('Wallet locked');
+    const metadata = await this.storage.getAllMetadata();
+    const sdJwtVcs = metadata
+      .filter((m) => m.format === 'sd-jwt-vc')
+      .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+    return sdJwtVcs.length > 0 ? sdJwtVcs[0].id : null;
   }
 
   /**

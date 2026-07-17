@@ -21,7 +21,8 @@ describe('anti-fingerprinting utilities', () => {
     expect(canonical).toBe('{"a":{"c":3,"d":4},"arr":[{"y":2,"z":1}],"b":2}');
   });
 
-  it('pads OID4VP direct-post payloads without stripping nested fields', () => {
+  it('pads OID4VP direct-post payloads without stripping nested fields (ADOPT-0b: no issuer_jwk)', () => {
+    // ADOPT-0b: the real credential path does NOT include issuer_jwk in the POST payload.
     const payload = {
       vp_token: 'token',
       presentation_submission: {
@@ -35,19 +36,13 @@ describe('anti-fingerprinting utilities', () => {
         ],
       },
       state: 'state-123',
-      issuer_jwk: {
-        kty: 'EC',
-        crv: 'P-256',
-        x: 'issuer-x',
-        y: 'issuer-y',
-      },
     };
 
     const paddedPayload = padPayload(payload, 512);
     const parsed = JSON.parse(paddedPayload);
 
     expect(parsed.presentation_submission).toEqual(payload.presentation_submission);
-    expect(parsed.issuer_jwk).toEqual(payload.issuer_jwk);
+    expect(parsed.issuer_jwk).toBeUndefined();
     expect(parsed.vp_token).toBe(payload.vp_token);
     expect(parsed.state).toBe(payload.state);
     expect(typeof parsed.padding).toBe('string');

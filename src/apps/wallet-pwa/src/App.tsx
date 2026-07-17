@@ -27,13 +27,10 @@ import {
 } from './consent-manager/receipt-store';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
-  buildSDJWTPresentation,
   buildSessionCleanup,
-  SCENARIO_VCT,
   type AuthorizationRequest,
 } from '@askmi/oid4vp';
 import type { ConsentReceipt } from '@askmi/oid4vp';
-import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { LandingPage } from './LandingPage';
@@ -819,47 +816,43 @@ function WalletApp() {
   // OID4VP: present SD-JWT VP to verifier via direct_post
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
-    scenarioId: string,
+    _scenarioId: string,
     decisionId: string | null = null
   ) => {
-    let holderKeys: CryptoKeyPair | null = null;
-    let issuerKeys: CryptoKeyPair | null = null;
-
     try {
       setStatus('PROVING');
       addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
 
-      // Generate ephemeral key pairs (PoC — in production, holder key is from wallet, issuer from trust registry)
-      holderKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
-        'sign',
-        'verify',
-      ]);
-      issuerKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
-        'sign',
-        'verify',
-      ]);
+      // ADOPT-0b: Derive requested claim names from the presentation definition
+      const requestedClaimNames = authRequest.presentation_definition.input_descriptors.flatMap(
+        (d) =>
+          d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
+      );
 
-      const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
-      const isRevoked = scenarioId === 'revoked';
+      // ADOPT-0b: Locate the most recent real stored SD-JWT VC (fail-closed if none)
+      const credId = await walletRef.current!.getLatestSdJwtVcId();
+      if (!credId) {
+        addLog('❌ No stored credential — fetch a credential from the issuer first.', 'error');
+        setStatus('IDLE');
+        return;
+      }
 
-      // W-03: Build SD-JWT VP Token with Key Binding JWT
-      const { vpTokenString, presentationSubmission, disclosedClaims } =
-        await buildSDJWTPresentation({
-          request: authRequest,
-          issuerPrivateKey: issuerKeys.privateKey,
-          holderKeyPair: holderKeys,
-          claims,
-          vct: SCENARIO_VCT[scenarioId] ?? 'https://askmi.demo/vct/age-credential',
-          issuerDid: ASKMI_DEMO.issuerUri,
-          revoked: isRevoked,
-          statusListUri: ASKMI_DEMO.statusListUri,
-        });
+      // ADOPT-0b: Present the real stored credential
+      const presented = await walletRef.current!.presentStoredSdJwtVc(
+        credId,
+        requestedClaimNames,
+        { aud: authRequest.client_id, nonce: authRequest.nonce }
+      );
+      if (!presented) {
+        addLog('❌ No matching credential for this request.', 'error');
+        setStatus('IDLE');
+        return;
+      }
+
+      const { vpToken: vpTokenString, disclosedClaims } = presented;
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
       addLog(`🔑 Key Binding JWT attached (nonce + aud bound)`, 'info');
-
-      // Send issuer public key alongside VP for PoC verification
-      const issuerPubJwk = await crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
       // POST direct_post to verifier redirect_uri
       const redirectUri = authRequest.redirect_uri;
@@ -868,9 +861,8 @@ function WalletApp() {
       // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
       const payload = {
         vp_token: vpTokenString,
-        presentation_submission: presentationSubmission,
+        presentation_submission: { id: `ps-${crypto.randomUUID()}`, definition_id: authRequest.presentation_definition.id, descriptor_map: [] },
         state: authRequest.state,
-        issuer_jwk: issuerPubJwk,
       };
       const paddedPayload = padPayload(payload);
       addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
@@ -931,10 +923,8 @@ function WalletApp() {
       );
       setStatus('IDLE');
     } finally {
-      // B-03: Crypto-shredding — destroy ephemeral keys
-      holderKeys = null;
-      issuerKeys = null;
-      addLog('🗑️ Ephemeral keys destroyed (crypto-shredding)', 'info');
+      // B-03: No ephemeral issuer/holder keys to shred — real credential uses stored holder key.
+      addLog('🗑️ Presentation complete (no ephemeral keys to shred)', 'info');
     }
   };
 

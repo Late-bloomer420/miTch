@@ -387,6 +387,57 @@ export async function createSDJWTDisclosures(
     return { _sd, disclosures };
 }
 
+// ─── SD-JWT VC Presentation (holder, no issuer key) ──────────────────────────
+
+/**
+ * Present a pre-issued SD-JWT VC by selecting only the requested disclosures
+ * and appending a Key Binding JWT. The issuer JWT (and its signature) is left
+ * completely untouched — no re-issuance occurs.
+ *
+ * @param sdJwtVc             Stored SD-JWT string: `issuerJwt~disc~...~[kbJwt]`
+ * @param requestedClaimNames Claim names to disclose (others are dropped)
+ * @param holderPrivateKey    Holder's private key for KB-JWT signing
+ * @param opts                `aud` and `nonce` for the KB-JWT
+ * @returns vpToken (SD-JWT presentation) and a map of the disclosed claim values
+ */
+export async function buildSdJwtPresentation(
+    sdJwtVc: string,
+    requestedClaimNames: string[],
+    holderPrivateKey: CryptoKey,
+    opts: { aud: string; nonce: string }
+): Promise<{ vpToken: string; disclosedClaims: Record<string, unknown> }> {
+    const segments = sdJwtVc.split('~');
+    const issuerJwt = segments[0];
+    // middle segments are disclosures; trailing '' (from the final '~') and any KB-JWT are ignored
+    const allDisclosures = segments.slice(1).filter((s) => s.length > 0 && !s.includes('.'));
+    const requested = new Set(requestedClaimNames);
+    const selected: string[] = [];
+    const disclosedClaims: Record<string, unknown> = {};
+    for (const d of allDisclosures) {
+        let decoded: [string, string, unknown];
+        try {
+            decoded = JSON.parse(
+                new TextDecoder().decode(
+                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
+                )
+            );
+        } catch {
+            continue;
+        }
+        const [, name, value] = decoded;
+        if (requested.has(name)) {
+            selected.push(d);
+            disclosedClaims[name] = value;
+        }
+    }
+    const presented = `${issuerJwt}~${selected.join('~')}~`;
+    const kbJwt = await createKeyBindingJWT(
+        { aud: opts.aud, nonce: opts.nonce, sdJwtWithDisclosures: presented },
+        holderPrivateKey
+    );
+    return { vpToken: `${presented}${kbJwt}`, disclosedClaims };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function sha256Base64url(input: string): Promise<string> {

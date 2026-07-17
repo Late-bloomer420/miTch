@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { PolicyEvaluationResult } from '@askmi/shared-types';
 
-const buildSDJWTPresentationMock = vi.hoisted(() => vi.fn());
 const walletServiceMockState = vi.hoisted(() => ({
   initialize: vi.fn().mockResolvedValue(undefined),
   getPolicy: vi
@@ -39,6 +38,12 @@ const walletServiceMockState = vi.hoisted(() => ({
   resetWallet: vi.fn().mockResolvedValue(undefined),
   addIssuedCredential: vi.fn().mockResolvedValue(undefined),
   fetchAndStoreSdJwtVc: vi.fn().mockResolvedValue('vc-sdjwt-mock-001'),
+  // ADOPT-0b: real stored credential path
+  getLatestSdJwtVcId: vi.fn().mockResolvedValue('vc-sdjwt-mock-001'),
+  presentStoredSdJwtVc: vi.fn().mockResolvedValue({
+    vpToken: 'real-vp-token',
+    disclosedClaims: { age: 24 },
+  }),
 }));
 
 vi.mock('./components/SecureZone', () => ({
@@ -72,14 +77,6 @@ vi.mock('@askmi/shared-crypto', async () => {
       provePresence: vi.fn().mockResolvedValue('proof'),
       provePresenceDetailed: vi.fn().mockResolvedValue({ signature: 'proof-signature' }),
     },
-  };
-});
-
-vi.mock('@askmi/oid4vp', async () => {
-  const actual = await vi.importActual<typeof import('@askmi/oid4vp')>('@askmi/oid4vp');
-  return {
-    ...actual,
-    buildSDJWTPresentation: buildSDJWTPresentationMock,
   };
 });
 
@@ -127,16 +124,7 @@ function makePromptResult(verdict: PolicyEvaluationResult['verdict']): PolicyEva
 
 async function bootstrapFetchMocks(verdict: PolicyEvaluationResult['verdict']) {
   walletServiceMockState.evaluateRequest.mockResolvedValue(makePromptResult(verdict));
-  buildSDJWTPresentationMock.mockResolvedValue({
-    vpTokenString: 'vp-token',
-    presentationSubmission: { id: 'ps-1', definition_id: 'def-1', descriptor_map: [] },
-    disclosedClaims: { age: 24 },
-  });
-  vi.spyOn(crypto.subtle, 'generateKey').mockResolvedValue({
-    privateKey: {} as CryptoKey,
-    publicKey: {} as CryptoKey,
-  } as CryptoKeyPair);
-  vi.spyOn(crypto.subtle, 'exportKey').mockResolvedValue({ kty: 'EC', crv: 'P-256' } as JsonWebKey);
+  // ADOPT-0b: real credential path — wallet mock already provides getLatestSdJwtVcId + presentStoredSdJwtVc
 
   vi.stubGlobal(
     'fetch',
@@ -506,11 +494,7 @@ describe('G-03 — Wallet App', () => {
       '',
       '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
     );
-    buildSDJWTPresentationMock.mockResolvedValue({
-      vpTokenString: 'vp-token',
-      presentationSubmission: { id: 'ps-1', definition_id: 'def-1', descriptor_map: [] },
-      disclosedClaims: { age: 24 },
-    });
+    // ADOPT-0b: real credential path — wallet mock provides presentStoredSdJwtVc
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: RequestInfo | URL) => {
