@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSdJwtPresentation, createSDJWTDisclosures } from './sd-jwt-vc';
+import { buildSdJwtPresentation, createSDJWTDisclosures, extractDisclosedClaims } from './sd-jwt-vc';
 import { sha256 } from '@noble/hashes/sha2.js';
 
 function b64url(bytes: Uint8Array): string {
@@ -50,5 +50,20 @@ describe('buildSdJwtPresentation', () => {
     expect(kept).toHaveLength(1);
     expect(JSON.parse(b64urlDecode(kept[0]))[1]).toBe('isOver18');
     expect(disclosedClaims).toEqual({ isOver18: true });
+  });
+});
+
+describe('extractDisclosedClaims (verifier-side)', () => {
+  it('returns claims only for disclosures whose digest is in the issuer-signed _sd', async () => {
+    const { _sd, disclosures } = await createSDJWTDisclosures({ age: 24, dateOfBirth: '2000-01-01' });
+    expect(await extractDisclosedClaims(disclosures, _sd)).toEqual({ age: 24, dateOfBirth: '2000-01-01' });
+  });
+  it('fail-closed: rejects a disclosure whose digest is NOT in _sd', async () => {
+    const { disclosures } = await createSDJWTDisclosures({ age: 24 });
+    expect(await extractDisclosedClaims(disclosures, [])).toEqual({});
+  });
+  it('ignores KB-JWT-shaped segments and empty strings', async () => {
+    const { _sd, disclosures } = await createSDJWTDisclosures({ age: 24 });
+    expect(await extractDisclosedClaims([...disclosures, '', 'header.payload.sig'], _sd)).toEqual({ age: 24 });
   });
 });

@@ -387,6 +387,38 @@ export async function createSDJWTDisclosures(
     return { _sd, disclosures };
 }
 
+/**
+ * Verifier-side complement of `createSDJWTDisclosures`: decode presented
+ * disclosure strings and return the claims they reveal — but ONLY for
+ * disclosures whose SHA-256 digest is present in the issuer-signed `_sd`
+ * array. A disclosure whose digest is not in `_sd` (i.e. not covered by the
+ * issuer's signature) is rejected (fail-closed) so a holder cannot inject
+ * arbitrary claims.
+ */
+export async function extractDisclosedClaims(
+    disclosures: string[],
+    sdDigests: string[]
+): Promise<Record<string, unknown>> {
+    const allowed = new Set(sdDigests);
+    const out: Record<string, unknown> = {};
+    for (const d of disclosures) {
+        if (!d || d.includes('.')) continue; // skip empty segments and any JWT (e.g. KB-JWT)
+        const digest = await sha256Base64url(d);
+        if (!allowed.has(digest)) continue; // fail-closed: only issuer-signed disclosures
+        try {
+            const decoded = JSON.parse(
+                new TextDecoder().decode(
+                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
+                )
+            ) as [string, string, unknown];
+            out[decoded[1]] = decoded[2];
+        } catch {
+            // malformed disclosure — skip (fail-closed)
+        }
+    }
+    return out;
+}
+
 // ─── SD-JWT VC Presentation (holder, no issuer key) ──────────────────────────
 
 /**
