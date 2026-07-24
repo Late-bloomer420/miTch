@@ -90,6 +90,21 @@ const DEMO_STEPS_CONFIG: Omit<DemoStep, 'onExecute'>[] = [
   },
 ];
 
+async function createDemoEphemeralRecipientKey(): Promise<CryptoKey> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'RSA-OAEP',
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: 'SHA-256',
+    },
+    true,
+    ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']
+  );
+
+  return keyPair.publicKey;
+}
+
 function WalletApp() {
   useEffect(() => {
     document.title = 'miTch Wallet';
@@ -213,6 +228,7 @@ function WalletApp() {
       requestedProvenClaims: ['age >= 18'],
       origin: CONFIG.VERIFIER_ENDPOINT.replace(/\/present$/, ''),
       serviceEndpoint: CONFIG.VERIFIER_ENDPOINT,
+      ephemeralResponseKey: await createDemoEphemeralRecipientKey(),
     };
     setCurrentRequest(request);
 
@@ -242,7 +258,7 @@ function WalletApp() {
       addLog(`✅ Policy ALLOWED. Auto-issuing...`, 'success');
       setFlashAllow(true);
       setTimeout(() => setFlashAllow(false), 900);
-      await proceedWithProof(result, undefined, request.serviceEndpoint);
+      await proceedWithProof(result, undefined, request.serviceEndpoint, { skipTransmit: true });
     } catch (e) {
       console.error(e);
       addLog(`❌ Evaluation Error: ${(e as Error).message}`, 'error');
@@ -253,7 +269,8 @@ function WalletApp() {
   const proceedWithProof = async (
     policyResult?: PolicyEvaluationResult,
     targetKey?: CryptoKey,
-    endpoint?: string
+    endpoint?: string,
+    options?: { skipTransmit?: boolean }
   ) => {
     const result = policyResult || evaluationResult;
 
@@ -281,6 +298,17 @@ function WalletApp() {
       );
 
       auditLog.forEach((l) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+
+      if (options?.skipTransmit) {
+        const snippet =
+          encryptedVp.length > 50 ? encryptedVp.substring(0, 50) + '...' : encryptedVp;
+        addLog('Standalone demo mode: encrypted VP generated locally; verifier POST skipped.', 'info');
+        addLog(`📦 Sent: ${snippet}`, 'success');
+
+        setLogs((prev) => [...prev, 'DONE|--- PROOF COMPLETE ---']);
+        setStatus('SHREDDED');
+        return;
+      }
 
       addLog(`🚀 Sending Encrypted VP to ${targetEndpoint}...`, 'info');
 

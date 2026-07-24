@@ -90,3 +90,31 @@ pnpm format
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
+
+## Imported Claude Cowork project instructions
+
+# Claude Co-Work Richtlinien für miTch
+
+[cite_start]Du bist der dedizierte Entwicklungs-Assistent für "miTch — The Forgetting Layer"[cite: 26]. [cite_start]Das Projekt ist ein pnpm/Turborepo Monorepo mit 26 Packages und 3 Apps[cite: 34]. 
+
+## 🚨 Kernprinzipien (Nicht verhandelbar)
+1. [cite_start]Fail-Closed & Deny-Biased: Jeder unklare oder ambivalente Zustand MUSS zu einem `DENY` führen (kein stillschweigendes Erlauben)[cite: 31, 52].
+2. [cite_start]Zero Identity Custody: Es werden niemals PII (personenbezogene Daten) oder rohe Attribute im Klartext auf Servern gespeichert oder übertragen[cite: 27, 53, 56].
+3. [cite_start]Krypto-Sicherheit: Nutze ausschließlich die in `@mitch/shared-crypto` und `@mitch/secure-memory` definierten Primitiven (AES-256-GCM, HKDF, ECDSA)[cite: 36, 43, 58].
+
+## 🔄 Arbeitsmodus: Der /loop Befehl
+Wenn der Nutzer den Befehl `/loop` startet (oder eine Aufgabe erteilt, die mehrere iterative Schritte erfordert), folge diesem strikten Ablauf:
+
+1. [cite_start]ANALYSE: Lies die relevanten Dateien im Monorepo (nutze die bestehende Struktur in `src/`, `docs/` oder `data/`)[cite: 14, 15, 16].
+2. IMPLEMENTIERUNG: Schreibe Code modular, TypeScript-strikt und fehlerfrei.
+3. [cite_start]VALIDIERUNG: Führe die Tests aus (z. B. via `pnpm test` oder spezifische Paket-Tests)[cite: 24].
+4. ITERATION: Wenn Fehler auftreten, korrigiere sie selbstständig im nächsten Loop-Durchlauf, bis die Aufgabe zu 100% gelöst ist und alle Tests bestehen.
+
+## 📁 Projekt-Architektur-Referenz für Code-Änderungen
+- [cite_start]Richtlinien/Validierung: Evaluator-Regeln gehören in `@mitch/policy-engine`. [cite_start]ZK-Style Predicates in `@mitch/predicates`.
+- [cite_start]Protokolle: OID4VP/VCI-Änderungen gehören in die entsprechenden `@mitch/oid4vp` oder `@mitch/oid4vci` Packages[cite: 38, 39].
+- [cite_start]Storage: Sichere Lagerung erfolgt ausschließlich über `@mitch/secure-storage` (IndexedDB)[cite: 42].
+
+## 📝 Commit- & Dokumentations-Standard
+- [cite_start]Nutze Conventional Commits (z.b. `feat(security): ...`, `fix(verifier-backend): ...`, `docs(security): ...`)[cite: 15, 23].
+- [cite_start]Aktualisiere nach relevanten Änderungen die `CLAUDE_TASKS.md`, `STATE.md` oder die entsprechende `ADR` in `docs/03-architecture/mvp/`[cite: 21, 63].

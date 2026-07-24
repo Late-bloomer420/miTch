@@ -21,6 +21,10 @@ export default defineConfig({
             '@mitch/layer-resolver': path.resolve(__dirname, '../../packages/layer-resolver/src'),
             '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
             '@mitch/data-flow': path.resolve(__dirname, '../../packages/data-flow/src'),
+            '@mitch/revocation-statuslist': path.resolve(
+                __dirname,
+                '../../packages/revocation-statuslist/src'
+            ),
         },
     },
 
@@ -36,6 +40,7 @@ export default defineConfig({
             '@mitch/layer-resolver',
             '@mitch/oid4vp',
             '@mitch/data-flow',
+            '@mitch/revocation-statuslist',
         ],
     },
 

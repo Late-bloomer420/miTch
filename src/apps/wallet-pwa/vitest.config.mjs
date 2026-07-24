@@ -18,6 +18,10 @@ export default defineConfig({
             '@mitch/oid4vp': path.resolve(__dirname, '../../packages/oid4vp/src'),
             '@mitch/mdoc': path.resolve(__dirname, '../../packages/mdoc/src'),
             '@mitch/data-flow': path.resolve(__dirname, '../../packages/data-flow/src'),
+            '@mitch/revocation-statuslist': path.resolve(
+                __dirname,
+                '../../packages/revocation-statuslist/src'
+            ),
         },
     },
     test: {
