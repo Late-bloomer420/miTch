@@ -132,18 +132,27 @@ export function poolStats(members: CredentialPoolMember[]): CredentialPoolStats 
 export function selectPoolMembersForPresentation<T extends StoredCredentialMetadata>(
   metas: T[]
 ): T[] {
-  const poolIds = new Set<string>();
+  const membersByPool = new Map<string, CredentialPoolMember[]>();
   for (const m of metas) {
-    if (m.poolId) poolIds.add(m.poolId);
+    if (!m.poolId) continue;
+
+    const member: CredentialPoolMember = {
+      id: m.id,
+      issuedAt: m.issuedAt,
+      usedAt: m.consumedAt ?? null,
+    };
+    const members = membersByPool.get(m.poolId);
+    if (members) {
+      members.push(member);
+    } else {
+      membersByPool.set(m.poolId, [member]);
+    }
   }
-  if (poolIds.size === 0) return metas.slice();
+  if (membersByPool.size === 0) return metas.slice();
 
   const survivingPooledIds = new Set<string>();
-  for (const poolId of poolIds) {
-    const asMembers: CredentialPoolMember[] = metas
-      .filter((m) => m.poolId === poolId)
-      .map((m) => ({ id: m.id, issuedAt: m.issuedAt, usedAt: m.consumedAt ?? null }));
-    const chosen = selectPoolMember(asMembers, 'single_use').member;
+  for (const members of membersByPool.values()) {
+    const chosen = selectPoolMember(members, 'single_use').member;
     if (chosen) survivingPooledIds.add(chosen.id);
   }
 
