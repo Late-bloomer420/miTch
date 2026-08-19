@@ -36,7 +36,9 @@ pnpm build
 
 Record:
 
-Validation run recorded on 2026-08-19 against code revision `f33a5e6`; the repository-ecosystem and checklist documents were added afterward without changing executable code.
+Full validation run recorded on 2026-08-19 against repository-resolvable revision
+`04dee0f99754a8686195709348ca5b02ccc415e2`. Later PR review fixes require their own
+focused validation record and do not retroactively inherit the full-run claim below.
 
 - Install: passed with `--frozen-lockfile`
 - Guards: rebrand and archived-import guards passed
@@ -45,6 +47,18 @@ Validation run recorded on 2026-08-19 against code revision `f33a5e6`; the repos
 - Lint: passed with 0 errors and 7 pre-existing `no-explicit-any` warnings
 - Build: 30/30 Turbo tasks passed
 - Residual runtime/test warnings: React `act(...)` warnings, missing PoC trust anchor warning in targeted verifier tests, and Node `url.parse()` deprecation warnings from dependencies
+
+Focused PR-review validation was recorded on 2026-08-19 against executable revision
+`818fc500524b5a48a1066caba47467bb9c5cd652`:
+
+- Verifier backend: 16/16 files and 116/116 tests passed
+- Verifier frontend: 1/1 file and 6/6 tests passed
+- Wallet PWA: 16/16 files and 196/196 tests passed
+- Production builds: verifier backend, verifier frontend, and wallet PWA passed
+- Lint/type checks: verifier frontend passed; wallet passed with 0 errors and the same 7 pre-existing warnings
+- Launchers: PowerShell syntax passed; Bash execution was unavailable because the validation host has no WSL distribution
+- Browser behavior: configured origins `http://localhost:5174` and `http://localhost:5175` accepted; unlisted origin rejected with HTTP 403
+- Session continuity: the same session ID was asserted across deep link, wallet requests, presentation, and status polling through `VERIFIED`
 
 ## Operational readiness still outside this RC
 
