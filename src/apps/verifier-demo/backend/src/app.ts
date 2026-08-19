@@ -96,10 +96,17 @@ const sessions = new Map<string, VerificationState>();
 const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 15 * 60 * 1000;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;
-const configuredMaxSessions = Number.parseInt(process.env.MAX_VERIFIER_SESSIONS || '10000', 10);
-const MAX_VERIFIER_SESSIONS = Number.isFinite(configuredMaxSessions)
-  ? Math.max(1, configuredMaxSessions)
-  : 10000;
+const DEFAULT_MAX_VERIFIER_SESSIONS = 10000;
+const ABSOLUTE_MAX_VERIFIER_SESSIONS = 100000;
+
+function parseMaxSessions(value: string | undefined): number {
+  if (!value || !/^\d+$/.test(value)) return DEFAULT_MAX_VERIFIER_SESSIONS;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return DEFAULT_MAX_VERIFIER_SESSIONS;
+  return Math.min(parsed, ABSOLUTE_MAX_VERIFIER_SESSIONS);
+}
+
+const MAX_VERIFIER_SESSIONS = parseMaxSessions(process.env.MAX_VERIFIER_SESSIONS);
 
 function pruneSessions(now: number): void {
   for (const [id, state] of sessions) {
@@ -114,14 +121,23 @@ function pruneSessions(now: number): void {
 }
 
 app.use((req, res, next) => {
-  const bodySessionId =
+  const headerSessionId = req.get('x-askmi-session-id') || '';
+  const queryValue = req.query['sessionId'];
+  const querySessionId = typeof queryValue === 'string' ? queryValue : '';
+  const bodyValue =
     req.body && typeof req.body === 'object' && 'sessionId' in req.body
-      ? String((req.body as { sessionId?: unknown }).sessionId ?? '')
-      : '';
-  const supplied =
-    req.get('x-askmi-session-id') || String(req.query['sessionId'] || '') || bodySessionId;
+      ? (req.body as { sessionId?: unknown }).sessionId
+      : undefined;
+  const bodySessionId = typeof bodyValue === 'string' ? bodyValue : '';
+  const suppliedIds = [headerSessionId, querySessionId, bodySessionId].filter(Boolean);
+  const supplied = suppliedIds[0] || '';
 
-  if (supplied && !SESSION_ID_PATTERN.test(supplied)) {
+  if (
+    (queryValue !== undefined && typeof queryValue !== 'string') ||
+    (bodyValue !== undefined && typeof bodyValue !== 'string') ||
+    suppliedIds.some((id) => id !== supplied) ||
+    (supplied && !SESSION_ID_PATTERN.test(supplied))
+  ) {
     return res.status(400).json({ ok: false, error: 'INVALID_SESSION_ID' });
   }
 
@@ -138,6 +154,10 @@ function sessionId(_req: express.Request, res: express.Response): string {
 function stateFor(id: string): VerificationState {
   const now = Date.now();
   let state = sessions.get(id);
+  if (state && now - state.lastAccessedAt > SESSION_TTL_MS) {
+    sessions.delete(id);
+    state = undefined;
+  }
   if (!state) {
     pruneSessions(now);
     state = {
@@ -593,8 +613,9 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
 app.post('/reset', (req, res) => {
   const id = sessionId(req, res);
   const now = Date.now();
-  sessions.set(id, {
-    status: 'WAITING',
+  const state = stateFor(id);
+  Object.assign(state, {
+    status: 'WAITING' as const,
     timestamp: now,
     lastAccessedAt: now,
     issuer: null,

@@ -818,15 +818,17 @@ export class WalletService {
     }
 
     const recoveryKey = await this.recoveryKeyProvider();
-    if (!recoveryKey) {
+    if (typeof recoveryKey !== 'string' || recoveryKey.length === 0) {
       throw new Error('Recovery setup unavailable: recovery key provider returned no key');
+    }
+    if (recoveryKey.length > 4096) {
+      throw new Error('Recovery setup unavailable: recovery key exceeds safe size limit');
     }
     return RecoveryService.splitMasterKey(recoveryKey);
   }
 
   async recoverFromFragments(fragments: string[]): Promise<void> {
-    const key = await RecoveryService.recover(fragments);
-    console.log(`✅ Wallet Recovered! Key: ${key.substring(0, 5)}...`);
+    await RecoveryService.recover(fragments);
     // In prod, this would re-initialize SecureStorage
   }
 
