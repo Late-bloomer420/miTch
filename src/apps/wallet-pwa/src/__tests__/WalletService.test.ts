@@ -555,23 +555,21 @@ describe('WalletService — Audit Chain', () => {
   });
 });
 
-describe('WalletService — Key Splitting & Recovery', () => {
-  it('splitMasterKey returns 3 shares', async () => {
+describe('WalletService - Key Splitting & Recovery', () => {
+  it('fails closed when no recovery key provider is configured', async () => {
     const wallet = makeWallet();
     await wallet.initialize(PIN, SALT);
-
-    const shares = await wallet.splitMasterKey();
-    expect(Array.isArray(shares)).toBe(true);
-    expect(shares.length).toBe(3);
-    shares.forEach((s) => expect(typeof s).toBe('string'));
+    await expect(wallet.splitMasterKey()).rejects.toThrow(
+      'Recovery setup unavailable: no recovery key provider configured'
+    );
   });
 
-  it('recoverFromFragments with all 3 shares succeeds (PoC is 3-of-3)', async () => {
-    const wallet = makeWallet();
+  it('supports explicitly injected recovery key providers for tests', async () => {
+    const wallet = new WalletService({ recoveryKeyProvider: () => 'unit-test-recovery-key' });
     await wallet.initialize(PIN, SALT);
-
     const shares = await wallet.splitMasterKey();
-    // PoC RecoveryService requires all 3 fragments
+    expect(shares).toHaveLength(3);
+    shares.forEach((share) => expect(typeof share).toBe('string'));
     await expect(wallet.recoverFromFragments(shares)).resolves.not.toThrow();
   });
 });
