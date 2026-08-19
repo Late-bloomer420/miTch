@@ -1,4 +1,6 @@
-# STATE.md — Current Operating State
+# STATE
+
+> **Current readiness note (2026-08):** AskMI is development/evaluation software. Entries below are dated internal engineering records, not certification, production-readiness, or external validation. Historical compliance percentages are internal requirement-mapping snapshots only. For the current product boundary and limitations, see [`docs/MATURITY_AND_LIMITATIONS.md`](docs/MATURITY_AND_LIMITATIONS.md). AskMI is the product name; `miTch` remains the repository name..md — Current Operating State
 
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
