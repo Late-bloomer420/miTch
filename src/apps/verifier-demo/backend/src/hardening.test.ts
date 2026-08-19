@@ -9,6 +9,7 @@ beforeEach(() => {
   process.env.ASKMI_TEST_MODE = '1';
   delete process.env.CORS_ALLOWED_ORIGINS;
   delete process.env.VERIFIER_KEY_PERSISTENCE;
+  delete process.env.MAX_VERIFIER_SESSIONS;
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -40,6 +41,28 @@ describe('verifier backend hardening', () => {
       .get('/status')
       .set('X-AskMI-Session-Id', 'a'.repeat(129))
       .expect(400);
+  });
+
+  it('rejects conflicting session identifiers instead of guessing which one to trust', async () => {
+    const { app } = await import('./app');
+    const response = await request(app)
+      .post('/notify-scan?sessionId=query-session')
+      .set('X-AskMI-Session-Id', 'header-session')
+      .send({ sessionId: 'body-session' })
+      .expect(400);
+    expect(response.body.error).toBe('INVALID_SESSION_ID');
+  });
+
+  it('enforces the session cap on reset requests', async () => {
+    process.env.MAX_VERIFIER_SESSIONS = '2';
+    const { app } = await import('./app');
+
+    await request(app).post('/notify-scan').set('X-AskMI-Session-Id', 'first').expect(200);
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'second').expect(200);
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'third').expect(200);
+
+    const evicted = await request(app).get('/status').set('X-AskMI-Session-Id', 'first').expect(200);
+    expect(evicted.body.status).toBe('WAITING');
   });
 
   it('keeps generated verifier private keys ephemeral by default', async () => {

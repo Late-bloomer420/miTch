@@ -572,6 +572,25 @@ describe('WalletService - Key Splitting & Recovery', () => {
     shares.forEach((share) => expect(typeof share).toBe('string'));
     await expect(wallet.recoverFromFragments(shares)).resolves.not.toThrow();
   });
+
+  it('does not write recovered key material to the console', async () => {
+    const wallet = new WalletService({ recoveryKeyProvider: () => 'unit-test-recovery-key' });
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    await wallet.initialize(PIN, SALT);
+    const shares = await wallet.splitMasterKey();
+    consoleSpy.mockClear();
+
+    await wallet.recoverFromFragments(shares);
+
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('rejects unreasonably large recovery keys before splitting them', async () => {
+    const wallet = new WalletService({ recoveryKeyProvider: () => 'a'.repeat(4097) });
+    await wallet.initialize(PIN, SALT);
+    await expect(wallet.splitMasterKey()).rejects.toThrow('recovery key exceeds safe size limit');
+  });
 });
 
 describe('WalletService — mdoc Integration (ISO 18013-5)', () => {
