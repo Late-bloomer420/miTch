@@ -96,6 +96,22 @@ const sessions = new Map<string, VerificationState>();
 const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 15 * 60 * 1000;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;
+const SESSION_PATHS = new Set([
+  '/status',
+  '/notify-scan',
+  '/authorize',
+  '/wallet-present',
+  '/oid4vp-present',
+  '/present',
+  '/reset',
+]);
+const SESSION_ID_REQUIRED_PATHS = new Set([
+  '/status',
+  '/notify-scan',
+  '/wallet-present',
+  '/oid4vp-present',
+  '/reset',
+]);
 const DEFAULT_MAX_VERIFIER_SESSIONS = 10000;
 const ABSOLUTE_MAX_VERIFIER_SESSIONS = 100000;
 
@@ -121,6 +137,8 @@ function pruneSessions(now: number): void {
 }
 
 app.use((req, res, next) => {
+  if (!SESSION_PATHS.has(req.path)) return next();
+
   const headerSessionId = req.get('x-askmi-session-id') || '';
   const queryValue = req.query['sessionId'];
   const querySessionId = typeof queryValue === 'string' ? queryValue : '';
@@ -139,6 +157,10 @@ app.use((req, res, next) => {
     (supplied && !SESSION_ID_PATTERN.test(supplied))
   ) {
     return res.status(400).json({ ok: false, error: 'INVALID_SESSION_ID' });
+  }
+
+  if (!supplied && SESSION_ID_REQUIRED_PATHS.has(req.path)) {
+    return res.status(400).json({ ok: false, error: 'MISSING_SESSION_ID' });
   }
 
   const id = supplied || randomUUID();

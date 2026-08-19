@@ -59,7 +59,7 @@ describe('/oid4vp-present endpoint', () => {
 
   beforeEach(async () => {
     // Reset verifier state
-    await request(app).post('/reset');
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'oid4vp-test');
     // ADOPT-0b: the verifier resolves the issuer key itself (trust list / JWKS),
     // NOT from the wallet. Inject the test issuer key as the "resolved" key.
     setIssuerKeyResolver(async () => issuerKeys.publicKey);
@@ -328,7 +328,6 @@ describe('/oid4vp-present endpoint', () => {
     expect(updatedStatus.body.consentReceipt).toBeDefined();
   });
 });
-
 
 
 

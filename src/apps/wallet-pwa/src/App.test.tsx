@@ -473,7 +473,7 @@ describe('G-03 — Wallet App', () => {
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store&sessionId=flow-session-123'
     );
 
     render(<App />);
@@ -485,6 +485,14 @@ describe('G-03 — Wallet App', () => {
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
+
+    const flowCalls = vi.mocked(fetch).mock.calls.filter(([input]) =>
+      /notify-scan|authorize|direct_post/.test(String(input))
+    );
+    expect(flowCalls).toHaveLength(3);
+    for (const [, init] of flowCalls) {
+      expect(new Headers(init?.headers).get('X-AskMI-Session-Id')).toBe('flow-session-123');
+    }
   });
 
   it('persists a DENIED receipt when the verifier rejects the presentation', async () => {
@@ -492,7 +500,7 @@ describe('G-03 — Wallet App', () => {
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store&sessionId=flow-session-123'
     );
     // ADOPT-0b: real credential path — wallet mock provides presentStoredSdJwtVc
     vi.stubGlobal(

@@ -43,6 +43,12 @@ describe('verifier backend hardening', () => {
       .expect(400);
   });
 
+  it('rejects missing session identifiers on stateful browser-flow endpoints', async () => {
+    const { app } = await import('./app');
+    const response = await request(app).get('/status').expect(400);
+    expect(response.body.error).toBe('MISSING_SESSION_ID');
+  });
+
   it('rejects conflicting session identifiers instead of guessing which one to trust', async () => {
     const { app } = await import('./app');
     const response = await request(app)
@@ -52,6 +58,16 @@ describe('verifier backend hardening', () => {
       .expect(400);
     expect(response.body.error).toBe('INVALID_SESSION_ID');
   });
+
+  it.each(['http://localhost:5174', 'http://localhost:5175'])(
+    'allows the configured demo browser origin %s',
+    async (origin) => {
+      process.env.CORS_ALLOWED_ORIGINS = 'http://localhost:5174,http://localhost:5175';
+      const { app } = await import('./app');
+      const response = await request(app).get('/health').set('Origin', origin).expect(200);
+      expect(response.headers['access-control-allow-origin']).toBe(origin);
+    }
+  );
 
   it('enforces the session cap on reset requests', async () => {
     process.env.MAX_VERIFIER_SESSIONS = '2';
