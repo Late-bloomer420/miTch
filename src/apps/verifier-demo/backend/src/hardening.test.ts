@@ -1,0 +1,60 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import request from 'supertest';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
+beforeEach(() => {
+  vi.resetModules();
+  process.env.ASKMI_TEST_MODE = '1';
+  delete process.env.CORS_ALLOWED_ORIGINS;
+  delete process.env.VERIFIER_KEY_PERSISTENCE;
+});
+afterEach(() => vi.restoreAllMocks());
+
+describe('verifier backend hardening', () => {
+  it('denies browser origins unless explicitly allowlisted', async () => {
+    const { app } = await import('./app');
+    const denied = await request(app).get('/health').set('Origin', 'https://evil.example').expect(403);
+    expect(denied.body.error).toBe('CORS_ORIGIN_DENIED');
+  });
+
+  it('isolates verification state between concurrent sessions', async () => {
+    const { app } = await import('./app');
+    await request(app).post('/notify-scan').set('X-AskMI-Session-Id', 'alice').expect(200);
+    expect((await request(app).get('/status').set('X-AskMI-Session-Id', 'alice')).body.status).toBe('SCANNED');
+    expect((await request(app).get('/status').set('X-AskMI-Session-Id', 'bob')).body.status).toBe('WAITING');
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'alice').expect(200);
+    expect((await request(app).get('/status').set('X-AskMI-Session-Id', 'bob')).body.status).toBe('WAITING');
+  });
+
+  it('rejects malformed or oversized session identifiers', async () => {
+    const { app } = await import('./app');
+    const malformed = await request(app)
+      .get('/status')
+      .set('X-AskMI-Session-Id', '../shared-state')
+      .expect(400);
+    expect(malformed.body.error).toBe('INVALID_SESSION_ID');
+
+    await request(app)
+      .get('/status')
+      .set('X-AskMI-Session-Id', 'a'.repeat(129))
+      .expect(400);
+  });
+
+  it('keeps generated verifier private keys ephemeral by default', async () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'askmi-verifier-'));
+    const previous = process.cwd();
+    try {
+      process.chdir(temp);
+      delete process.env.ASKMI_TEST_MODE;
+      vi.resetModules();
+      const { getVerifierKeys } = await import('./app');
+      await getVerifierKeys();
+      expect(fs.existsSync(path.join(temp, 'verifier-key.json'))).toBe(false);
+    } finally {
+      process.chdir(previous);
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
