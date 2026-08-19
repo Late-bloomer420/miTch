@@ -179,9 +179,9 @@ function WalletApp() {
         addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
         // Trigger handleIncomingOID4VP with provided data
         // For simplicity, we just reload or use the data directly
-        const { scenario, endpoint, verifier } = event.data;
+        const { scenario, endpoint, verifier, sessionId } = event.data;
         // This is a specialized path for popups
-        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier);
+        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier, sessionId);
       }
     };
 
@@ -199,24 +199,28 @@ function WalletApp() {
   const handleIncomingOID4VPFromOpener = async (
     scenario: string,
     endpoint: string,
-    verifier: string
+    verifier: string,
+    sessionId: string
   ) => {
-    await handleIncomingOID4VP({ scenario, endpoint, verifier });
+    await handleIncomingOID4VP({ scenario, endpoint, verifier, sessionId });
   };
   const [incomingOID4VP] = useState<{
     scenario: string;
     endpoint: string;
     verifier: string;
+    sessionId: string;
   } | null>(() => {
     try {
       const p = new URLSearchParams(window.location.search);
       const endpoint = p.get('endpoint');
       const scenario = p.get('scenario');
-      if (!endpoint || !scenario) return null;
+      const sessionId = p.get('sessionId');
+      if (!endpoint || !scenario || !sessionId) return null;
       return {
         scenario,
         endpoint,
         verifier: p.get('verifier') ?? ASKMI_DEMO.verifierDid,
+        sessionId,
       };
     } catch {
       return null;
@@ -817,7 +821,8 @@ function WalletApp() {
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
     _scenarioId: string,
-    decisionId: string | null = null
+    decisionId: string | null = null,
+    sessionId?: string
   ) => {
     try {
       setStatus('PROVING');
@@ -872,7 +877,10 @@ function WalletApp() {
 
       const response = await fetch(redirectUri, {
         method: 'POST',
-        headers: UNIFORM_HEADERS,
+        headers: {
+          ...UNIFORM_HEADERS,
+          ...(sessionId ? { 'X-AskMI-Session-Id': sessionId } : {}),
+        },
         body: paddedPayload,
       });
 
@@ -933,13 +941,15 @@ function WalletApp() {
     scenario: string;
     endpoint: string;
     verifier: string;
+    sessionId: string;
   }) => {
     const data = params || incomingOID4VP;
     if (!data) return;
-    const { scenario, endpoint, verifier } = data;
+    const { scenario, endpoint, verifier, sessionId } = data;
+    const sessionHeaders = { 'X-AskMI-Session-Id': sessionId };
 
     // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
-    fetch(`${endpoint}/notify-scan`, { method: 'POST' }).catch(() => {});
+    fetch(`${endpoint}/notify-scan`, { method: 'POST', headers: sessionHeaders }).catch(() => {});
 
     setStatus('EVALUATING');
     setLogs([]);
@@ -951,7 +961,9 @@ function WalletApp() {
     try {
       // Step 1: Fetch OID4VP Authorization Request from verifier
       addLog(`🔄 Fetching auth request from ${endpoint}/authorize...`, 'info');
-      const authRes = await fetch(`${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`);
+      const authRes = await fetch(`${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`, {
+        headers: sessionHeaders,
+      });
       if (!authRes.ok) throw new Error(`Verifier /authorize returned ${authRes.status}`);
       const { authRequest } = (await authRes.json()) as { authRequest: AuthorizationRequest };
 
@@ -991,12 +1003,13 @@ function WalletApp() {
         // Store auth request for use after consent
         (window as unknown as Record<string, unknown>)._pendingAuthRequest = authRequest;
         (window as unknown as Record<string, unknown>)._pendingScenario = scenario;
+        (window as unknown as Record<string, unknown>)._pendingSessionId = sessionId;
         setShowConsent(true);
       } else {
         addLog(`✅ Policy ALLOWED. Building SD-JWT VP...`, 'success');
         setFlashAllow(true);
         setTimeout(() => setFlashAllow(false), 900);
-        await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null);
+        await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null, sessionId);
       }
     } catch (e) {
       addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -1517,13 +1530,17 @@ function WalletApp() {
               ._pendingAuthRequest as AuthorizationRequest | undefined;
             const pendingScenario = (window as unknown as Record<string, unknown>)
               ._pendingScenario as string | undefined;
+            const pendingSessionId = (window as unknown as Record<string, unknown>)
+              ._pendingSessionId as string | undefined;
             if (pendingAuth && pendingScenario) {
               delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
               delete (window as unknown as Record<string, unknown>)._pendingScenario;
+              delete (window as unknown as Record<string, unknown>)._pendingSessionId;
               presentOID4VP(
                 pendingAuth,
                 pendingScenario,
-                evaluationResult?.decisionCapsule?.decision_id ?? null
+                evaluationResult?.decisionCapsule?.decision_id ?? null,
+                pendingSessionId
               );
             } else {
               proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);
@@ -1537,6 +1554,7 @@ function WalletApp() {
             if (pendingAuth) {
               delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
               delete (window as unknown as Record<string, unknown>)._pendingScenario;
+              delete (window as unknown as Record<string, unknown>)._pendingSessionId;
               const { consentReceipt } = buildSessionCleanup({
                 request: pendingAuth,
                 disclosedClaims: {},

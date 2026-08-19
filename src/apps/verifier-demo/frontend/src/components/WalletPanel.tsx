@@ -4,12 +4,13 @@ import type { ScenarioDefinition } from '../data/scenarios';
 interface WalletPanelProps {
     scenario: ScenarioDefinition;
     backendUrl: string;
+    sessionId: string;
     onPresented: () => void;
 }
 
 type FlowState = 'idle' | 'consent' | 'presenting' | 'done' | 'denied' | 'error';
 
-export function WalletPanel({ scenario, backendUrl, onPresented }: WalletPanelProps) {
+export function WalletPanel({ scenario, backendUrl, sessionId, onPresented }: WalletPanelProps) {
     const [flowState, setFlowState] = useState<FlowState>('idle');
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -23,7 +24,7 @@ export function WalletPanel({ scenario, backendUrl, onPresented }: WalletPanelPr
         try {
             const res = await fetch(`${backendUrl}/wallet-present`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-AskMI-Session-Id': sessionId },
                 body: JSON.stringify({ scenarioId: scenario.id }),
             });
             const data = await res.json() as { ok: boolean; errors?: string[]; error?: string };
