@@ -1,9 +1,15 @@
-# miTch Documentation Structure
+# AskMI Documentation Structure
+
+> **Product:** AskMI. **Repository:** `miTch` (historical repo/directory name).
+> Start with [`MATURITY_AND_LIMITATIONS.md`](MATURITY_AND_LIMITATIONS.md): this is development/evaluation software, not certified or production-ready. Dated evidence and compliance mappings are internally produced unless they explicitly identify external validation.
 
 ## Einstiegspunkte
 
 | Dokument | Zweck |
 |----------|-------|
+| [`MATURITY_AND_LIMITATIONS.md`](MATURITY_AND_LIMITATIONS.md) | Product boundary, maturity labels, known limitations, evidence rules |
+| [`RELEASE_CANDIDATE_CHECKLIST.md`](RELEASE_CANDIDATE_CHECKLIST.md) | Reproducible RC gates and explicitly unmet external-assurance requirements |
+| [`REPOSITORY_ECOSYSTEM.md`](REPOSITORY_ECOSYSTEM.md) | Canonical repository rule, related repositories, and open-PR disposition |
 | [`DOCS_CANON.md`](DOCS_CANON.md) | Dokumenten-Autorität, Navigation, Conflict Resolution |
 | [`BACKLOG.md`](BACKLOG.md) | Offene Arbeit, erledigte Meilensteine, ADR-Übersicht |
 | [`specs/SPECS_STATUS_INDEX.md`](specs/SPECS_STATUS_INDEX.md) | Statusübersicht aller 112 Specs |
