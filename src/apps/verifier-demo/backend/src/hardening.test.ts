@@ -43,10 +43,33 @@ describe('verifier backend hardening', () => {
       .expect(400);
   });
 
-  it('rejects missing session identifiers on stateful browser-flow endpoints', async () => {
+  it('rejects missing session identifiers on every stateful verification endpoint', async () => {
     const { app } = await import('./app');
-    const response = await request(app).get('/status').expect(400);
-    expect(response.body.error).toBe('MISSING_SESSION_ID');
+    const statefulRequests = [
+      () => request(app).get('/status'),
+      () => request(app).post('/notify-scan'),
+      () => request(app).get('/authorize'),
+      () => request(app).post('/wallet-present'),
+      () => request(app).post('/oid4vp-present'),
+      () => request(app).post('/present'),
+      () => request(app).post('/reset'),
+    ];
+
+    for (const makeRequest of statefulRequests) {
+      const response = await makeRequest().expect(400);
+      expect(response.body.error).toBe('MISSING_SESSION_ID');
+    }
+  });
+
+  it('echoes the caller-created session through authorization', async () => {
+    const { app } = await import('./app');
+    const response = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'full-flow-session')
+      .expect(200);
+
+    expect(response.headers['x-askmi-session-id']).toBe('full-flow-session');
+    expect(response.body.sessionId).toBe('full-flow-session');
   });
 
   it('rejects conflicting session identifiers instead of guessing which one to trust', async () => {

@@ -468,6 +468,28 @@ describe('G-03 — Wallet App', () => {
     expect(trace).toContainElement(document.getElementById('dataflow-section'));
   });
 
+  it('adds one app-scoped session ID to the standalone verifier presentation', async () => {
+    await bootstrapFetchMocks('ALLOW');
+    walletServiceMockState.generatePresentation.mockResolvedValue({
+      encryptedVp: 'encrypted-presentation',
+      auditLog: [],
+    });
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    fireEvent.click(document.getElementById('btn-liquor-store')!);
+
+    await waitFor(() => {
+      const presentationCall = vi
+        .mocked(fetch)
+        .mock.calls.find(([input]) => String(input).endsWith('/present'));
+      expect(presentationCall).toBeDefined();
+      expect(new Headers(presentationCall?.[1]?.headers).get('X-AskMI-Session-Id')).toMatch(
+        /^[0-9a-f-]{36}$/
+      );
+    });
+  });
+
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
     await bootstrapFetchMocks('ALLOW');
     window.history.replaceState(

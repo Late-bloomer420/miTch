@@ -86,7 +86,9 @@ describe('/oid4vp-present endpoint', () => {
   });
 
   it('rejects (403) when the issuer key cannot be resolved / issuer is untrusted', async () => {
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     const { authRequest } = authRes.body;
     const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
       request: authRequest,
@@ -109,7 +111,9 @@ describe('/oid4vp-present endpoint', () => {
   });
 
   it('ignores a wallet-supplied issuer_jwk and verifies against the resolved key (closes circular-verification)', async () => {
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     const { authRequest } = authRes.body;
     const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
       request: authRequest,
@@ -139,7 +143,9 @@ describe('/oid4vp-present endpoint', () => {
 
   it('should verify a valid SD-JWT VP (happy path)', async () => {
     // Step 1: Get an auth request with a valid nonce
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -203,7 +209,9 @@ describe('/oid4vp-present endpoint', () => {
     vi.stubGlobal('fetch', fetchFn);
     statusResolver.setFetch(fetchFn as any);
 
-    const authRes = await request(app).get('/authorize?scenario=revoked');
+    const authRes = await request(app)
+      .get('/authorize?scenario=revoked')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -235,7 +243,9 @@ describe('/oid4vp-present endpoint', () => {
   });
 
   it('should verify doctor-login scenario with selective disclosure', async () => {
-    const authRes = await request(app).get('/authorize?scenario=doctor-login');
+    const authRes = await request(app)
+      .get('/authorize?scenario=doctor-login')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -300,7 +310,9 @@ describe('/oid4vp-present endpoint', () => {
     expect(initialStatus.body.status).toBe('WAITING');
 
     // Run a successful verification
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     const { authRequest } = authRes.body;
 
     const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
@@ -328,6 +340,4 @@ describe('/oid4vp-present endpoint', () => {
     expect(updatedStatus.body.consentReceipt).toBeDefined();
   });
 });
-
-
 
