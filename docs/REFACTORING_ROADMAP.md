@@ -3,8 +3,8 @@
 > **Role:** Deferred architecture work from PoC to production hardening.
 > This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 
-**Status:** Reference closeout for F-16/F-18
-**Last updated:** 2026-06-25
+**Status:** Active Phase 6 architecture migration authority
+**Last updated:** 2026-08-20
 
 This file tracks larger architecture work that should not be mixed into small
 security, UX, or pilot-readiness fixes. Items here are planned or partially
@@ -16,19 +16,33 @@ active sprint.
 - Operational state: [`../STATE.md`](../STATE.md)
 - Task tracking: [`BACKLOG.md`](BACKLOG.md)
 - Architecture authority map: [`DOCS_CANON.md`](DOCS_CANON.md)
+- Canonical boundary model and findings: [`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md)
 - WalletService decomposition ADR: [`03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md`](03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md)
 - Original audit finding source: [`AUDIT_2026_03.md`](AUDIT_2026_03.md)
 
-## Closed Reference Gap
+## Finding Status
 
 | Finding | Status | Roadmap placement |
 |---|---|---|
-| F-16 WalletService god object | Documented | Phase 6 wallet facade and service extraction |
+| F-16 WalletService god object | Open; documented | Phase 6 wallet facade and service extraction; ARCH-01/ARCH-09 |
 | F-18 missing refactoring roadmap | Closed | This canonical file, plus root compatibility pointer |
 
 F-16 is not a one-line fix. Treat it as an architecture extraction sequence with
 API stability gates. Do not refactor `WalletService` opportunistically while
 working on unrelated policy, UX, or demo-flow tasks.
+
+### Runtime Truth Correction — 2026-08-20
+
+The earlier backlog entry `R-02 WalletService Decomposition — ✅` described the
+presence of repository/evaluator/presentation interfaces in `wallet-core`, not
+a completed runtime cutover. At the verified `master` baseline, `App.tsx` still
+constructs the 2,317-line PWA-local `WalletService`; the modular facade is not
+the runtime authority. R-02 is therefore **partial**, and completion is governed
+by ARCH-01 and ARCH-09 in the canonical decoupling audit.
+
+Before service extraction, the security-sensitive preconditions ARCH-02 through
+ARCH-05 must be characterized with tests so moving code cannot preserve or hide
+an unsafe boundary.
 
 ## Phase 6 Gate: WalletService Decomposition
 
@@ -68,6 +82,26 @@ services while preserving the public wallet API.
 | Behavior stability | Scenario disclosure outputs and audit event sequences unchanged |
 | Extraction proof | Each extracted service has focused tests |
 | Facade reduction | `WalletService` becomes mostly orchestration, not domain logic |
+| Runtime authority | `App.tsx` constructs the modular facade from one PWA composition root |
+| Authorization binding | Presentation builders accept only a policy-bound `AuthorizedPresentationPlan` |
+| Metadata-first isolation | Raw credentials are loaded only after an ALLOW decision |
+| Boundary enforcement | CI rejects forbidden imports, cycles, deep imports, and cross-package private-state casts |
+
+### Phase 6 Migration Sequence
+
+1. Add characterization tests for presentation binding, pairwise-DID failure,
+   lifecycle eligibility, audit sequencing, and key separation.
+2. Introduce a single `AuthorizePresentation` use case for online and proximity
+   flows.
+3. Centralize credential status, expiration, consumption, and pool rotation in
+   one lifecycle authority.
+4. Extract a side-effect-free presentation builder.
+5. Separate pure policy decisions from rate limiting, clocks/IDs, capsule
+   construction, pairwise identity, and signing.
+6. Move browser factories and concrete adapters into the PWA composition root.
+7. Converge DecisionCapsule and policy contracts behind compatibility adapters.
+8. Cut the PWA over to the modular facade, remove the duplicate service, and
+   activate mechanical boundary checks.
 
 ## SecureStorage Boundary
 
@@ -95,7 +129,9 @@ Related deferred findings:
 ## PolicyEngine Extension Point
 
 **Current concern:** credential selection and verifier matching should stay
-simple until a product requirement forces a strategy boundary.
+simple, but privacy rotation is now an explicit product requirement through the
+credential-pool work in PR #130. The strategy boundary trigger has therefore
+been met.
 
 Candidate future seam:
 
@@ -111,9 +147,11 @@ interface ICredentialSelectionStrategy {
 
 Rules:
 
-- Current first-compatible credential behavior is acceptable for the pilot.
-- Add a strategy only when multi-issuer or privacy-rotation requirements are
-  explicit.
+- Keep first-compatible behavior only for credentials outside a rotation pool.
+- Implement privacy rotation in the wallet lifecycle/application layer, not as
+  additional stateful behavior inside the policy engine.
+- One eligibility authority must combine lifecycle status, expiration,
+  consumption, and pool exhaustion before policy sees candidates.
 - Do not introduce reputation scoring into verifier-facing enforcement without a
   separate design decision; AskMI remains deny-biased and scope-bound.
 

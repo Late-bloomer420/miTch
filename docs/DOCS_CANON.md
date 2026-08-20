@@ -12,6 +12,7 @@ This file defines the authoritative document per topic area and serves as naviga
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
+| `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` | Kanonische Layer-Grenzen, Coupling-Findings und Akzeptanz-Gates | Wie muss Code abhängen, was ist offen? |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
 | `docs/qa/` | Datierte QA-/Evidence-Artefakte | Was wurde konkret geprüft? |
 
@@ -26,12 +27,14 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 - **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
 - **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
+- **Architecture layering, coupling findings, and migration gates:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **QA evidence archive:** `docs/qa/`
 
 ## Navigation
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
+- **Canonical architecture decoupling model:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -60,7 +63,7 @@ neuer Auftrag behandelt werden.
 | Ort | Scope | Index |
 |-----|-------|-------|
 | `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007) | [README](03-architecture/decisions/README.md) |
-| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–012) | [README](03-architecture/mvp/README.md) |
+| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–013) | [README](03-architecture/mvp/README.md) |
 | `docs/compliance/ADR/` | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md) |
 
 **Hinweis:** ADR-001–009 existieren in `mvp/` und `compliance/ADR/` mit unterschiedlichen Themen. Die READMEs in den jeweiligen Ordnern erklären die Abgrenzung. Konkretes Beispiel ADR-009: `mvp/ADR-009_Threat_Model.md` ist das STRIDE Threat Model (Sprint 4: Accepted — pending external review); `compliance/ADR/ADR-009.md` ist die WebAuthn-Native-vs-HMAC-Proxy-Entscheidung. Beide Dateien tragen oben einen wechselseitigen "siehe auch"-Hinweis.
@@ -70,6 +73,10 @@ neuer Auftrag behandelt werden.
 - If README conflicts with the Evidence Pack, the Evidence Pack is authoritative.
 - If STATE.md conflicts with a protocol spec, the spec is authoritative.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
+- If an older architecture diagram, milestone rollup, or audit conflicts with
+  `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` on dependency direction or
+  current coupling findings, the canonical decoupling document wins. Backlog
+  status remains authoritative in `docs/BACKLOG.md`.
 - If QA evidence conflicts with STATE.md, prefer the newer dated evidence for
   the specific validation it records, then update STATE.md in the next docs
   alignment pass.

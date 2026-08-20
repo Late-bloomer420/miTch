@@ -196,13 +196,30 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 ---
 
-## Phase 2 — Architecture & Modularity ✅
+## Phase 2 — Architecture & Modularity 🟡
 
 ### 2.1 Decoupling (Refactoring Phase 6)
 | ID | Status | Beschreibung |
 |---|---|---|
 | R-01 | ✅ | `IStorageAdapter` — Entkopplung von SecureStorage und IndexedDB |
-| R-02 | ✅ | `WalletService` Decomposition — Zerlegung in Repositories (Credential, Policy, Presentation) |
+| R-02 | ⚠️ teilweise | `wallet-core` enthält Repository-/Evaluator-/Presentation-Ports und einen kleinen Facade-Entwurf; `App.tsx` konstruiert aber weiterhin den 2.317-Zeilen-PWA-lokalen `WalletService`. Runtime-Cutover und Entfernung der Doppel-Autorität sind offen (ARCH-01/ARCH-09). |
+
+### 2.2 Canonical Architecture Decoupling Audit (2026-08-20)
+
+Quelle und vollständige Akzeptanz-Gates:
+[`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md).
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| ARCH-01 | 🟡 P1 | ⬜ offen | Zwei Wallet-Orchestrierungs-Autoritäten: PWA-lokaler Monolith vs. unverdrahteter `wallet-core`-Facade | PWA nutzt genau einen injizierten `wallet-core`-Facade; lokaler Doppel-Service entfernt |
+| ARCH-02 | 🔴 P0 | ⬜ offen | Proximity-Flow lädt caller-gewähltes Raw-Credential vor Policy und bindet Builder nicht strukturell an die policy-selektierte Credential-ID / ein explizites ALLOW | Ein `AuthorizedPresentationPlan` ist einzige Builder-Eingabe; DENY/PROMPT und ID-Mismatch erreichen keinen Builder |
+| ARCH-03 | 🔴 P0 | ⬜ offen | `PolicyEngine` mischt Entscheidung, Rate-State, Clock/UUID, WebCrypto, Capsule, Pairwise-DID und Signing; Pairwise-Fehler läuft aktuell ohne DID weiter | Pure deterministische Policy; erforderliche Crypto-/Binding-Fehler resultieren fail-closed in DENY |
+| ARCH-04 | 🟡 P1 | ⬜ offen / PR #130 | Presentability wird getrennt über `consumedAt`, Pool-`usedAt`, Lifecycle-`status` und Presentation-Consumption bestimmt; PR #130 behebt O(n²), aber nicht die geteilte Status-Autorität | Ein zentraler Eligibility-/Lifecycle-Service; nullifiziertes ältestes Pool-Member verdeckt kein aktives Geschwister |
+| ARCH-05 | 🟡 P1 | ⬜ offen | Key-Name-Bug ist behoben, aber `WalletService` liest weiter private Audit-Keys per Cast und nutzt sie für Identity-/Dokument-Signing | Getrennte `IdentitySigner`-/Audit-Key-Capabilities; keine Private-State-Casts über Paketgrenzen |
+| ARCH-06 | 🟢 P2 | ⬜ offen | `shared-crypto` exportiert Status-/Trust-Resolver und hängt von `revocation-statuslist` ab | Crypto-Primitives ohne Status-/Netzwerk-Infrastruktur; Resolver hinter eigenen Ports |
+| ARCH-07 | 🟡 P1 | ⬜ offen | Mehrere inkompatible `DecisionCapsule`-/Policy-Contracts und breites `shared-types` mit 21 direkten Produktions-Consumern | Ein versionierter Capsule-/Policy-Contract; Storage-Metadata von Policy-View getrennt |
+| ARCH-08 | 🟡 P1 | ⬜ offen | Architekturgrenzen sind dokumentiert, aber ESLint/CI prüfen keine erlaubte Import-Richtung oder Zyklen | Statische Import-, Deep-Import-, Cycle- und Boundary-Cast-Checks in CI |
+| ARCH-09 | 🟡 P1 | ⬜ offen | Dependency-Inversion in `wallet-core` unvollständig: konkrete Browser-/Storage-/Audit-/Policy-Abhängigkeiten; `IPresentationManager` nicht verdrahtet | `wallet-core` hängt nur von Domain + Ports ab; konkrete Adapter im PWA-Composition-Root |
 
 ---
 
@@ -348,7 +365,7 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 
 ---
 
-## Architecture Decision Records (ADR-001–012)
+## Architecture Decision Records (ADR-001–013)
 
 Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance/ADR/`: `ADR-009.md` (WebAuthn Native Verifier — anderes Thema als ADR-009 Threat Model) und `ADR-010.md` (Regulatory-Positioning Boundary for Age Verification — gesalvaged via #37, renumbered von 013).
 
@@ -366,6 +383,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
 | ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 komplett: Offline-Verifikation + COSE_Mac0 (169 tests) + Wallet (73/73) + Verifier (52/52) + Hybrid Issuance (builder + issuer-mock) |
+| ADR-013 | WalletService Monolith Decomposition Strategy | PROPOSED | kanonischer Boundary-Audit + aktive Sequenz in `03-architecture/ARCHITECTURE_DECOUPLING.md` und `REFACTORING_ROADMAP.md` |
 
 ---
 
