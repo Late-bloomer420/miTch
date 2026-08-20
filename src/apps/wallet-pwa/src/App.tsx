@@ -229,6 +229,7 @@ function WalletApp() {
 
   const logContainerRef = useRef<HTMLDivElement>(null);
   const walletRef = useRef<WalletService>(new WalletService());
+  const verifierSessionIdRef = useRef(crypto.randomUUID());
   const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
@@ -510,7 +511,10 @@ function WalletApp() {
       try {
         const response = await fetch(targetEndpoint, {
           method: 'POST',
-          headers: UNIFORM_HEADERS,
+          headers: {
+            ...UNIFORM_HEADERS,
+            'X-AskMI-Session-Id': verifierSessionIdRef.current,
+          },
           body: paddedPayload,
         });
 
@@ -821,8 +825,8 @@ function WalletApp() {
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
     _scenarioId: string,
-    decisionId: string | null = null,
-    sessionId?: string
+    sessionId: string,
+    decisionId: string | null = null
   ) => {
     try {
       setStatus('PROVING');
@@ -879,7 +883,7 @@ function WalletApp() {
         method: 'POST',
         headers: {
           ...UNIFORM_HEADERS,
-          ...(sessionId ? { 'X-AskMI-Session-Id': sessionId } : {}),
+          'X-AskMI-Session-Id': sessionId,
         },
         body: paddedPayload,
       });
@@ -1009,7 +1013,12 @@ function WalletApp() {
         addLog(`✅ Policy ALLOWED. Building SD-JWT VP...`, 'success');
         setFlashAllow(true);
         setTimeout(() => setFlashAllow(false), 900);
-        await presentOID4VP(authRequest, scenario, result.decisionCapsule?.decision_id ?? null, sessionId);
+        await presentOID4VP(
+          authRequest,
+          scenario,
+          sessionId,
+          result.decisionCapsule?.decision_id ?? null
+        );
       }
     } catch (e) {
       addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -1532,15 +1541,15 @@ function WalletApp() {
               ._pendingScenario as string | undefined;
             const pendingSessionId = (window as unknown as Record<string, unknown>)
               ._pendingSessionId as string | undefined;
-            if (pendingAuth && pendingScenario) {
+            if (pendingAuth && pendingScenario && pendingSessionId) {
               delete (window as unknown as Record<string, unknown>)._pendingAuthRequest;
               delete (window as unknown as Record<string, unknown>)._pendingScenario;
               delete (window as unknown as Record<string, unknown>)._pendingSessionId;
               presentOID4VP(
                 pendingAuth,
                 pendingScenario,
-                evaluationResult?.decisionCapsule?.decision_id ?? null,
-                pendingSessionId
+                pendingSessionId,
+                evaluationResult?.decisionCapsule?.decision_id ?? null
               );
             } else {
               proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);

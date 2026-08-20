@@ -26,7 +26,6 @@ import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT, ASKMI_SCENARIO_CLAIMS } from
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
-import { randomUUID } from 'crypto';
 
 export const app: Express = express();
 
@@ -105,13 +104,6 @@ const SESSION_PATHS = new Set([
   '/present',
   '/reset',
 ]);
-const SESSION_ID_REQUIRED_PATHS = new Set([
-  '/status',
-  '/notify-scan',
-  '/wallet-present',
-  '/oid4vp-present',
-  '/reset',
-]);
 const DEFAULT_MAX_VERIFIER_SESSIONS = 10000;
 const ABSOLUTE_MAX_VERIFIER_SESSIONS = 100000;
 
@@ -159,13 +151,12 @@ app.use((req, res, next) => {
     return res.status(400).json({ ok: false, error: 'INVALID_SESSION_ID' });
   }
 
-  if (!supplied && SESSION_ID_REQUIRED_PATHS.has(req.path)) {
+  if (!supplied) {
     return res.status(400).json({ ok: false, error: 'MISSING_SESSION_ID' });
   }
 
-  const id = supplied || randomUUID();
-  res.locals['askmiSessionId'] = id;
-  res.setHeader('X-AskMI-Session-Id', id);
+  res.locals['askmiSessionId'] = supplied;
+  res.setHeader('X-AskMI-Session-Id', supplied);
   return next();
 });
 
