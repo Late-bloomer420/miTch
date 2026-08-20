@@ -60,6 +60,18 @@ Focused PR-review validation was recorded on 2026-08-19 against executable revis
 - Browser behavior: configured origins `http://localhost:5174` and `http://localhost:5175` accepted; unlisted origin rejected with HTTP 403
 - Session continuity: the same session ID was asserted across deep link, wallet requests, presentation, and status polling through `VERIFIED`
 
+Verifier-demo blocker validation was recorded on 2026-08-20 against executable revision
+`cf3c01747f563feaa009fdbd91c688748c163869`:
+
+- Verifier backend: 16/16 files and 118/118 tests passed
+- Verifier frontend: 1/1 file and 6/6 tests passed
+- Wallet PWA: 16/16 files and 197/197 tests passed
+- Full production build: 30/30 Turbo tasks passed
+- Guards: rebrand and archived-import guards passed
+- Lint/type checks: verifier frontend passed; wallet passed with 0 errors and the same 7 pre-existing warnings
+- Development bootstrap smoke with CORS unset: origins `http://localhost:5174` and `http://localhost:5175` accepted, an unlisted origin rejected with HTTP 403, and missing sessions rejected with HTTP 400
+- Session continuity: one caller-created ID was echoed through authorization, preserved state through the verification flow, and remained isolated from a second session
+
 ## Operational readiness still outside this RC
 
 - Production key management/HSM or platform-keystore integration
