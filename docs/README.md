@@ -9,7 +9,8 @@
 |----------|-------|
 | [`MATURITY_AND_LIMITATIONS.md`](MATURITY_AND_LIMITATIONS.md) | Product boundary, maturity labels, known limitations, evidence rules |
 | [`RELEASE_CANDIDATE_CHECKLIST.md`](RELEASE_CANDIDATE_CHECKLIST.md) | Reproducible RC gates and explicitly unmet external-assurance requirements |
-| [`RELEASE_READINESS_ROADMAP.md`](RELEASE_READINESS_ROADMAP.md) | Evidence-gated path through official EUDI wallet interoperability and a limited-pilot decision |\n| [`eudi/EUDI_SOURCE_BASELINE.md`](eudi/EUDI_SOURCE_BASELINE.md) | Locked European Commission sources, versions, reference-wallet repos, and AskMI role boundary |
+| [`RELEASE_READINESS_ROADMAP.md`](RELEASE_READINESS_ROADMAP.md) | Evidence-gated path through official EUDI wallet interoperability and a limited-pilot decision |
+| [`eudi/EUDI_SOURCE_BASELINE.md`](eudi/EUDI_SOURCE_BASELINE.md) | Locked European Commission sources, versions, reference-wallet repos, and AskMI role boundary |
 | [`REPOSITORY_ECOSYSTEM.md`](REPOSITORY_ECOSYSTEM.md) | Canonical repository rule, related repositories, and open-PR disposition |
 | [`DOCS_CANON.md`](DOCS_CANON.md) | Dokumenten-Autorität, Navigation, Conflict Resolution |
 | [`BACKLOG.md`](BACKLOG.md) | Offene Arbeit, erledigte Meilensteine, ADR-Übersicht |

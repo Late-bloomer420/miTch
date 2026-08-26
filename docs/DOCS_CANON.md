@@ -10,7 +10,8 @@ This file defines the authoritative document per topic area and serves as naviga
 |----------|-------|-------|
 | `STATE.md` | Operativer Health-Snapshot (Tests, Lint, Audit, Demo) | Was läuft? |
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
-| `docs/RELEASE_READINESS_ROADMAP.md` | Release-Sequenz, EUDI-Interop-Gates und Zielkorridore | Was muss in welcher Reihenfolge belegt werden? |\n| `docs/eudi/EUDI_SOURCE_BASELINE.md` | Offizielle EC/EUDI-Quellen und Versions-Lock | Gegen welche externe Wahrheit wird geprüft? |
+| `docs/RELEASE_READINESS_ROADMAP.md` | Release-Sequenz, EUDI-Interop-Gates und Zielkorridore | Was muss in welcher Reihenfolge belegt werden? |
+| `docs/eudi/EUDI_SOURCE_BASELINE.md` | Offizielle EC/EUDI-Quellen und Versions-Lock | Gegen welche externe Wahrheit wird geprüft? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
@@ -27,7 +28,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 - **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
 - **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
-- **EUDI official-source and version lock:** `docs/eudi/EUDI_SOURCE_BASELINE.md`\n- **QA evidence archive:** `docs/qa/`
+- **EUDI official-source and version lock:** `docs/eudi/EUDI_SOURCE_BASELINE.md`
+- **QA evidence archive:** `docs/qa/`
 
 ## Navigation
 
