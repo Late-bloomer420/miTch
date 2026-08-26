@@ -18,6 +18,17 @@ interface VerifierPanelProps {
   runNonce: number;
 }
 
+export function resetVerifierSession(
+  backendUrl: string,
+  sessionId: string,
+  request: typeof fetch = fetch
+): Promise<Response> {
+  return request(`${backendUrl}/reset`, {
+    method: 'POST',
+    headers: { 'X-AskMI-Session-Id': sessionId },
+  });
+}
+
 export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: VerifierPanelProps) {
   const [panelState, setPanelState] = useState<
     'waiting' | 'scanned' | 'verified' | 'failed' | 'expired' | 'offline'
@@ -122,7 +133,7 @@ export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: Ver
           The verification request has timed out for security.
         </div>
         <button
-          onClick={() => fetch(`${backendUrl}/reset`, { method: 'POST' })}
+          onClick={() => void resetVerifierSession(backendUrl, sessionId)}
           style={{
             marginTop: 20,
             padding: '10px 20px',
