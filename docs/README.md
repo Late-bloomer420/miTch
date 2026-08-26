@@ -9,6 +9,7 @@
 |----------|-------|
 | [`MATURITY_AND_LIMITATIONS.md`](MATURITY_AND_LIMITATIONS.md) | Product boundary, maturity labels, known limitations, evidence rules |
 | [`RELEASE_CANDIDATE_CHECKLIST.md`](RELEASE_CANDIDATE_CHECKLIST.md) | Reproducible RC gates and explicitly unmet external-assurance requirements |
+| [`RELEASE_READINESS_ROADMAP.md`](RELEASE_READINESS_ROADMAP.md) | Dated gate sequence from truth baseline through limited pilot and production decision |
 | [`REPOSITORY_ECOSYSTEM.md`](REPOSITORY_ECOSYSTEM.md) | Canonical repository rule, related repositories, and open-PR disposition |
 | [`DOCS_CANON.md`](DOCS_CANON.md) | Dokumenten-Autorität, Navigation, Conflict Resolution |
 | [`BACKLOG.md`](BACKLOG.md) | Offene Arbeit, erledigte Meilensteine, ADR-Übersicht |
