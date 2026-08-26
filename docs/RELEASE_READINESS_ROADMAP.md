@@ -1,243 +1,215 @@
-# AskMI release-readiness roadmap
+# AskMI × EUDI release-readiness roadmap
 
-**Status:** Active planning and gate-sequencing document  
-**Last reconciled:** 2026-08-26  
+**Status:** Active, evidence-gated plan  
+**Baseline date:** 2026-08-26  
 **Live tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
-**Baseline candidate:** [Pull request #141](https://github.com/Late-bloomer420/miTch/pull/141)
+**Baseline candidate:** [Pull request #141](https://github.com/Late-bloomer420/miTch/pull/141)  
+**Official-source lock:** [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md)
 
-> AskMI remains development/evaluation software. The dates below are planning
-> targets, not certification, production-readiness claims, or release promises.
-> A gate moves only when its exit evidence exists.
+> AskMI is development/evaluation software. This roadmap does not claim EUDI certification, LoA High, production readiness, or European Commission endorsement. Dates are planning windows; a gate closes only with revision-bound evidence.
 
-## Role and authority
+## Product decision
 
-This document sequences the path from the current truth/readiness baseline to a
-reproducible release candidate, a limited pilot, and a later production
-decision. It does not duplicate detailed task or evidence records.
+AskMI will not fork or replace the European Commission reference wallets. It will ship as policy/trust middleware and a verifier integration layer that interoperates with the official EUDI reference implementation. The repository's browser wallet remains a test/reference harness, not a certified EUDI Wallet Solution.
+
+The public EC implementation is a multi-repository organization, not one monolithic "original wallet" repo. The primary mobile anchors are the official [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui) and [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui), backed by their official core libraries.
+
+## Authority and evidence
 
 | Surface | Authority |
 |---|---|
-| [Issue #142](https://github.com/Late-bloomer420/miTch/issues/142) | Live gate checklist, decisions, and links to current evidence |
-| [`BACKLOG.md`](BACKLOG.md) | Individual task state and priority |
-| [`STATE.md`](../STATE.md) | Current operational snapshot |
-| [`RELEASE_CANDIDATE_CHECKLIST.md`](RELEASE_CANDIDATE_CHECKLIST.md) | Reproducible RC evidence and known limitations |
-| [`MATURITY_AND_LIMITATIONS.md`](MATURITY_AND_LIMITATIONS.md) | Product boundary and evidence language |
-| [`docs/qa/`](qa/) | Dated, revision-bound internal validation records |
-| [`REFACTORING_ROADMAP.md`](REFACTORING_ROADMAP.md) | Deferred architecture work, not automatically a release blocker |
+| [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md) | Official source/version lock and AskMI role boundary |
+| This roadmap | Sequencing, gates, dependencies, and planning windows |
+| [Issue #142](https://github.com/Late-bloomer420/miTch/issues/142) | Live checklist and current evidence links |
+| [BACKLOG.md](BACKLOG.md) | Individual task state and priority |
+| [STATE.md](../STATE.md) | Current operational snapshot |
+| [RC checklist](RELEASE_CANDIDATE_CHECKLIST.md) | Clean-checkout release evidence |
+| [Maturity and limitations](MATURITY_AND_LIMITATIONS.md) | Permitted product/evidence language |
+| [docs/qa](qa/) | Dated, revision-bound validation records |
 
-When these surfaces drift, reconcile them using
-[`DOCS_CANON.md`](DOCS_CANON.md). A plan or historical run does not close a
-gate.
+Internal tests establish implementation behavior only. They do not establish legal compliance, certification, external interoperability, or LoA High.
 
-## Current position
+## Current implementation truth
 
-As of 2026-08-26:
+| Area | Repository truth | Classification | Consequence |
+|---|---|---|---|
+| Policy mediation | Fail-closed policy engine, claim enforcement, audit/data-flow surfaces, negative tests | Implemented internally | Exercise through official-wallet interop |
+| SD-JWT VC | Issuance, disclosure, key-binding, verification primitives | Internal; rulebook conformance unproven | Map exact PID/EAA rulebooks and official payloads |
+| mdoc | CBOR/COSE, MSO, issuer/device auth, offline verification | Internal; official interop unproven | Add PID/mDL vectors, transport, reader-auth, status |
+| OpenID4VP | Presentation Exchange / presentation_definition | Partial; current EC profile uses DCQL | Implement OpenID4VP 1.0 + DCQL; legacy must be explicit |
+| OpenID4VCI | Custom/draft subset with offer, proof, issuance, batch | Partial; 1.0 not demonstrated | Align metadata, grants, nonce, deferred/notification, encryption, errors |
+| HAIP/attestation | Custom verifier/client attestation helpers | Partial; current-profile equivalence unproven | Reconcile against current HAIP and official tests |
+| Trust | JSON DID-list PoC and configurable anchor path | PoC; not ETSI LoTE/Trusted Lists | Add ETSI TS 119 602/119 612 and RP certificate validation |
+| Status/revocation | Status-list prototypes and checks | Partial; profile coverage unproven | Validate signer, freshness, failure, privacy semantics |
+| Identity/key seam | WebAuthn-backed path and identity guardian | Useful seam; not WSCA/WSCD certification | Keep browser claims narrow; rely on native wallet security |
+| Issuer connection | eID connector simulated; national eID modes are stubs | Demo only | Exclude real PID issuance until a provider exists |
+| Browser wallet | Complete demo journey and recovery controls | Reference harness | Use for CI/diagnostics, never certification claims |
+| External evidence | No official-wallet interop, FCAF result, protocol result, or independent security review | Missing | Blocks pilot go/no-go |
 
-- PR #141 is the only coherent truth/readiness baseline candidate.
-- Executable head `ffbc19e12307194919600a689d24caba16984614` is mergeable.
-  Its latest build/test/lint, layer-validation, dependency-audit, and security
-  workflow runs passed.
-- The three #141 review threads have current-head reconciliation replies. They
-  still require explicit maintainer resolution or acknowledgement before merge.
-- The repository has no failure-gating real-browser E2E or container-start gate.
-  The dated ADOPT live probe is not committed and therefore is not rerunnable.
-- External security/cryptographic review and official EUDI
-  interoperability/conformance evidence do not exist for the product as a
-  whole.
-- Production key management, distributed verifier-session storage, monitoring,
-  incident response, privacy operations, and support ownership remain outside
-  the current RC.
+## Claims correction
 
-The immediate objective is therefore **RC0 truth consolidation**, not a
-production release.
+The June 2026 CIR matrix is a historical internal engineering checklist. Its "98%" total, LoA High row, hardware-binding row, and FCAF-readiness row are not conformance or certification evidence. Replace it with requirement-level traceability against the locked official baseline. Until then, no percentage may appear in release or marketing claims.
 
-## Planning timeline
+## Delivery timeline
 
 ```mermaid
 gantt
-    title AskMI release-readiness planning windows
+    title AskMI × EUDI evidence-gated roadmap
     dateFormat YYYY-MM-DD
-    axisFormat %d %b
+    axisFormat %b %d
     section Baseline
-    Truth baseline and PR convergence :active, baseline, 2026-08-26, 10d
-    section Release candidate
-    Reproducible RC1 :rc1, 2026-09-07, 5d
-    Journey and integration :journey, 2026-09-14, 12d
+    Truth and source lock :active, w0, 2026-08-26, 10d
+    section Protocol
+    OID4VP and OID4VCI parity :w1, 2026-09-07, 33d
+    section Trust
+    Rulebooks and trust services :w2, 2026-10-12, 40d
+    section Interop
+    Official wallet integration :w3, 2026-11-23, 54d
     section Assurance
-    External assurance :crit, assurance, 2026-09-14, 33d
-    Operations and staging :crit, operations, 2026-09-28, 19d
+    Conformance and external review :crit, w4, 2027-01-18, 68d
     section Pilot
-    Limited-pilot decision :milestone, pilot, 2026-10-19, 0d
+    Conditional pilot decision :milestone, pilot, 2027-03-31, 0d
 ```
 
-The production decision is deliberately absent from the chart. It becomes
-schedulable only after the pilot and assurance gates have evidence.
+Production is intentionally unscheduled.
 
-## Gate A — truth baseline
+## Wave 0 — truth, source lock, and repository convergence
 
-**Target window:** 26–28 August 2026
+**Target:** 26 August–4 September 2026
 
-### Exit evidence
+- Merge PR #141 after resolving current review threads and rerunning checks on the final head.
+- Close/re-scope stale PRs using the disposition table below.
+- Lock [ARF v3.0.0](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/releases/tag/v3.0.0) and exact official component tags.
+- Replace the CIR percentage with traceability fields: requirement, source/version, AskMI role, implementation, test, external evidence, status, owner, review date.
+- Freeze the pilot profile: AskMI verifier/middleware + official Android first; iOS parity before pilot.
+- Pin Node/pnpm consistently and remove or quarantine stale npm lockfiles.
 
-- Every #141 review thread is explicitly resolved or dismissed against the final
-  head.
-- Required checks pass on the final head, with the exact SHA and date recorded.
-- #141 merges without unrelated executable scope.
-- #138 is closed as superseded by the reconciled ADOPT evidence.
-- Issue #122 is closed as stale with links to the current enforcement map,
-  negative regression coverage, `STATE.md`, and `BACKLOG.md`.
-- Issue #95 is closed as superseded by the canonical AskMI naming decision.
+**Exit:** one canonical revision; no stale PR presented as merge-ready; dated source lock; consistent middleware/reference-harness wording; unsupported percentages marked historical.
 
-**Result:** RC0 becomes the single repository truth baseline. This still means
-development/evaluation software.
+## Wave 1 — current protocol parity
 
-## Gate B — PR and dependency convergence
+**Target:** 7 September–9 October 2026
 
-**Target window:** 31 August–4 September 2026
+### OpenID4VP 1.0 and DCQL
 
-### Open-PR disposition
+- Add DCQL parsing, validation, authorization, and minimal-disclosure mapping.
+- Support official same-device/cross-device request and response profiles, request objects, nonce/state/session binding, and current response modes.
+- Reject ambiguous negotiation and unsupported requests; preserve Presentation Exchange only behind an explicit legacy profile.
+- Add replay, expiry, mix-up, redirect, downgrade, malformed-request, and over-disclosure tests.
 
-| PR | Current state | Required disposition |
-|---|---|---|
-| [#141](https://github.com/Late-bloomer420/miTch/pull/141) | Mergeable; latest executable-head CI/security green | Resolve the three reconciled threads, confirm the final head, then merge as RC0 |
-| [#140](https://github.com/Late-bloomer420/miTch/pull/140) | Changes requested; nominal PostCSS patch includes Vite 8 migration | Close after #141 lands; recreate only a PostCSS-only update if the version is still missing |
-| [#138](https://github.com/Late-bloomer420/miTch/pull/138) | Documentation evidence already reconciled into #141 | Close as superseded after #141 merges |
-| [#130](https://github.com/Late-bloomer420/miTch/pull/130) | Conflicted, five review threads, no workflow run on latest head | Do not merge wholesale; salvage the credential-pool bridge on current `master` after lifecycle, truth, governance, and CI gates |
-| [#139](https://github.com/Late-bloomer420/miTch/pull/139) | Conflicted draft; mixed docs, wallet, and config scope; no head CI | Split only independently justified pieces into small current branches |
-| [#129](https://github.com/Late-bloomer420/miTch/pull/129) | Conflicted UX branch with two review threads | Re-scope after the AskMI naming/product boundary; do not merge the stale branch wholesale |
-| [#105](https://github.com/Late-bloomer420/miTch/pull/105) | Stale/conflicted; mixes useful fallback behavior with public-tunnel exposure | Decide the service-endpoint fallback separately; close without inheriting wildcard tunnel exposure by default |
+### OpenID4VCI 1.0
 
-### Dependency/runtime exit evidence
+- Align issuer/auth-server metadata, credential configurations/offers, authorization-code and pre-authorized-code grants, PKCE/PAR where applicable, nonce, proof, token, credential, batch, deferred, notification, encrypted response, and errors.
+- Remove custom field names and draft assumptions at public boundaries.
+- Add key binding, replay handling, and privacy-aware batch behavior.
+- Run against the locked official issuer and official wallet-core examples.
 
-- PostCSS and Vite are reviewed as separate changes.
-- Node and pnpm versions are pinned consistently for developer, CI, and
-  container paths.
-- Stale npm lockfiles are removed or explicitly quarantined; pnpm is documented
-  as the install authority.
-- No conflicted or stale PR is presented as merge-ready.
+### CI and exit evidence
 
-## Gate C — reproducible RC1
+- Add failure-gating browser E2E and container build/start smoke tests.
+- Commit the ADOPT/live probe as a rerunnable gate.
+- Publish a clean-checkout RC report for one exact SHA.
+- Publish a profile matrix: supported, legacy, rejected, unimplemented.
+- Record official issuer ↔ AskMI wallet/harness and AskMI issuer ↔ official wallet flows; no protocol claim rests only on unit tests.
 
-**Target window:** 7–11 September 2026
+## Wave 2 — credential rulebooks, trust, and registration
 
-### Required work
+**Target:** 12 October–20 November 2026
 
-1. Add failure-gating browser E2E for verifier request, wallet handoff,
-   authorization, presentation, status polling, expiry, and retry using one
-   session identifier.
-2. Add container build/start smoke coverage for the wallet, verifier frontend,
-   verifier backend, and required workspace packages.
-3. Convert the live ADOPT probe into a committed, rerunnable gate.
-4. Run the complete clean-checkout RC checklist against one exact revision.
-5. Record residual warnings, low-severity advisories, skipped paths, and
-   environment limits in the prerelease notes.
-6. Create a GitHub prerelease only when every RC1 exit condition is evidenced.
+### Credential profiles
 
-### Exit criteria
+- Implement exact current PID schemas for SD-JWT VC and mdoc and the mDL profile required by the pilot.
+- Resolve issue #97 using rulebook-defined age semantics, not a repo-local claim shape.
+- Validate namespaces, types, mandatory/optional attributes, metadata, validity, key binding, and disclosure.
+- Define status/revocation per format and record dependencies on evolving ISO work.
+- Defer AV/ZKP and additional attestations unless the frozen pilot requires them.
 
-| Control | Evidence required |
+### Trust and relying-party services
+
+- Replace the JSON DID-list PoC on the pilot path with ETSI TS 119 602 LoTE and/or ETSI TS 119 612 Trusted List processing required by the selected EC profile.
+- Validate list signatures, anchors, service status, validity, rollover, revocation, cache expiry, network failure, and rollback.
+- Validate relying-party access and registration certificates, registered scope, and intended use.
+- Bind policy to trusted issuer, RP identity, registration scope, rulebook, and requested attributes.
+- Create trust onboarding, suspension, revocation, incident, and outage runbooks.
+
+**Exit:** requirement traceability for frozen PID/mDL profiles; negative tests for untrusted issuer/RP, excess scope, stale/revoked trust, and outages; dated trust ceremony/rollover/revocation evidence.
+
+## Wave 3 — official EC wallet integration and pilot hardening
+
+**Target:** 23 November 2026–15 January 2027
+
+Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
+
+- Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
+- Complete handoff state, request TTL, popup/same-tab fallback, session binding, recovery, and return-to-verifier UX.
+- Deliver verifier adapter/button and server middleware with deny-biased defaults.
+- Establish hosted staging with explicit origins, keys, trust sources, retention, health checks, and artifact traceability.
+- Run same-device, cross-device, expiry, retry, denial, partial-consent, revocation, trust-failure, and recovery paths.
+- Include proximity only if transport, reader auth, status limits, and official-device evidence are ready.
+
+**Exit:** Android and iOS official-wallet matrices pass; a new RP integrates without source changes or insecure defaults; browser wallet remains labelled as a harness.
+
+## Wave 4 — conformance, assurance, and operations
+
+**Target:** 18 January–26 March 2027
+
+### Functional conformance
+
+- Create an Implementation Conformance Statement for the exact AskMI role/profile.
+- Run applicable tests from locked [FCAF v0.0.10](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/releases/tag/v0.0.10) and archive results.
+- Run applicable OpenID Foundation protocol conformance tests.
+- Reuse/adapt the official [EUDI testing application](https://github.com/eu-digital-identity-wallet/eudi-doc-testing-application) for UI/device evidence.
+- Record exclusions/failures; never convert non-applicable tests into coverage.
+- State that FCAF is functional evidence, not security/privacy certification.
+
+### Security, privacy, and operations
+
+- Complete independent security/cryptographic review and disposition findings.
+- Deploy production-grade key management, rotation, recovery, and separation.
+- Implement session storage for the target topology.
+- Review correlation/linkability, batch, RP impersonation, injection, replay, downgrade, recovery, and trust compromise.
+- Exercise monitoring, incident/vulnerability response, backup/restore, rollback, privacy/deletion/reporting, and support runbooks.
+- Complete legal/privacy review for actual pilot actors, data, jurisdiction, retention, processors, and user communications.
+
+**Exit:** no unresolved critical/high finding; revision-bound FCAF/ICS/protocol results; exercised runbooks; signed pilot scope, owners, metrics, stop conditions, and exit criteria.
+
+## Conditional limited-pilot gate
+
+**Target decision:** 31 March 2027
+
+A go decision requires Waves 0–4 with linked evidence; official Android/iOS interop; no P0/P1 or high unresolved finding; deployment traceability; exercised trust/key/session/ops/privacy/support controls; named owners; and a written decision that does not claim production readiness or Wallet Solution certification. Material official-profile changes move the date and invalidate affected evidence.
+
+## Deferred/out of pilot scope
+
+- becoming a certified EUDI Wallet Solution or claiming LoA High/WSCA/WSCD compliance;
+- qualified electronic signatures, Digital Credentials API, wallet-to-wallet, backup/migration/multi-device continuity;
+- ZKP/BBS+ and advanced anonymous credentials;
+- national PID issuance through simulated eID connectors; and
+- production launch.
+
+## PR and issue disposition
+
+| Item | Required action |
 |---|---|
-| Install reproducibility | Frozen install succeeds with the pinned package manager/runtime |
-| Static and unit validation | Guards, build, tests, lint, layer validation, and high-severity audit pass |
-| Browser behavior | Real-browser flow passes and failures block CI |
-| Deployment shape | Containers build and start with health checks and required workspace dependencies |
-| Traceability | Release artifact and notes identify the exact commit, date, and configuration |
-| Truth boundary | Known limitations and external-validation gaps are copied into the prerelease |
-
-## Gate D — pilot-grade journey and integration
-
-**Target window:** 14–25 September 2026
-
-Release-path work promoted from the backlog:
-
-| Work package | Pilot exit behavior |
-|---|---|
-| G-110.2 / G-110.3 | Handoff state and request TTL are explicit, fail-closed, and retryable |
-| G-120.1 / G-120.2 / G-120.3 | Popup, same-tab fallback, and cross-tab/session binding behave consistently |
-| G-130.2 | Recovery/fallback UX has no unsafe bypass or unrecoverable dead end |
-| G-140.2 | Success/failure result and return-to-verifier behavior are consistent |
-| G-150.1 / G-150.2 | Reference verifier integration is documented, reproducible, and deny-biased |
-| G-160.1 | Partner/verifier onboarding and trust-registry ownership are defined |
-
-### Exit evidence
-
-- A hosted staging environment uses explicit origin, key, trust, and retention
-  configuration.
-- The complete happy-path and failure-mode matrix passes in a real browser
-  against staging.
-- A new verifier integration follows the documented path without repository code
-  changes or insecure defaults.
-- Pilot scope, actors, data classes, and retention are frozen for assurance
-  review.
-
-## Gate E — assurance and operations
-
-**Target window:** 14 September–16 October 2026
-
-This gate may run in parallel with Gate D, but it cannot be waived by green
-repository tests.
-
-### Independent assurance
-
-- Independent security and cryptographic review is complete; every finding has a
-  disposition and evidence.
-- External EUDI interoperability/conformance work covers the declared pilot
-  profile.
-- [Issue #97](https://github.com/Late-bloomer420/miTch/issues/97) stays open
-  until the mdoc AV/ZKP gap is implemented, formally excluded from the release
-  scope, or accepted by the relevant external evaluation.
-- Legal/privacy review covers the actual deployment and data flows, not only the
-  architecture documents.
-
-### Operational readiness
-
-- Deployment-appropriate key management, recovery, and rotation replace demo
-  key handling.
-- Verifier session state supports the intended deployment topology, or the pilot
-  is explicitly constrained to one instance.
-- Monitoring, alerting, incident response, backup/restore, privacy operations,
-  rollback, and support ownership are tested and assigned.
-- Issuer/verifier onboarding, trust-list governance, certificate lifecycle, and
-  revocation availability have named owners and runbooks.
-
-## Gate F — limited-pilot go/no-go
-
-**Target decision:** 19 October 2026
-
-A go decision requires all of the following:
-
-- no open P0/P1 defect on the pilot path;
-- no unresolved high-severity dependency or external-review finding;
-- clean-checkout RC verification and deployed-artifact traceability;
-- tested telemetry, incident, rollback, backup/restore, and support procedures;
-- named owners for trust governance, privacy operations, and pilot support;
-- explicit pilot scope, success metrics, stop conditions, and exit criteria; and
-- a recorded go/no-go decision that does not describe the pilot as production
-  readiness.
+| PR #141 | Merge as truth/source-roadmap baseline after final review/checks |
+| PR #140 | Separate PostCSS from the Vite 8/toolchain migration |
+| PR #138 | Close as superseded after #141 |
+| PR #130 | Salvage only independently reviewed credential-pool work |
+| PR #139 | Split mixed scope onto current baseline |
+| PR #129 | Re-scope UX after protocol/profile decisions |
+| PR #105 | Close stale tunnel work; separately justify endpoint fallback |
+| Issue #97 | Keep open until official age semantics are evidenced |
+| Issue #122 | Close with current enforcement regression evidence |
+| Issue #95 | Close as superseded by AskMI naming/product decision |
 
 ## Production gate — intentionally undated
 
-Production becomes a decision only after:
-
-1. pilot exit criteria are met and evidenced;
-2. external security/cryptographic findings are closed or formally accepted;
-3. the declared EUDI interoperability scope is validated or narrowed honestly;
-4. key, session, trust, monitoring, incident, privacy, backup, rollback, and
-   support controls operate in the target environment;
-5. legal/privacy review covers that environment; and
-6. release, change, vulnerability, and support ownership is durable.
-
-Until then, marketing and documentation must continue to describe AskMI as
-development/evaluation software.
+Production becomes schedulable only after successful pilot exit plus durable governance, external assurance, interoperability, legal/privacy review, operational controls, and support. If AskMI becomes a Wallet Solution, it needs a separate certification programme; this roadmap neither grants nor predicts certification.
 
 ## Update discipline
 
-- Update issue #142 when a gate changes; link evidence instead of copying
-  revisionless test totals.
-- Update this roadmap when sequencing, gates, or release scope changes.
-- Update `BACKLOG.md` for individual task state and `STATE.md` for operational
-  facts.
-- Store dated verification in `docs/qa/` with the tested revision and
-  environment.
-- Never close a gate from a plan, stale branch, historical local run, or
-  internally produced compliance percentage.
+- Update issue #142 when a gate changes; link evidence.
+- Update the source baseline when an official dependency/profile changes.
+- Update BACKLOG.md for task state and STATE.md for operational facts.
+- Store dated verification in docs/qa with exact revisions/environment.
+- Never close a gate from a plan, stale branch, internal percentage, or historical run.
