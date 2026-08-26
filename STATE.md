@@ -1,15 +1,15 @@
-# STATE
+# STATE — Current Operating State
 
-> **Current readiness note (2026-08):** AskMI is development/evaluation software. Entries below are dated internal engineering records, not certification, production-readiness, or external validation. Historical compliance percentages are internal requirement-mapping snapshots only. For the current product boundary and limitations, see [`docs/MATURITY_AND_LIMITATIONS.md`](docs/MATURITY_AND_LIMITATIONS.md). AskMI is the product name; `miTch` remains the repository name..md — Current Operating State
+> **Current readiness note (2026-08):** AskMI is development/evaluation software. Entries below are dated internal engineering records, not certification, production-readiness, or external validation. Historical compliance percentages are internal requirement-mapping snapshots only. For the current product boundary and limitations, see [`docs/MATURITY_AND_LIMITATIONS.md`](docs/MATURITY_AND_LIMITATIONS.md). AskMI is the product name; `miTch` remains the repository name.
 
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-07-04 (G-100.4 merged via #126; G-110.1 handoff closeout in progress)
-**Branch:** `master` (full AskMI rebrand merged via PR #70)
-**Release tag:** `v1.0-RC (Pilot Readiness)`
+**Snapshot reconciled:** 2026-08-26 (truth/readiness RC evidence through 2026-08-20; dated records below retain their own dates and revisions)
+**Branch:** `hardening/truth-readiness-rc` (PR #141), based on `master` at `bb340038fdd4df98c6d2f2936f2a39ba7c872ac1`
+**Release label:** `v1.0-RC` candidate — development/evaluation only; no production approval or external certification
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `e9bec3c` (PR #120 merged) — G-140 surfacing follow-up (#119 sensitivity substrate + #120 visible badges & permanent DataFlow panel) on top of the dev-only `vite` 6.4.2→6.4.3 bump (#111, `1a86d62`) and the G-140 Layer-2 visibility sequence (#112, #114, #115, #116).
+**Current master at branch creation:** `bb340038fdd4df98c6d2f2936f2a39ba7c872ac1` (PR #137 merged). PR #141 adds later truth/readiness hardening; exact full and focused validation revisions are recorded in [`docs/RELEASE_CANDIDATE_CHECKLIST.md`](docs/RELEASE_CANDIDATE_CHECKLIST.md).
 
 ---
 
@@ -26,23 +26,29 @@
 - QA evidence records: [`docs/qa/`](docs/qa/)
 - Deployment Orchestration: [`docker-compose.yml`](docker-compose.yml)
 
-## Pilot path (v1.0-RC Stable)
+## Pilot path (development/evaluation RC)
 
 - **Minimal scenario:** Altersverifikation (18+) via OID4VP.
-- **Status:** Release Candidate achieved. All core stabilization and refactoring phases complete.
+- **Status:** Repository-tested release-candidate baseline. Independent security review, official EUDI conformance/interoperability, and production operational controls remain open.
 
 ## Current status
 
 ### Operational Health
-- **GitHub Actions:** `master` stays green by construction — branch protection requires PR-only merges + passing checks (ci-security, Deploy GitHub Pages, AskMI CI/CD Pipeline, CodeQL) + verified/signed commits. This held through the latest merge, PR #81.
-- **Tests:** `pnpm test` → **46/46 turbo tasks green** (verified 2026-07-13; 1820+ individual tests). Earlier records (2026-06-04 RC) showed 45/45; the 46th task was added when `integration-tests` joined the turbo graph. PR #66 additionally re-ran targeted package tests for the npm scope alignment (`revocation-statuslist`, `shared-crypto`, `audit-log`, `policy-engine`) before merge.
-- **Lint:** `pnpm lint` → **0 errors, 7 warnings** (verified 2026-07-13). All 7 warnings are pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, present since the SECURE-1 baseline (Task 0). SECURE-1 introduced zero new warnings (count unchanged 7→7).
-- **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
-- **Live Demo Flow:** `pnpm dev` → Verifier (3004) + Wallet (5174) → `/authorize` → Passkey Unlock → `/notify-scan` → consent → `/oid4vp-present` → SD-JWT VC + KB-JWT validated → Visual Rendering via SVG/Mustache (verified integrity)
-- **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
+- **Historical branch-protection record:** PR-only merges, required checks, and verified/signed commits were recorded as enforced through PR #81. Current branch status must be read from the live GitHub checks; this dated statement is not a current green-build guarantee.
+- **RC validation:** the full 2026-08-19 run on `04dee0f99754a8686195709348ca5b02ccc415e2` recorded 47/47 Turbo test tasks, lint with 0 errors and 7 pre-existing warnings, and a 30/30 build. Later review fixes have separate focused records, including verifier-demo blocker validation on `cf3c01747f563feaa009fdbd91c688748c163869`. See the RC checklist; results are revision-scoped.
+- **Dependency audit:** the full RC run recorded 0 high, 0 moderate, and 4 low advisories; the high-severity gate passed. This is a dated result, not a guarantee about later checkouts.
+- **Historical internal mapping:** 52/53 CIR requirements were internally mapped, with formal CC evaluation unresolved. This is an engineering-analysis snapshot, not certification, official conformance, or a readiness percentage.
+- **Local credential-path evidence:** on 2026-07-17 at `bb340038fdd4df98c6d2f2936f2a39ba7c872ac1`, a local HTTP probe observed issuer-mock issuance, selective disclosure of `age` + KB-JWT, configured development trust/JWKS verification, and a consent receipt. Negative forged-key and unknown-issuer cases failed closed. The probe did not drive the browser UI/IndexedDB/QR flow and did not test national EUDI interoperability. Evidence: [`docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md).
+- **Containerization assets:** Wallet, issuer, and verifier Dockerfiles plus deployment verification tooling exist in the repository. Their presence is repository implementation evidence, not production deployment validation.
 - **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.askmi.demo` domains.
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+
+### Dated addition (2026-07-17 — ADOPT-0a/0b local live verification)
+
+- **Observed on `bb340038fdd4df98c6d2f2936f2a39ba7c872ac1`:** the local issuer/presentation/verifier path returned `200` with `disclosedClaims:{age:24}` and a consent receipt; a forged credential using a wallet-supplied issuer key returned `403 Signature verification failed`; an unknown issuer returned `403 untrusted_or_unresolvable_issuer`.
+- **Evidence boundary:** wallet storage APIs and wiring were repository-tested, but the live probe did not drive wallet-pwa browser storage or UI. Only the age/liquor-store credential scenario was covered; other scenarios lacked matching real credentials. The verifier-demo frontend path remained simulated, and the live probe was deleted after the run.
+- **Readiness boundary:** this dated internal demo evidence is externally unvalidated and does not establish production readiness, certification, or official EUDI interoperability. Current RC limitations and later revision-scoped validation are recorded in [`docs/MATURITY_AND_LIMITATIONS.md`](docs/MATURITY_AND_LIMITATIONS.md) and [`docs/RELEASE_CANDIDATE_CHECKLIST.md`](docs/RELEASE_CANDIDATE_CHECKLIST.md).
 
 ### Recent additions (2026-07-13 — SECURE-1 gap closure)
 - **SECURE-1 sprint closed (branch `feat/secure-1-gap-closure`, 2026-07-13):** 6 fail-closed bugs fixed (F-01 wrong audit key field, F-02 fire-and-forget `savePolicy`, F-03 false-success WebAuthn stub tombstoned, F-04 double fail-open geo-scope, F-16/F-18 swallowed IndexedDB errors); F-14 real SD-JWT VC issuer-sig + KB-JWT verification added to `oid4vp-verifier` (opt-in, fail-closed, `signaturesVerified` field); GAP-3 anti-oracle timing-variance regression guard added (bounded mean-timing spread < 2 ms across 500 iterations, no secret-dependent I/O branch found). 22 findings total: 6 fixed + F-14 + 7 documented-residual + 9 not-a-bug. **Verified 2026-07-13: `pnpm test` → 46/46 turbo tasks green; `pnpm lint` → 0 errors, 7 warnings (all pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, count unchanged 7→7, zero new warnings from SECURE-1); `pnpm guard:rebrand` → passed.** Per-package during sprint: policy-engine 325, shared-crypto 273, wallet-pwa 185, oid4vp-verifier 63. Threat-model gaps: GAP-2 closed with residual (Shamir SSS recovery was already implemented — ADR-009 entry was stale); GAP-3 mitigated (bounded-variance guard + documented residual — true constant-time unattainable in V8); GAP-1 (browser RAM) and GAP-4 (external review) remain open. Evidence: [`docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md`](docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md).
@@ -99,8 +105,8 @@ Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct c
 - **Hardware-bound Identity (T-31):** WebAuthn-backed Identity Key implemented in `WalletService` for LoA High compliance.
 - **EHDS Compliance (T-C2, T-C3):** Global Secondary-Use Opt-Out in `PolicyEditor`; Localized medical terms (`CLAIM_DICTIONARY`) for EU-wide patient mobility.
 
-### Completion Summary
-Phase 0–5 complete. AskMI has achieved 98% technical EUDI compliance and is fully containerized for sovereign deployment with a polished visual rendering layer. Technically prepared for formal EUDI evaluation.
+### Historical milestone summary
+Phase 0–5 and the internal 52/53 requirements-mapping milestone were recorded as complete, and container/deployment artifacts exist. These are repository engineering milestones; they do not establish technical EUDI compliance, production deployment readiness, or preparedness accepted by an external evaluator.
 Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 
 ---

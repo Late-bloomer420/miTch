@@ -36,6 +36,8 @@ pnpm build
 
 Record:
 
+Related dated path evidence: [`ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md) records a local live credential-path run on exact revision `bb340038fdd4df98c6d2f2936f2a39ba7c872ac1`. Its live probe was not committed, so it is historical internal evidence rather than a rerunnable RC gate. It preserves its browser, scenario, interoperability, and production-readiness gaps and does not expand the validation claims below.
+
 Full validation run recorded on 2026-08-19 against repository-resolvable revision
 `04dee0f99754a8686195709348ca5b02ccc415e2`. Later PR review fixes require their own
 focused validation record and do not retroactively inherit the full-run claim below.

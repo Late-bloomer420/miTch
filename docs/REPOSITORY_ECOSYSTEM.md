@@ -26,7 +26,7 @@ As reviewed on 2026-08-19:
 
 - **#140 Dependabot/PostCSS:** superseded by the broader dependency hardening on the truth/readiness RC branch; close only after the replacement lands.
 - **#139 wallet test app/delegation architecture:** conflicting and far behind `master`; do not merge wholesale. Salvage independently reviewed GNAP/AI-Guardian documents or wallet changes as small current branches.
-- **#138 ADOPT-0a/0b live-verification docs:** reconcile with current maturity/evidence rules, then merge or supersede with current RC evidence.
+- **#138 ADOPT-0a/0b live-verification docs:** the dated evidence and verified facts are reconciled into this RC branch under the current maturity/evidence rules. After #141 lands, close #138 as superseded; do not merge its older `STATE.md` or `BACKLOG.md` copies over the RC baseline.
 - **#130, #129, #105:** stale/conflicting. Confirm whether useful changes already landed; salvage only minimal missing commits, then close with a clear explanation.
 
 ## Consolidation rule
