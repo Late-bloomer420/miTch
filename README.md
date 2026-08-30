@@ -1,196 +1,114 @@
-# AskMI — The Forgetting Layer
+# AskMI — privacy-preserving identity mediation
 
-> **Privacy-preserving proof mediation for digital identity.**
-> Verifiers get cryptographic proofs. Never raw data. Never PII.
+AskMI is an open-source, research-stage middleware project for minimizing identity disclosure. It evaluates verifier requests at the wallet edge, applies deny-biased policy, and supports selectively disclosed credential presentations.
 
-[![Tests](https://img.shields.io/badge/tests-1820%20passing-brightgreen)](https://github.com/Late-bloomer420/miTch/actions)
+> **Maturity:** development and evaluation software. AskMI is not certified, independently audited, or represented as production-ready. See [Maturity and known limitations](docs/MATURITY_AND_LIMITATIONS.md).
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GDPR Art. 25](https://img.shields.io/badge/GDPR-Art.%2025%20by%20Design-blue)](docs/ops/EVIDENCE_PACK_P0.md)
-[![eIDAS 2.0](https://img.shields.io/badge/eIDAS%202.0-certified--ready-blue)](docs/compliance)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 
-**[🔴 Live Demo](https://late-bloomer420.github.io/miTch/)** — no server, no data collection, runs entirely in your browser.
+**[Browser demo](https://late-bloomer420.github.io/miTch/)** — a self-contained demonstration, not a hosted production service or interoperability certification.
 
----
+## What AskMI is
 
-## What is AskMI?
+AskMI is middleware intended to sit between a compatible identity wallet and a verifier. For a request such as “Are you 18+?”, its goal is to authorize and disclose the minimum sufficient proof rather than unrelated identity attributes.
 
-AskMI sits between identity wallets and verifiers. When a website asks "Are you 18+?", AskMI ensures they get a **yes/no proof** — not your name, birthday, or address.
+- **Middleware, not an identity provider:** AskMI does not issue authoritative identities.
+- **Designed for wallet integration:** the reusable policy, protocol, cryptographic, verifier, and audit packages are the product direction.
+- **Includes an embedded reference wallet:** `wallet-pwa` exercises those packages and demonstrates end-to-end flows. It is a development/reference application, not an EUDI Wallet implementation approved for deployment.
+- **No blockchain dependency:** the demonstrated paths do not require putting personal data on-chain.
 
-- **Not a wallet** — works *with* EUDI wallets, not instead of them
-- **Not a blockchain** — ephemeral keys, crypto-shredding, no on-chain PII
-- **Not an identity provider** — AskMI never sees or stores your identity
+The implementation follows a fail-closed design intent: evaluated ambiguous or invalid states should be denied. This is covered by repository tests for specific paths, but is not a guarantee that every integration or runtime state fails closed.
 
-**Core principle:** Fail-closed, deny-biased. If anything is ambiguous → **DENY**.
+## Quick start
 
----
-
-## Quick Start
+Prerequisites: a current Node.js release and pnpm.
 
 ```bash
 git clone https://github.com/Late-bloomer420/miTch.git
 cd miTch
 pnpm install
-pnpm dev        # wallet-pwa (5174), verifier-demo (3004), issuer-mock (3005)
+pnpm dev
 ```
+
+The development command starts the reference wallet, verifier demo, and mock issuer. These components use local/demo trust material and are for evaluation.
 
 ```bash
-pnpm test       # 1820+ tests across 29 packages
-
-pnpm lint       # 0 errors
-pnpm build      # compile all packages
+pnpm test
+pnpm lint
+pnpm build
+pnpm guard:rebrand
 ```
 
----
+Test totals change as the repository evolves; use the command output and dated records under [`docs/qa/`](docs/qa/) rather than a static badge as evidence.
 
-## npm Packages
+## Implemented surface
 
-AskMI is the active product/package brand. All workspace packages use the
-`@askmi/*` scope.
+The monorepo contains working TypeScript packages and automated tests for areas including:
 
-Currently published on npm:
+- deny-biased policy evaluation and decision reason codes;
+- SD-JWT VC / OID4VCI issuance and OID4VP presentation paths;
+- selective disclosure, replay checks, revocation/status handling, and audit/data-flow views;
+- cryptographic and secure-storage building blocks;
+- mdoc/ISO 18013-5 building blocks and offline verification paths;
+- verifier SDK/browser integration and an MCP adapter;
+- a reference wallet, mock issuer, verifier, integration tests, and scenario demos.
 
-- `@askmi/shared-types`
-- `@askmi/shared-crypto`
-- `@askmi/revocation-statuslist`
+“Implemented” means code exists in this repository. “Tested” means repository-controlled automated tests cover specified behavior. Neither implies external conformance, security assurance, operational readiness, or complete standards support. Package-level details are best read with their tests and current source.
 
-See [docs/NPM_SCOPE_RENAME_ASKMI.md](docs/NPM_SCOPE_RENAME_ASKMI.md) for the
-rename scope and verification notes.
+## Maturity labels
 
----
+| Label | Meaning |
+|---|---|
+| **Implemented / repository-tested** | Present in code and covered by local or CI tests for documented cases. |
+| **Demo-only** | Scenario, fixture, mock service, local trust setup, or reference UI used to exercise the system. |
+| **Experimental** | Implemented exploration whose API, security properties, or interoperability may change. |
+| **Planned** | Design, backlog, or roadmap material; do not infer implementation. |
+| **Externally unvalidated** | Not independently audited, certified, formally evaluated, or proven interoperable with production EUDI ecosystems. This applies to the repository as a whole. |
 
-## How It Works
+See [`docs/MATURITY_AND_LIMITATIONS.md`](docs/MATURITY_AND_LIMITATIONS.md) before relying on any feature or compliance mapping.
 
+## Naming
+
+- **AskMI** is the canonical product and active package brand.
+- **`miTch`** is the historical GitHub repository/directory name and remains in clone URLs and legacy archival material.
+- Active workspace packages use the **`@askmi/*`** scope. Only packages explicitly listed in [`docs/NPM_SCOPE_RENAME_ASKMI.md`](docs/NPM_SCOPE_RENAME_ASKMI.md) should be assumed published.
+- Historical documents may use “miTch”; that does not define the current product name or prove that their status claims remain current.
+
+## Architecture at a glance
+
+```text
+Issuer / credential source
+          |
+          v
+Compatible wallet + AskMI mediation at the edge
+  - request parsing
+  - policy evaluation
+  - user consent / step-up where configured
+  - selective presentation
+          |
+          v
+Verifier integration
 ```
-Issuer (eID/gov)  →  Wallet (Edge)  →  AskMI Policy Engine  →  Verifier (shop/hospital)
-                                            ↓
-                                     Minimal Proof Only
-                                     (no PII leaves device)
-```
 
-1. **Issuance** — Government issues credential (SD-JWT VC via OID4VCI)
-2. **Storage** — Credential stored locally, AES-256-GCM encrypted
-3. **Request** — Verifier asks for attributes via OID4VP
-4. **Mediation** — Policy Engine evaluates: what's asked vs. what's allowed
-5. **Proof** — Only proven claims leave the device, ECDSA-signed, AAD-bound
-6. **Shredding** — Ephemeral keys destroyed. Verifier has proof, nothing else.
+The repository’s `wallet-pwa`, `issuer-mock`, and `verifier-demo` form an embedded reference environment around the middleware. Real deployments would need their own wallet integration, issuer and verifier trust configuration, key management, privacy analysis, operations, and assurance work.
 
----
+## Standards and compliance positioning
 
-## Architecture
+The repository contains implementations and mappings related to GDPR privacy/security principles, OID4VCI, OID4VP/SIOPv2, SD-JWT VC, WebAuthn, StatusList2021, and ISO 18013-5/mdoc.
 
-pnpm monorepo (Turborepo) — **29 packages, 3 apps**.
+Those artifacts are engineering inputs and internal evidence. They are **not** legal advice, certification, a declaration of full conformance, or proof of regulatory compliance. Percentage-based compliance scores in historical documents are internal mapping snapshots, not externally validated measurements. Formal evaluation and ecosystem interoperability remain outstanding.
 
+## Documentation
 
-### Core
-
-| Package | Purpose |
-|---|---|
-| `@askmi/policy-engine` | Fail-closed rule evaluator · 31+ deny codes |
-| `@askmi/shared-crypto` | ECDSA · AES-256-GCM · HKDF · SD-JWT · pairwise DIDs · PQC (ML-DSA, ML-KEM) |
-| `@askmi/predicates` | ZK-style predicates (`isOver18`, `isStudent`, …) |
-| `@askmi/shared-types` | Shared TypeScript types across all packages |
-| `@askmi/data-flow` | Transaction transparency · grouped audit views |
-
-### Protocol
-
-| Package | Purpose |
-|---|---|
-| `@askmi/oid4vci` | OpenID for Verifiable Credential Issuance |
-| `@askmi/oid4vp` | OpenID for Verifiable Presentations + SIOPv2 |
-| `@askmi/oid4vp-verifier` | Verifier-side OID4VP request handling |
-| `@askmi/mdoc` | ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1 |
-| `@askmi/verifier-sdk` | Server SDK: decrypt · verify · replay-check |
-| `@askmi/verifier-browser` | Browser-side verifier integration |
-| `@askmi/mcp-server` | MCP interface for LLM agents (Claude Desktop) |
-
-### Storage & Security
-
-| Package | Purpose |
-|---|---|
-| `@askmi/secure-storage` | AES-256-GCM credential store (Pluggable Adapters) |
-| `@askmi/secure-memory` | Secure in-memory key handling |
-| `@askmi/wallet-core` | Wallet logic + CRDT multi-device sync |
-| `@askmi/webauthn-verifier` | WebAuthn step-up authentication |
-| `@askmi/audit-log` | WORM append-only audit log (GDPR Art. 32) |
-| `@askmi/revocation-statuslist` | StatusList2021 — fail-closed revocation |
-| `@askmi/anchor-service` | Merkle batch anchoring + L2 stubs |
-
-### Identity & Compliance
-
-| Package | Purpose |
-|---|---|
-| `@askmi/eid-issuer-connector` | eID/ID Austria bridge for credential issuance |
-| `@askmi/layer-resolver` | DID + layer resolution |
-| `@askmi/phase0-security` | Security hardening patterns |
-
-### Demos & Testing
-
-| Package | Purpose |
-|---|---|
-| `@askmi/poc-hardened` | Hardened proof-of-concept (standalone demo) |
-| `@askmi/demo-liquor-store` | Age verification demo scenario |
-| `@askmi/benchmarks` | Performance benchmarks |
-| `@askmi/integration-tests` | Cross-package integration tests |
-| `@askmi/mock-issuer` | Mock credential issuer for testing |
-| `@askmi/secure-ui-test` | UI security testing |
-| `@askmi/consent-ui` | Reusable consent components and flows |
-
-**Apps:** `wallet-pwa` (React PWA) · `verifier-demo` (Express + frontend) · `issuer-mock` (OID4VCI server)
-
----
-
-## Key Properties
-
-| Property | How |
-|---|---|
-| **Fail-Closed** | Every ambiguous state → DENY (no silent allow) |
-| **Unlinkability** | HKDF pairwise DIDs per verifier session |
-| **Data Minimization** | Only proven claims leave device — never raw attributes |
-| **Crypto-Shredding** | Ephemeral keys destroyed after each transaction |
-| **WORM Audit** | Append-only log, integrity-chained, user-readable |
-| **Passkey-First** | Biometric device binding for all identity operations |
-| **Zero Identity Custody** | No PII on any server — infrastructure is blind |
-
----
-
-## Compliance
-
-| Standard | Status |
-|---|---|
-| **GDPR Art. 25** | Privacy by Design — data minimization by construction |
-| **GDPR Art. 32** | WORM audit log, AES-256-GCM at rest |
-| **eIDAS 2.0 / EUDI** | OID4VP + OID4VCI + SIOPv2 + DPoP + HAIP |
-| **CIR (Implementing Regulation)** | 100% Technical ([matrix](docs/compliance/EUDI_CIR_MATRIX.md)) |
-| **EHDS** | Break-glass WebAuthn step-up for health data |
-
----
-
-## Use Cases
-
-- **🍺 Age Verification** — Prove 18+ without revealing birthday
-- **🎓 Student Discount** — Prove enrollment without sharing student ID
-- **🏥 Health Data (EHDS)** — Emergency access with WebAuthn step-up + audit trail
-- **📺 Ad-Tech Blind Provider** — Demographic verification without tracking (nullifier-based sybil protection)
-
----
-
-## Docs
-
-| Document | Link |
-|---|---|
-| Architecture | [docs/presentation/ARCHITECTURE.md](docs/presentation/ARCHITECTURE.md) |
-| Demo Script | [docs/presentation/DEMO_SCRIPT.md](docs/presentation/DEMO_SCRIPT.md) |
-| Specs (114) | [docs/specs/](docs/specs/) |
-| ADRs (12) | [docs/03-architecture/mvp/](docs/03-architecture/mvp/) |
-| P0 Evidence Pack | [docs/ops/EVIDENCE_PACK_P0.md](docs/ops/EVIDENCE_PACK_P0.md) |
-| Compliance Matrix | [docs/compliance/EUDI_CIR_MATRIX.md](docs/compliance/EUDI_CIR_MATRIX.md) |
-| Refactoring Roadmap | [docs/REFACTORING_ROADMAP.md](docs/REFACTORING_ROADMAP.md) |
-| Backlog | [docs/BACKLOG.md](docs/BACKLOG.md) |
-
----
+- [Documentation index and authority rules](docs/README.md)
+- [Maturity, limitations, and claim interpretation](docs/MATURITY_AND_LIMITATIONS.md)
+- [Architecture](docs/presentation/ARCHITECTURE.md)
+- [Demo script](docs/presentation/DEMO_SCRIPT.md)
+- [QA evidence records](docs/qa/README.md)
+- [Security residuals](docs/security/RESIDUALS.md)
+- [Backlog](docs/BACKLOG.md)
 
 ## License
 
-[Apache 2.0](LICENSE) — **Maintainer:** [@Late-bloomer420](https://github.com/Late-bloomer420)
+[Apache 2.0](LICENSE) — Maintainer: [@Late-bloomer420](https://github.com/Late-bloomer420)

@@ -468,12 +468,34 @@ describe('G-03 — Wallet App', () => {
     expect(trace).toContainElement(document.getElementById('dataflow-section'));
   });
 
+  it('adds one app-scoped session ID to the standalone verifier presentation', async () => {
+    await bootstrapFetchMocks('ALLOW');
+    walletServiceMockState.generatePresentation.mockResolvedValue({
+      encryptedVp: 'encrypted-presentation',
+      auditLog: [],
+    });
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    fireEvent.click(document.getElementById('btn-liquor-store')!);
+
+    await waitFor(() => {
+      const presentationCall = vi
+        .mocked(fetch)
+        .mock.calls.find(([input]) => String(input).endsWith('/present'));
+      expect(presentationCall).toBeDefined();
+      expect(new Headers(presentationCall?.[1]?.headers).get('X-AskMI-Session-Id')).toMatch(
+        /^[0-9a-f-]{36}$/
+      );
+    });
+  });
+
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
     await bootstrapFetchMocks('ALLOW');
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store&sessionId=flow-session-123'
     );
 
     render(<App />);
@@ -485,6 +507,14 @@ describe('G-03 — Wallet App', () => {
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
+
+    const flowCalls = vi.mocked(fetch).mock.calls.filter(([input]) =>
+      /notify-scan|authorize|direct_post/.test(String(input))
+    );
+    expect(flowCalls).toHaveLength(3);
+    for (const [, init] of flowCalls) {
+      expect(new Headers(init?.headers).get('X-AskMI-Session-Id')).toBe('flow-session-123');
+    }
   });
 
   it('persists a DENIED receipt when the verifier rejects the presentation', async () => {
@@ -492,7 +522,7 @@ describe('G-03 — Wallet App', () => {
     window.history.replaceState(
       {},
       '',
-      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store'
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store&sessionId=flow-session-123'
     );
     // ADOPT-0b: real credential path — wallet mock provides presentStoredSdJwtVc
     vi.stubGlobal(

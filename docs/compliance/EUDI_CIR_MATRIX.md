@@ -1,5 +1,13 @@
 # EUDI Wallet — CIR Compliance Matrix
 
+> [!WARNING]
+> **Historical internal checklist — not conformance evidence.** This June 2026
+> matrix predates the locked [ARF v3.0.0 and official reference-wallet baseline](../eudi/EUDI_SOURCE_BASELINE.md).
+> Its 98% total and its LoA High, secure-element, and FCAF-readiness rows are not
+> supported by external assessment. Use the
+> [release-readiness roadmap](../RELEASE_READINESS_ROADMAP.md) until this file is
+> replaced by requirement-level traceability.
+
 > Last updated: 2026-06-02
 > Coverage: miTch v1.0-RC (Session 11 — Pilot Readiness)
 >

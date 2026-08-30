@@ -372,6 +372,13 @@ async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
   return key;
 }
 
+export type RecoveryKeyProvider = () => string | Promise<string>;
+
+export interface WalletServiceOptions {
+  /** Explicitly injected for demos/tests only. Production recovery key access is not implemented. */
+  recoveryKeyProvider?: RecoveryKeyProvider;
+}
+
 export class WalletService {
   private storage: SecureStorage | null = null;
   private auditLog: AuditLog;
@@ -387,8 +394,10 @@ export class WalletService {
    * non-extractable. Durable persistence lands with C1 (presentation use).
    */
   private holderKeys = new Map<string, CryptoKeyPair>();
+  private readonly recoveryKeyProvider?: RecoveryKeyProvider;
 
-  constructor() {
+  constructor(options: WalletServiceOptions = {}) {
+    this.recoveryKeyProvider = options.recoveryKeyProvider;
     this.auditLog = new AuditLog('user-wallet-001');
   }
 
@@ -804,15 +813,22 @@ export class WalletService {
   }
 
   async splitMasterKey(): Promise<string[]> {
-    // In a real app, we'd get the actual master key bits.
-    // For the PoC, we use a placeholder that represents the entropy.
-    const mockMasterKey = 'mitch-master-entropy-v1-highly-sensitive';
-    return RecoveryService.splitMasterKey(mockMasterKey);
+    if (!this.recoveryKeyProvider) {
+      throw new Error('Recovery setup unavailable: no recovery key provider configured');
+    }
+
+    const recoveryKey = await this.recoveryKeyProvider();
+    if (typeof recoveryKey !== 'string' || recoveryKey.length === 0) {
+      throw new Error('Recovery setup unavailable: recovery key provider returned no key');
+    }
+    if (recoveryKey.length > 4096) {
+      throw new Error('Recovery setup unavailable: recovery key exceeds safe size limit');
+    }
+    return RecoveryService.splitMasterKey(recoveryKey);
   }
 
   async recoverFromFragments(fragments: string[]): Promise<void> {
-    const key = await RecoveryService.recover(fragments);
-    console.log(`✅ Wallet Recovered! Key: ${key.substring(0, 5)}...`);
+    await RecoveryService.recover(fragments);
     // In prod, this would re-initialize SecureStorage
   }
 

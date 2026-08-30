@@ -33,6 +33,12 @@ if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
 # ── Services als separate Fenster starten ────────────────────
 $jobs = @()
 
+# The verifier backend denies browser origins unless they are explicitly listed.
+# Child PowerShell processes inherit this canonical demo allowlist.
+if (-not $env:CORS_ALLOWED_ORIGINS) {
+  $env:CORS_ALLOWED_ORIGINS = "http://localhost:5174,http://localhost:5175"
+}
+
 Write-Color "▶  Starting Issuer-Mock     (port 3005)..." Cyan
 $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
   "Write-Host '[Issuer-Mock]' -ForegroundColor Cyan -NoNewline; pnpm --filter '@askmi/issuer-mock' dev" `
