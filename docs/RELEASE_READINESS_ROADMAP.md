@@ -1,16 +1,24 @@
 # AskMI × EUDI release-readiness roadmap
 
-**Status:** Active, evidence-gated plan  
-**Baseline date:** 2026-08-26  
-**Live tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
+**Status:** Active, evidence-gated integrated plan  
+**Baseline date:** 2026-08-30  
+**Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
+**GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
+**Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
 **Baseline candidate:** [Pull request #141](https://github.com/Late-bloomer420/miTch/pull/141)  
 **Official-source lock:** [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md)
 
-> AskMI is development/evaluation software. This roadmap does not claim EUDI certification, LoA High, production readiness, or European Commission endorsement. Dates are planning windows; a gate closes only with revision-bound evidence.
+> AskMI is development/evaluation software. This roadmap does not claim EUDI certification, LoA High, production readiness, customers, revenue, or European Commission endorsement. Dates and commercial targets are planning hypotheses; a gate closes only with revision-bound technical evidence or anonymised, auditable market evidence.
 
 ## Product decision
 
-AskMI will not fork or replace the European Commission reference wallets. It will ship as policy/trust middleware and a verifier integration layer that interoperates with the official EUDI reference implementation. The repository's browser wallet remains a test/reference harness, not a certified EUDI Wallet Solution.
+AskMI will not fork or replace the European Commission reference wallets. Its commercial category is an **independent EUDI request-governance and evidence layer**: purpose-bound claim minimisation, fail-closed policy decisions, request/schema drift detection, and revision-bound evidence across verifier/connector paths. Transport adapters and verifier integration are enabling components, not the product category.
+
+The first market-validation wedge is DACH travel/hospitality, using one purpose-bound hotel pre-arrival/check-in journey. The preferred scale channel is identity/IAM/system integrators. Age verification remains a demonstration/policy recipe rather than the core market.
+
+The product path is an open Policy SDK, a self-hosted Evidence Gateway, and a paid four-to-six-week Readiness Sprint. Discovery and paid readiness/design work may proceed before pilot readiness; a live credential pilot may not bypass the technical, security, privacy, legal, and operating gates below.
+
+The repository's browser wallet remains a test/reference harness, not a certified EUDI Wallet Solution.
 
 The public EC implementation is a multi-repository organization, not one monolithic "original wallet" repo. The primary mobile anchors are the official [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui) and [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui), backed by their official core libraries.
 
@@ -19,8 +27,10 @@ The public EC implementation is a multi-repository organization, not one monolit
 | Surface | Authority |
 |---|---|
 | [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md) | Official source/version lock and AskMI role boundary |
-| This roadmap | Sequencing, gates, dependencies, and planning windows |
-| [Issue #142](https://github.com/Late-bloomer420/miTch/issues/142) | Live checklist and current evidence links |
+| This roadmap | Technical sequencing, hard pilot gates, dependencies, and planning windows |
+| [GTM sprint roadmap](GTM_SPRINT_ROADMAP.md) | Complete 26-sprint market-validation, offer, pilot-learning, conversion, and stop-gate plan |
+| [Issue #142](https://github.com/Late-bloomer420/miTch/issues/142) | Live technical/readiness checklist and current evidence links |
+| [Issue #143](https://github.com/Late-bloomer420/miTch/issues/143) | Live GTM sprint/gate tracker and anonymised market evidence |
 | [BACKLOG.md](BACKLOG.md) | Individual task state and priority |
 | [STATE.md](../STATE.md) | Current operational snapshot |
 | [RC checklist](RELEASE_CANDIDATE_CHECKLIST.md) | Clean-checkout release evidence |
@@ -72,6 +82,24 @@ gantt
 ```
 
 Production is intentionally unscheduled.
+
+## Integrated market-validation track
+
+The technical Waves 0–4 remain hard readiness gates. They now run beside the complete [26-sprint GTM and pilot-validation plan](GTM_SPRINT_ROADMAP.md), tracked live in [issue #143](https://github.com/Late-bloomer420/miTch/issues/143).
+
+| Commercial gate | Target | Required evidence |
+|---|---:|---|
+| G0 — truth | 13 Sep 2026 | #141 merged/re-baselined; truthful claims and product boundary |
+| G1 — buyer | 11 Oct 2026 | 20 interviews; at least 8 problem confirmations; 3 budget/procurement/deadline signals |
+| G2 — offer | 22 Nov 2026 | two design partners and at least one paid Readiness Sprint |
+| G3 — interop/package | 17 Jan 2027 | frozen Android/iOS matrix, two adapter paths, measured unassisted quickstart |
+| G4 — conditional pilot | 31 Mar 2027 | Waves 0–4, no P0/P1/high unresolved finding, legal/privacy scope and runbooks |
+| G5 — conversion | 20 Jun 2027 | at least three paying organisations, one annual conversion, repeated buyer/problem |
+| G6 — year one | 29 Aug 2027 | honest review against 5–8 customers, two channels, and €200k–€400k exit-ARR planning target |
+
+A missed buyer or offer gate stops broad product expansion. A missed pilot gate moves the pilot date and cannot be waived commercially. Commercial counts and revenue are planning targets, not forecasts or current-state claims.
+
+Customer discovery, synthetic-data demonstrations, and paid readiness/design engagements may run before G4. No live credential pilot starts before the 31 March go/no-go and its linked evidence. Public GitHub evidence must remain anonymised and must not contain prospect/customer names, contact data, confidential notes, contracts, or raw customer data.
 
 ## Wave 0 — truth, source lock, and repository convergence
 
@@ -181,6 +209,8 @@ A go decision requires Waves 0–4 with linked evidence; official Android/iOS in
 
 ## Deferred/out of pilot scope
 
+- competing as a proprietary wallet, generic all-wallet connector, or standalone age-verification vendor;
+- managed processing or retention of raw credentials before demand, architecture, privacy, and legal review justify it;
 - becoming a certified EUDI Wallet Solution or claiming LoA High/WSCA/WSCD compliance;
 - qualified electronic signatures, Digital Credentials API, wallet-to-wallet, backup/migration/multi-device continuity;
 - ZKP/BBS+ and advanced anonymous credentials;
