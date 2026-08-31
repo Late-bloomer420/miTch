@@ -1,6 +1,6 @@
 # EUDI official-source baseline
 
-**Locked:** 2026-08-26  
+**Locked:** 2026-08-31  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -20,7 +20,7 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | First wallet interop anchor |
 | [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | Second wallet interop anchor |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.30.2) | v0.30.2 | Protocol/credential reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.40.8) | v0.40.8 | Protocol/credential reference |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.40.9) | v0.40.9 | Protocol/credential reference |
 | [Official issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | Issuance anchor |
 | [Official verifier](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.12.0) | v0.12.0 | Presentation comparison anchor |
 | [FCAF](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/releases/tag/v0.0.10) | v0.0.10 | Functional test baseline |
@@ -49,6 +49,15 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-08-31
+
+[iOS Wallet Kit v0.40.9](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.40.9) supersedes the prior v0.40.8 lock and changes two OpenID4VCI-relevant behaviors:
+
+- When authorization-server metadata omits `client_attestation_pop_signing_alg_values_supported`, the kit can create a public client using an explicitly configured `clientId` instead of failing. AskMI must test attested-client and public-client modes, or explicitly scope one out, and must preserve the selected mode in revision-bound evidence. See [official commit 0a859d2](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/commit/0a859d227acb9443c968d49ad9e12ba0a5218dc8).
+- Credential-offer resolution is cached by offer URI. AskMI issuer paths must use unique, immutable, short-lived/single-use offer URIs and test repeated resolution, expiry, and replay; changing offer content behind an unchanged URI is not a supported assumption. See [official commit cc4b80e](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/commit/cc4b80eac8e94f93e89efb9317baff039086e212).
+
+This delta invalidates only future or existing iOS OpenID4VCI evidence that does not record the client mode or credential-offer URI/cache behavior. It does not close or otherwise change a readiness gate.
 
 ## AskMI role boundary
 

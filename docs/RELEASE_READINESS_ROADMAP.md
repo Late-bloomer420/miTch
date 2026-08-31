@@ -1,7 +1,7 @@
 # AskMI × EUDI release-readiness roadmap
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-08-30  
+**Baseline date:** 2026-08-31  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -131,6 +131,8 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Remove custom field names and draft assumptions at public boundaries.
 - Add key binding, replay handling, and privacy-aware batch behavior.
 - Run against the locked official issuer and official wallet-core examples.
+- Test both attested-client and public-client modes introduced in iOS Wallet Kit v0.40.9; if authorization-server metadata omits client-attestation algorithms, require an explicit configured client ID and record the selected mode.
+- Issue unique, immutable, short-lived/single-use credential-offer URIs; test repeated cached resolution, expiry, and replay, and never depend on mutating offer content behind an unchanged URI.
 
 ### CI and exit evidence
 
@@ -169,6 +171,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
+- For iOS Wallet Kit v0.40.9 evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
 - Complete handoff state, request TTL, popup/same-tab fallback, session binding, recovery, and return-to-verifier UX.
 - Deliver verifier adapter/button and server middleware with deny-biased defaults.
 - Establish hosted staging with explicit origins, keys, trust sources, retention, health checks, and artifact traceability.
