@@ -1,7 +1,7 @@
 # AskMI × EUDI release-readiness roadmap
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-08-31  
+**Baseline date:** 2026-09-07  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -159,6 +159,8 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Replace the JSON DID-list PoC on the pilot path with ETSI TS 119 602 LoTE and/or ETSI TS 119 612 Trusted List processing required by the selected EC profile.
 - Validate list signatures, anchors, service status, validity, rollover, revocation, cache expiry, network failure, and rollback.
 - Validate relying-party access and registration certificates, registered scope, and intended use.
+- Exercise RP registration v0.2.2 contracts: object-shaped credential/provided-attestation metadata, certificate-history selection, intermediary identifiers, and status-list references.
+- Preserve registered WRP, access-certificate subject, presenter/intermediary, intended-use identifier, certificate revision/status, and validation source as distinct audit fields.
 - Bind policy to trusted issuer, RP identity, registration scope, rulebook, and requested attributes.
 - Create trust onboarding, suspension, revocation, incident, and outage runbooks.
 
@@ -171,7 +173,9 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
-- For iOS Wallet Kit v0.40.9 evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
+- For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
+- Treat the iOS wallet UI build and wallet-core tag as separate coordinates; do not claim an untested UI/core combination.
+- For iOS Wallet Kit v0.50.0, use iOS 17+, delete and reissue pre-v0.50 stored credentials, and record authentication prompt count/context lifetime with a negative cross-transaction reuse test.
 - Complete handoff state, request TTL, popup/same-tab fallback, session binding, recovery, and return-to-verifier UX.
 - Deliver verifier adapter/button and server middleware with deny-biased defaults.
 - Establish hosted staging with explicit origins, keys, trust sources, retention, health checks, and artifact traceability.

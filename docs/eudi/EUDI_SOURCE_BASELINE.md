@@ -1,6 +1,6 @@
 # EUDI official-source baseline
 
-**Locked:** 2026-08-31  
+**Locked:** 2026-09-07  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -20,10 +20,11 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | First wallet interop anchor |
 | [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | Second wallet interop anchor |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.30.2) | v0.30.2 | Protocol/credential reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.40.9) | v0.40.9 | Protocol/credential reference |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.50.0) | v0.50.0 | Protocol/credential reference; current iOS UI release remains pinned separately |
 | [Official issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | Issuance anchor |
 | [Official verifier](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.12.0) | v0.12.0 | Presentation comparison anchor |
 | [FCAF](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/releases/tag/v0.0.10) | v0.0.10 | Functional test baseline |
+| [RP registration](https://github.com/eu-digital-identity-wallet/eudi-srv-web-relyingparty-registration-py/releases/tag/v0.2.2) | v0.2.2 | WRP access/registration certificate and intended-use comparison anchor |
 
 "Latest" must never appear in evidence without a resolved tag and commit SHA.
 
@@ -49,6 +50,23 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-09-07
+
+[iOS Wallet Kit v0.50.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.50.0) supersedes v0.40.9 as the latest tagged core release. It reuses a shared local-authentication context during one issuance or presentation operation, changes `KeyAccessControl` from an option set to an enum, requires deletion/reissuance of existing stored documents because of metadata changes, and raises the minimum deployment target to iOS 17.
+
+AskMI consequences:
+
+- Treat the released iOS wallet UI and wallet-core tag as separate evidence coordinates; do not claim that the still-locked UI build 41 was tested with core v0.50.0.
+- Run the iOS matrix on iOS 17 or newer and record device/OS/core/UI revisions.
+- Treat a v0.40.9 → v0.50.0 upgrade as a destructive test-fixture migration: delete and reissue credentials, and never carry stored-document evidence across the boundary.
+- Record prompt count and authentication-context lifetime for issuance and presentation, including a negative test proving authentication state is not reused across independent transactions.
+
+[RP registration v0.2.2](https://github.com/eu-digital-identity-wallet/eudi-srv-web-relyingparty-registration-py/releases/tag/v0.2.2) adds access- and registration-certificate history, changes credential/provided-attestation `meta` from a string to an object, and requires an intermediary identifier when the intended-use certificate must contain intermediary information.
+
+AskMI currently has no WRPRC or intended-use implementation in the active codebase. Before Wave 2 can exit, the RP-registration adapter and evidence must cover object-shaped metadata, deterministic selection and validation of the current certificate from history, intermediary/on-behalf-of identity, intended-use scope, and stale/revoked/status-list failures. The [official iOS presenter-log change](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/commit/bc92d38a12e0bf47173940ec00aaedc913ec840e) further confirms that the connecting certificate subject can differ from the registered WRP name; AskMI audit records must preserve both identities rather than collapse them.
+
+No gate or target date moves from these source changes.
 
 ## Upstream delta — 2026-08-31
 
