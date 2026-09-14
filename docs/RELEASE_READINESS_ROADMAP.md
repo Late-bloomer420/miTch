@@ -1,7 +1,7 @@
 # AskMI × EUDI release-readiness roadmap
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-09-07  
+**Baseline date:** 2026-09-14  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -83,6 +83,8 @@ gantt
 
 Production is intentionally unscheduled.
 
+**Schedule variance — 2026-09-14:** Wave 0's 4 September window and the G0 truth target of 13 September elapsed while PRs #141, #144, and #145 remained open. Their gates remain open. Merge/rebase the source-baseline stack and attach final-head evidence before setting a replacement date; do not infer readiness from elapsed time.
+
 ## Integrated market-validation track
 
 The technical Waves 0–4 remain hard readiness gates. They now run beside the complete [26-sprint GTM and pilot-validation plan](GTM_SPRINT_ROADMAP.md), tracked live in [issue #143](https://github.com/Late-bloomer420/miTch/issues/143).
@@ -151,6 +153,8 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Implement exact current PID schemas for SD-JWT VC and mdoc and the mDL profile required by the pilot.
 - Resolve issue #97 using rulebook-defined age semantics, not a repo-local claim shape.
 - Validate namespaces, types, mandatory/optional attributes, metadata, validity, key binding, and disclosure.
+- Track the current PID-issuer main delta: remove separate house-number and `trust_anchor` claims, allow missing expiry, and distinguish administrative-validity dates from credential issuance/expiry; rerun schema and negative tests when the change is tagged.
+- Define a fail-closed SD-JWT certificate-header policy for `x5c`, `x5u`, and `x5t#S256`; any remote certificate retrieval must be allowlisted and bounded, and the thumbprint and trusted chain must match.
 - Define status/revocation per format and record dependencies on evolving ISO work.
 - Defer AV/ZKP and additional attestations unless the frozen pilot requires them.
 
@@ -172,10 +176,13 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
+Current mobile anchors are Android and iOS 2026.09.42-Demo build 42, with iOS Wallet Kit v0.51.0. Build-41 results remain historical and do not satisfy the current matrix.
+
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
 - For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
 - Treat the iOS wallet UI build and wallet-core tag as separate coordinates; do not claim an untested UI/core combination.
-- For iOS Wallet Kit v0.50.0, use iOS 17+, delete and reissue pre-v0.50 stored credentials, and record authentication prompt count/context lifetime with a negative cross-transaction reuse test.
+- For iOS Wallet Kit v0.51.0, use iOS 17+, delete and reissue pre-v0.50 stored credentials, record the SwiftData/keychain backend and app-group configuration, prove registration reconciliation immediately after issuance/storage changes, and record authentication prompt count/context lifetime with a negative cross-transaction reuse test.
+- For Android build 42, record biometric authenticator strength and cover strong-capable success, weak-only rejection, cancellation, terminal errors, and duplicate-prompt prevention.
 - Complete handoff state, request TTL, popup/same-tab fallback, session binding, recovery, and return-to-verifier UX.
 - Deliver verifier adapter/button and server middleware with deny-biased defaults.
 - Establish hosted staging with explicit origins, keys, trust sources, retention, health checks, and artifact traceability.
