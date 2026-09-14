@@ -1,6 +1,6 @@
 # EUDI official-source baseline
 
-**Locked:** 2026-09-07  
+**Locked:** 2026-09-14  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -17,10 +17,10 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | Component | Locked release | AskMI use |
 |---|---|---|
 | [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/releases/tag/v3.0.0) | v3.0.0, 2026-07-23 | Architecture/requirement baseline |
-| [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | First wallet interop anchor |
-| [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.08.41-Demo_Build%3D41) | 2026.08.41-Demo, build 41 | Second wallet interop anchor |
+| [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.09.42-Demo_Build%3D42) | 2026.09.42-Demo, build 42 | First wallet interop anchor |
+| [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.09.42-Demo_Build%3D42) | 2026.09.42-Demo, build 42 | Second wallet interop anchor |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.30.2) | v0.30.2 | Protocol/credential reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.50.0) | v0.50.0 | Protocol/credential reference; current iOS UI release remains pinned separately |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.51.0) | v0.51.0 | Protocol/credential reference; build 42 integration anchor |
 | [Official issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | Issuance anchor |
 | [Official verifier](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.12.0) | v0.12.0 | Presentation comparison anchor |
 | [FCAF](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/releases/tag/v0.0.10) | v0.0.10 | Functional test baseline |
@@ -50,6 +50,25 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-09-14
+
+The official mobile interop anchors moved to [Android wallet build 42](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.09.42-Demo_Build%3D42) and [iOS wallet build 42](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.09.42-Demo_Build%3D42). The iOS build integrates [Wallet Kit v0.51.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.51.0), reconciles document registrations after storage changes and immediately after issuance, and adds SwiftData as an alternative storage backend.
+
+AskMI consequences:
+
+- Replace build 41 in future official-wallet matrices; existing build-41 evidence is historical and cannot establish build-42 behavior.
+- For iOS, record the storage backend/app-group configuration and prove post-issuance registration reconciliation before using a credential. Exercise stale/removed registration and storage-reset cases.
+- Preserve the v0.50 migration rules (iOS 17+, delete/reissue old stored documents and bound authentication context) when testing v0.51.0.
+
+Android build 42 [requires strong biometrics for cryptographic authentication and stops retrying terminal errors or duplicating prompts](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/commit/3e75b4202170e78af7c2409d209fa6e5041adce7). Android evidence must record authenticator class and test strong-capable success, weak-only failure, cancellation, terminal error, and duplicate-prompt prevention. This constrains the official-wallet evidence environment; it does not make the AskMI browser harness a WSCA/WSCD equivalent.
+
+Two unreleased PID-issuer main-branch changes are material watch items; the locked issuer tag remains v0.11.0 until a release:
+
+- The [latest PID Rulebook alignment](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer/commit/b16b9833f5ae7c9d4185147d2619a224f4f79672) removes separate house-number and `trust_anchor` claims, makes expiry optional, and derives issuance/expiry from administrative-validity dates. Wave 2 PID schemas and tests must reject removed fields, accept missing expiry, and distinguish credential issuance/expiry from administrative validity.
+- The issuer now emits [`x5u` and `x5t#S256` in SD-JWT VC headers](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer/commit/13cffc06c60235ab764c0cfab1f33a640098f8b6). AskMI's active SD-JWT verifier resolves keys by issuer and has no explicit certificate-header policy. Before official issuer interop, define whether `x5u` is accepted; if accepted, use allowlisted HTTPS retrieval with size/time limits, validate the certificate chain and require the SHA-256 thumbprint to match. Never follow an untrusted credential-supplied URL blindly.
+
+No readiness gate closes from these upstream changes.
 
 ## Upstream delta — 2026-09-07
 
