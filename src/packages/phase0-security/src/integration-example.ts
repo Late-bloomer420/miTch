@@ -91,13 +91,6 @@ export async function demonstrateSecurePresentation() {
     // 8. Verify Log Integrity
     const integrity = await auditLog.verifyIntegrity();
     console.log('🔒 Audit Log Integrity Check:', integrity.valid ? 'PASS' : 'FAIL');
-
-    // 9. Right to Erasure (GDPR Art. 17)
-    // Uncomment to test full deletion flow
-    // console.log('🗑️ Testing Right to Erasure...');
-    // await auditLog.deleteAll();
-    // const postDelete = await auditLog.getAllEntries();
-    // console.log('   Entries after deletion:', postDelete.length);
 }
 
 demonstrateSecurePresentation().catch(console.error);
