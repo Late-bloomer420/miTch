@@ -27,14 +27,9 @@ import {
  * Verifier uses this to enforce policy.
  */
 export async function buildAllowedPredicateSet(predicates: Predicate[]): Promise<Set<string>> {
-    const hashes = new Set<string>();
-
-    for (const pred of predicates) {
-        const hash = await hashPredicateAsync(pred);
-        hashes.add(hash);
-    }
-
-    return hashes;
+    const hashPromises = predicates.map((pred) => hashPredicateAsync(pred));
+    const hashes = await Promise.all(hashPromises);
+    return new Set(hashes);
 }
 
 // ============================================================================
