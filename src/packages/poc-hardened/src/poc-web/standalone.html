@@ -1777,7 +1777,7 @@
     <div class="vsec">
       <div class="vsec-label">Live Demo</div>
       <h2 class="vsec-title">Verifier asks. AskMI filters. You decide.</h2>
-      <p class="vsec-body">Four concrete scenarios — same mechanics. Click through each step and see exactly what is shared, what is blocked, and why.</p>
+      <p class="vsec-body">Five concrete scenarios — same mechanics. Click through each step and see exactly what is shared, what is blocked, and why.</p>
 
       <div class="uc-tabs">
         <button class="uc-tab active" data-uc="adtech" onclick="switchUC('adtech')">🎯 Ad-Tech</button>
@@ -3937,6 +3937,14 @@
         verdict = STATE.revoked ? 'DENY (revoked)' : needsConsent ? 'PROMPT' : 'ALLOW';
       }
 
+      // A revoked credential must not show an "ALLOW" line before the DENY verdict:
+      // replace the final rule-verdict line with the revocation-status check.
+      if (STATE.revoked) {
+        engineChecks = engineChecks.slice(0, -1).concat([
+          { label: '🚫 Credential status (StatusList2021) → REVOKED', delay: 600 },
+        ]);
+      }
+
       steps.innerHTML = engineChecks.map((s, i) => `<div class="engine-step" id="estep-${i}">${s.label}</div>`).join('') +
         `<div class="engine-step" id="estep-verdict" style="font-weight:700"></div>`;
         
@@ -4760,6 +4768,9 @@
     function ucNext(id) { ucGoTo(id, ucState[id].current + 1); }
     function ucBack(id) { ucGoTo(id, ucState[id].current - 1); }
 
+    // How long the generated proof stays visible before the flow advances to the result.
+    const UC_PROOF_VIEW_MS = 2500;
+
     async function ucRunProof(id) {
       const btn = document.getElementById('uc-' + id + '-prove-btn');
       const box = document.getElementById('uc-' + id + '-proof-box');
@@ -4790,7 +4801,7 @@
       btn.textContent = 'Proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
-      await delay(700);
+      await delay(UC_PROOF_VIEW_MS);
       addReviewEntry('ExampleAds GmbH — Verification', 'clean', ['✓ Age ≥ 18', '✓ Region: EU', '✗ Name blocked', '✗ ID blocked']);
       ucNext(id);
     }
@@ -4818,7 +4829,7 @@
       btn.textContent = 'Credential issued ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
-      await delay(700);
+      await delay(UC_PROOF_VIEW_MS);
       addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
       ucNext('student');
     }
@@ -4852,7 +4863,7 @@
       btn.textContent = 'Release granted ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
-      await delay(700);
+      await delay(UC_PROOF_VIEW_MS);
       addReviewEntry('UKH Innsbruck — Hospital Admission', 'clean', ['✓ Allergies shared', '✓ Blood group shared', '✓ Insurance shared', '✗ History blocked']);
       ucNext('hospital');
     }
@@ -4889,7 +4900,7 @@
       btn.textContent = 'Login proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
-      await delay(700);
+      await delay(UC_PROOF_VIEW_MS);
       addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Overreach detected: location history BLOCKED']);
       ucNext('social');
     }
