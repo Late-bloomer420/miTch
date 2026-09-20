@@ -1819,9 +1819,9 @@
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🎯</span>
                 <span class="vc-name">ExampleAds GmbH</span>
-                <span class="trust-chip high">Trust 91/100</span>
+                <span class="trust-chip high">Trust 91/100 (example)</span>
               </div>
-              <div class="vc-did">did:askmi:exampleads-gmbh-at · OID4VP 1.0 · Registered AT-DSA</div>
+              <div class="vc-did">did:askmi:exampleads-gmbh-at · OID4VP 1.0 · Example registration (fictional)</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
             <div class="risk-row"><span class="rr-field">age_threshold</span><span class="rr-val">≥ 18</span><span class="risk-badge low">🟢 Predicate</span></div>
@@ -1842,8 +1842,8 @@
             <div class="uc-sub-hdr">Structurally not shareable</div>
             <div class="blocked-row"><span class="br-field">Last Name, First Name</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT IN PREDICATE</span></div>
-            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
-            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
+            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">NOT IN PROOF</span></div>
+            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">NOT IN PROOF</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
               <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots, which limits continuous fingerprinting.</div>
@@ -1881,7 +1881,7 @@
                 <div class="ss-row"><span class="ss-key">budget_slot:</span><span class="ss-val">847 / 1920</span></div>
                 <div class="ss-row"><span class="ss-key">name:</span><span class="ss-blocked">—</span></div>
                 <div class="ss-row"><span class="ss-key">dob:</span><span class="ss-blocked">—</span></div>
-                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">impossible</span></div>
+                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">not in proof</span></div>
               </div>
               <div class="ss-col user-col">
                 <div class="ss-col-title">🟢 You see (Wallet)</div>
@@ -1895,7 +1895,7 @@
               </div>
             </div>
             <div class="collective-signal" style="margin-top:0.9rem">
-              <strong>Sybil Prevention:</strong> The same nullifier for ExampleAds + campaign-summer25 can only be used once per frequency window. 100 fake accounts → 100 different nullifiers, but each is tracked by the verifier and blocked once the limit is reached.
+              <strong>Frequency cap per account:</strong> Each account has its own quota per campaign. This mechanism alone does not prevent fake accounts. · <strong>Limit pro Konto:</strong> Jedes Konto hat pro Kampagne ein eigenes Kontingent. Dieser Mechanismus allein verhindert keine gefälschten Konten.
             </div>
             <div style="margin-top:1.5rem; text-align:center;">
               <button class="btn btn-success" onclick="activateScenario('adtech')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
@@ -1923,24 +1923,24 @@
             <div class="uc-snav-dot">4</div><div class="uc-snav-label">Overreach</div>
           </div>
 
-          <!-- Step 1: IVB Request -->
+          <!-- Step 1: Example Transit Request -->
           <div class="uc-panel active" id="student-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">IVB Innsbruck asks: Are you a student?</div>
+            <div class="uc-panel-title">Example Transit asks: Are you a student?</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🚌</span>
-                <span class="vc-name">IVB Innsbruck — Studententicket</span>
-                <span class="trust-chip high">Trust 88/100</span>
+                <span class="vc-name">Example Transit — Student ticket</span>
+                <span class="trust-chip high">Trust 88/100 (example)</span>
               </div>
-              <div class="vc-did">did:askmi:ivb-innsbruck · Registered AT-DSA · Tirol</div>
+              <div class="vc-did">did:askmi:example-transit · Example registration (fictional)</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
             <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">is_student: true/false</span><span class="risk-badge low">🟢 Boolean</span></div>
             <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende</span><span class="risk-badge low">🟢 Date</span></div>
             <div class="allow-banner" style="margin-top:0.8rem">
               <div class="ab-title">Request clean — no sensitive data</div>
-              <div class="ab-body">IVB only asks if you are a student and until when. Name, matriculation number, field of study, university, date of birth — none of this is part of the request.</div>
+              <div class="ab-body">Example Transit only asks if you are a student and until when. Name, matriculation number, field of study, university, date of birth — none of this is part of the request.</div>
             </div>
           </div>
 
@@ -1959,7 +1959,7 @@
             <div class="blocked-row"><span class="br-field">Field of Study</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">Student boolean + semester end date do not allow any conclusions about identity. IVB only learns: This wallet user is a valid student. No profiling possible.</div>
+              <div class="ib-body">Student boolean + semester end date do not allow any conclusions about identity. Example Transit only learns: This wallet user is a valid student. Designed to limit profiling.</div>
             </div>
           </div>
 
@@ -1967,7 +1967,7 @@
           <div class="uc-panel" id="student-p2">
             <div class="uc-label-chip">③ Ephemeral Credential</div>
             <div class="uc-panel-title">Short-term credential is issued</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The credential is valid only for this session and expires automatically at midnight. The university confirms the status — IVB never learns which university.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The credential is valid only for this session and expires automatically at midnight. The university confirms the status — in this design, Example Transit does not learn which university.</p>
             <div class="btn-row">
               <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Confirm Student Status</button>
             </div>
@@ -1978,8 +1978,8 @@
           <div class="uc-panel" id="student-p3">
             <div class="uc-label-chip">④ Overreach-Demo</div>
             <div class="uc-panel-title">What happens when a vendor asks for too much?</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">IVB+ (pilot program) makes an extended request — in addition to student verification, the vendor wants the matriculation number and university name.</p>
-            <div class="uc-sub-hdr">Request from IVB+</div>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">Example Transit+ (pilot program) makes an extended request — in addition to student verification, the vendor wants the matriculation number and university name.</p>
+            <div class="uc-sub-hdr">Request from Example Transit+</div>
             <div class="ok-row"><span class="or-field">student_status</span><span class="or-status">✓ OK</span></div>
             <div class="ok-row"><span class="or-field">valid_until</span><span class="or-status">✓ OK</span></div>
             <div class="overreach-row"><span class="or-field">matriculation_number</span><span class="or-status">⛔ BLOCKED</span></div>
@@ -1992,7 +1992,7 @@
               <button class="btn btn-ghost" onclick="ucFlagVendor('student')" id="uc-student-flag-btn" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Flag Vendor</button>
             </div>
             <div class="collective-signal" id="uc-student-collective">
-              <strong>423 students</strong> have already reported IVB+ as overreaching. From 500 reports, the vendor is automatically reported to the AT-DSA.
+              Example figures: <strong>423 students</strong> have already reported Example Transit+ as overreaching. From 500 reports, the vendor is automatically reported to the (fictional) regulator.
             </div>
             <div style="margin-top:1.5rem; text-align:center;">
               <button class="btn btn-success" onclick="activateScenario('student')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
@@ -2023,14 +2023,14 @@
           <!-- Step 1: Hospital Request -->
           <div class="uc-panel active" id="hospital-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">UKH Innsbruck — Hospital Admission</div>
+            <div class="uc-panel-title">Example Hospital — Hospital Admission</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🏥</span>
-                <span class="vc-name">UKH Innsbruck — Hospital</span>
-                <span class="trust-chip high">Trust 97/100</span>
+                <span class="vc-name">Example Hospital — Hospital</span>
+                <span class="trust-chip high">Trust 97/100 (example)</span>
               </div>
-              <div class="vc-did">did:askmi:ukh-innsbruck · ELGA-zertifiziert · Art. 9 GDPR Basis</div>
+              <div class="vc-did">did:askmi:example-hospital · example certification (fictional) · Art. 9 GDPR Basis</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
             <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">List</span><span class="risk-badge med">🟡 Medium</span></div>
@@ -2079,7 +2079,7 @@
             </div>
             <div class="uc-sub-hdr">Consent Receipt (stored in your wallet)</div>
             <div class="receipt-box">
-              <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">UKH Innsbruck — Notaufnahme</span></div>
+              <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">Example Hospital — Emergency dept.</span></div>
               <div class="receipt-row"><span class="rk">Time</span><span class="rv" id="hospital-ts">—</span></div>
               <div class="receipt-row"><span class="rk">Shared</span><span class="rv">allergies, blood_group, insurance</span></div>
               <div class="receipt-row"><span class="rk">Basis</span><span class="rv">GDPR Art. 9(2)(c)</span></div>
@@ -2113,20 +2113,20 @@
           <!-- Step 1: University Request -->
           <div class="uc-panel active" id="ehds-p0">
             <div class="uc-label-chip">① Verifier Request</div>
-            <div class="uc-panel-title">MedUni Vienna — Research Request</div>
+            <div class="uc-panel-title">Example University — Research Request</div>
             <div class="verifier-card">
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">🔬</span>
-                <span class="vc-name">MedUni Vienna — Research Dept.</span>
-                <span class="trust-chip med">Trust 74/100</span>
+                <span class="vc-name">Example University — Research Dept.</span>
+                <span class="trust-chip med">Trust 74/100 (example)</span>
               </div>
-              <div class="vc-did">did:askmi:meduni-vienna-research · no HDAB certificate detected</div>
+              <div class="vc-did">did:askmi:example-university-research · no HDAB certificate detected</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
             <div class="risk-row"><span class="rr-field">health_data_pseudonymized</span><span class="rr-val">Diabetes Study 2025</span><span class="risk-badge high">🔴 High</span></div>
             <div class="risk-row"><span class="rr-field">diagnosis_codes</span><span class="rr-val">ICD-10 subset</span><span class="risk-badge high">🔴 High</span></div>
             <div class="risk-row"><span class="rr-field">medication_history</span><span class="rr-val">last 24 months</span><span class="risk-badge high">🔴 High</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Detected: Secondary use of health data (EHDS Art. 33). Verifier has no HDAB certificate.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Detected: Secondary use of health data (EHDS). Verifier has no HDAB certificate.</p>
           </div>
 
           <!-- Step 2: Deny -->
@@ -2135,11 +2135,11 @@
             <div class="uc-panel-title">Request automatically denied</div>
             <div class="deny-banner">
               <div class="db-title">⛔ DENY_SECONDARY_USE_DIRECT</div>
-              <div class="db-body">This request aims at secondary use of health data. According to EHDS Regulation (EU) 2025/327, Art. 33, secondary use must <strong style="color:var(--text)">only occur via a Health Data Access Body (HDAB)</strong>. Direct access to wallets is not permitted — even with the user's consent.</div>
+              <div class="db-body">This request aims at secondary use of health data. Under the EHDS Regulation (EU) 2025/327, secondary use of health data is designed to run <strong style="color:var(--text)">through a Health Data Access Body (HDAB)</strong> and its permit process, not through direct access to individual wallets.</div>
             </div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;font-size:0.79rem;color:var(--text-dim);line-height:1.6">
-              <strong style="color:var(--text)">What must MedUni Vienna do instead?</strong><br>
-              1. Apply to the Austrian HDAB (GÖG / ELGA GmbH)<br>
+              <strong style="color:var(--text)">What must Example University do instead?</strong><br>
+              1. Apply to the national Health Data Access Body (HDAB)<br>
               2. Submit ethics vote + data protection impact assessment<br>
               3. Data access via HDAB portal — not via individual wallets
             </div>
@@ -2192,7 +2192,7 @@
               <div class="vc-hdr">
                 <span style="font-size:1.4rem">💜</span>
                 <span class="vc-name">FlirtRadar™</span>
-                <span class="trust-chip low">Trust 35/100</span>
+                <span class="trust-chip low">Trust 35/100 (example)</span>
               </div>
               <div class="vc-did">did:askmi:flirtradar-app-eu · OID4VP 1.0 · Unregistered</div>
             </div>
@@ -2263,7 +2263,7 @@
             </div>
             <div style="margin-top:0.8rem">
               <button class="btn btn-ghost" id="uc-social-flag-btn" onclick="ucFlagVendor('social')" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">🚩 Report FlirtRadar as overreaching</button>
-              <p class="dim" id="uc-social-collective" style="font-size:0.78rem;margin-top:0.4rem">If enough users report, a DSA complaint is automatically triggered.</p>
+              <p class="dim" id="uc-social-collective" style="font-size:0.78rem;margin-top:0.4rem">If enough users report, a complaint to the regulator would be triggered (simulated).</p>
             </div>
             <div style="margin-top:1.5rem; text-align:center;">
               <button class="btn btn-success" onclick="activateScenario('social')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
@@ -2431,7 +2431,7 @@
     <!-- VERIFIER -->
     <div class="panel" id="p-verifier">
       <div class="ph"><span class="icon">🏪</span> Verifier <span class="tag tag-green" style="margin-left:auto"
-          id="verifier-name">CoolShop.at</span></div>
+          id="verifier-name">CoolShop.example</span></div>
       <div class="pb">
         <div class="placeholder" id="verifier-ph"><span class="emoji">🏪</span>Waiting for presentation...</div>
         <div id="verifier-result"></div>
@@ -2687,7 +2687,7 @@
         <div class="review-entry">
           <div class="danger-dot dot-green"></div>
           <div>
-            <div style="font-size:0.88rem;font-weight:600">Apotheke Innsbruck — Prescription Validation</div>
+            <div style="font-size:0.88rem;font-weight:600">Example Pharmacy — Prescription Validation</div>
             <div class="review-meta">
               <span class="shared-pill pill-green">✓ Medication confirmed</span>
               <span class="shared-pill pill-green">✓ Dosage confirmed</span>
@@ -2703,7 +2703,7 @@
         <div class="review-entry warn">
           <div class="danger-dot dot-yellow"></div>
           <div>
-            <div style="font-size:0.88rem;font-weight:600">CoolShop.at — Age + Address Requested</div>
+            <div style="font-size:0.88rem;font-weight:600">CoolShop.example — Age + Address Requested</div>
             <div class="review-meta">
               <span class="shared-pill pill-green">✓ Age confirmed</span>
               <span class="shared-pill pill-yellow">⚠ Address: shared (you approved)</span>
@@ -2789,7 +2789,7 @@
           <div class="reg-name">EHDS</div>
           <div class="reg-date">European Health Data Space</div>
           <div class="reg-right">
-            <strong>Your health records, accessible.</strong> EU regulation mandating electronic access to personal health data across all member states. Austria (Elga) is already ahead of schedule.
+            <strong>Your health records, accessible.</strong> EU regulation mandating electronic access to personal health data across all member states.
           </div>
         </div>
       </div>
@@ -3048,7 +3048,7 @@
       consents: [],
       ephemeralKeyId: null,
       chainHash: '0000000000000000',
-      verifierName: 'CoolShop.at',
+      verifierName: 'CoolShop.example',
       verifierDid: 'did:askmi:verifier-coolshop',
     };
 
@@ -3109,7 +3109,7 @@
     
       student: {
         name: 'Invisible Student',
-        verifier: { name: 'IVB Innsbruck', did: 'did:askmi:ivb-innsbruck' },
+        verifier: { name: 'Example Transit', did: 'did:askmi:example-transit' },
         claims: {
           is_student: true,
           semester_valid_until: '2026-09-30',
@@ -3121,8 +3121,8 @@
           verdict: 'ALLOW',
           reason: 'Boolean predicate only — no identity data disclosed',
           checks: [
-            '🔍 Verifier identity check (did:askmi:ivb-innsbruck)',
-            '📋 Matching policy rule: "student_discount" → IVB Innsbruck',
+            '🔍 Verifier identity check (did:askmi:example-transit)',
+            '📋 Matching policy rule: "student_discount" → Example Transit',
             '📊 Claims requested: is_student (boolean), semester_valid_until',
             '🛡️ Data minimization: PASS — no name, no Matrikelnummer',
             '✅ Boolean predicate, trusted municipal verifier → ALLOW',
@@ -3134,7 +3134,7 @@
             items: [
               { label: 'Physical ID check at counter', avg: 2.50, source: 'Staff cost per verification' },
               { label: 'Student ID card production', avg: 5.00, source: 'ÖH Ausweis annual cost' },
-              { label: 'Database integration (Uni↔IVB)', avg: 0.80, source: 'API maintenance/year ÷ verifications' },
+              { label: 'Database integration (Uni↔Example Transit)', avg: 0.80, source: 'API maintenance/year ÷ verifications' },
               { label: 'PII storage (name, Matrikelnr.)', avg: 0.03, source: 'GDPR-compliant DB hosting' },
               { label: 'Manual fraud checks', avg: 0.50, source: 'Spot-check staff allocation' },
             ],
@@ -3145,16 +3145,16 @@
               { label: 'SD-JWT boolean proof', avg: 0, source: 'On-device selective disclosure' },
               { label: 'Semester validity check', avg: 0.0003, source: 'StatusList CDN' },
               { label: 'Student ID card needed', avg: 0, source: 'Not needed — wallet proof' },
-              { label: 'PII stored by IVB', avg: 0, source: 'Zero — only boolean received' },
+              { label: 'PII stored by Example Transit', avg: 0, source: 'Zero — only boolean received' },
             ],
           },
-          scaleNote: 'Bei 50.000 Studenten/Jahr in Innsbruck',
+          scaleNote: 'Bei 50.000 Studierenden/Jahr (Beispiel)',
         },
       },
     
       hospital: {
         name: 'Hospital Admission',
-        verifier: { name: 'Tirol Kliniken GmbH', did: 'did:askmi:tirol-kliniken' },
+        verifier: { name: 'Example Health Group', did: 'did:askmi:example-health-group' },
         claims: {
           full_name: 'Maria Musterfrau',
           date_of_birth: '1995-03-15',
@@ -3170,8 +3170,8 @@
           verdict: 'PROMPT',
           reason: 'Sensitive medical + identity data — explicit consent required',
           checks: [
-            '🔍 Verifier identity check (did:askmi:tirol-kliniken)',
-            '📋 Matching policy rule: "medical_admission" → Tirol Kliniken',
+            '🔍 Verifier identity check (did:askmi:example-health-group)',
+            '📋 Matching policy rule: "medical_admission" → Example Health Group',
             '📊 Claims requested: 6 attributes including medical data',
             '🛡️ Data minimization: WARNING — blood_type + allergies are sensitive',
             '⚠️ Multiple sensitive claims → PROMPT (explicit consent required)',
@@ -3185,7 +3185,7 @@
               { label: 'Insurance verification API', avg: 0.50, source: 'SV-GKK/ÖGK interface' },
               { label: 'Paper form digitization', avg: 1.20, source: 'Scanning + OCR pipeline' },
               { label: 'EHR data entry', avg: 3.00, source: 'Manual entry time' },
-              { label: 'ELGA integration', avg: 0.30, source: 'ELGA GmbH transaction fee' },
+              { label: 'Health-record integration', avg: 0.30, source: 'Assumption' },
               { label: 'Data breach risk (medical)', avg: 0.45, source: 'IBM 2024: healthcare €10.93M avg' },
             ],
           },
@@ -3195,11 +3195,11 @@
               { label: 'Verifiable Credential presentation', avg: 0, source: 'On-device, instant' },
               { label: 'Insurance status proof', avg: 0.01, source: 'Issuer-signed, no API call' },
               { label: 'Consent + audit trail', avg: 0, source: 'Built into wallet flow' },
-              { label: 'ELGA bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
+              { label: 'Health-record bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
               { label: 'Breach risk reduction', avg: 0.02, source: 'Minimal PII retained post-admission' },
             ],
           },
-          scaleNote: 'Bei 500.000 Aufnahmen/Jahr in Tirol',
+          scaleNote: 'Bei 500.000 Aufnahmen/Jahr (Beispiel)',
         },
       },
     
@@ -3914,7 +3914,7 @@
       }
       
       hl('p-engine', 'orange');
-      addAudit('break_glass_activated', { reason: 'emergency_override', user: 'dr.mueller@ukh-ibk.at' }, 'orange');
+      addAudit('break_glass_activated', { reason: 'emergency_override', user: 'dr.example@hospital.example' }, 'orange');
       
       // Proceed after Break-Glass
       setFlow('wallet');
@@ -4371,7 +4371,7 @@
     function doReset(retainScenario = false) {
       if (retainScenario !== true) {
         activeScenario = null;
-        updateVerifierName('CoolShop.at', 'did:askmi:verifier-coolshop');
+        updateVerifierName('CoolShop.example', 'did:askmi:verifier-coolshop');
         Object.keys(CLAIMS).forEach(k => delete CLAIMS[k]);
         Object.assign(CLAIMS, {
           over_18: true, over_16: true, over_21: false,
@@ -4722,7 +4722,7 @@
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(UC_PROOF_VIEW_MS);
-      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
+      addReviewEntry('Example Transit — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
       ucNext('student');
     }
 
@@ -4756,7 +4756,7 @@
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(UC_PROOF_VIEW_MS);
-      addReviewEntry('UKH Innsbruck — Hospital Admission', 'clean', ['✓ Allergies shared', '✓ Blood group shared', '✓ Insurance shared', '✗ History blocked']);
+      addReviewEntry('Example Hospital — Hospital Admission', 'clean', ['✓ Allergies shared', '✓ Blood group shared', '✓ Insurance shared', '✗ History blocked']);
       ucNext('hospital');
     }
 
@@ -4806,10 +4806,10 @@
       log.textContent = '';
       const now = new Date().toISOString();
       const entries = [
-        { ts: now, act: 'BREAK_GLASS_REQUESTED',     who: 'dr.mueller@ukh-ibk.at' },
+        { ts: now, act: 'BREAK_GLASS_REQUESTED',     who: 'dr.example@hospital.example' },
         { ts: now, act: 'REASON_RECORDED',            who: 'Notfallbehandlung ICU-3, Zimmer 12' },
-        { ts: now, act: 'DUAL_APPROVAL_REQUIRED',     who: 'chef-arzt@ukh-ibk.at' },
-        { ts: now, act: 'APPROVAL_GRANTED',           who: 'chef-arzt@ukh-ibk.at [biometric]' },
+        { ts: now, act: 'DUAL_APPROVAL_REQUIRED',     who: 'chief.physician@hospital.example' },
+        { ts: now, act: 'APPROVAL_GRANTED',           who: 'chief.physician@hospital.example [biometric]' },
         { ts: now, act: 'ACCESS_SCOPED',              who: 'EHDS-Scope: emergency_treatment_only' },
         { ts: now, act: 'AUDIT_IMMUTABLE_WRITE',      who: 'audit-chain-node-7 · hash:3f9a…' },
       ];
@@ -4826,7 +4826,7 @@
       const btn = document.getElementById('uc-' + id + '-flag-btn');
       const sig = document.getElementById('uc-' + id + '-collective');
       if (btn) { btn.textContent = '✓ Reported'; btn.disabled = true; btn.style.cssText += ';color:var(--orange)'; }
-      if (sig) sig.innerHTML = '<strong>424 students</strong> have already reported IVB+ as overreaching. 76 more reports until automatic DSA filing.';
+      if (sig) sig.innerHTML = 'Example figures: <strong>424 students</strong> have already reported Example Transit+ as overreaching. 76 more reports until an automatic regulator filing (simulated).';
     }
 
     function addReviewEntry(title, level, metaLines) {
