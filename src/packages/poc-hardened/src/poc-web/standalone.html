@@ -1655,6 +1655,10 @@
         style="color:var(--accent)">privacy &amp; policy layer</strong> that sits between them and the services
       requesting your data.
     </div>
+    <div style="margin:0.7rem auto 0;max-width:700px;padding:0.5rem 0.8rem;border:1px dashed var(--orange);border-radius:8px;font-size:0.75rem;color:var(--text-dim);text-align:left">
+      ⚠️ <strong style="color:var(--text)">Interactive simulation.</strong> Hashes are computed with SHA-256 in your browser, but credentials, signatures, keys, budget slots and organisations are illustrative. This is not a cryptographic proof system.<br>
+      <strong style="color:var(--text)">Interaktive Simulation.</strong> Hashes werden mit SHA-256 im Browser berechnet, Credentials, Signaturen, Schlüssel, Budget-Slots und Organisationen sind Beispiele. Dies ist kein kryptografisches Beweissystem.
+    </div>
     <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text-dim)">Design targets · Zielsysteme. Interoperability with
       national wallets is not yet demonstrated. · Interoperabilität mit nationalen Wallets ist noch nicht nachgewiesen.</div>
     <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.3rem">
@@ -1784,7 +1788,7 @@
     <div class="vsec">
       <div class="vsec-label">Live Demo</div>
       <h2 class="vsec-title">Verifier asks. AskMI filters. You decide.</h2>
-      <p class="vsec-body">Five concrete scenarios — same mechanics. Click through each step and see exactly what is shared, what is blocked, and why.</p>
+      <p class="vsec-body">Five concrete scenarios — same mechanics. Click through each step and see exactly what is shared, what is blocked, and why. All data is sample data.</p>
 
       <div class="uc-tabs">
         <button class="uc-tab active" data-uc="adtech" onclick="switchUC('adtech')">🎯 Ad-Tech</button>
@@ -1842,7 +1846,7 @@
             <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
-              <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots — no continuous fingerprinting is possible.</div>
+              <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots, which limits continuous fingerprinting.</div>
             </div>
             <div class="uc-sub-hdr">Your Ad-Preferences (remain local)</div>
             <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
@@ -1856,7 +1860,7 @@
           <div class="uc-panel" id="adtech-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
             <div class="uc-panel-title">Nullifier + Budget signal are generated</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — no cross-verifier tracking is possible.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is derived as SHA-256(user_seed ‖ verifier_did ‖ scope_id) and stays the same for the same seed. Two verifiers with the same scope receive different nullifiers, so linking them by nullifier is infeasible without the seed. In this demo the seed is random per page load.</p>
             <div class="btn-row">
               <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Generate Proof</button>
             </div>
@@ -2281,7 +2285,7 @@
   <div style="text-align:center;padding:1.2rem 1rem 0.4rem;background:var(--bg)">
     <div class="vsec-label" style="margin-bottom:0.3rem">Interactive Demo</div>
     <div id="scenario-badge" style="display:none; margin: 0 auto 0.5rem; padding: 0.3rem 0.8rem; background: var(--blue-dim); color: var(--blue); border-radius: 999px; font-weight: 700; font-size: 0.8rem; width: fit-content;"></div>
-    <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.2rem">See exactly how AskMI handles a real verification — step by step.</p>
+    <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.2rem">See how AskMI handles a verification, step by step. This is a simulation with sample data.</p>
   </div>
 
   <div class="flow" id="flow">
@@ -3374,16 +3378,62 @@
       }
     }
 
-    function sha256Sim(input) {
-      // Simple hash simulation for demo (not cryptographic)
-      let h = 0x811c9dc5;
-      for (let i = 0; i < input.length; i++) {
-        h ^= input.charCodeAt(i);
-        h = Math.imul(h, 0x01000193);
+    // Synchronous SHA-256 (FIPS 180-4) over the UTF-8 bytes of a string; returns 64 hex characters.
+    // The demo needs a synchronous hash for its audit chain, so WebCrypto's async digest is not used here.
+    function sha256Hex(input) {
+      const K = [
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+      ];
+      const H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+      const bytes = new TextEncoder().encode(input);
+      const len = bytes.length;
+      const padded = new Uint8Array(((len + 9 + 63) >> 6) << 6);
+      padded.set(bytes);
+      padded[len] = 0x80;
+      const dv = new DataView(padded.buffer);
+      dv.setUint32(padded.length - 8, Math.floor((len * 8) / 4294967296));
+      dv.setUint32(padded.length - 4, (len * 8) >>> 0);
+      const w = new Uint32Array(64);
+      const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+      for (let off = 0; off < padded.length; off += 64) {
+        for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+        for (let i = 16; i < 64; i++) {
+          const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+          const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+          w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+        }
+        let [a, b, c, d, e, f, g, h] = H;
+        for (let i = 0; i < 64; i++) {
+          const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+          const ch = (e & f) ^ (~e & g);
+          const t1 = (h + S1 + ch + K[i] + w[i]) >>> 0;
+          const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+          const maj = (a & b) ^ (a & c) ^ (b & c);
+          const t2 = (S0 + maj) >>> 0;
+          h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+        }
+        H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+        H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
       }
-      return ('00000000' + (h >>> 0).toString(16)).slice(-8) +
-        ('00000000' + (Math.imul(h, 0x5bd1e995) >>> 0).toString(16)).slice(-8);
+      return H.map(x => x.toString(16).padStart(8, '0')).join('');
     }
+
+    // Random per page load. Stands in for the wallet's per-user secret: nullifiers and pairwise IDs below are
+    // derived from it, so they stay stable within a session and differ per verifier.
+    const USER_SEED = (() => {
+      const b = new Uint8Array(16);
+      if (self.crypto && crypto.getRandomValues) crypto.getRandomValues(b);
+      else for (let i = 0; i < b.length; i++) b[i] = Math.floor(Math.random() * 256);
+      return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    })();
+    const pairwiseId = verifier => sha256Hex(USER_SEED + '|pairwise|' + verifier);
 
     function uuid() {
       if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -3567,7 +3617,7 @@
     function addAudit(action, evidence, color) {
       const prevHash = STATE.chainHash;
       const entry = { action, evidence, timestamp: ts(), previousHash: prevHash, entryHash: '' };
-      entry.entryHash = sha256Sim(prevHash + action + JSON.stringify(evidence) + entry.timestamp);
+      entry.entryHash = sha256Hex(prevHash + action + JSON.stringify(evidence) + entry.timestamp).slice(0, 16);
       STATE.chainHash = entry.entryHash;
       STATE.auditChain.push({ ...entry, _color: color || 'blue' });
       renderAuditChain();
@@ -4044,7 +4094,7 @@
   </div>
   <div><span class="k">disclosed:</span> <span class="vt">${disclosed.join(', ')}</span></div>
   <div><span class="k">hidden:</span> <span class="hv">${hidden.join(', ')}</span></div>
-  <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${sha256Sim(STATE.verifierName + Date.now()).substring(0, 16)}...</span></div>
+  <div><span class="k">pairwise_did:</span> <span class="vs">did:peer:0z${pairwiseId(STATE.verifierName).substring(0, 16)}...</span></div>
 </div>`;
 
       // Verifier result
@@ -4623,22 +4673,23 @@
       await delay(420);
       box.textContent = '⏳ Quantizing budget signal…';
       await delay(380);
-      const seed = 'user-seed||' + id + '||campaign-' + Date.now().toString(36);
-      const nul = sha256Sim(seed).slice(0, 12);
-      const slot = Math.floor(Math.random() * 1920);
+      const verifierDid = 'did:askmi:exampleads-gmbh-at';
+      const scopeId = 'campaign-summer25';
+      const nul = sha256Hex(USER_SEED + '‖' + verifierDid + '‖' + scopeId).slice(0, 12);
+      const slot = Math.floor(Math.random() * 1920); // illustrative value, not a real budget signal
       box.className = 'proof-box';
       box.textContent =
         '✓ nullifier:      H(…' + nul + ')\n' +
-        '✓ budget_signal:  slot_' + slot + ' (1 of 1920)\n' +
+        '✓ budget_signal:  slot_' + slot + ' (1 of 1920, illustrative)\n' +
         '✓ age_gte_18:     true\n' +
         '✓ region_eu:      true\n' +
         '✓ humanity:       verified\n' +
-        '✓ bound_to:       did:askmi:exampleads-gmbh-at\n' +
-        '✓ scope:          campaign-summer25\n' +
+        '✓ bound_to:       ' + verifierDid + '\n' +
+        '✓ scope:          ' + scopeId + '\n' +
         '─────────────────────────────────\n' +
         '✗ name:           [not in predicate]\n' +
         '✗ dob:            [not in predicate]\n' +
-        '✗ ip_address:     [structurally impossible]';
+        '✗ ip_address:     [not part of the proof]';
       btn.textContent = 'Proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
@@ -4725,12 +4776,12 @@
       await delay(400);
       box.textContent = '⏳ Generating pseudonymous token…';
       await delay(350);
-      const pwDid = 'pw-' + sha256Sim('flirtradar' + Date.now()).slice(0, 10);
+      const pwDid = 'pw-' + pairwiseId('flirtradar').slice(0, 10);
       box.className = 'proof-box';
       box.textContent =
         '✓ age_gte_18:        true\n' +
         '✓ pseudonymous_id:   ' + pwDid + '\n' +
-        '✓ pairwise_did:      did:peer:0z' + sha256Sim('social' + Date.now()).slice(0, 12) + '…\n' +
+        '✓ pairwise_did:      did:peer:0z' + pairwiseId('social').slice(0, 12) + '…\n' +
         '─────────────────────────────────\n' +
         '✗ display_name:      [BLOCKED by policy]\n' +
         '✗ email:             [BLOCKED by policy]\n' +
