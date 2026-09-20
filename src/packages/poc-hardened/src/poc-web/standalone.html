@@ -2619,7 +2619,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab(this,'audit-chain')">🔗 Audit Chain</div>
         <div class="tab" onclick="switchTab(this,'consent-log')">📝 Consent Log</div>
-        <div class="tab" onclick="switchTab(this,'dpia-tab')">📋 DPIA (Art. 35)</div>
+        <div class="tab" onclick="switchTab(this,'dpia-tab')">📋 DPIA (in preparation)</div>
       </div>
       <div class="pb">
         <div id="tc-audit-chain" class="tab-content active">
@@ -2633,8 +2633,8 @@
         </div>
         <div id="tc-dpia-tab" class="tab-content">
           <div style="text-align:center;padding:1rem">
-            <button class="btn btn-primary" onclick="showDpia()">📋 Open Full DPIA & Compliance Framework</button>
-            <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment — GDPR Article 35</p>
+            <button class="btn btn-primary" onclick="showDpia()">📋 DPIA status</button>
+            <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment (GDPR Art. 35) — in preparation</p>
           </div>
         </div>
       </div>
@@ -2940,15 +2940,15 @@
       <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete — Data Forgotten</h2>
       <p class="dim" style="margin-bottom:1rem;">The verifier confirmed your claim without seeing any personal data. The
         session key has been destroyed — this interaction is now mathematically irrecoverable.</p>
-      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Want to see how we meet every GDPR requirement?</p>
+      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Curious how data protection is being assessed?</p>
       <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="showDpia()">📋 Read DPIA & Compliance Framework</button>
+        <button class="btn btn-primary" onclick="closeDpiaPopup(); showDpia()">📋 DPIA status</button>
         <button class="btn btn-ghost" onclick="closeDpiaPopup()">Close & Continue</button>
       </div>
     </div>
   </div>
 
-  <!-- DPIA Full Document Overlay -->
+  <!-- DPIA status overlay: no DPIA has been completed or approved yet -->
   <div class="overlay" id="dpia-overlay">
     <div class="overlay-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
@@ -2957,227 +2957,61 @@
           📋 Data Protection Impact Assessment</h1>
         <button class="btn btn-ghost" onclick="hideDpia()">✕ Close</button>
       </div>
-      <p class="dim">GDPR Article 35 — AskMI Identity Verification Infrastructure</p>
-      <div style="margin:1rem 0">
-        <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
-        <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
-        <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
-        <span class="gdpr-badge">✅ Art. 7 Consent</span>
-        <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
-        <span class="gdpr-badge">✅ Art. 32 Security</span>
-        <span class="gdpr-badge">✅ Art. 35 DPIA</span>
-      </div>
+      <p class="dim">GDPR Article 35 · DSGVO Art. 35 · Datenschutz-Folgenabschätzung</p>
 
-      <h2>1. Description of Processing</h2>
-      <h3>1.1 What We Do</h3>
-      <p>AskMI is a <strong>privacy middleware layer</strong> for national digital identity systems (EUDI Wallet, ID
-        Austria, Smart-eID, GOV.UK Wallet, France Identité, Swiss E-ID, Nordic eIDs, and all future eIDAS 2.0 wallets).
-        It enables users to prove attributes (e.g., "I am over 18") without revealing raw personal data — acting as a
-        <strong>policy engine and forgetting layer</strong> between government-issued credentials and the services that
-        request them.
-      </p>
-      <p class="dim">AskMI does not replace national ID systems. It uses their signed credentials and adds: selective
-        disclosure, consent management, crypto-shredding, unlinkability (pairwise DIDs), and a tamper-evident audit
-        chain.</p>
-      <h3>1.2 Roles</h3>
-      <table>
-        <tr>
-          <th>Role</th>
-          <th>Entity</th>
-          <th>Responsibility</th>
-        </tr>
-        <tr>
-          <td><strong>Data Subject</strong></td>
-          <td>User (Holder)</td>
-          <td>Controls all disclosure decisions via wallet</td>
-        </tr>
-        <tr>
-          <td><strong>Data Controller</strong></td>
-          <td>Verifier (e.g., shop)</td>
-          <td>Requests specific claims, processes result</td>
-        </tr>
-        <tr>
-          <td><strong>Data Processor</strong></td>
-          <td>AskMI Infrastructure</td>
-          <td>Facilitates verification without accessing personal data</td>
-        </tr>
-        <tr>
-          <td><strong>Issuer</strong></td>
-          <td>State Provider</td>
-          <td>Signs credentials based on verified identity</td>
-        </tr>
-      </table>
-
-      <h3>1.3 Processing Flow</h3>
       <div class="card">
-        <p><strong>Step 1 — Issuance:</strong> Raw PII encrypted with ephemeral key, predicates derived, credential
-          signed, key destroyed. Raw PII is mathematically irrecoverable.</p>
-        <p><strong>Step 2 — Presentation:</strong> User selects which claims to disclose. Only selected claims sent as
-          SD-JWT proof.</p>
-        <p><strong>Step 3 — Verification:</strong> Verifier validates proof. Receives only disclosed predicates. Issuer
-          is never contacted.</p>
+        <p><strong>Status: in preparation.</strong> No DPIA has been completed or approved yet. This demo runs in the
+          browser with sample data.</p>
+        <p><strong>Status: in Vorbereitung.</strong> Es liegt noch keine abgeschlossene oder freigegebene DPIA vor.
+          Diese Demo läuft im Browser mit Beispieldaten.</p>
       </div>
 
-      <h2>2. Necessity & Proportionality</h2>
+      <h2>Planned structure · Geplante Gliederung</h2>
       <table>
         <tr>
-          <th>Traditional Approach</th>
-          <th>AskMI Approach</th>
-        </tr>
-        <tr>
-          <td>Upload photo ID → name, birthdate, address collected</td>
-          <td>Prove <code>over_18: true</code> → one boolean, nothing else</td>
-        </tr>
-        <tr>
-          <td>Data stored in verifier's database → breach risk</td>
-          <td>No data stored → nothing to breach</td>
-        </tr>
-        <tr>
-          <td>Identity provider tracks every verification</td>
-          <td>Issuer doesn't know when/where credentials are used</td>
-        </tr>
-        <tr>
-          <td>Delete request = hope they actually delete</td>
-          <td>Crypto-shredding = mathematical guarantee</td>
-        </tr>
-      </table>
-
-      <h2>3. Risk Assessment</h2>
-      <table>
-        <tr>
-          <th>Risk</th>
-          <th>Severity</th>
-          <th>Likelihood</th>
-          <th>Mitigation</th>
-          <th>Residual</th>
-        </tr>
-        <tr>
-          <td>Verifier correlation across sessions</td>
-          <td class="risk-med">Medium</td>
-          <td class="risk-med">Medium</td>
-          <td>Pairwise DIDs, timing jitter, response padding</td>
-          <td class="risk-low">Low</td>
-        </tr>
-        <tr>
-          <td>Device compromise</td>
-          <td class="risk-high">High</td>
-          <td class="risk-low">Low</td>
-          <td>Secure enclave, biometric unlock, credential expiry</td>
-          <td class="risk-low">Low</td>
-        </tr>
-        <tr>
-          <td>Issuer tracking</td>
-          <td class="risk-med">Medium</td>
-          <td class="risk-low">Low</td>
-          <td>Pre-issued credentials, issuer never contacted</td>
-          <td class="risk-low">Low</td>
-        </tr>
-        <tr>
-          <td>Network traffic analysis</td>
-          <td class="risk-med">Medium</td>
-          <td class="risk-med">Medium</td>
-          <td>Response padding (4KB), timing jitter (50-200ms)</td>
-          <td class="risk-low">Low</td>
-        </tr>
-        <tr>
-          <td>Credential replay</td>
-          <td class="risk-high">High</td>
-          <td class="risk-low">Low</td>
-          <td>Nonce binding, holder key binding, expiry</td>
-          <td class="risk-low">Low</td>
-        </tr>
-      </table>
-
-      <h2>4. Technical Safeguards</h2>
-      <div class="card">
-        <h3>🔐 Cryptographic</h3>
-        <ul>
-          <li><strong>SD-JWT Selective Disclosure:</strong> Only chosen claims revealed</li>
-          <li><strong>Crypto-Shredding:</strong> Ephemeral keys encrypt PII → key destruction = provable data
-            destruction</li>
-          <li><strong>StatusList2021:</strong> Privacy-preserving revocation — issuer can't identify which credential
-            was checked</li>
-          <li><strong>Pairwise Ephemeral DIDs:</strong> Fresh DID per interaction — unlinkable across verifiers</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>🛡️ Metadata Minimization</h3>
-        <ul>
-          <li><strong>Response Padding:</strong> All responses padded to 4KB</li>
-          <li><strong>Timing Jitter:</strong> 50-200ms random delay</li>
-          <li><strong>Per-Session Identifiers:</strong> HMAC-derived, unlinkable across verifiers</li>
-        </ul>
-      </div>
-
-      <h2>5. GDPR Compliance Matrix</h2>
-      <table>
-        <tr>
-          <th>Article</th>
-          <th>Requirement</th>
+          <th>Section</th>
+          <th>Abschnitt</th>
+          <th>Basis</th>
           <th>Status</th>
-          <th>Implementation</th>
         </tr>
         <tr>
-          <td>Art. 5(1)(c)</td>
-          <td>Data minimization</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Selective disclosure — only requested predicates</td>
+          <td>1. Description of the processing</td>
+          <td>Beschreibung der Verarbeitung</td>
+          <td>Art. 35(7)(a)</td>
+          <td>Open · Offen</td>
         </tr>
         <tr>
-          <td>Art. 5(1)(e)</td>
-          <td>Storage limitation</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Crypto-shredding — data self-destructs</td>
+          <td>2. Necessity and proportionality</td>
+          <td>Notwendigkeit und Verhältnismäßigkeit</td>
+          <td>Art. 35(7)(b)</td>
+          <td>Open · Offen</td>
         </tr>
         <tr>
-          <td>Art. 7</td>
-          <td>Consent conditions</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Informed, specific, freely given, withdrawable</td>
+          <td>3. Risk assessment</td>
+          <td>Risikobewertung</td>
+          <td>Art. 35(7)(c)</td>
+          <td>Open · Offen</td>
         </tr>
         <tr>
-          <td>Art. 17</td>
-          <td>Right to erasure</td>
-          <td><span class="gdpr-badge">✅✅</span></td>
-          <td>Crypto-shredding provides mathematical proof of destruction</td>
+          <td>4. Measures</td>
+          <td>Maßnahmen</td>
+          <td>Art. 35(7)(d)</td>
+          <td>Open · Offen</td>
         </tr>
         <tr>
-          <td>Art. 25</td>
-          <td>Privacy by design</td>
-          <td><span class="gdpr-badge">✅✅</span></td>
-          <td>Core architecture — not an add-on</td>
-        </tr>
-        <tr>
-          <td>Art. 30</td>
-          <td>Processing records</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>ROPA with aggregate counts, no PII</td>
-        </tr>
-        <tr>
-          <td>Art. 35</td>
-          <td>DPIA</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>This document</td>
+          <td>5. Consultation, approval, review</td>
+          <td>Konsultation, Freigabe, Überprüfung</td>
+          <td>Art. 35(2), (9), (11)</td>
+          <td>Open · Offen</td>
         </tr>
       </table>
 
-      <h2>6. What AskMI Structurally Cannot Do</h2>
-      <div class="card">
-        <p>These are <strong>architectural guarantees</strong>, not policy promises:</p>
-        <ul>
-          <li>🚫 <strong>Cannot store raw PII</strong> — ephemeral keys destroyed after issuance</li>
-          <li>🚫 <strong>Cannot track credential usage</strong> — issuer never contacted during verification</li>
-          <li>🚫 <strong>Cannot see what users share</strong> — selective disclosure happens on-device</li>
-          <li>🚫 <strong>Cannot correlate users across verifiers</strong> — pairwise ephemeral DIDs</li>
-          <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
-        </ul>
-        <p class="dim" style="margin-top:0.8rem"><em>"AskMI works not because it knows everything — but because it
-            structurally cannot know anything."</em></p>
-      </div>
+      <p class="dim" style="margin-top:1.2rem">Until a DPIA has been completed, nothing on this page should be read as
+        a statement of GDPR compliance. · Bis zu einer abgeschlossenen DPIA ist nichts auf dieser Seite als Aussage
+        über DSGVO-Konformität zu verstehen.</p>
 
       <div style="text-align:center;margin-top:2rem;padding:1.5rem;background:var(--surface2);border-radius:12px">
         <p style="font-size:1.1rem;font-weight:600">AskMI — The Forgetting Layer</p>
-        <p class="dim">DPIA Version 1.0 — March 2026</p>
         <button class="btn btn-ghost" onclick="hideDpia()" style="margin-top:1rem">← Back to Demo</button>
       </div>
     </div>
