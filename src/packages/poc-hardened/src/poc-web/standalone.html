@@ -994,6 +994,16 @@
       font-weight: 500;
     }
 
+    .tco-item { gap: 0.6rem; align-items: center; font-size: 0.8rem; text-align: left; }
+    .tco-item span:first-child { flex: 1; }
+    .tco-item .tco-rate { font-family: var(--mono); color: var(--text-dim); white-space: nowrap; font-weight: 400; }
+    .cost-tag { display: inline-block; font-size: 0.6rem; padding: 0.05rem 0.35rem; border-radius: 999px; margin-left: 0.3rem;
+      vertical-align: middle; border: 1px solid var(--border); font-family: inherit; }
+    .cost-tag-src { color: var(--green); border-color: var(--green); }
+    .cost-tag-asm { color: var(--orange); border-color: var(--orange); }
+    .cost-in { width: 4.6rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.1rem 0.25rem; font-family: var(--mono); font-size: 0.8rem; }
+
     .tab-content.active {
       display: block;
     }
@@ -2451,7 +2461,7 @@
     <!-- COST COMPARISON -->
     <div class="panel full" id="p-cost">
       <div class="ph"><span class="icon">💰</span> Cost Comparison <span class="tag tag-green"
-          style="margin-left:auto">Real-World Estimates</span></div>
+          style="margin-left:auto">Illustrative · editable assumptions</span></div>
       <div class="pb">
         <div class="placeholder" id="cost-ph"><span class="emoji">💰</span>Costs appear as you interact</div>
         <div id="cost-result" style="display:none">
@@ -2526,51 +2536,43 @@
               <input type="range" id="tco-users" min="10000" max="10000000" step="10000" value="100000" style="width:100%;accent-color:var(--accent)">
             </div>
             
+            <p class="dim" style="font-size:0.78rem;margin-bottom:1rem">Illustrative model in USD, not a forecast or a quote. Each user is
+              onboarded once and verified once per year. Values tagged <span class="cost-tag cost-tag-asm">assumption</span> can be edited,
+              <span class="cost-tag cost-tag-src">sourced</span> values are public list prices as of 2026-09-20. · Beispielrechnung in USD,
+              keine Prognose und kein Angebot. Mit „assumption“ markierte Werte sind einstellbar.</p>
             <div class="comparison" style="grid-template-columns:1fr 1fr; gap:2rem">
               <div class="cc doesnt" style="background:var(--red-dim)">
                 <h4 style="color:var(--red);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;margin-bottom:1rem">Traditional Identity Stack</h4>
-                <div class="tco-row"><span>User Onboarding (ID Scan)</span><span id="tco-trad-ob">€ 150.000</span></div>
-                <div class="tco-row"><span>PII Database (RDS+KMS+Backups)</span><span id="tco-trad-db">€ 36.000</span></div>
-                <div class="tco-row"><span>GDPR Compliance Mgmt</span><span id="tco-trad-gdpr">€ 24.000</span></div>
-                <div class="tco-row"><span>Data Breach Reserve (Pro-rata)</span><span id="tco-trad-breach">€ 89.000</span></div>
-                <div class="tco-row"><span>Löschpflicht Art. 17 (2%)</span><span id="tco-trad-del">€ 30.000</span></div>
+                <div id="tco-trad-rows"></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
                   <span>Total/Year</span>
-                  <span id="tco-trad-total" style="color:var(--red);font-family:var(--mono)">€ 329.000</span>
+                  <span id="tco-trad-total" style="color:var(--red);font-family:var(--mono)">$ 0</span>
                 </div>
               </div>
-              
+
               <div class="cc sees" style="background:var(--green-dim)">
                 <h4 style="color:var(--green);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;margin-bottom:1rem">AskMI Stack</h4>
-                <div class="tco-row"><span>eID Authentication</span><span id="tco-AskMI-auth">€ 15.000</span></div>
-                <div class="tco-row"><span>Credential Signing (HSM)</span><span id="tco-AskMI-sign">€ 1.000</span></div>
-                <div class="tco-row"><span>StatusList CDN</span><span id="tco-AskMI-cdn">€ 30</span></div>
-                <div class="tco-row"><span>PII Database</span><span style="color:var(--green)">€ 0</span></div>
-                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span style="color:var(--green)">€ 0</span></div>
+                <div id="tco-AskMI-rows"></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
                   <span>Total/Year</span>
-                  <span id="tco-AskMI-total" style="color:var(--green);font-family:var(--mono)">€ 16.030</span>
+                  <span id="tco-AskMI-total" style="color:var(--green);font-family:var(--mono)">$ 0</span>
                 </div>
               </div>
             </div>
-            
+
             <div style="text-align:center;margin-top:2rem">
-              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">JÄHRLICHE ERSPARNIS</div>
-              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">€ 312.970 <span style="font-size:1.2rem;opacity:0.8">(95%)</span></div>
+              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">DIFFERENCE UNDER THESE ASSUMPTIONS · DIFFERENZ UNTER DIESEN ANNAHMEN</div>
+              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">$ 0</div>
             </div>
-            
-            <div style="margin-top:2rem;font-size:0.7rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
-              <span>📎 IBM Cost of Data Breach 2024</span>
-              <span>📎 AWS Pricing Pricing</span>
-              <span>📎 A-Trust Pricing</span>
-              <span>📎 DLA Piper GDPR Survey</span>
-            </div>
+
+            <div id="tco-sources" style="margin-top:2rem;font-size:0.7rem;color:var(--text-dim);line-height:1.6"></div>
           </div>
         </div>
 
         <!-- 2. Breach Scenario -->
         <h3 style="margin-bottom:1rem">2. Datenpanne im Vergleich (Data Breach)</h3>
         <p class="vsec-body">Was passiert, wenn der Worst-Case eintritt?</p>
+        <p class="dim" style="font-size:0.78rem;margin:-0.5rem 0 1rem">Beispielszenario mit Annahmen, keine Messwerte. Beträge sind Beispielwerte. · Illustrative scenario with example amounts (assumptions), not measured data.</p>
         <div class="comparison" style="margin-bottom:3rem" id="breach-trigger">
           <!-- Traditional Breach -->
           <div class="cc" style="background:var(--red-dim);border:1px solid var(--red);padding:1.5rem">
@@ -2598,24 +2600,24 @@
               <div class="a17-hdr" style="border-bottom:1px solid var(--border);color:var(--green);font-weight:700">AskMI</div>
               
               <div class="a17-row"><span class="dim">PII gespeichert in</span></div>
-              <div class="a17-row">8-14 DB-Tabellen, Backups, Logs, CDN-Cache</div>
-              <div class="a17-row" style="color:var(--green)">Nirgends</div>
+              <div class="a17-row">Z. B. 8-14 DB-Tabellen, Backups, Logs, CDN-Cache</div>
+              <div class="a17-row" style="color:var(--green)">Im Entwurf nicht dauerhaft gespeichert</div>
               
               <div class="a17-row"><span class="dim">Löschaufwand pro Anfrage</span></div>
-              <div class="a17-row">~€ 15 (manuell/semi-automatisch)</div>
-              <div class="a17-row" style="color:var(--green)">€ 0 (nichts da)</div>
+              <div class="a17-row">~15 USD (Annahme, manuell/semi-automatisch)</div>
+              <div class="a17-row" style="color:var(--green)">Kein Löschaufwand im Entwurfspfad (Annahme)</div>
               
               <div class="a17-row"><span class="dim">Zeitaufwand</span></div>
               <div class="a17-row">3-30 Tage</div>
-              <div class="a17-row" style="color:var(--green)">0 Sekunden</div>
+              <div class="a17-row" style="color:var(--green)">Sofort (Sitzungsschlüssel wird verworfen, simuliert)</div>
               
               <div class="a17-row"><span class="dim">Risiko unvollst. Löschung</span></div>
               <div class="a17-row" style="color:var(--red)">Hoch (Backup-Fragmente, Logs)</div>
-              <div class="a17-row" style="color:var(--green)">Unmöglich</div>
+              <div class="a17-row" style="color:var(--green)">Geringer (Annahme)</div>
               
               <div class="a17-row" style="border-bottom:none"><span class="dim">Audit-Nachweis</span></div>
               <div class="a17-row" style="border-bottom:none">Manueller Report</div>
-              <div class="a17-row" style="border-bottom:none;color:var(--green)">Automatisch (Crypto-Shredding = Löschbeweis)</div>
+              <div class="a17-row" style="border-bottom:none;color:var(--green)">Automatisch protokolliert (Crypto-Shredding als Löschnachweis: rechtlich zu prüfen)</div>
             </div>
           </div>
         </div>
@@ -3181,12 +3183,12 @@
           traditional: {
             label: 'Hospital Admission (Traditional)',
             items: [
-              { label: 'Manual registration (reception staff)', avg: 8.00, source: '~15min × €32/hr' },
+              { label: 'Manual registration (reception staff)', avg: 8.00, source: 'Assumption: ~15 min at 32 USD/h' },
               { label: 'Insurance verification API', avg: 0.50, source: 'SV-GKK/ÖGK interface' },
               { label: 'Paper form digitization', avg: 1.20, source: 'Scanning + OCR pipeline' },
               { label: 'EHR data entry', avg: 3.00, source: 'Manual entry time' },
               { label: 'Health-record integration', avg: 0.30, source: 'Assumption' },
-              { label: 'Data breach risk (medical)', avg: 0.45, source: 'IBM 2024: healthcare €10.93M avg' },
+              { label: 'Data breach risk (medical)', avg: 0.45, source: 'Assumption' },
             ],
           },
           AskMI: {
@@ -4156,198 +4158,182 @@
       setTimeout(showDpiaPopup, 800);
     }
 
-    // ─── Cost Simulation ─────────────────────────────────────────────
-    // Based on real-world pricing from identity verification providers (2024/2025)
+    // ─── Cost model ──────────────────────────────────────────────────
+    // One model feeds the per-session panel, the per-scenario panels and the annual calculator.
+    // All amounts are USD. An item is either 'sourced' (a public list price, see `source`) or an
+    // 'assumption' that the visitor can change. Nothing here is a quote or a forecast.
+    const COST_AS_OF = '2026-09-20';
+    const HSM_HOURLY_USD = 1.92;                  // AWS CloudHSM, EU (Frankfurt), per HSM and hour
+    const HSM_ANNUAL_USD = HSM_HOURLY_USD * 8760; // one HSM, always on: a fixed cost, independent of the user count
+    const CDN_USD_PER_GB = 0.085;                 // AWS CloudFront, Europe, after the first free TB per month
+    const STATUS_CHECK_KB = 1;                    // assumed size of one status-list fetch
+
+    function costUsers() {
+      const el = document.getElementById('tco-users');
+      return el ? parseInt(el.value, 10) : 100000;
+    }
 
     const COSTS = {
       traditional: {
-        // Sources: Jumio, Onfido, IDnow, Veriff public pricing / industry reports
-        // ISSUANCE (onboarding a new user)
-        idDocScan: { label: 'ID Document Scan + OCR', avg: 1.50, phase: 'issuance', source: 'Jumio/Onfido volume pricing 2024' },
-        remoteBiometric: { label: 'Remote Biometric Match (Cloud)', avg: 0.80, phase: 'issuance', source: 'IDnow/Veriff — NOT local Face ID (that\'s free)' },
-        databaseCheck: { label: 'PEP/Sanctions DB Lookup', avg: 0.25, phase: 'issuance', source: 'Refinitiv World-Check / Dow Jones' },
-        onboardStore: { label: 'User Record Creation (DB)', avg: 0.02, phase: 'issuance', source: 'AWS RDS + KMS encryption' },
-        // VERIFICATION (each time a user proves something)
-        apiCall: { label: 'API Call (Gateway + Auth)', avg: 0.008, phase: 'verification', source: 'AWS API GW + Cognito' },
-        dbLookup: { label: 'PII Database Lookup', avg: 0.005, phase: 'verification', source: 'RDS read replica query' },
-        dataStorage: { label: 'PII Storage (ongoing)', avg: 0.03, phase: 'both', source: 'AWS RDS + KMS: ~€0.03/record/month' },
-        compliance: { label: 'GDPR Compliance (DPO, audits)', avg: 0.20, phase: 'both', source: 'DLA Piper GDPR survey: avg. €1.3M/yr ÷ ~6.5M tx' },
-        breachRisk: { label: 'Data Breach Risk Reserve', avg: 0.12, phase: 'both', source: 'IBM Cost of Data Breach 2024: €4.45M avg ÷ ~37k records' },
-        consentMgmt: { label: 'Consent Management Platform', avg: 0.04, phase: 'both', source: 'OneTrust/Cookiebot enterprise tier' },
+        idVerification: { label: 'ID verification (document + face)', avg: 1.39, phase: 'issuance', basis: 'sourced',
+          source: 'Example price: Veriff self-serve plans, USD 0.80 to 1.89 per verification, as of ' + COST_AS_OF },
+        databaseCheck: { label: 'PEP/sanctions lookup', avg: 0.25, phase: 'issuance', basis: 'assumption' },
+        onboardStore: { label: 'User record creation (DB)', avg: 0.02, phase: 'issuance', basis: 'assumption' },
+        apiCall: { label: 'API call (gateway + auth)', avg: 0.008, phase: 'verification', basis: 'assumption' },
+        dbLookup: { label: 'PII database lookup', avg: 0.005, phase: 'verification', basis: 'assumption' },
+        dataStorage: { label: 'PII storage (per record and year)', avg: 0.36, phase: 'both', basis: 'assumption' },
+        compliance: { label: 'GDPR compliance (DPO, audits)', avg: 0.20, phase: 'both', basis: 'assumption' },
+        breachRisk: { label: 'Data breach risk reserve', avg: 0.12, phase: 'both', basis: 'assumption' },
+        consentMgmt: { label: 'Consent management platform', avg: 0.04, phase: 'both', basis: 'assumption' },
+        erasure: { label: 'Erasure requests (2% of users at $15 each)', avg: 0.30, phase: 'both', basis: 'assumption' },
       },
       AskMI: {
-        // ISSUANCE
-        eidAuth: { label: 'eID Authentication (one-time)', avg: 0.15, phase: 'issuance', source: 'A-Trust Handy-Signatur / ID Austria' },
-        credSigning: { label: 'Credential Signing (HSM)', avg: 0.01, phase: 'issuance', source: 'AWS CloudHSM: €1.40/hr ÷ ~150 ops/s' },
-        // VERIFICATION
-        statusList: { label: 'StatusList CDN (revocation)', avg: 0.0003, phase: 'verification', source: 'CloudFront: €0.085/GB, bitstring ~1KB' },
-        clientCrypto: { label: 'Client-Side Crypto (SD-JWT)', avg: 0, phase: 'verification', source: 'WebCrypto API on user device — free' },
-        localBiometric: { label: 'Biometric (Face ID / Touch ID)', avg: 0, phase: 'verification', source: 'Device-local WebAuthn — free (Apple/Google provide it)' },
-        pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', source: 'Derived on-device, no network call' },
-        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Crypto-shredded at issuance — nothing to store' },
-        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'No PII retained → no breach vector → €0' },
-        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Automated audit chain replaces manual DPO review' },
-        consentMgmt: { label: 'Consent Management', avg: 0, phase: 'both', source: 'Built into wallet UI — no external CMP needed' },
+        eidAuth: { label: 'eID authentication (one-time)', avg: 0.15, phase: 'issuance', basis: 'assumption' },
+        credSigning: { label: 'Credential signing (HSM, fixed cost)', phase: 'issuance', basis: 'sourced',
+          fixedAnnual: HSM_ANNUAL_USD, get avg() { return HSM_ANNUAL_USD / costUsers(); },
+          source: 'AWS CloudHSM list price, EU (Frankfurt), USD 1.92 per hour, one HSM, as of ' + COST_AS_OF },
+        statusList: { label: 'StatusList CDN (revocation)', avg: CDN_USD_PER_GB * STATUS_CHECK_KB / 1048576, phase: 'verification', basis: 'sourced',
+          source: 'AWS CloudFront list price, Europe, USD 0.085 per GB after the first free TB, assumes ' + STATUS_CHECK_KB + ' KB per check, as of ' + COST_AS_OF },
+        clientCrypto: { label: 'Client-side crypto (SD-JWT)', avg: 0, phase: 'verification', basis: 'assumption' },
+        localBiometric: { label: 'Biometric (device-local WebAuthn)', avg: 0, phase: 'verification', basis: 'assumption' },
+        pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', basis: 'assumption' },
+        storage: { label: 'PII storage', avg: 0, phase: 'both', basis: 'assumption' },
+        breachRisk: { label: 'Data breach risk', avg: 0, phase: 'both', basis: 'assumption' },
+        compliance: { label: 'GDPR compliance', avg: 0.02, phase: 'both', basis: 'assumption' },
+        consentMgmt: { label: 'Consent management', avg: 0, phase: 'both', basis: 'assumption' },
+        operations: { label: 'Operations (hosting, trust list, support): not estimated', avg: 0, phase: 'both', basis: 'assumption' },
       }
     };
 
-    // Track cumulative costs across the session
-    const SESSION_COSTS = { traditional: 0, AskMI: 0, steps: [] };
+    // Give every item (session model and scenario models) an id so that inputs can find it,
+    // and mark all scenario items as assumptions.
+    const COST_INDEX = [];
+    (function indexCosts() {
+      const add = item => { item.id = COST_INDEX.push(item) - 1; };
+      Object.values(COSTS.traditional).forEach(add);
+      Object.values(COSTS.AskMI).forEach(add);
+      Object.values(SCENARIOS).forEach(sc => {
+        if (!sc.costs) return;
+        ['traditional', 'AskMI'].forEach(side => sc.costs[side].items.forEach(item => { item.basis = 'assumption'; add(item); }));
+      });
+    })();
+
+    // Phases of the session panel that have run. Totals are recomputed from COSTS, so edits apply at once.
+    const SESSION_COSTS = { phases: [] };
+
+    function costTag(c) {
+      return c.basis === 'sourced'
+        ? '<span class="cost-tag cost-tag-src" title="' + String(c.source).replace(/"/g, '&quot;') + '">sourced</span>'
+        : '<span class="cost-tag cost-tag-asm">assumption</span>';
+    }
+    function costValue(c) {
+      if (c.basis === 'sourced' || c.fixedAnnual != null) return '$' + c.avg.toFixed(3);
+      return '$<input class="cost-in" type="number" min="0" step="0.001" value="' + c.avg + '" aria-label="' + c.label +
+        '" onchange="setCostById(' + c.id + ', this.value)">';
+    }
+    function costItemHtml(c, color) {
+      return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem;align-items:center">
+      <span>${c.label} ${costTag(c)}</span>
+      <span style="font-family:var(--mono);color:${color};white-space:nowrap">${costValue(c)}</span>
+    </li>`;
+    }
+    const costSum = items => items.reduce((s, c) => s + c.avg, 0);
+    function costSourcesLine(items) {
+      const src = [...new Set(items.filter(c => c.basis === 'sourced').map(c => c.source))];
+      return src.length
+        ? '📎 Sourced: ' + src.join(' · ') + '. All other values are assumptions you can edit. Illustrative, not a forecast.'
+        : 'All values on this panel are assumptions you can edit. Illustrative, not a forecast. · Alle Werte sind einstellbare Annahmen, keine Prognose.';
+    }
+    function costSummaryHtml(title, trad, askmi, note) {
+      const diff = trad - askmi;
+      return `<div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">${title}</div>
+        <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline;flex-wrap:wrap">
+          <div>
+            <div style="font-size:0.7rem;color:var(--red)">Traditional</div>
+            <div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:var(--mono)">$${trad.toFixed(3)}</div>
+          </div>
+          <div style="font-size:1.5rem">→</div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--green)">AskMI</div>
+            <div style="font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)">$${askmi.toFixed(3)}</div>
+          </div>
+          <div style="padding:0.4rem 0.8rem;background:var(--green-dim);border-radius:8px">
+            <div style="font-size:0.7rem;color:var(--green)">Difference under these assumptions</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--green)">$${diff.toFixed(3)}</div>
+          </div>
+        </div>
+        ${note ? `<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)">${note}</div>` : ''}
+      </div>`;
+    }
 
     function renderCosts(phase) {
       if (activeScenario) {
         renderScenarioCosts(SCENARIOS[activeScenario].costs);
         return;
       }
-      
-      // phase: 'issuance' or 'verification'
+      if (phase && !SESSION_COSTS.phases.includes(phase)) SESSION_COSTS.phases.push(phase);
+      const phases = SESSION_COSTS.phases;
+      if (!phases.length) return;
+
       document.getElementById('cost-ph').style.display = 'none';
       document.getElementById('cost-result').style.display = 'block';
 
-      // Get items for this phase
-      const tradKeys = Object.keys(COSTS.traditional).filter(k => {
-        const p = COSTS.traditional[k].phase;
-        return p === phase || p === 'both';
-      });
-      const AskMIKeys = Object.keys(COSTS.AskMI).filter(k => {
-        const p = COSTS.AskMI[k].phase;
-        return p === phase || p === 'both';
-      });
+      // Items of a phase. "both" items count once, in the first phase that ran.
+      const itemsFor = (group, p, i) => Object.values(COSTS[group]).filter(c => c.phase === p || (c.phase === 'both' && i === 0));
+      const last = phases.length - 1, cur = phases[last];
+      const tradKeys = itemsFor('traditional', cur, last), askKeys = itemsFor('AskMI', cur, last);
 
-      const tradPhaseTotal = tradKeys.reduce((s, k) => s + COSTS.traditional[k].avg, 0);
-      const AskMIPhaseTotal = AskMIKeys.reduce((s, k) => s + COSTS.AskMI[k].avg, 0);
+      document.getElementById('cost-traditional').innerHTML = tradKeys.map(c => costItemHtml(c, 'var(--red)')).join('');
+      document.getElementById('cost-AskMI').innerHTML = askKeys.map(c => costItemHtml(c, c.avg === 0 ? 'var(--green)' : 'var(--yellow)')).join('');
 
-      // Add to session cumulative
-      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, AskMI: AskMIPhaseTotal });
-      SESSION_COSTS.traditional = SESSION_COSTS.steps.reduce((s, x) => s + x.trad, 0);
-      SESSION_COSTS.AskMI = SESSION_COSTS.steps.reduce((s, x) => s + x.AskMI, 0);
-
-      // Render current phase items
-      document.getElementById('cost-traditional').innerHTML = tradKeys.map(k => {
-        const c = COSTS.traditional[k];
-        return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
-      <span>${c.label}</span>
-      <span style="font-family:var(--mono);color:var(--red);white-space:nowrap">€${c.avg.toFixed(3)}</span>
-    </li>`;
-      }).join('');
-
-      document.getElementById('cost-AskMI').innerHTML = AskMIKeys.map(k => {
-        const c = COSTS.AskMI[k];
-        return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
-      <span>${c.label}</span>
-      <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-        ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
-      </span>
-    </li>`;
-      }).join('');
-
-      // Phase subtotals
-      const phaseLabel = phase === 'issuance' ? '① Issuance' : '② Verification';
+      const phaseLabel = cur === 'issuance' ? '① Issuance' : '② Verification';
       document.getElementById('cost-trad-total').innerHTML =
-        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--red);font-family:var(--mono)">€${tradPhaseTotal.toFixed(3)}</span>`;
+        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--red);font-family:var(--mono)">$${costSum(tradKeys).toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMIPhaseTotal.toFixed(3)}</span>`;
+        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--green);font-family:var(--mono)">$${costSum(askKeys).toFixed(3)}</span>`;
 
-      // Session total summary (always visible)
-      const savingsPct = SESSION_COSTS.traditional > 0
-        ? ((1 - SESSION_COSTS.AskMI / SESSION_COSTS.traditional) * 100).toFixed(0)
-        : '0';
-      const savedPerYear = ((SESSION_COSTS.traditional - SESSION_COSTS.AskMI) * 1000000).toFixed(0);
-
-      const stepsHtml = SESSION_COSTS.steps.map(s =>
-        `<span class="dim">${s.phase === 'issuance' ? '①' : '②'} ${s.phase}:</span> ` +
-        `<span style="color:var(--red)">€${s.trad.toFixed(3)}</span> vs <span style="color:var(--green)">€${s.AskMI.toFixed(3)}</span>`
+      const steps = phases.map((p, i) => ({ p, trad: costSum(itemsFor('traditional', p, i)), askmi: costSum(itemsFor('AskMI', p, i)) }));
+      const trad = steps.reduce((s, x) => s + x.trad, 0), askmi = steps.reduce((s, x) => s + x.askmi, 0);
+      const stepsHtml = steps.map(x =>
+        `<span class="dim">${x.p === 'issuance' ? '①' : '②'} ${x.p}:</span> ` +
+        `<span style="color:var(--red)">$${x.trad.toFixed(3)}</span> vs <span style="color:var(--green)">$${x.askmi.toFixed(3)}</span>`
       ).join(' &nbsp;│&nbsp; ');
-
-      document.getElementById('cost-savings').innerHTML = `
-    <div style="margin-bottom:0.5rem;font-size:0.8rem">${stepsHtml}</div>
-    <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
-      <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO USER (Issuance + Verification)</div>
-      <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
-        <div>
-          <div style="font-size:0.7rem;color:var(--red)">Traditional</div>
-          <div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:var(--mono)">€${SESSION_COSTS.traditional.toFixed(3)}</div>
-        </div>
-        <div style="font-size:1.5rem">→</div>
-        <div>
-          <div style="font-size:0.7rem;color:var(--green)">AskMI</div>
-          <div style="font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)">€${SESSION_COSTS.AskMI.toFixed(3)}</div>
-        </div>
-        <div style="padding:0.4rem 0.8rem;background:var(--green-dim);border-radius:8px">
-          <div style="font-size:0.7rem;color:var(--green)">Savings</div>
-          <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${savingsPct}%</div>
-        </div>
-      </div>
-      <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)">
-        Bei 1M Users/Jahr: <strong style="color:var(--green)">€${Number(savedPerYear).toLocaleString('de-DE')}</strong> gespart
-      </div>
-    </div>
-  `;
-
-      // Sources
-      const allSources = [...new Set([
-        ...tradKeys.map(k => COSTS.traditional[k].source),
-        ...AskMIKeys.map(k => COSTS.AskMI[k].source),
-      ].filter(Boolean))];
-      document.getElementById('cost-sources').innerHTML =
-        '📎 ' + allSources.join(' · ');
+      document.getElementById('cost-savings').innerHTML =
+        `<div style="margin-bottom:0.5rem;font-size:0.8rem">${stepsHtml}</div>` +
+        costSummaryHtml('COST PER USER, USD (issuance + verification) · KOSTEN PRO NUTZER', trad, askmi,
+          'The HSM is a fixed cost, shown here per user at ' + costUsers().toLocaleString('en-US') + ' users per year (set in the annual calculator below).');
+      // Sources of everything in the shown totals, not only of the current phase.
+      const shownItems = phases.flatMap((p, i) => [...itemsFor('traditional', p, i), ...itemsFor('AskMI', p, i)]);
+      document.getElementById('cost-sources').innerHTML = costSourcesLine(shownItems);
     }
 
     function renderScenarioCosts(costs) {
       document.getElementById('cost-ph').style.display = 'none';
       document.getElementById('cost-result').style.display = 'block';
 
-      const tradTotal = costs.traditional.items.reduce((s, c) => s + c.avg, 0);
-      const AskMITotal = costs.AskMI.items.reduce((s, c) => s + c.avg, 0);
-
-      document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(c => `
-        <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
-          <span>${c.label}</span>
-          <span style="font-family:var(--mono);color:var(--red);white-space:nowrap">€${c.avg.toFixed(3)}</span>
-        </li>`).join('');
-
-      document.getElementById('cost-AskMI').innerHTML = costs.AskMI.items.map(c => `
-        <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
-          <span>${c.label}</span>
-          <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-            ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
-          </span>
-        </li>`).join('');
-
+      const tradTotal = costSum(costs.traditional.items), askTotal = costSum(costs.AskMI.items);
+      document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(c => costItemHtml(c, 'var(--red)')).join('');
+      document.getElementById('cost-AskMI').innerHTML = costs.AskMI.items.map(c => costItemHtml(c, c.avg === 0 ? 'var(--green)' : 'var(--yellow)')).join('');
       document.getElementById('cost-trad-total').innerHTML =
-        `<span class="dim">${costs.traditional.label}</span> <span style="color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</span>`;
+        `<span class="dim">${costs.traditional.label}</span> <span style="color:var(--red);font-family:var(--mono)">$${tradTotal.toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${costs.AskMI.label}</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMITotal.toFixed(3)}</span>`;
+        `<span class="dim">${costs.AskMI.label}</span> <span style="color:var(--green);font-family:var(--mono)">$${askTotal.toFixed(3)}</span>`;
+      document.getElementById('cost-savings').innerHTML = '<div style="margin-top:1rem">' +
+        costSummaryHtml('COST PER TRANSACTION, USD · KOSTEN PRO VORGANG', tradTotal, askTotal, costs.scaleNote || '') + '</div>';
+      document.getElementById('cost-sources').innerHTML = costSourcesLine([...costs.traditional.items, ...costs.AskMI.items]);
+    }
 
-      const savingsPct = tradTotal > 0 ? ((1 - AskMITotal / tradTotal) * 100).toFixed(0) : '0';
-
-      document.getElementById('cost-savings').innerHTML = `
-        <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:1rem;">
-          <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO VORGANG</div>
-          <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
-            <div>
-              <div style="font-size:0.7rem;color:var(--red)">Traditional</div>
-              <div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</div>
-            </div>
-            <div style="font-size:1.5rem">→</div>
-            <div>
-              <div style="font-size:0.7rem;color:var(--green)">AskMI</div>
-              <div style="font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)">€${AskMITotal.toFixed(3)}</div>
-            </div>
-            <div style="padding:0.4rem 0.8rem;background:var(--green-dim);border-radius:8px">
-              <div style="font-size:0.7rem;color:var(--green)">Savings</div>
-              <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${savingsPct}%</div>
-            </div>
-          </div>
-          ${costs.scaleNote ? `<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)">${costs.scaleNote}</div>` : ''}
-        </div>
-      `;
-
-      const allSources = [...new Set([
-        ...costs.traditional.items.map(c => c.source),
-        ...costs.AskMI.items.map(c => c.source),
-      ].filter(Boolean))];
-      document.getElementById('cost-sources').innerHTML = '📎 ' + allSources.join(' · ');
+    // Changing an assumption updates every panel that uses it.
+    function setCostById(id, value) {
+      const item = COST_INDEX[id], n = parseFloat(value);
+      if (item && item.basis !== 'sourced' && isFinite(n) && n >= 0) item.avg = n;
+      refreshCosts();
+    }
+    function refreshCosts() {
+      updateTCO();
+      if (activeScenario) renderScenarioCosts(SCENARIOS[activeScenario].costs);
+      else renderCosts();
     }
 
     // ─── Revocation ──────────────────────────────────────────────────
@@ -4385,7 +4371,7 @@
       ['issuer-result', 'wallet-result', 'verifier-result', 'network-result', 'revoke-result', 'shred-result', 'audit-chain-content', 'consent-content'].forEach(id => document.getElementById(id).innerHTML = '');
       ['wallet-ph', 'verifier-ph', 'network-ph', 'shred-ph', 'audit-ph', 'consent-ph', 'engine-ph', 'cost-ph'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
       document.getElementById('cost-result').style.display = 'none';
-      SESSION_COSTS.traditional = 0; SESSION_COSTS.AskMI = 0; SESSION_COSTS.steps = [];
+      SESSION_COSTS.phases = [];
       document.getElementById('wallet-ctrl').style.display = 'none';
       document.getElementById('engine-steps').style.display = 'none';
       ['btn-rev', 'btn-unrev'].forEach(id => document.getElementById(id).disabled = true);
@@ -4871,84 +4857,68 @@
       document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     }
 
-    // --- TCO Calculator Logic ---
+    // --- Annual calculator (uses the same COSTS as the panels above) ---
     function updateTCO() {
       const slider = document.getElementById('tco-users');
-      if(!slider) return;
+      if (!slider) return;
       const users = parseInt(slider.value, 10);
-      
-      const fmt = new Intl.NumberFormat('de-DE');
+      const fmt = new Intl.NumberFormat('en-US');
       document.getElementById('tco-users-val').textContent = fmt.format(users);
-      
-      // Traditional Costs
-      const tradOb = users * 1.50;
-      const tradDb = users * 0.03 * 12;
-      const tradGdpr = users * 0.24;
-      const tradBreach = users * 0.89; // proxy for breach risk
-      const tradDel = users * 0.02 * 15;
-      const tradTotal = tradOb + tradDb + tradGdpr + tradBreach + tradDel;
-      
-      // AskMI Costs
-      const AskMIAuth = users * 0.15;
-      const AskMISign = users * 0.01;
-      const AskMICdn = (users * 1) * 0.0003; // assume 1 verification per user/year for simplicity
-      const AskMITotal = AskMIAuth + AskMISign + AskMICdn;
 
-      const savings = tradTotal - AskMITotal;
-      const savingsPct = ((savings / tradTotal) * 100).toFixed(0);
-
-      // DOM Updates
-      const upd = (id, val, isZero = false) => {
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.textContent = isZero ? '€ 0' : '€ ' + fmt.format(Math.round(val));
+      const annual = c => (c.fixedAnnual != null ? c.fixedAnnual : c.avg * users);
+      const row = c => {
+        const rate = (c.basis === 'sourced' || c.fixedAnnual != null)
+          ? '$' + c.avg.toFixed(c.avg < 0.001 ? 7 : 3) + '/user'
+          : '$<input class="cost-in" type="number" min="0" step="0.001" value="' + c.avg + '" aria-label="' + c.label +
+            '" onchange="setCostById(' + c.id + ', this.value)">/user';
+        const amount = '$ ' + fmt.format(Math.round(annual(c))) + (c.fixedAnnual != null ? ' fixed' : '');
+        return `<div class="tco-row tco-item"><span>${c.label} ${costTag(c)}</span><span class="tco-rate">${rate}</span><span>${amount}</span></div>`;
       };
+      const trad = Object.values(COSTS.traditional), askmi = Object.values(COSTS.AskMI);
+      document.getElementById('tco-trad-rows').innerHTML = trad.map(row).join('');
+      document.getElementById('tco-AskMI-rows').innerHTML = askmi.map(row).join('');
 
-      upd('tco-trad-ob', tradOb);
-      upd('tco-trad-db', tradDb);
-      upd('tco-trad-gdpr', tradGdpr);
-      upd('tco-trad-breach', tradBreach);
-      upd('tco-trad-del', tradDel);
-      upd('tco-trad-total', tradTotal);
+      const tradTotal = trad.reduce((sum, c) => sum + annual(c), 0);
+      const askTotal = askmi.reduce((sum, c) => sum + annual(c), 0);
+      document.getElementById('tco-trad-total').textContent = '$ ' + fmt.format(Math.round(tradTotal));
+      document.getElementById('tco-AskMI-total').textContent = '$ ' + fmt.format(Math.round(askTotal));
+      const diff = tradTotal - askTotal;
+      document.getElementById('tco-savings').textContent = (diff < 0 ? '-$ ' : '$ ') + fmt.format(Math.abs(Math.round(diff)));
 
-      upd('tco-AskMI-auth', AskMIAuth);
-      upd('tco-AskMI-sign', AskMISign);
-      upd('tco-AskMI-cdn', AskMICdn);
-      upd('tco-AskMI-total', AskMITotal);
-
-      const savEl = document.getElementById('tco-savings');
-      if(savEl) {
-        savEl.innerHTML = '€ ' + fmt.format(Math.round(savings)) + ' <span style="font-size:1.2rem;opacity:0.8">(' + savingsPct + '%)</span>';
-      }
+      const sourced = [...new Set([...trad, ...askmi].filter(c => c.basis === 'sourced').map(c => c.source))];
+      document.getElementById('tco-sources').innerHTML =
+        '📎 Sourced: ' + sourced.join(' · ') + '.<br>' +
+        'Context, not a cost item: assumption from IBM\u2019s Cost of a Data Breach Report 2025 (published 30 July 2025, 600 organizations, March 2024 to February 2025): USD 4.44M global average, USD 7.42M healthcare. Not a forecast.<br>' +
+        'Kontext, kein Kostenposten: Annahme aus dem IBM Cost of a Data Breach Report 2025 (veröffentlicht am 30.07.2025): weltweit im Schnitt 4,44 Mio. USD, Gesundheitswesen 7,42 Mio. USD. Keine Prognose.';
     }
 
     const tcoSlider = document.getElementById('tco-users');
     if (tcoSlider) {
-      tcoSlider.addEventListener('input', updateTCO);
-      updateTCO(); // Initial run
+      tcoSlider.addEventListener('input', refreshCosts);
+      refreshCosts(); // Initial run
     }
 
     // --- Breach Scenario Animation ---
     let breachAnimated = false;
     const tradBreachEvents = [
       { t: "⏰ Tag 0", desc: "Breach detected", d: 0 },
-      { t: "📋 Tag 1", desc: "Incident Response Team mobilisiert (€500/h)", d: 600 },
+      { t: "📋 Tag 1", desc: "Incident Response Team mobilisiert (Beispiel: 500 USD/h)", d: 600 },
       { t: "⚖️ Tag 3", desc: "72h DSGVO Meldepflicht an Behörde (Art. 33)", d: 1100 },
-      { t: "📧 Tag 7", desc: "Alle betroffenen User benachrichtigen (Art. 34)", d: 1600 },
-      { t: "💰 Tag 30", desc: "Forensik-Bericht: €150.000", d: 2100 },
+      { t: "📧 Tag 7", desc: "Betroffene benachrichtigen, wenn hohes Risiko (Art. 34)", d: 1600 },
+      { t: "💰 Tag 30", desc: "Forensik-Bericht (Beispiel: 150.000 USD)", d: 2100 },
       { t: "📰 Tag 45", desc: "Presse berichtet, Reputationsschaden", d: 2600 },
-      { t: "⛔ Tag 90", desc: "Behörde verhängt Bußgeld: bis 4% vom Jahresumsatz", d: 3100 },
-      { t: "📊 Durchschnitt", desc: "€4.45M pro Breach (IBM 2024)", d: 3600, bold: true }
+      { t: "⛔ Tag 90", desc: "Mögliches Bußgeld: bis zu 4 % vom weltweiten Jahresumsatz (Obergrenze, Art. 83 DSGVO)", d: 3100 },
+      { t: "📊 Durchschnitt", desc: "Annahme aus dem IBM Cost of a Data Breach Report 2025: weltweit im Schnitt 4,44 Mio. USD, Gesundheitswesen 7,42 Mio. USD. Keine Prognose.", d: 3600, bold: true }
     ];
 
     const AskMIBreachEvents = [
       { t: "🤷", desc: "\"Was soll geleakt werden?\"", d: 200, bold: true },
-      { t: "📭", desc: "Keine PII gespeichert", d: 700 },
-      { t: "📭", desc: "Keine Datenbank mit User-Daten", d: 1200 },
-      { t: "📭", desc: "Keine Meldepflicht (keine Betroffenen)", d: 1700 },
-      { t: "📭", desc: "Kein Bußgeld-Risiko", d: 2200 },
-      { t: "📭", desc: "Kein Reputationsschaden", d: 2700 },
-      { t: "✅", desc: "Kosten: € 0", d: 3200, bold: true, g: true }
+      { t: "📭", desc: "Im Entwurf keine PII gespeichert", d: 700 },
+      { t: "📭", desc: "Im Entwurf keine Datenbank mit Nutzerdaten", d: 1200 },
+      { t: "📭", desc: "Voraussichtlich keine Meldepflicht für diese Daten (rechtlich zu prüfen)", d: 1700 },
+      { t: "📭", desc: "Geringes Bußgeld-Risiko (Annahme)", d: 2200 },
+      { t: "📭", desc: "Geringer Reputationsschaden (Annahme)", d: 2700 },
+      { t: "✅", desc: "Kosten aus dieser Datenpanne: Annahme 0 USD (Betriebskosten nicht einbezogen)", d: 3200, bold: true, g: true }
     ];
 
     async function playBreachAnimation() {
