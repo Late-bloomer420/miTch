@@ -1655,7 +1655,9 @@
         style="color:var(--accent)">privacy &amp; policy layer</strong> that sits between them and the services
       requesting your data.
     </div>
-    <div style="margin-top:0.6rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.3rem">
+    <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text-dim)">Design targets · Zielsysteme. Interoperability with
+      national wallets is not yet demonstrated. · Interoperabilität mit nationalen Wallets ist noch nicht nachgewiesen.</div>
+    <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.3rem">
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇪🇺 EUDI Wallet</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇦🇹 ID Austria</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇩🇪 Smart-eID</span>
@@ -1667,15 +1669,19 @@
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇪🇺 EHDS (EU) 2025/327</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">ISO 18013-5</span>
     </div>
-    <div style="margin-top:0.5rem">
-      <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
-      <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
-      <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
-      <span class="gdpr-badge">✅ Art. 7 Consent</span>
-      <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
-      <span class="gdpr-badge">✅ Art. 32 Security</span>
-      <span class="gdpr-badge">✅ CIR 82%</span>
+    <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text-dim)">GDPR articles addressed by the design · DSGVO-Artikel,
+      die der Entwurf adressiert</div>
+    <div style="margin-top:0.3rem">
+      <span class="gdpr-badge">Art. 25 Privacy by Design</span>
+      <span class="gdpr-badge">Art. 17 Right to Erasure</span>
+      <span class="gdpr-badge">Art. 5 Data Minimization</span>
+      <span class="gdpr-badge">Art. 7 Consent</span>
+      <span class="gdpr-badge">Art. 30 Processing Records</span>
+      <span class="gdpr-badge">Art. 32 Security</span>
+      <span class="gdpr-badge">EUDI CIRs: internally mapped, not externally validated</span>
     </div>
+    <div style="margin-top:0.3rem;font-size:0.68rem;color:var(--text-dim)">Engineering mapping, not legal advice or proof of
+      compliance. · Technische Zuordnung, keine Rechtsberatung und kein Konformitätsnachweis.</div>
   </div>
 
   <!-- ══ SECTION A: THE PROBLEM ══════════════════════════════════════════ -->
@@ -1720,8 +1726,9 @@
       </div>
 
       <div class="blind-banner">
-        AskMI is a <span class="accent">blind intermediary</span> — we never see your data, and neither does the verifier until you decide what to share.
-        <span class="dim-txt">AskMI structurally cannot store, access, or retain any personal data. This is an architectural guarantee, not a policy promise.</span>
+        AskMI is designed as a <span class="accent">blind intermediary</span> — by design, it does not see your data, and neither does the verifier until you decide what to share.
+        <span class="dim-txt">By design, raw personal data stays on the device and session keys are deleted after use. In the tested design path, AskMI does not store raw PII. Residual risks, such as browser memory, are documented.</span>
+        <span class="dim-txt">Nach dem Entwurf bleiben Rohdaten auf dem Gerät, Sitzungsschlüssel werden nach der Nutzung gelöscht. Im getesteten Entwurfspfad speichert AskMI keine Rohdaten. Restrisiken, etwa der Browser-Speicher, sind dokumentiert.</span>
       </div>
     </div>
   </div>
@@ -2212,7 +2219,7 @@
             <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="allow-banner" style="border-left-color:var(--red)">
               <div class="ab-title" style="color:var(--red)">⚠ Inference-Risiko: 🔴 High</div>
-              <div class="ab-body">friends_list enables social graph analysis. location_history allows movement profiles. Both are structurally blocked — the data never leaves the wallet, not even encrypted.</div>
+              <div class="ab-body">friends_list enables social graph analysis. location_history allows movement profiles. Both are blocked by policy — in this design the data does not leave the wallet, not even encrypted.</div>
             </div>
           </div>
 
@@ -2469,7 +2476,7 @@
     <!-- CRYPTO-SHREDDING -->
     <div class="panel full" id="p-shred">
       <div class="ph"><span class="icon">🔥</span> Crypto-Shredding (GDPR Art. 17) <span class="tag tag-orange"
-          style="margin-left:auto">Provable Deletion</span></div>
+          style="margin-left:auto">Simulated</span></div>
       <div class="pb">
         <div class="placeholder" id="shred-ph"><span class="emoji">🔥</span>Issue a credential to see crypto-shredding
           in action</div>
@@ -2615,7 +2622,7 @@
     <!-- AUDIT LOG -->
     <div class="panel full" id="p-audit">
       <div class="ph"><span class="icon">📋</span> Audit & Compliance <span class="tag tag-green"
-          style="margin-left:auto">GDPR Ready</span></div>
+          style="margin-left:auto">GDPR-oriented</span></div>
       <div class="tabs">
         <div class="tab active" onclick="switchTab(this,'audit-chain')">🔗 Audit Chain</div>
         <div class="tab" onclick="switchTab(this,'consent-log')">📝 Consent Log</div>
@@ -2844,8 +2851,8 @@
         <div style="font-size:1rem;font-weight:700;margin-bottom:0.4rem">AskMI — The Forgetting Layer</div>
         <div style="font-size:0.83rem;color:var(--text-dim);line-height:1.6">
           Privacy middleware for the digital identity layer.<br>
-          Built for EUDI Wallet, ID Austria, eIDAS 2.0, and every national eID system that follows.<br>
-          <span style="color:var(--accent)">We never see your data. That's the point.</span>
+          Designed with EUDI-based wallets in mind (e.g. ID Austria, Smart-eID). Interoperability with national wallets is a goal and not yet demonstrated.<br>
+          <span style="color:var(--accent)">By design, AskMI does not see your data. That's the point.</span>
         </div>
       </div>
     </div>
@@ -2937,9 +2944,9 @@
     <div
       style="background:var(--surface); border:1px solid var(--accent); border-radius:16px; padding:2rem; max-width:500px; width:90%; text-align:center; box-shadow:0 0 40px var(--accent-glow);">
       <div style="font-size:2.5rem; margin-bottom:0.8rem;">✅🔒</div>
-      <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete — Data Forgotten</h2>
+      <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete — Session Key Discarded</h2>
       <p class="dim" style="margin-bottom:1rem;">The verifier confirmed your claim without seeing any personal data. The
-        session key has been destroyed — this interaction is now mathematically irrecoverable.</p>
+        session key is discarded, so the data can no longer be decrypted by this session. (Simulated in this demo.)</p>
       <p style="margin-bottom:1.5rem; font-size:0.9rem;">Curious how data protection is being assessed?</p>
       <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="closeDpiaPopup(); showDpia()">📋 DPIA status</button>
@@ -3286,7 +3293,7 @@
               { label: 'Pseudonym generation (on-device)', avg: 0, source: 'HKDF derivation — free' },
               { label: 'Humanity proof', avg: 0, source: 'Local WebAuthn — free' },
               { label: 'Profile data shared', avg: 0, source: 'Zero — pseudonym only' },
-              { label: 'Cross-site linkability', avg: 0, source: 'Impossible — pairwise pseudonyms' },
+              { label: 'Cross-site linkability', avg: 0, source: 'Designed to avoid — pairwise pseudonyms' },
             ],
           },
           scaleNote: 'Bei 1M Logins/Monat',
@@ -3688,12 +3695,12 @@
           <ul>
             <li>Key zeroed & destroyed</li>
             <li>Method: overwrite + deref</li>
-            <li>Decryption: IMPOSSIBLE ✅</li>
+            <li>Decryption with this session's key: not possible (simulated)</li>
           </ul>
         </div>
       </div>
       <div class="rb">
-        <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} shredded — raw PII is mathematically irrecoverable</div>
+        <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} discarded — the simulated PII can no longer be decrypted by this session</div>
         <div><span class="k">destroyed_at:</span> ${ts()}</div>
       </div>
     </div>`;
