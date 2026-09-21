@@ -1,7 +1,7 @@
 # AskMI × EUDI release-readiness roadmap
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-09-14  
+**Baseline date:** 2026-09-21  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -83,7 +83,7 @@ gantt
 
 Production is intentionally unscheduled.
 
-**Schedule variance — 2026-09-14:** Wave 0's 4 September window and the G0 truth target of 13 September elapsed while PRs #141, #144, and #145 remained open. Their gates remain open. Merge/rebase the source-baseline stack and attach final-head evidence before setting a replacement date; do not infer readiness from elapsed time.
+**Schedule variance — 2026-09-21:** Wave 0's 4 September window and the G0 truth target of 13 September elapsed while PRs #141, #144, #145, and #146 remained open. PR #141 is no longer mergeable against the advanced default branch. Their gates remain open. Consolidate or rebase the source-baseline stack, resolve conflicts, and attach final-head evidence before setting replacement dates; do not infer readiness from elapsed time.
 
 ## Integrated market-validation track
 
@@ -134,6 +134,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Add key binding, replay handling, and privacy-aware batch behavior.
 - Run against the locked official issuer and official wallet-core examples.
 - Test both attested-client and public-client modes introduced in iOS Wallet Kit v0.40.9; if authorization-server metadata omits client-attestation algorithms, require an explicit configured client ID and record the selected mode.
+- Treat client mode and credential-proof mode as separate policy dimensions. Default to attested proofs; allow v0.52+ plain JWT proof only for an explicit issuer/profile policy, constrain algorithms to the supported ES256/ES384/ES512 set, record the decision, and test downgrade rejection.
 - Issue unique, immutable, short-lived/single-use credential-offer URIs; test repeated cached resolution, expiry, and replay, and never depend on mutating offer content behind an unchanged URI.
 
 ### CI and exit evidence
@@ -165,6 +166,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Validate relying-party access and registration certificates, registered scope, and intended use.
 - Exercise RP registration v0.2.2 contracts: object-shaped credential/provided-attestation metadata, certificate-history selection, intermediary identifiers, and status-list references.
 - Preserve registered WRP, access-certificate subject, presenter/intermediary, intended-use identifier, certificate revision/status, and validation source as distinct audit fields.
+- Align audit state with the v0.53 iOS-core reference: create one non-completed transaction before selection, update it idempotently by transaction identifier, complete only after response delivery, keep cancellation/rejection/failure/interruption non-completed, and store requested/presented claim paths without claim values.
 - Bind policy to trusted issuer, RP identity, registration scope, rulebook, and requested attributes.
 - Create trust onboarding, suspension, revocation, incident, and outage runbooks.
 
@@ -176,18 +178,20 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
-Current mobile anchors are Android and iOS 2026.09.42-Demo build 42, with iOS Wallet Kit v0.51.0. Build-41 results remain historical and do not satisfy the current matrix.
+Current released mobile anchors are Android and iOS 2026.09.42-Demo build 42. The tagged iOS core has advanced independently to v0.53.0; build 42 still integrates an older core and must not be represented as a v0.53.0 UI/core combination. Build-41 results remain historical and do not satisfy the current matrix.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
 - For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
 - Treat the iOS wallet UI build and wallet-core tag as separate coordinates; do not claim an untested UI/core combination.
-- For iOS Wallet Kit v0.51.0, use iOS 17+, delete and reissue pre-v0.50 stored credentials, record the SwiftData/keychain backend and app-group configuration, prove registration reconciliation immediately after issuance/storage changes, and record authentication prompt count/context lifetime with a negative cross-transaction reuse test.
+- For iOS Wallet Kit v0.53.0, use iOS 17+, delete and reissue pre-v0.50 stored credentials, record the SwiftData/keychain backend and app-group configuration, prove registration reconciliation immediately after issuance/storage changes, and record authentication prompt count/context lifetime with a negative cross-transaction reuse test.
+- Record client mode, credential-proof mode, algorithm and transaction-log state transitions for v0.53.0; cover rejection with and without redirect, cancellation, interruption, failed delivery and successful delivery. Do not carry build-42 UI evidence forward as v0.53.0 evidence.
 - For Android build 42, record biometric authenticator strength and cover strong-capable success, weak-only rejection, cancellation, terminal errors, and duplicate-prompt prevention.
 - Complete handoff state, request TTL, popup/same-tab fallback, session binding, recovery, and return-to-verifier UX.
 - Deliver verifier adapter/button and server middleware with deny-biased defaults.
 - Establish hosted staging with explicit origins, keys, trust sources, retention, health checks, and artifact traceability.
 - Run same-device, cross-device, expiry, retry, denial, partial-consent, revocation, trust-failure, and recovery paths.
 - Include proximity only if transport, reader auth, status limits, and official-device evidence are ready.
+- Keep Digital Credentials API deferred for the frozen pilot unless scope is explicitly reopened. The verifier main-branch ITB/DC API flow at commit `5975c099` is a watch item, not tagged v0.12.0 evidence.
 
 **Exit:** Android and iOS official-wallet matrices pass; a new RP integrates without source changes or insecure defaults; browser wallet remains labelled as a harness.
 

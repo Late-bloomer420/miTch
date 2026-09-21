@@ -1,6 +1,6 @@
 # EUDI official-source baseline
 
-**Locked:** 2026-09-14  
+**Locked:** 2026-09-21  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -20,7 +20,7 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.09.42-Demo_Build%3D42) | 2026.09.42-Demo, build 42 | First wallet interop anchor |
 | [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.09.42-Demo_Build%3D42) | 2026.09.42-Demo, build 42 | Second wallet interop anchor |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.30.2) | v0.30.2 | Protocol/credential reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.51.0) | v0.51.0 | Protocol/credential reference; build 42 integration anchor |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.53.0) | v0.53.0 (`3fa095043037c8540df5f7a2fdd115c43e39581d`) | Protocol/credential reference; newer than build 42 integration anchor |
 | [Official issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | Issuance anchor |
 | [Official verifier](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.12.0) | v0.12.0 | Presentation comparison anchor |
 | [FCAF](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/releases/tag/v0.0.10) | v0.0.10 | Functional test baseline |
@@ -50,6 +50,19 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-09-21
+
+[iOS Wallet Kit v0.53.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.53.0) supersedes v0.51.0 as the tagged iOS-core anchor. The release contains two material compatibility changes:
+
+- **Trust/security risk and AskMI implementation gap:** [v0.52.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.52.0) adds an issuer-specific `allowPlainJwtProof` switch. It defaults to `false` and therefore keeps HAIP-style attested proofs; enabling it accepts plain JWT proofs without key attestation using ES256, ES384, or ES512. AskMI must keep attested proof as the default, allow plain proof only by explicit issuer/profile policy, record the selected proof mode and algorithm, and test downgrade rejection. Public-client fallback and plain credential proof are separate decisions and must not be collapsed into one evidence field.
+- **Interoperability/evidence invalidation:** [v0.53.0 transaction logging](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/blob/v0.53.0/Sources/EudiWalletKit/EudiWalletKit.docc/GetStarted.md) persists a request as `NotCompleted` before credential selection, updates the same record by transaction identifier, and marks completion only after successful response delivery. Cancellation, failure, rejection and interruption remain non-completed; requested-claim logs cover the union of DCQL alternatives, while presented-claim logs contain disclosed paths and no claim values. AskMI evidence must prove these state transitions, idempotent update semantics and value-free audit storage; a redirect returned with an `access_denied` rejection is not a successful disclosure.
+
+The released iOS wallet UI remains [build 42](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.09.42-Demo_Build%3D42). Its main branch has only moved to Wallet Kit 0.52.1, so build-42 UI evidence must not be relabelled as v0.53.0 evidence.
+
+**Watch/no current locked-release impact:** the official verifier merged [release-branch commit `5975c099`](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/commit/5975c099ec9342144e7c0f324d42d9c946f16e69), adding an ITB-initialised Digital Credentials API flow and removing `resident_house_number`. No v0.13.0 release exists and the package still identifies itself as `0.12.1-SNAPSHOT`; the locked verifier therefore remains v0.12.0. Digital Credentials API remains outside the frozen pilot scope. If main-branch ITB evidence is used, record this exact commit separately and do not substitute it for tagged v0.12.0 evidence.
+
+No readiness gate closes or target date moves from these changes.
 
 ## Upstream delta — 2026-09-14
 
