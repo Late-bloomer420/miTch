@@ -1,7 +1,7 @@
 # ADOPT-1 — AskMI Connect Planning Gate
 
 Date: 2026-10-01
-Status: proposed next sprint gate; not yet approved implementation work.
+Status: ADOPT-1.0 accepted; ADOPT-1.1 is the next open gate.
 
 ## Goal
 
@@ -70,6 +70,8 @@ Acceptance:
 - one decision record or task note names the RP boundary, data controller role
   assumptions, credential profile, and output semantics;
 - no output is described as a new EUDI credential or issuer-equivalent proof.
+
+Status: done in [`ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`](ADOPT_1_PRODUCT_BOUNDARY_DECISION.md).
 
 ### ADOPT-1.1: Minimal Session Contract
 
