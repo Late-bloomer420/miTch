@@ -1,7 +1,7 @@
 # ADOPT-1 — AskMI Connect Planning Gate
 
 Date: 2026-10-01
-Status: ADOPT-1.0 accepted; ADOPT-1.1 is the next open gate.
+Status: ADOPT-1.0 and ADOPT-1.1 accepted; ADOPT-1.2 is the next open gate.
 
 ## Goal
 
@@ -90,6 +90,8 @@ Acceptance:
   signature and insufficient claims are explicit fail-closed cases;
 - result separates cryptographic verification, issuer trust, user approval and
   business authorization.
+
+Status: done in [`ADOPT_1_MINIMAL_SESSION_CONTRACT.md`](ADOPT_1_MINIMAL_SESSION_CONTRACT.md).
 
 ### ADOPT-1.2: SDK Shape
 
