@@ -1,7 +1,8 @@
 # ADOPT-1 — AskMI Connect Planning Gate
 
 Date: 2026-10-01
-Status: ADOPT-1.0 and ADOPT-1.1 accepted; ADOPT-1.2 is the next open gate.
+Status: ADOPT-1.0, ADOPT-1.1 and ADOPT-1.2 accepted; first code slice is
+the next open gate.
 
 ## Goal
 
@@ -110,6 +111,27 @@ Acceptance:
   `/wallet-present` frontend route;
 - examples clearly label demo services and localhost trust roots.
 
+Status: done in [`ADOPT_1_SDK_API_SHAPE.md`](ADOPT_1_SDK_API_SHAPE.md).
+
+### ADOPT-1.2-code: First Connect Implementation Slice
+
+Implement the package boundary accepted in ADOPT-1.2:
+
+- create `@askmi/connect`;
+- add the framework-agnostic core;
+- add the in-memory session store;
+- add the thin Express adapter;
+- prove the negative tests from ADOPT-1.1/1.2.
+
+Acceptance:
+
+- `@askmi/connect` builds and tests;
+- session ids and nonces use cryptographic randomness;
+- two concurrent sessions do not collide;
+- wrong audience, wrong nonce, replay, expiry and simulated-route attempts fail
+  closed;
+- status responses stay PII-minimal.
+
 ### ADOPT-1.3: First Vertical Discovery Gate
 
 Use the September use-case research only to choose interviews, not to build 72
@@ -145,8 +167,8 @@ Stop or re-scope ADOPT-1 if:
 
 ## First Implementation Slice
 
-The first code slice, after this plan is approved, should be a narrow
-age-verification connect sample:
+The first code slice, after ADOPT-1.2, should be a narrow age-verification
+connect sample:
 
 1. register a fixed age policy;
 2. create a verifier session with fresh nonce/audience;
