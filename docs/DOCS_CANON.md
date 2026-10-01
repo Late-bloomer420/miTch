@@ -42,6 +42,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **ADOPT-1 planning gate ("Sign in with AskMI" / `@askmi/connect`):** `docs/tasks/ADOPT_1_CONNECT_PLAN.md`
 - **ADOPT-1.0 product boundary decision:** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`
 - **ADOPT-1.1 minimal session contract:** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md`
+- **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
+- **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
 
 ## Research And Strategy Inputs
 

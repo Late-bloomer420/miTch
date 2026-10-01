@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-10-01 (ADOPT-1.1 minimal session contract accepted)
+**Date:** 2026-10-01 (ADOPT-1.2 SDK/API shape accepted)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `bb55b2e` (PR #155 merged) — demo claims now use qualified language, fictional organisations, real SHA-256 for the public-demo nullifier, and one sourced cost model; follows #154 (DPIA status notice, license, scenario copy and revoked-status log), #137 (ADOPT-0b real-presentation e2e correctness fix), #136 (ADOPT-0b real presentation), #135 (ADOPT-0a real SD-JWT VC issuance/storage), #134 (SECURE-2 evidence pack), #133 (`turbo dev dependsOn ^build`), and #132 (SECURE-1 gap closure). Prior pointer was `bb34003`/#137.
+**Current master:** `b6b4517` (PR #159 merged) — ADOPT-1.1 minimal session contract accepted after #158 (ADOPT-1.0 product boundary) and #138 (ADOPT evidence/research intake alignment). Earlier demo honesty fixes #154/#155 remain part of the base.
 
 ---
 
@@ -43,10 +43,12 @@
 - **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
 - **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
 
-### Recent additions (2026-10-01 — ADOPT-1.0 product boundary)
+### Recent additions (2026-10-01 — ADOPT-1 planning gates)
 - **ADOPT-1.0 accepted:** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md` defines the first `@askmi/connect` boundary as relying-party deployed verifier/policy integration. The first implementation slice is intentionally limited to the age/liquor-store profile on the real ADOPT-0a/0b path; AskMI does not issue a new credential, operate as an attestation provider, replace the wallet, or claim EUDI certification.
 - **ADOPT-1.1 accepted:** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md` defines the minimal verifier-side session contract before code: registered `age-liquor-store-v1` policy, `/askmi/connect/sessions` routes, one-shot session state machine, pluggable session store, stable error codes and negative tests proving the legacy simulated `/wallet-present` route cannot satisfy the real Connect flow.
-- **Next gate:** ADOPT-1.2 SDK/API Shape remains open before code package work: package layout, exported types, adapter boundary and example scope must be specified first.
+- **ADOPT-1.2 accepted:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md` defines the first SDK/API boundary: a new `@askmi/connect` package with framework-agnostic core, `InMemoryAskMIConnectSessionStore`, a thin Express adapter and a browser handoff helper. First code must prove crypto-random session/nonce generation, one-shot consume semantics, negative tests and PII-minimal status responses.
+- **Security audit remediation started:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md` sequences the audit cleanup into small PRs: first stale code-security PR review (#151/#152), then dependency-alert batches, then evidence-pack freshness and residual hardening.
+- **Next gate:** first `@askmi/connect` code slice plus SEC-AUDIT-1 remediation PRs.
 
 ### Recent additions (2026-09-20 — public demo honesty fixes)
 - **Demo claims aligned (#154/#155):** the public demo no longer presents a completed DPIA where none is approved; scenario copy is qualified, real organisation names were replaced with fictional names, the nullifier demo uses real SHA-256 with a session seed, and the cost model is a single sourced/assumption-labelled model rather than an unsupported savings headline.
