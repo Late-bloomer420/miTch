@@ -32,6 +32,8 @@
 
 **Update 2026-09-20 (DPIA & Demo-Aussagen):** Neuer Abschnitt „DPIA & öffentliche Demo-Aussagen“ (DP-01…DP-05, CL-01…CL-03). DP-01 umgesetzt: Die öffentliche Demo zeigt statt einer scheinbar fertigen DPIA nur noch den Status „in Vorbereitung“. Es existiert noch keine abgeschlossene oder freigegebene DPIA; die Fristen DP-02 bis DP-04 sind Vorschläge. Ebenfalls umgesetzt: CL-01 (Demo-Aussagen bereinigt) und CL-02 (Kostenmodell mit Belegen und einstellbaren Annahmen); neu: CL-04, CL-05.
 
+**Update 2026-10-01 (Research intake + ADOPT-1 gate):** Die September-Dokumente `EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md`, `USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` und `USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` sind eingeordnet als Research-/Strategie-Inputs, **nicht** als Zertifizierung, Rechtsgutachten, Customer Validation oder autoritativer Delivery-Backlog. Neuer Plan `docs/tasks/ADOPT_1_CONNECT_PLAN.md` beschreibt den nächsten Gate für `@askmi/connect` / "Sign in with AskMI": zuerst RP-deployed Verifier-/Policy-Integration, keine AskMI-issued Attestations, keine Zertifizierungsclaims, keine Exposure-Aktionen.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -41,6 +43,19 @@
 - 🟡 P1 — Wichtig, sollte bald passieren
 - 🟢 P2 — Nice-to-have / Langfristig
 - ✅ — Erledigt
+
+---
+
+## ADOPT-1 — AskMI Connect Gate (proposed)
+
+Quelle: [`tasks/ADOPT_1_CONNECT_PLAN.md`](tasks/ADOPT_1_CONNECT_PLAN.md). Dieser Abschnitt ist der nächste konkrete Arbeitsrahmen nach ADOPT-0a/0b; er bleibt Gate/Plan, bis Umsetzung explizit gestartet wird.
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| ADOPT-1.0 | 🔴 P0 | ⏳ | Produktgrenze für `@askmi/connect` festlegen: RP-deployed Verifier-/Policy-Integration, Credential-Profil, Trust-/Statusquellen, Output-Semantik, öffentliche Claims | Entscheidung dokumentiert; keine Ausgabe wird als neue EUDI-Credential oder issuer-equivalent proof beschrieben |
+| ADOPT-1.1 | 🔴 P0 | ⏳ | Minimalen Verification-Session-Contract definieren (`POST /verification-sessions`, Wallet-Handoff, one-shot Present, `GET` minimal result) | Schema dokumentiert; wrong audience, reused nonce, missing session/trust, invalid signature und insufficient claims sind fail-closed Fälle |
+| ADOPT-1.2 | 🟡 P1 | ⏳ | SDK/API-Schnitt für `@askmi/connect` entwerfen: Server-Helper, Handoff/Button, constrained policy registration, age-flow sample | Kein Holder-Key/Credential-Byte-Export; Sample nutzt echten ADOPT-0 Pfad, nicht `/wallet-present` Simulation |
+| ADOPT-1.3 | 🟡 P1 | ⏳ | Ersten Vertikal-Pilot nur über Discovery-Gates auswählen (Buyer, Land, Credential-Quelle, Schmerz, Rechts-/Retention-Annahmen, paid-pilot path) | Kein 72-Use-Case-Buildout; ein konkreter Pilot erfüllt die Gates oder wird verworfen |
 
 ---
 

@@ -37,6 +37,18 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
 - **Epic 4–5 execution plan (Scout & Advisor record):** `docs/EXECUTION_PLAN_epic4-5.md`
 - **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
+- **September 2026 external-style EUDI desk assessment (research, not certification/legal advice):** `docs/compliance/EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md`
+- **September 2026 use-case and GTM research (proposal, not approved backlog):** `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` and `docs/05-business/USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md`
+- **ADOPT-1 planning gate ("Sign in with AskMI" / `@askmi/connect`):** `docs/tasks/ADOPT_1_CONNECT_PLAN.md`
+
+## Research And Strategy Inputs
+
+These documents are useful inputs, but they do not override `STATE.md`,
+`docs/BACKLOG.md`, specs, ADRs or dated QA evidence:
+
+- `docs/compliance/EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md` — external-style desk assessment of EUDI trust boundaries, product routes and certification limits. It is not an accredited audit, certification, legal opinion or production approval.
+- `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` — broad use-case landscape and sequenced roadmap proposal. It is not customer validation or delivery commitment.
+- `docs/05-business/USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` — earlier GTM brainstorm; superseded for breadth by the landscape document, still useful for the verifier-vs-issuer framing.
 
 ## Agent and Memory Surfaces
 
