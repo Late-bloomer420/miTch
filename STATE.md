@@ -3,7 +3,7 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-10-01 (ADOPT-1.0 product boundary accepted after docs alignment)
+**Date:** 2026-10-01 (ADOPT-1.1 minimal session contract accepted)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
 **Release tag:** `v1.0-RC (Pilot Readiness)`
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
@@ -45,7 +45,8 @@
 
 ### Recent additions (2026-10-01 — ADOPT-1.0 product boundary)
 - **ADOPT-1.0 accepted:** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md` defines the first `@askmi/connect` boundary as relying-party deployed verifier/policy integration. The first implementation slice is intentionally limited to the age/liquor-store profile on the real ADOPT-0a/0b path; AskMI does not issue a new credential, operate as an attestation provider, replace the wallet, or claim EUDI certification.
-- **Next gate:** ADOPT-1.1 Minimal Session Contract remains open before code: schemas, route names, state machine, nonce/audience/replay failures, storage interface and negative tests must be specified first.
+- **ADOPT-1.1 accepted:** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md` defines the minimal verifier-side session contract before code: registered `age-liquor-store-v1` policy, `/askmi/connect/sessions` routes, one-shot session state machine, pluggable session store, stable error codes and negative tests proving the legacy simulated `/wallet-present` route cannot satisfy the real Connect flow.
+- **Next gate:** ADOPT-1.2 SDK/API Shape remains open before code package work: package layout, exported types, adapter boundary and example scope must be specified first.
 
 ### Recent additions (2026-09-20 — public demo honesty fixes)
 - **Demo claims aligned (#154/#155):** the public demo no longer presents a completed DPIA where none is approved; scenario copy is qualified, real organisation names were replaced with fictional names, the nullifier demo uses real SHA-256 with a session seed, and the cost model is a single sourced/assumption-labelled model rather than an unsupported savings headline.
