@@ -34,6 +34,8 @@
 
 **Update 2026-10-01 (Research intake + ADOPT-1 gate):** Die September-Dokumente `EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md`, `USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` und `USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` sind eingeordnet als Research-/Strategie-Inputs, **nicht** als Zertifizierung, Rechtsgutachten, Customer Validation oder autoritativer Delivery-Backlog. Neuer Plan `docs/tasks/ADOPT_1_CONNECT_PLAN.md` beschreibt den nächsten Gate für `@askmi/connect` / "Sign in with AskMI": zuerst RP-deployed Verifier-/Policy-Integration, keine AskMI-issued Attestations, keine Zertifizierungsclaims, keine Exposure-Aktionen.
 
+**Update 2026-10-01 (ADOPT-1.0 Produktgrenze entschieden):** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md` akzeptiert die erste `@askmi/connect`-Grenze: relying-party deployed Verifier-/Policy-Integration, erster Slice nur Age/Liquor-Store auf dem echten ADOPT-0a/0b-Pfad, keine AskMI-issued Credentials, keine issuer-equivalent Claims, keine Roh-Credentials oder stabilen Personenkennungen in genereller Telemetrie. ADOPT-1.1 (Minimal Session Contract) bleibt der nächste offene Gate vor Code.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -52,7 +54,7 @@ Quelle: [`tasks/ADOPT_1_CONNECT_PLAN.md`](tasks/ADOPT_1_CONNECT_PLAN.md). Dieser
 
 | ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
 |---|---|---|---|---|
-| ADOPT-1.0 | 🔴 P0 | ⏳ | Produktgrenze für `@askmi/connect` festlegen: RP-deployed Verifier-/Policy-Integration, Credential-Profil, Trust-/Statusquellen, Output-Semantik, öffentliche Claims | Entscheidung dokumentiert; keine Ausgabe wird als neue EUDI-Credential oder issuer-equivalent proof beschrieben |
+| ADOPT-1.0 | 🔴 P0 | ✅ | Produktgrenze für `@askmi/connect` festgelegt: RP-deployed Verifier-/Policy-Integration, erster Slice nur Age/Liquor-Store mit echtem ADOPT-0a/0b-Pfad; keine AskMI-issued Credentials, keine issuer-equivalent Claims, keine Roh-Credentials in genereller Telemetrie. Siehe [`tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`](tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md). | Entscheidung dokumentiert; keine Ausgabe wird als neue EUDI-Credential oder issuer-equivalent proof beschrieben |
 | ADOPT-1.1 | 🔴 P0 | ⏳ | Minimalen Verification-Session-Contract definieren (`POST /verification-sessions`, Wallet-Handoff, one-shot Present, `GET` minimal result) | Schema dokumentiert; wrong audience, reused nonce, missing session/trust, invalid signature und insufficient claims sind fail-closed Fälle |
 | ADOPT-1.2 | 🟡 P1 | ⏳ | SDK/API-Schnitt für `@askmi/connect` entwerfen: Server-Helper, Handoff/Button, constrained policy registration, age-flow sample | Kein Holder-Key/Credential-Byte-Export; Sample nutzt echten ADOPT-0 Pfad, nicht `/wallet-present` Simulation |
 | ADOPT-1.3 | 🟡 P1 | ⏳ | Ersten Vertikal-Pilot nur über Discovery-Gates auswählen (Buyer, Land, Credential-Quelle, Schmerz, Rechts-/Retention-Annahmen, paid-pilot path) | Kein 72-Use-Case-Buildout; ein konkreter Pilot erfüllt die Gates oder wird verworfen |
