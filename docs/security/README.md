@@ -20,7 +20,6 @@ This directory is the navigable entry-point for AskMI's security artifacts. It l
 | Latest evidence report | [../qa/evidence-reports/](../qa/evidence-reports/) |
 | SECURE-1 findings register | [../qa/SECURE_1_FINDINGS_REGISTER.md](../qa/SECURE_1_FINDINGS_REGISTER.md) |
 | Open residuals register | [./RESIDUALS.md](./RESIDUALS.md) |
-| Security audit remediation roadmap | [./SECURITY_AUDIT_ROADMAP_2026-10-01.md](./SECURITY_AUDIT_ROADMAP_2026-10-01.md) |
 
 ---
 
@@ -75,7 +74,7 @@ console.log(crypto.createHash('sha256').update(json).digest('hex'));
 
 ---
 
-## Current Evidence Status (as of 2026-10-01)
+## Current Evidence Status (as of 2026-07-14)
 
 | Metric | Value |
 |--------|-------|
@@ -87,6 +86,5 @@ console.log(crypto.createHash('sha256').update(json).digest('hex'));
 | SECURE-1 not-a-bug (F-07 – F-13, F-17, F-21) | 9 |
 | SECURE-1 documented-residual (F-05, F-06, F-15, F-19, F-20, F-22) | 6 |
 | External security review | Not yet performed (GAP-4) |
-| Active remediation plan | `SECURITY_AUDIT_ROADMAP_2026-10-01.md` |
 
 See [RESIDUALS.md](./RESIDUALS.md) for the full open-items register.

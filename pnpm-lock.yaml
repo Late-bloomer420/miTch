@@ -33,14 +33,13 @@ importers:
       '@noble/hashes':
         specifier: ^2.0.1
         version: 2.0.1
-    optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: ^4.59.0
-        version: 4.59.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.39.3
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: ^4.59.0
+        version: 4.59.0
       eslint:
         specifier: ^9.21.0
         version: 9.39.3
@@ -432,10 +431,6 @@ importers:
         version: 4.1.8(@types/node@20.19.33)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@6.4.3(@types/node@20.19.33)(tsx@4.21.0))
 
   src/packages/evidence:
-    dependencies:
-      pnpm:
-        specifier: 9.15.9
-        version: 9.15.9
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -3094,11 +3089,6 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  pnpm@9.15.9:
-    resolution: {integrity: sha512-aARhQYk8ZvrQHAeSMRKOmvuJ74fiaR1p5NQO7iKJiClf1GghgbrlW1hBjDolO95lpQXsfF+UA+zlzDzTfc8lMQ==}
-    engines: {node: '>=18.12'}
-    hasBin: true
-
   postcss@8.5.15:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
     engines: {node: ^10 || ^12 || >=14}
@@ -4332,8 +4322,7 @@ snapshots:
   '@rollup/rollup-linux-s390x-gnu@4.62.2':
     optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.59.0':
-    optional: true
+  '@rollup/rollup-linux-x64-gnu@4.59.0': {}
 
   '@rollup/rollup-linux-x64-gnu@4.62.2':
     optional: true
@@ -5772,8 +5761,6 @@ snapshots:
       playwright-core: 1.58.2
     optionalDependencies:
       fsevents: 2.3.2
-
-  pnpm@9.15.9: {}
 
   postcss@8.5.15:
     dependencies:
