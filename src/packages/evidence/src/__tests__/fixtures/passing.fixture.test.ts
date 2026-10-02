@@ -1,2 +1,3 @@
 import { describe, it, expect } from 'vitest';
-describe('fixture', () => { it('passes', () => { expect(1).toBe(1); }); });
+const describeWhenSpawned = process.env.ASKMI_EVIDENCE_FIXTURE_RUN === '1' ? describe : describe.skip;
+describeWhenSpawned('fixture', () => { it('passes', () => { expect(1).toBe(1); }); });

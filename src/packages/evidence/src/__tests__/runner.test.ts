@@ -37,6 +37,12 @@ describe('vitestExecutor (integration, real spawn)', () => {
   });
   it('PASSes for a real passing fixture test', async () => {
     const r = await vitestExecutor(claim());
-    expect(r.status).toBe('PASS');
+    expect(r.status, r.detail).toBe('PASS');
+  }, 60_000);
+
+  it('passes testNamePattern as a literal argument instead of shell text', async () => {
+    const r = await vitestExecutor(claim({ testNamePattern: 'passes|VULN && echo VULN' }));
+    expect(r.status, r.detail).toBe('PASS');
+    expect(r.detail).toContain(claim().testFile);
   }, 60_000);
 });
