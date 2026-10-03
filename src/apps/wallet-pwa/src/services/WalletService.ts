@@ -2263,43 +2263,26 @@ export class WalletService {
   async signData(payload: ProofOfExistence): Promise<{ proofToken: string; auditLog: string[] }> {
     if (!this.storage) throw new Error('Wallet locked');
 
-    // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
-    // TODO: Separate identity signing key from audit key (see security review)
-    const auditLogInternal = this.auditLog as unknown as {
-      auditPrivateKey?: CryptoKey;
-      auditPublicKey?: CryptoKey;
-    };
-    const auditKeys = auditLogInternal.auditPrivateKey
-      ? { privateKey: auditLogInternal.auditPrivateKey, publicKey: auditLogInternal.auditPublicKey }
-      : null;
-
-    if (!auditKeys?.privateKey) throw new Error('Identity keys not available');
-
     const logs: string[] = [];
     const content = canonicalStringify(payload);
 
-    // Sign with ECDSA
-    const signature = await crypto.subtle.sign(
-      { name: 'ECDSA', hash: { name: 'SHA-256' } },
-      auditKeys.privateKey,
-      new TextEncoder().encode(content)
-    );
+    // Sign with the proper Identity Key using the IdentityKeyGuardian
+    const signatureResult = await this.identityKeyGuardian.signIdentityPayload(content);
 
-    const signatureHex = Array.from(new Uint8Array(signature))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    // The signature might be hex or base64 depending on the key type (software vs hardware)
+    const signatureValue = signatureResult.signature;
 
     // Create Proof Token (Compact-like format, NOT RFC7515 JWS)
-    // Format: base64(header).base64(payload).hex(signature)
-    // Note: Uses standard Base64, not Base64URL; signature is hex, not base64url(r|s)
+    // Format: base64(header).base64(payload).signature
+    // Note: Uses standard Base64, not Base64URL
     const header = canonicalStringify({
       alg: 'ES256-PoC',
-      kid: 'did:askmi:user-wallet-001#audit-key',
+      kid: 'did:askmi:user-wallet-001#identity-key',
     });
     const protectedHeader = btoa(header);
     const encodedPayload = btoa(content);
 
-    const proofToken = `${protectedHeader}.${encodedPayload}.${signatureHex}`;
+    const proofToken = `${protectedHeader}.${encodedPayload}.${signatureValue}`;
 
     await this.auditLog.append('KEY_USED', payload.hash, {
       context: 'DOCUMENT_SIGNING',
