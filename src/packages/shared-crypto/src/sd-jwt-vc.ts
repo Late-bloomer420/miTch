@@ -359,6 +359,119 @@ function validateIssuerClaims(payload: Partial<SDJWTVCPayload>): void {
     if (!isURI(payload.vct)) throw new Error(`SD-JWT VC: vct must be a URI, got ${payload.vct}`);
 }
 
+// ─── SD-JWT Disclosure Generator ─────────────────────────────────────────────
+
+function base64urlEncode(bytes: Uint8Array): string {
+    let bin = '';
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Build SD-JWT selective-disclosure entries per IETF SD-JWT: for each claim a
+ * salted `[salt, name, value]` disclosure and its base64url(sha256) digest.
+ * The issuer puts `_sd` in the payload (claim omitted from the clear) and hands
+ * the holder the `disclosures`.
+ */
+export async function createSDJWTDisclosures(
+    claims: Record<string, unknown>
+): Promise<{ _sd: string[]; disclosures: string[] }> {
+    const _sd: string[] = [];
+    const disclosures: string[] = [];
+    for (const [name, value] of Object.entries(claims)) {
+        const salt = base64urlEncode(crypto.getRandomValues(new Uint8Array(16)));
+        const disclosure = base64urlEncode(new TextEncoder().encode(JSON.stringify([salt, name, value])));
+        disclosures.push(disclosure);
+        _sd.push(await sha256Base64url(disclosure));
+    }
+    return { _sd, disclosures };
+}
+
+/**
+ * Verifier-side complement of `createSDJWTDisclosures`: decode presented
+ * disclosure strings and return the claims they reveal — but ONLY for
+ * disclosures whose SHA-256 digest is present in the issuer-signed `_sd`
+ * array. A disclosure whose digest is not in `_sd` (i.e. not covered by the
+ * issuer's signature) is rejected (fail-closed) so a holder cannot inject
+ * arbitrary claims.
+ */
+export async function extractDisclosedClaims(
+    disclosures: string[],
+    sdDigests: string[]
+): Promise<Record<string, unknown>> {
+    const allowed = new Set(sdDigests);
+    const out: Record<string, unknown> = {};
+    for (const d of disclosures) {
+        if (!d || d.includes('.')) continue; // skip empty segments and any JWT (e.g. KB-JWT)
+        const digest = await sha256Base64url(d);
+        if (!allowed.has(digest)) continue; // fail-closed: only issuer-signed disclosures
+        try {
+            const decoded = JSON.parse(
+                new TextDecoder().decode(
+                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
+                )
+            ) as [string, string, unknown];
+            out[decoded[1]] = decoded[2];
+        } catch {
+            // malformed disclosure — skip (fail-closed)
+        }
+    }
+    return out;
+}
+
+// ─── SD-JWT VC Presentation (holder, no issuer key) ──────────────────────────
+
+/**
+ * Present a pre-issued SD-JWT VC by selecting only the requested disclosures
+ * and appending a Key Binding JWT. The issuer JWT (and its signature) is left
+ * completely untouched — no re-issuance occurs.
+ *
+ * @param sdJwtVc             Stored SD-JWT string: `issuerJwt~disc~...~[kbJwt]`
+ * @param requestedClaimNames Claim names to disclose (others are dropped)
+ * @param holderPrivateKey    Holder's private key for KB-JWT signing
+ * @param opts                `aud` and `nonce` for the KB-JWT
+ * @returns vpToken (SD-JWT presentation) and a map of the disclosed claim values
+ */
+export async function buildSdJwtPresentation(
+    sdJwtVc: string,
+    requestedClaimNames: string[],
+    holderPrivateKey: CryptoKey,
+    opts: { aud: string; nonce: string }
+): Promise<{ vpToken: string; disclosedClaims: Record<string, unknown> }> {
+    const segments = sdJwtVc.split('~');
+    const issuerJwt = segments[0];
+    // middle segments are disclosures; trailing '' (from the final '~') and any KB-JWT are ignored
+    const allDisclosures = segments.slice(1).filter((s) => s.length > 0 && !s.includes('.'));
+    const requested = new Set(requestedClaimNames);
+    const selected: string[] = [];
+    const disclosedClaims: Record<string, unknown> = {};
+    for (const d of allDisclosures) {
+        let decoded: [string, string, unknown];
+        try {
+            decoded = JSON.parse(
+                new TextDecoder().decode(
+                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
+                )
+            );
+        } catch {
+            continue;
+        }
+        const [, name, value] = decoded;
+        if (requested.has(name)) {
+            selected.push(d);
+            disclosedClaims[name] = value;
+        }
+    }
+    const presented = `${issuerJwt}~${selected.join('~')}~`;
+    const kbJwt = await createKeyBindingJWT(
+        { aud: opts.aud, nonce: opts.nonce, sdJwtWithDisclosures: presented },
+        holderPrivateKey
+    );
+    return { vpToken: `${presented}${kbJwt}`, disclosedClaims };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 async function sha256Base64url(input: string): Promise<string> {
     const data = new TextEncoder().encode(input);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);

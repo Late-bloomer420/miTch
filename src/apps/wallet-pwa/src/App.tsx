@@ -27,13 +27,10 @@ import {
 } from './consent-manager/receipt-store';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
 import {
-  buildSDJWTPresentation,
   buildSessionCleanup,
-  SCENARIO_VCT,
   type AuthorizationRequest,
 } from '@askmi/oid4vp';
 import type { ConsentReceipt } from '@askmi/oid4vp';
-import { SCENARIO_CLAIMS } from './scenario-claims';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { SovereigntyCenter } from './components/SovereigntyCenter';
 import { LandingPage } from './LandingPage';
@@ -253,6 +250,37 @@ function WalletApp() {
       report.metrics.overRequestingDetected ? 'warning' : 'info'
     );
   }, [currentRequest, evaluationResult?.decisionCapsule, _privacyConsent]);
+
+  // Wire the DataFlow panel's per-transaction GDPR controls to the wallet.
+  // Fail-closed surfacing: the wallet only reports success after the endpoint
+  // confirms delivery, and any failure (or unexpected throw) is shown to the
+  // user rather than swallowed.
+  const handleDataFlowAction = useCallback(
+    async (type: 'erasure' | 'report', decisionId: string) => {
+      try {
+        if (type === 'erasure') {
+          addLog(`🗑️ Datenlöschung (DSGVO Art. 17) für Transaktion angefordert…`, 'info');
+          const res = await walletRef.current.requestDataErasure(decisionId);
+          addLog(res.message, res.success ? 'success' : 'error');
+        } else {
+          const reason = window.prompt(
+            'Grund der Meldung an die Aufsichtsbehörde:',
+            'Über-Anfrage / Verdacht auf Missbrauch'
+          );
+          if (reason === null) {
+            addLog('🚩 Meldung abgebrochen.', 'info');
+            return;
+          }
+          addLog('🚩 Verifier wird der Aufsichtsbehörde gemeldet…', 'info');
+          const res = await walletRef.current.reportRelyingParty(decisionId, reason);
+          addLog(res.message, res.success ? 'success' : 'error');
+        }
+      } catch (e) {
+        addLog(`❌ Aktion fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      }
+    },
+    []
+  );
 
   const handleExportAuditReport = useCallback(() => walletRef.current.exportAuditReport(), []);
   const handleSyncAuditToL2 = useCallback(() => walletRef.current.syncAuditToL2(), []);
@@ -788,47 +816,43 @@ function WalletApp() {
   // OID4VP: present SD-JWT VP to verifier via direct_post
   const presentOID4VP = async (
     authRequest: AuthorizationRequest,
-    scenarioId: string,
+    _scenarioId: string,
     decisionId: string | null = null
   ) => {
-    let holderKeys: CryptoKeyPair | null = null;
-    let issuerKeys: CryptoKeyPair | null = null;
-
     try {
       setStatus('PROVING');
       addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
 
-      // Generate ephemeral key pairs (PoC — in production, holder key is from wallet, issuer from trust registry)
-      holderKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
-        'sign',
-        'verify',
-      ]);
-      issuerKeys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
-        'sign',
-        'verify',
-      ]);
+      // ADOPT-0b: Derive requested claim names from the presentation definition
+      const requestedClaimNames = authRequest.presentation_definition.input_descriptors.flatMap(
+        (d) =>
+          d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
+      );
 
-      const claims = SCENARIO_CLAIMS[scenarioId] ?? SCENARIO_CLAIMS['liquor-store'];
-      const isRevoked = scenarioId === 'revoked';
+      // ADOPT-0b: Locate the most recent real stored SD-JWT VC (fail-closed if none)
+      const credId = await walletRef.current!.getLatestSdJwtVcId();
+      if (!credId) {
+        addLog('❌ No stored credential — fetch a credential from the issuer first.', 'error');
+        setStatus('IDLE');
+        return;
+      }
 
-      // W-03: Build SD-JWT VP Token with Key Binding JWT
-      const { vpTokenString, presentationSubmission, disclosedClaims } =
-        await buildSDJWTPresentation({
-          request: authRequest,
-          issuerPrivateKey: issuerKeys.privateKey,
-          holderKeyPair: holderKeys,
-          claims,
-          vct: SCENARIO_VCT[scenarioId] ?? 'https://askmi.demo/vct/age-credential',
-          issuerDid: ASKMI_DEMO.issuerUri,
-          revoked: isRevoked,
-          statusListUri: ASKMI_DEMO.statusListUri,
-        });
+      // ADOPT-0b: Present the real stored credential
+      const presented = await walletRef.current!.presentStoredSdJwtVc(
+        credId,
+        requestedClaimNames,
+        { aud: authRequest.client_id, nonce: authRequest.nonce }
+      );
+      if (!presented) {
+        addLog('❌ No matching credential for this request.', 'error');
+        setStatus('IDLE');
+        return;
+      }
+
+      const { vpToken: vpTokenString, disclosedClaims } = presented;
 
       addLog(`📋 Disclosed: ${Object.keys(disclosedClaims).join(', ')}`, 'info');
       addLog(`🔑 Key Binding JWT attached (nonce + aud bound)`, 'info');
-
-      // Send issuer public key alongside VP for PoC verification
-      const issuerPubJwk = await crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
       // POST direct_post to verifier redirect_uri
       const redirectUri = authRequest.redirect_uri;
@@ -837,9 +861,8 @@ function WalletApp() {
       // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
       const payload = {
         vp_token: vpTokenString,
-        presentation_submission: presentationSubmission,
+        presentation_submission: { id: `ps-${crypto.randomUUID()}`, definition_id: authRequest.presentation_definition.id, descriptor_map: [] },
         state: authRequest.state,
-        issuer_jwk: issuerPubJwk,
       };
       const paddedPayload = padPayload(payload);
       addLog(`🛡️ OID4VP Payload padded to ${paddedPayload.length} bytes`, 'info');
@@ -900,10 +923,8 @@ function WalletApp() {
       );
       setStatus('IDLE');
     } finally {
-      // B-03: Crypto-shredding — destroy ephemeral keys
-      holderKeys = null;
-      issuerKeys = null;
-      addLog('🗑️ Ephemeral keys destroyed (crypto-shredding)', 'info');
+      // B-03: No ephemeral issuer/holder keys to shred — real credential uses stored holder key.
+      addLog('🗑️ Presentation complete (no ephemeral keys to shred)', 'info');
     }
   };
 
@@ -986,54 +1007,17 @@ function WalletApp() {
     window.history.replaceState({}, '', window.location.pathname);
   };
 
-  // OID4VCI: fetch a test credential from issuer-mock
+  // OID4VCI: fetch a test credential from issuer-mock (ADOPT-0a: real holder PoP + raw SD-JWT VC storage)
   const handleFetchCredential = async () => {
     setCredentialStatus('fetching');
-    addLog('🎫 Fetching credential from issuer-mock (OID4VCI)...', 'info');
+    addLog('🎫 Fetching credential from issuer-mock (OID4VCI + holder PoP)...', 'info');
     try {
-      const res = await fetch('http://localhost:3005/credential', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...((currentRequest?.correlation_id && {
-            'x-correlation-id': currentRequest.correlation_id,
-          }) ||
-            {}),
-        },
-        body: JSON.stringify({
-          credential_definition: { type: ['VerifiableCredential', 'AgeCredential'] },
-          proof: {},
-        }),
-      });
-      if (!res.ok) throw new Error(`Issuer returned ${res.status}`);
-      const data = (await res.json()) as { credential?: string; error?: string };
-      if (!data.credential) throw new Error(data.error ?? 'No credential in response');
-
-      // Decode JWT payload (header.payload.sig)
-      const parts = data.credential.split('.');
-      if (parts.length < 2) throw new Error('Invalid JWT format');
-      const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-      const payload = JSON.parse(payloadJson) as Record<string, unknown>;
-      const vcPayload = payload['vc'] as Record<string, unknown> | undefined;
-      const subject = (vcPayload?.credentialSubject ??
-        payload['credentialSubject'] ??
-        {}) as Record<string, unknown>;
-
-      const credId = `vc-issuer-${Date.now()}`;
-      await walletRef.current.addIssuedCredential(
-        credId,
-        subject,
-        'did:web:localhost%3A3005',
-        undefined,
-        import.meta.env.DEV && mintSingleUse
-      );
+      const credId = await walletRef.current.fetchAndStoreSdJwtVc();
       await loadWalletCredentials();
 
       setCredentialStatus('done');
       addLog(
-        `✅ AgeCredential received from issuer-mock and stored (${credId})${
-          import.meta.env.DEV && mintSingleUse ? ' — minted single-use 🔁' : ''
-        }`,
+        `✅ SD-JWT VC received from issuer-mock and stored with holder binding (${credId})`,
         'success'
       );
     } catch (e) {
@@ -1829,7 +1813,7 @@ function WalletApp() {
             )}
             {traceDetailPanel === 'data-flow' && (
               <div id="dataflow-section">
-                <DataFlowPanel entries={recentAuditEntries} />
+                <DataFlowPanel entries={recentAuditEntries} onAction={handleDataFlowAction} />
               </div>
             )}
           </div>
@@ -1874,9 +1858,18 @@ function WalletApp() {
           <PolicyEditor
             policy={currentPolicy}
             onSave={(p) => {
-              walletRef.current.savePolicy(p);
-              setCurrentPolicy(p);
-              addLog('⚖️ User Policy updated and persisted', 'success');
+              walletRef.current
+                .savePolicy(p)
+                .then(() => {
+                  setCurrentPolicy(p);
+                  addLog('⚖️ User Policy updated and persisted', 'success');
+                })
+                .catch((e: unknown) => {
+                  addLog(
+                    `❌ Policy save failed: ${e instanceof Error ? e.message : String(e)}`,
+                    'error',
+                  );
+                });
             }}
           />
         )}

@@ -30,6 +30,11 @@ export interface EncryptionKeyCreationResult {
  */
 export interface KeyGuardian {
   getLevel(): Promise<KeyProtectionLevel>;
+  /**
+   * True when the runtime can perform a hardware-bound ceremony. If this is
+   * true, callers must not silently substitute a software signing key.
+   */
+  isHardwareAvailable?(): Promise<boolean>;
   /** Create a signing key pair (ECDSA-P256). */
   createKey(opts: { userId: string }): Promise<KeyCreationResult>;
   /** Sign a challenge with the named signing key. */

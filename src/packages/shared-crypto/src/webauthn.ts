@@ -74,8 +74,10 @@ async function savePasskeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist passkey metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
@@ -107,8 +109,10 @@ async function saveIdentityKeyMeta(meta: PasskeyRegistration): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch {
-    // Falls DB fehlschlägt, in-memory Fallback für Session (wird hier ignoriert)
+  } catch (err) {
+    throw new Error(
+      `Failed to persist identity-key metadata: ${(err as Error)?.message ?? String(err)}`
+    );
   }
 }
 
@@ -266,7 +270,14 @@ export class WebAuthnService {
   static async signWithIdentityKey(data: string): Promise<string> {
     const meta = await loadIdentityKeyMeta();
     if (!meta || meta.credentialId === 'software-fallback') {
-      // Fallback auf Software wenn kein HW-Key registriert
+      // Fail-closed: a software signature must NEVER stand in for the
+      // hardware-bound identity key when WebAuthn is available. Only Node/test/
+      // legacy environments (no navigator.credentials) may use the fallback.
+      if (isWebAuthnAvailable()) {
+        throw new Error(
+          'IDENTITY_KEY_NOT_REGISTERED: refusing software fallback while WebAuthn is available — register the hardware identity key first.'
+        );
+      }
       const proof = await SoftwareFallback.sign(data);
       return proof.signature;
     }
@@ -494,9 +505,13 @@ export class WebAuthnService {
         }
       }
 
-      // Fallback: Software-Signatur (degraded mode)
-      console.error('[WebAuthn] Assertion failed, falling back to software:', err);
-      return SoftwareFallback.sign(decisionId);
+      // Fail-closed: when WebAuthn is available, an assertion failure must NOT
+      // silently degrade to a software signature — an induced error would
+      // otherwise bypass the hardware-bound key. Surface the error instead.
+      console.error('[WebAuthn] Assertion failed (fail-closed, not downgrading):', err);
+      throw new Error(
+        `WEBAUTHN_ASSERTION_FAILED: ${(err as Error)?.message ?? 'unknown error'}`
+      );
     }
 
     const response = assertion.response as AuthenticatorAssertionResponse;
@@ -584,12 +599,16 @@ export class WebAuthnService {
   }
 
   /**
-   * Legacy-Kompatibilität: Verifier-seitige Verifikation.
-   * In Production: Verifier prüft authenticatorData + signature gegen Public Key.
-   * Hier: strukturelle Plausibilitätsprüfung (kein Server-Key verfügbar).
+   * @deprecated Not a real presence verifier. This method never performed
+   * cryptographic verification and has been retired to fail-closed. Use
+   * `@askmi/webauthn-verifier` (WebAuthnNativeVerifier) for real WebAuthn
+   * presence/assertion verification.
    */
-  static async verifyPresence(decisionId: string, attestation: string): Promise<boolean> {
-    return attestation.length > 0;
+  static async verifyPresence(_decisionId: string, _attestation: string): Promise<boolean> {
+    throw new Error(
+      'WebAuthnService.verifyPresence is a retired non-cryptographic stub and must not be used. ' +
+        'Use @askmi/webauthn-verifier (WebAuthnNativeVerifier) for real presence verification.',
+    );
   }
 
   /**

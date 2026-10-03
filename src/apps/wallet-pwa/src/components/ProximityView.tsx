@@ -1,3 +1,6 @@
+// TODO(backlog G-110 / E-11 proximity): ISO 18013-5 proximity presentation UI (drives
+// ProximityService). Implemented but not yet wired into the wallet UI (no live importer).
+// See docs/BACKLOG.md EPIC G-110. Do not delete: parked, pending wiring.
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ProximityService, ProximitySession } from '../services/ProximityService';

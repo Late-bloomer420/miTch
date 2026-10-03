@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
-import { app } from '../app';
+import { app, setIssuerKeyResolver } from '../app';
 import { buildSDJWTPresentation, SCENARIO_VCT } from '@askmi/oid4vp';
 import { statusResolver, trustListResolver } from '@askmi/shared-crypto';
 import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
@@ -60,6 +60,9 @@ describe('/oid4vp-present endpoint', () => {
   beforeEach(async () => {
     // Reset verifier state
     await request(app).post('/reset');
+    // ADOPT-0b: the verifier resolves the issuer key itself (trust list / JWKS),
+    // NOT from the wallet. Inject the test issuer key as the "resolved" key.
+    setIssuerKeyResolver(async () => issuerKeys.publicKey);
   });
 
   it('should return 400 when vp_token is missing', async () => {
@@ -82,14 +85,56 @@ describe('/oid4vp-present endpoint', () => {
     expect(res.body.error).toBe('Missing presentation_submission');
   });
 
-  it('should return 400 when issuer_jwk is missing', async () => {
+  it('rejects (403) when the issuer key cannot be resolved / issuer is untrusted', async () => {
+    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const { authRequest } = authRes.body;
+    const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
+      request: authRequest,
+      issuerPrivateKey: issuerKeys.privateKey,
+      holderKeyPair: holderKeys,
+      claims: AGE_CLAIMS,
+      vct: SCENARIO_VCT['liquor-store'] ?? ASKMI_SCENARIO_VCT['liquor-store'],
+      issuerDid: ASKMI_DEMO.issuerUri,
+      revoked: false,
+    });
+    // Issuer untrusted / JWKS unresolvable → the verifier must not accept it.
+    setIssuerKeyResolver(async () => null);
     const res = await request(app)
       .post('/oid4vp-present')
-      .send({ vp_token: 'fake.token.here', presentation_submission: {} });
+      .send({ vp_token: vpTokenString, presentation_submission: presentationSubmission, state: authRequest.state });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
     expect(res.body.ok).toBe(false);
-    expect(res.body.error).toBe('Missing issuer_jwk');
+    expect(res.body.error).toBe('untrusted_or_unresolvable_issuer');
+  });
+
+  it('ignores a wallet-supplied issuer_jwk and verifies against the resolved key (closes circular-verification)', async () => {
+    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const { authRequest } = authRes.body;
+    const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
+      request: authRequest,
+      issuerPrivateKey: issuerKeys.privateKey,
+      holderKeyPair: holderKeys,
+      claims: AGE_CLAIMS,
+      vct: SCENARIO_VCT['liquor-store'] ?? ASKMI_SCENARIO_VCT['liquor-store'],
+      issuerDid: ASKMI_DEMO.issuerUri,
+      revoked: false,
+    });
+    // Resolver (beforeEach) returns the REAL issuer key. Send an ATTACKER key as
+    // issuer_jwk — it must be ignored; verification uses the resolved key → 200.
+    const attacker = await globalThis.crypto.subtle.exportKey(
+      'jwk',
+      (await generateKeyPair()).publicKey
+    );
+    const res = await request(app).post('/oid4vp-present').send({
+      vp_token: vpTokenString,
+      presentation_submission: presentationSubmission,
+      state: authRequest.state,
+      issuer_jwk: attacker,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
   });
 
   it('should verify a valid SD-JWT VP (happy path)', async () => {

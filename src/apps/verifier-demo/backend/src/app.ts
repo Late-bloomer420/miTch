@@ -268,6 +268,36 @@ app.post('/wallet-present', async (req, res) => {
 });
 
 // ─── B-02: OID4VP Direct Post Endpoint (Wallet → Verifier) ──────────────────
+// ─── ADOPT-0b: authoritative issuer-key resolution ───────────────────────────
+// The issuer signature MUST be verified against a key resolved from the trust
+// list / issuer JWKS — never against a wallet-supplied `issuer_jwk` (which would
+// be circular: the wallet would provide both the signature and the key to check
+// it against). A real issuer (Austria ID / eIDAS) plugs in via the trust list.
+export async function defaultResolveIssuerKey(iss: string): Promise<CryptoKey | null> {
+  try {
+    const trust = await trustListResolver.isIssuerTrusted(iss);
+    if (!trust.isTrusted) return null;
+    const r = await fetch(`${ISSUER_BASE_URL}/.well-known/jwks.json`);
+    if (!r.ok) return null;
+    const jwks = (await r.json()) as { keys?: JsonWebKey[] };
+    if (!jwks.keys?.length) return null;
+    return await globalThis.crypto.subtle.importKey(
+      'jwk',
+      jwks.keys[0],
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['verify']
+    );
+  } catch {
+    return null;
+  }
+}
+let issuerKeyResolver: (iss: string) => Promise<CryptoKey | null> = defaultResolveIssuerKey;
+/** Test seam: override how the verifier resolves the issuer key. */
+export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | null>): void {
+  issuerKeyResolver = fn;
+}
+
 app.post('/oid4vp-present', async (req, res) => {
   try {
     const body = req.body as {
@@ -279,14 +309,22 @@ app.post('/oid4vp-present', async (req, res) => {
     if (!body.vp_token) return res.status(400).json({ ok: false, error: 'Missing vp_token' });
     if (!body.presentation_submission)
       return res.status(400).json({ ok: false, error: 'Missing presentation_submission' });
-    if (!body.issuer_jwk) return res.status(400).json({ ok: false, error: 'Missing issuer_jwk' });
-    const issuerPublicKey = await globalThis.crypto.subtle.importKey(
-      'jwk',
-      body.issuer_jwk,
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      true,
-      ['verify']
-    );
+    // ADOPT-0b: resolve the issuer key from the credential's `iss` via the trust
+    // list / issuer JWKS — the wallet-supplied `issuer_jwk` is ignored.
+    const presentedIssuerJwt = body.vp_token.split('~')[0];
+    let iss = '';
+    try {
+      iss =
+        JSON.parse(Buffer.from(presentedIssuerJwt.split('.')[1] ?? '', 'base64url').toString())
+          .iss ?? '';
+    } catch {
+      iss = '';
+    }
+    const issuerPublicKey = iss ? await issuerKeyResolver(iss) : null;
+    if (!issuerPublicKey) {
+      lastVerificationStatus = 'FAILED';
+      return res.status(403).json({ ok: false, error: 'untrusted_or_unresolvable_issuer' });
+    }
     const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
     const reconstructedRequest = {
       response_type: 'vp_token' as const,
