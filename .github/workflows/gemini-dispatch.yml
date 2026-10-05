@@ -144,6 +144,11 @@ jobs:
 
   review:
     needs: 'dispatch'
+    # Advisory until the Gemini API key has quota again. The key currently
+    # reports `free_tier limit: 0` and every invocation returns HTTP 429, so
+    # without this the job fails on every pull request and masks real CI
+    # failures. Drop this line once billing is restored on the key.
+    continue-on-error: true
     if: |-
       ${{ needs.dispatch.outputs.command == 'review' && needs.dispatch.outputs.auth_configured == 'true' }}
     uses: './.github/workflows/gemini-review.yml'
