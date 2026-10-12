@@ -1,6 +1,6 @@
 # EUDI official-source baseline
 
-**Locked:** 2026-10-05  
+**Locked:** 2026-10-12  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -20,7 +20,7 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.10.43-Demo_Build%3D43) | 2026.10.43-Demo, build 43 (`4b295477f69351c1015ae253006bf240dd02d8ef`) | First wallet interop anchor |
 | [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.10.43-Demo_Build%3D43) | 2026.10.43-Demo, build 43 (`92ac8f7080ae104f4e3615c48c5cd9e40aada33f`) | Second wallet interop anchor; integrates Wallet Kit v0.52.1 |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.31.0) | v0.31.0 (`efcd3a48248f75c3767df06c972c5e2361ba1be9`) | Protocol/credential and trust reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.5) | v0.54.5 (`2e0b5912e024baa9fe0fb0d2a55de82820aa1d0a`) | Protocol/credential reference; newer than build 43 integration anchor |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.8) | v0.54.8 (`54858f3f52df88d619ca5c5c8c86bb163f847085`) | Protocol/credential and reader-auth reference; newer than build 43 integration anchor |
 | [Official web issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | General issuance anchor |
 | [PID issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer/releases/tag/v0.11.1) | v0.11.1 (`9177177071157b20724b04eed619049e40679bbb`) | PID schema and SD-JWT certificate-header anchor |
 | [Verifier UI](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.13.0) | v0.13.0 (`763efa70e5b00eb6bccddc7166b97bd1bca36e8d`) | Presentation UX/comparison anchor |
@@ -52,6 +52,21 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-10-12
+
+[iOS Wallet Kit v0.54.8](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.8) supersedes v0.54.5 as the tagged iOS-core anchor. The intermediate [v0.54.6](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.6), [v0.54.7](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.7) and v0.54.8 changes materially affect issuance, status and presentation evidence:
+
+- **Trust/security risk and interoperability/evidence invalidation:** [PR #500](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/pull/500) tracks reader authentication independently from certificate display/registration warnings, rejects X.509 presentation requests without successful trusted-certificate validation, resets state between requests and blocks responses after failed or incomplete decoding. AskMI has no exact reader-authentication status contract or regression evidence. Before carrying iOS presentation evidence forward, test missing trust evaluation, untrusted/invalid certificate and signature, malformed decode, stale state after failure, overlapping receives and response attempts without an authenticated request identity.
+- **Trust/security risk and AskMI implementation gap:** [v0.54.7 commit `af99be4`](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/commit/af99be409707d8321f17e4de43ba3bd1e5d6b4ee) rejects status-list JWTs with a missing algorithm, `none`, invalid values or symmetric HS algorithms before certificate-trust validation. AskMI has general signature and algorithm denial codes but no status-token-specific allowlist evidence. Add missing/`none`/HS/invalid/unsupported status-JWT negatives and require an asymmetric allowed algorithm plus trusted signer chain.
+- **Interoperability/evidence invalidation:** [v0.54.7 commit `60bfde8`](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/commit/60bfde835ee70b52c005e183193444a86a21d13b) creates JWT and key-attestation proofs with the resolved client ID from the active issuer configuration rather than the credential-issuer identifier. Add a test where those values differ and prove the JWT `iss`/client binding uses the resolved client ID for attested and explicitly allowed plain-proof modes.
+- **Roadmap decision / interoperability:** [PR #497](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/pull/497) makes the device-signature algorithm configurable for BLE and OpenID4VP mdoc signatures, with ES256 as the default. Record the selected device algorithm in every mdoc interop artifact; reject unsupported or unnegotiated changes rather than relying on a library default.
+
+**Watch, not a new release lock:** Android wallet main fixes an open revoked-document details screen after the revocation worker fires ([commit `3572043`](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/commit/3572043b035ac306aedfd0fb618092f360cec92a)) and resumes OpenID4VCI authorization only for the initiating issuer ([commit `2c56231`](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/commit/2c56231f987216f4c0be8ad8edc3fa19ee98b87b)). These are material future regression cases, but build 43 remains the released Android UI anchor; do not relabel main-branch evidence as build 43.
+
+**No impact to current locked gates:** ARF remains v3.0.0; Android core remains v0.31.0; mobile UI releases remain build 43; PID issuer remains v0.11.1; verifier UI/endpoint remain v0.13.0/v0.12.0; FCAF remains v0.0.10; and RP registration remains v0.2.2. Trust Validator main moved through a v0.3.1-alpha version bump with UI/tooling changes, but the roadmap continues to treat alpha releases as non-gating references.
+
+No readiness gate closes and no target date moves from this delta.
 
 ## Upstream delta — 2026-10-05
 
