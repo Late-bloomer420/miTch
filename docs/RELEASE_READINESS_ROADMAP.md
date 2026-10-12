@@ -1,7 +1,7 @@
 # AskMI × EUDI release-readiness roadmap
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-10-05  
+**Baseline date:** 2026-10-12  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -83,7 +83,7 @@ gantt
 
 Production is intentionally unscheduled.
 
-**Schedule variance — 2026-10-05:** Wave 0's 4 September window and the G0 truth target of 13 September elapsed while the source-baseline stack through PR #157 remained open; PR #157 also received a review finding requiring separate issuance and presentation audit lifecycles. All gates remain open. Consolidate or rebase the stack, resolve conflicts and that audit-model ambiguity, and attach final-head evidence before setting replacement dates; do not infer readiness from elapsed time.
+**Schedule variance — 2026-10-12:** Wave 0 and G0 remain open while the source-baseline stack through PR #168 is unlanded. The G1 buyer gate due 11 October also elapsed without a published completed-interview tally or evidence for 20 interviews, at least 8 problem confirmations and at least 3 buyer/procurement/deadline signals. G1 remains open and the stated stop rule applies: pause broad product expansion until the buyer/workflow/category hypothesis is evidenced or revised. No technical or commercial gate closes from elapsed time.
 
 ## Integrated market-validation track
 
@@ -135,6 +135,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Run against the locked official issuer and official wallet-core examples.
 - Test both attested-client and public-client modes introduced in iOS Wallet Kit v0.40.9; if authorization-server metadata omits client-attestation algorithms, require an explicit configured client ID and record the selected mode.
 - Treat client mode and credential-proof mode as separate policy dimensions. Default to attested proofs; allow v0.52+ plain JWT proof only for an explicit issuer/profile policy, constrain algorithms to the supported ES256/ES384/ES512 set, record the decision, and test downgrade rejection.
+- Bind JWT and key-attestation proof `iss` to the resolved client ID from the active issuer configuration, not to the credential-issuer identifier. Include a regression where those identifiers differ for attested and explicitly allowed plain-proof modes.
 - Require signed SD-JWT credentials with an explicit positive algorithm allowlist; add missing-signature, `alg: none`, unsupported-algorithm and invalid-signature negatives.
 - When authorization-server metadata advertises RFC 9207 support, require and validate the authorization-response `iss` against the expected issuer; cover missing, mismatched and mix-up responses, and preserve discovery/metadata/offer/authorization/token error classes.
 - Issue unique, immutable, short-lived/single-use credential-offer URIs; test repeated cached resolution, expiry, and replay, and never depend on mutating offer content behind an unchanged URI.
@@ -161,6 +162,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Align PID schemas and fixtures to tagged PID issuer v0.11.1: remove separate house-number and `trust_anchor` claims, add administrative-validity dates, allow derived/optional expiry, and distinguish administrative validity from credential issuance/expiry.
 - Define a fail-closed SD-JWT certificate-header policy for `x5c`, `x5u`, and `x5t#S256`; any remote certificate retrieval must be allowlisted and bounded, and the thumbprint and trusted chain must match.
 - Define status/revocation per format and record dependencies on evolving ISO work.
+- For JWT status tokens, require an explicit asymmetric algorithm allowlist and trusted signer chain; reject missing algorithm, `none`, HS/MAC, invalid and unsupported values before accepting certificate-trust warnings or status content.
 - Defer AV/ZKP and additional attestations unless the frozen pilot requires them.
 
 ### Trust and relying-party services
@@ -185,13 +187,15 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
-Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.31.0 and iOS v0.54.5; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.54.5 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
+Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.31.0 and iOS v0.54.8; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.54.8 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
 - For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
 - Treat the iOS wallet UI build and wallet-core tag as separate coordinates; do not claim an untested UI/core combination.
-- For iOS Wallet Kit v0.54.5, use iOS 17+, delete and reissue pre-v0.50 stored credentials, record the SwiftData/keychain backend and app-group configuration, prove registration reconciliation immediately after issuance/storage changes, record authentication prompt count/context lifetime, and capture the ETSI revocation setting with fail-closed status negatives.
-- Record client mode, credential-proof mode, algorithm and separate issuance/presentation transaction-log state transitions for v0.54.5; cover stable issuance retry IDs, background updates, nested `srv_description`, rejection with and without redirect, cancellation, interruption, failed delivery and successful delivery. Use authenticated-client-only error dispatch in the deny-biased profile. Do not carry build-43 UI evidence forward as v0.54.5 evidence.
+- For iOS Wallet Kit v0.54.8, use iOS 17+, delete and reissue pre-v0.50 stored credentials, record the SwiftData/keychain backend and app-group configuration, prove registration reconciliation immediately after issuance/storage changes, record authentication prompt count/context lifetime, and capture the ETSI revocation setting with fail-closed status negatives.
+- Record client mode, credential-proof mode, proof `iss`/resolved client ID, device-signature algorithm and separate issuance/presentation transaction-log state transitions for v0.54.8; cover stable issuance retry IDs, background updates, nested `srv_description`, rejection with and without redirect, cancellation, interruption, failed delivery and successful delivery. Do not carry build-43 UI evidence forward as v0.54.8 evidence.
+- Gate every X.509 OpenID4VP response on successful reader authentication bound to the active request identity. Test missing trust evaluation, untrusted/invalid certificate and signature, malformed or incomplete decoding, stale state after failure, overlapping receives and response attempts after unauthenticated requests; reset authentication, consent and selected-data state between requests.
+- Treat Android main's issuer-specific authorization resumption and revoked-document UI refresh as watch regressions until they are in a tagged UI build; do not relabel main-branch evidence as build 43.
 - For Android build 43/core v0.31.0, record biometric authenticator strength and cover strong-capable success, weak-only rejection, cancellation, terminal errors and duplicate-prompt prevention; rerun reader-auth, missing-chain, invalid-signature, rejected-presentation, multiple-credential and explicit proof-profile negatives.
 - Treat TrustMark as display metadata only; its presence must never satisfy certification, trust or gate evidence.
 - Keep verifier UI v0.13.0 and verifier endpoint v0.12.0 as separate coordinates. Test the endpoint status-check configuration rename, wallet-`iss`/JAR-`aud` binding, authorization-request `iat`, validation outcomes and typed response-return failures.
