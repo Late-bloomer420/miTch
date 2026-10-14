@@ -1,5 +1,7 @@
 # miTch — Arbeitsoberfläche
 
+> **Current evidence qualification (2026-10-14):** historical/intended/reference material, not proof of complete active-path behavior. “Implemented” concept labels and green component totals do not close request/session/eligibility, real single-use, audit-sink or evidence findings (#170–#173). No universal ZKP, unlinkability, RAM erasure, runtime isolation or certification follows from these descriptions. [Current finding register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md) controls present-day claims; dated QA retains its original scope.
+
 **Einstiegspunkt für alle Sessions. Hier beginnt jede Arbeit.**
 
 ---

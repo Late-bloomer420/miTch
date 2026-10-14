@@ -1,5 +1,7 @@
 # ADOPT-0a/0b Live End-to-End Verification — 2026-07-17
 
+> **Later qualification (2026-10-14):** the original observations/date/SHA below remain historical. [Later active-path probes](PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) reproduce replay/nonce-state/eligibility/over-disclosure and real single-use gaps (#170/#171). The July happy-path/trusted-issuer tests did not establish those guarantees; no old passing row closes them.
+
 > **Role:** Dated QA/evidence record (per `docs/DOCS_CANON.md`). Captures what was
 > actually run against **live servers on current `master`**, what is **DONE**, and
 > what remains **OPEN / KNOWN GAP**. Grounded in real facts, not assumption.

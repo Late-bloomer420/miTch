@@ -1,129 +1,53 @@
-# STATE.md — Current Operating State
+# STATE — AskMI current operating/evidence snapshot
 
-> **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
-> Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
+**Checked:** 2026-10-14. **Executable baseline:** `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
+**Category:** development/evaluation verifier-policy middleware; browser wallet is a reference harness.
+No production readiness, certification, LoA High, legal compliance percentage, customers or official-wallet interop is established here.
 
-**Date:** 2026-10-01 (ADOPT-1.2 SDK/API shape accepted)
-**Branch:** `master` (full AskMI rebrand merged via PR #70)
-**Release tag:** `v1.0-RC (Pilot Readiness)`
-**Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `b6b4517` (PR #159 merged) — ADOPT-1.1 minimal session contract accepted after #158 (ADOPT-1.0 product boundary) and #138 (ADOPT evidence/research intake alignment). Earlier demo honesty fixes #154/#155 remain part of the base.
+## Single source of truth
 
----
+1. [docs/DOCS_CANON.md](docs/DOCS_CANON.md): authority and navigation.
+2. [Current findings/claim limits](docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md): open findings and evidence scope.
+3. [Dated verification](docs/qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md): exact observations, runtime, sources and probes.
+4. [BACKLOG](docs/BACKLOG.md): task/implementation state; #170–#173.
+5. [Release roadmap](docs/RELEASE_READINESS_ROADMAP.md), [GTM plan](docs/GTM_SPRINT_ROADMAP.md), #142/#143: evidence-gated sequencing and decisions.
 
-## Canonical references (single source of truth)
+## Implemented pieces versus active integration gaps
 
-- Documentation authority map: [`docs/DOCS_CANON.md`](docs/DOCS_CANON.md)
-- P0 evidence and closure status: [`docs/ops/EVIDENCE_PACK_P0.md`](docs/ops/EVIDENCE_PACK_P0.md)
-- Latest pilot dry run record: [`docs/pilot/PILOT_DRY_RUN_01.md`](docs/pilot/PILOT_DRY_RUN_01.md)
-- Findings backlog: [`docs/pilot/FINDINGS_BACKLOG.md`](docs/pilot/FINDINGS_BACKLOG.md)
-- Capability negotiation spec: [`docs/protocol/CAP_NEGOTIATION_V1.md`](docs/protocol/CAP_NEGOTIATION_V1.md)
-- Metadata budget: [`docs/ops/METADATA_BUDGET_V1.md`](docs/ops/METADATA_BUDGET_V1.md)
-- Failure-mode runbooks: [`docs/ops/RUNBOOKS_V1.md`](docs/ops/RUNBOOKS_V1.md)
-- Security Target (CC): [`docs/compliance/SECURITY_TARGET_CC_READY.md`](docs/compliance/SECURITY_TARGET_CC_READY.md)
-- QA evidence records: [`docs/qa/`](docs/qa/)
-- Deployment Orchestration: [`docker-compose.yml`](docker-compose.yml)
+| Area | Evidence-backed boundary | Current gap |
+|---|---|---|
+| SD-JWT primitives | Issuer-signature, digest-verified disclosures and KB-JWT controls; #132/#135/#137 | `/oid4vp-present` request/session/eligibility/scope incomplete: #170 |
+| Single-use | Legacy B+C pool/holder logic #86–#94 | Real stored-SD-JWT method can re-present singleUse=true: #171 |
+| Policy | Scoped input/downgrade/geo/layer negatives; #125 fixed #122 scope | Not proof that every HTTP/presentation route invokes all gates |
+| Audit | Tamper-evident helpers and #81 Tier-2 schema | Actual sink enforcement/durable failures/retention remain open: #172, F-19 |
+| Evidence | Existing manifest reran 10 PASS / 2 RESIDUAL | Active route gaps excluded; source binding/file hash defect: #173 |
+| Key and memory | Owned-buffer overwrite and wrapper API reuse controls | Runtime copies/timeout cancellation/TEE remain unproven: GAP-1 |
+| Connect | #158/#159/#160 accept product/session/API designs | `src/packages/connect` absent; ADOPT-1.2-code not implemented |
+| Trust/interoperability | JSON trust-list/demo and internal protocol/mdoc components | ETSI/current profiles, official devices and external assurance unproven |
+| Deployment | Pages workflow copies self-contained synthetic site | No current hosted multi-service/security/provenance proof inferred |
 
-## Pilot path (v1.0-RC Stable)
+## Validation actually recorded
 
-- **Minimal scenario:** Altersverifikation (18+) via OID4VP.
-- **Status:** Release Candidate achieved. All core stabilization and refactoring phases complete.
+On this executable SHA, the original 14 October local run recorded frozen pnpm 9.15.9 installation,
+29/29 build tasks, guards, focused tests and 10 PASS / 2 RESIDUAL harness claims on Node 24.19.0.
+Six additional synthetic characterization probes established open behavior, not fixes.
+Before publication, the same source SHA was rechecked and schema/metadata/engine-security tests reran 63/63 across three files.
+No new entire `pnpm test`, lint, browser click-through, official-wallet matrix or current advisory inventory is claimed.
 
-## Current status
+Master's exact-SHA Build & Test check succeeded on 2026-10-03; CI green does not prove the advisory threshold:
+the current audit workflow's broad exception catches its own critical exit and advisory steps continue on error.
 
-### Operational Health
-- **GitHub Actions:** `master` stays green by construction — branch protection requires PR-only merges + passing checks (ci-security, Deploy GitHub Pages, AskMI CI/CD Pipeline, CodeQL) + verified/signed commits. This held through the latest merge, PR #81.
-- **Tests:** `pnpm test` → **46/46 turbo tasks green** (verified 2026-07-13; 1820+ individual tests). Earlier records (2026-06-04 RC) showed 45/45; the 46th task was added when `integration-tests` joined the turbo graph. PR #66 additionally re-ran targeted package tests for the npm scope alignment (`revocation-statuslist`, `shared-crypto`, `audit-log`, `policy-engine`) before merge.
-- **Lint:** `pnpm lint` → **0 errors, 7 warnings** (verified 2026-07-13). All 7 warnings are pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, present since the SECURE-1 baseline (Task 0). SECURE-1 introduced zero new warnings (count unchanged 7→7).
-- **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
-- **Live Demo Flow (real credential path — verified live 2026-07-17):** issuer-mock (3005) issues a real `vc+sd-jwt` (holder-bound `cnf`) → wallet stores it → wallet presents from the stored VC with selective disclosure (`age` only) + KB-JWT → verifier `/oid4vp-present` (3004) resolves the issuer key **authoritatively via the trust list / JWKS** (ignores any wallet-supplied `issuer_jwk`), verifies the signature, decodes disclosures → `200 {ok, disclosedClaims:{age:24}}` + consent receipt. Negative paths proven live: attacker-forged trusted `iss` → `403 Signature verification failed`; untrusted `iss` → `403 untrusted_or_unresolvable_issuer`. Evidence: [`docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md). **Start note:** `pnpm dev` still fails on `@askmi/poc-hardened` (unrelated PoC, `ERR_MODULE_NOT_FOUND`); start the demo per-service (`pnpm --filter issuer-mock dev`, `pnpm --filter verifier-backend dev`) or `--filter=!@askmi/poc-hardened`. **Known gaps:** only the `age`/liquor-store scenario runs end-to-end with a real credential (others fail-closed as "no matching credential"); the browser UI click-through of wallet-pwa (`:5174`, HTTPS self-signed) was not automated this pass; the verifier-demo **frontend** (`:5175`) `/wallet-present` is still the *simulated* wallet, not the real ADOPT path.
-- **Legacy simulated demo (`/wallet-present`):** the verifier-demo frontend still drives a self-contained simulation (ephemeral issuer keys + scenario claims) for visualization across all scenarios; this is demo-only and distinct from the real ADOPT-0a/0b path above.
-- **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
-- **Reverse Proxy:** Caddy-based routing with TLS termination configured for `*.askmi.demo` domains.
-- **Visual Branding:** W3C VC-Render support enabled; dynamic credential cards with SVG templates.
-- **Live Demo:** https://late-bloomer420.github.io/miTch/ (GitHub Pages, self-contained HTML)
+## Open readiness and tracker state
 
-### Recent additions (2026-10-01 — ADOPT-1 planning gates)
-- **ADOPT-1.0 accepted:** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md` defines the first `@askmi/connect` boundary as relying-party deployed verifier/policy integration. The first implementation slice is intentionally limited to the age/liquor-store profile on the real ADOPT-0a/0b path; AskMI does not issue a new credential, operate as an attestation provider, replace the wallet, or claim EUDI certification.
-- **ADOPT-1.1 accepted:** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md` defines the minimal verifier-side session contract before code: registered `age-liquor-store-v1` policy, `/askmi/connect/sessions` routes, one-shot session state machine, pluggable session store, stable error codes and negative tests proving the legacy simulated `/wallet-present` route cannot satisfy the real Connect flow.
-- **ADOPT-1.2 accepted:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md` defines the first SDK/API boundary: a new `@askmi/connect` package with framework-agnostic core, `InMemoryAskMIConnectSessionStore`, a thin Express adapter and a browser handoff helper. First code must prove crypto-random session/nonce generation, one-shot consume semantics, negative tests and PII-minimal status responses.
-- **Security audit remediation started:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md` sequences the audit cleanup into small PRs: first stale code-security PR review (#151/#152), then dependency-alert batches, then evidence-pack freshness and residual hardening.
-- **Next gate:** first `@askmi/connect` code slice plus SEC-AUDIT-1 remediation PRs.
+- #170 P0 request-binding/eligibility; #171 single-use; #172 audit sinks; #173 revision-bound evidence.
+- #141 remains open with baseline conflicts; its original three inline threads are resolved. Security code in that branch is not assumed landed.
+- #150/#151 remain open. #152 is merged; preserve its shell-free runner.
+- #157 audit-type correction is proposed in #168; source-watch stack through #169 is planning material, not active implementation.
+- G0/G1 remain open. No public tally meets 20 interviews / 8 confirmations / 3 buyer signals; this is missing public evidence, not proof of zero private activity.
+- G4 remains a conditional 2027-03-31 decision; production is undated. No date alone advances a gate.
+- GAP-1/GAP-4 and F-05/F-06/F-15/F-19/F-20/F-22 remain explicitly open or residual.
 
-### Recent additions (2026-09-20 — public demo honesty fixes)
-- **Demo claims aligned (#154/#155):** the public demo no longer presents a completed DPIA where none is approved; scenario copy is qualified, real organisation names were replaced with fictional names, the nullifier demo uses real SHA-256 with a session seed, and the cost model is a single sourced/assumption-labelled model rather than an unsupported savings headline.
-- **Backlog follow-up:** `docs/BACKLOG.md` now tracks DP-01..DP-05 and CL-01..CL-05. DP-01, CL-01 and CL-02 are done; DP-02..DP-05 and CL-03..CL-05 remain open where legal review, DPIA completion, evidence-map updates or doc alignment are still required.
-- **Strategy/research intake:** the September EUDI desk audit and use-case landscape are preserved as research inputs, not as certification evidence or an approved delivery backlog. See `docs/DOCS_CANON.md` for their authority status.
+## Historical record
 
-### Recent additions (2026-07-17 — SECURE-2 + ADOPT-0a/0b real credential path, live-verified)
-- **SECURE-2 (#134):** internal evidence pack (`@askmi/evidence`) + runnable harness that regenerates the P0/fail-closed proof artifacts on demand.
-- **`turbo dev dependsOn ^build` (#133):** dev servers now build their workspace deps first (fixes most stale-dist dev breakage). Residual: `@askmi/poc-hardened` still fails `pnpm dev` (`ERR_MODULE_NOT_FOUND`) — start the demo per-service or `--filter=!@askmi/poc-hardened`.
-- **ADOPT-0a (#135) — real issuance + storage:** issuer-mock issues a real holder-bound `vc+sd-jwt` (`cnf` + `_sd` selective-disclosure digests); wallet stores/retrieves it (`addSdJwtVc`/`getSdJwtVc`). The issuer key is resolved via the **trust list**, so a real issuer (Austria ID / eIDAS) plugs in with no code change. This replaced fabricated issuance.
-- **ADOPT-0b (#136) + e2e fix (#137) — real presentation + verification:** the wallet presents from the **stored** credential with real selective disclosure + KB-JWT; the verifier `/oid4vp-present` resolves the issuer key authoritatively (trust list / JWKS) and decodes the disclosures. #137 fixed two bugs that were unit-green but e2e-broken (verifier ignored disclosures; issuer never issued the requested `age`). Fabrication (ephemeral issuer keys, scenario claims) is gone from the wallet present path; the **circular-verification** gap (verifier trusting a wallet-supplied `issuer_jwk`) is closed.
-- **Live verification (2026-07-17):** drove the real HTTP path against fresh current-`master` servers — happy path `200 {age:24}` + consent receipt; attacker-forged trusted `iss` → `403 Signature verification failed`; untrusted `iss` → `403 untrusted_or_unresolvable_issuer`. **Real-facts finding:** 3-day-old zombie dev processes on `:3004`/`:5174` were serving pre-merge code and initially masked everything — always confirm the running process is current before trusting a live demo. `pnpm test` → **47/47 turbo tasks green** (integration package increment 46→47). Evidence: [`docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md).
-
-### Recent additions (2026-07-13 — SECURE-1 gap closure)
-- **SECURE-1 sprint closed (branch `feat/secure-1-gap-closure`, 2026-07-13):** 6 fail-closed bugs fixed (F-01 wrong audit key field, F-02 fire-and-forget `savePolicy`, F-03 false-success WebAuthn stub tombstoned, F-04 double fail-open geo-scope, F-16/F-18 swallowed IndexedDB errors); F-14 real SD-JWT VC issuer-sig + KB-JWT verification added to `oid4vp-verifier` (opt-in, fail-closed, `signaturesVerified` field); GAP-3 anti-oracle timing-variance regression guard added (bounded mean-timing spread < 2 ms across 500 iterations, no secret-dependent I/O branch found). 22 findings total: 6 fixed + F-14 + 7 documented-residual + 9 not-a-bug. **Verified 2026-07-13: `pnpm test` → 46/46 turbo tasks green; `pnpm lint` → 0 errors, 7 warnings (all pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, count unchanged 7→7, zero new warnings from SECURE-1); `pnpm guard:rebrand` → passed.** Per-package during sprint: policy-engine 325, shared-crypto 273, wallet-pwa 185, oid4vp-verifier 63. Threat-model gaps: GAP-2 closed with residual (Shamir SSS recovery was already implemented — ADR-009 entry was stale); GAP-3 mitigated (bounded-variance guard + documented residual — true constant-time unattainable in V8); GAP-1 (browser RAM) and GAP-4 (external review) remain open. Evidence: [`docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md`](docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md).
-
-### Recent additions (since PR #81 → master `c118f93`/PR #116, 2026-06-08 … 2026-06-25)
-- **WebAuthn fail-closed + real IdentityKeyGuardian wiring (branch `fix/webauthn-fail-closed`, 2026-07-12):** DecisionCapsule signing now routes through `IdentityKeyGuardian`. If WebAuthn is available but no hardware identity key is registered, the wallet refuses to sign (`HARDWARE_IDENTITY_REQUIRED`) instead of creating a RAM software substitute. Node/test software signing remains available only when WebAuthn is absent and is explicitly marked `SOFTWARE_EPHEMERAL`. Evidence: [`docs/qa/WEBAUTHN_FAIL_CLOSED_2026-07-12.md`](docs/qa/WEBAUTHN_FAIL_CLOSED_2026-07-12.md).
-- **Unused-code sweep + honest wiring (branch `chore/wallet-deadcode-sweep`, PR #130, not yet on master):** `credential-pool` selection is wired into presentation after `selectablePresentationCredentials`, narrowing each `poolId` group to the oldest unused member and failing closed on exhaustion; GitHub Pages is decoupled from `@askmi/poc-hardened` via top-level [`site/index.html`](site/) while keeping the PoC as a CI-excluded reference package; evidence-grade citations now point to live packages (`shared-crypto`, `audit-log`, `policy-engine`) instead of the PoC; [`docs/_core/10_KEY_PROTECTION_REALITY.md`](docs/_core/10_KEY_PROTECTION_REALITY.md) records the honest crypto state (no TEE, software WebCrypto runtime, WebAuthn/passkeys as the real hardware seam).
-- **G-110.1 handoff truth-alignment (branch `docs/g110-qr-link-closeout`, 2026-07-04):** verifier-demo frontend already rendered QR + "Open in wallet" in `VerifierPanel`; the backlog still marked it open. Added focused coverage so all five scenarios render the dual handoff path with a QR SVG and wallet deeplink carrying `scenario`, `endpoint`, and verifier DID.
-- **G-100.4 correlation-id closure (merged via #126, master `da8afce`, 2026-07-04):** `shared-types` defines canonical non-semantic `txn_*` correlation IDs and fallback resolution; OID4VP verifier/request flows and `VerifierSDK` mint them; OID4VP parsing/encoding preserves them; `policy-engine` carries them into `DecisionCapsule`; Wallet audit events (`POLICY_EVALUATED`, `VP_GENERATED`, Proximity `VP_SENT`) group under the same ID; `issuer-mock` mirrors `x-correlation-id` on `/credential` and `/credential/mdoc`. Validation: GitHub required checks green (`Build & Test`, `security`, `CodeQL`, `Layer Protection Validation`, `Dependency Security Audit`), plus local `pnpm run guard:rebrand`, `pnpm lint`, `pnpm test` (46/46 Turbo tasks).
-- **S-11 enforcement-layer closure (verified 2026-07-01):** Enforcement and visibility are now aligned for the concrete sensitive demo claims. `layer-resolver` classifies `bloodGroup`, `allergies`, `activeProblems`, `emergencyContacts`, `medication`, `dosageInstruction`, `refillsRemaining`, `role`, and `licenseId` as `VULNERABLE` in the enforcement `LAYER_MAP`; `VISIBILITY_LAYER_MAP` remains the superset for display-only vocabulary. Legitimate Doctor/EHDS/Research/Pharmacy rules now declare `minimumLayer: VULNERABLE`, preserving consent, presence, break-glass, HDAB, geo-scope, and pharmacy flows. Negative regression coverage blocks WELT/default access to `bloodGroup` and Layer-1 access to `licenseId`. Validation: `pnpm --filter @askmi/layer-resolver test`, `pnpm --filter @askmi/policy-engine test`, `pnpm --filter @askmi/integration-tests exec vitest run src/demo-scenarios.test.ts`, `pnpm test` (46/46 Turbo tasks), and `pnpm guard:rebrand` all green.
-- **G-140 surfacing follow-up landed (#119 Gap E + #120 Gap D, 2026-06-24):** the visibility complement to the Layer-2 sequence. **#119 (substrate):** sensitivity = a read-only projection of `layer-resolver` (`0/1/2 → low/medium/high`, unmapped → `unclassified`); `WalletService.logDisclosureDecision` records `requested_claim_layers` on every `POLICY_EVALUATED`; `DataFlowService` projects them onto `DataFlowTransaction.claimSensitivity`. At the time, demo vocabulary lived only in a separate `VISIBILITY_LAYER_MAP` superset so visibility could not change enforcement verdicts; that surfaced the S-11 under-protection finding. **#120 (display):** neutral per-claim sensitivity badges in `DataFlowPanel` and the panel promoted from a hidden toggle to a permanent first-class section. Validation: `pnpm test` 46/46 turbo green, `guard:rebrand` green. The S-11 follow-up above closes the former open side-finding by promoting the concrete sensitive claims into enforcement and adding explicit Layer-2 rule opt-ins.
-- **Doc truth-alignment + drift cleanup (2026-06-20/21):** H-10 pass merged (#110) correcting the master pointer and the G-130.1 ✅-vs-⏳ contradiction; EU-boundaries/Layer-2 foundation merged (#109, docs 08/09 + decisions 1&2); dependabot (#108); the four-window dev launcher consolidated into `dev-demo.ps1` with the `VERIFIER_BACKEND_PORT=3004` proxy fix (#106, duplicate `start-4-servers.ps1` removed).
-- **G-140 / Layer-2 Visibility sequence closed (#112, #114, #115, #116):** `WalletService.evaluateRequest()` logs a neutral, PII-minimal `POLICY_EVALUATED` audit event on every verdict (ALLOW/PROMPT/DENY) carrying raw `requested_claims`, `authorized_claims`, `denied_claims`, verdict, and reason codes (#112). `DataFlowService` reads those events so DENY and over-asking transactions are visible and honest against the verifier's raw request (#114). Proximity mdoc `VP_SENT` events carry `decision_id`, `verifier_did`, `claims_requested`, and `claims_shared`, so offline presentations group into Layer-2 transactions (#115). Proximity mdoc now routes through policy before disclosure; the demo reader `did:askmi:proximity-reader` is limited to `given_name` + `family_name`, over-asked elements are clipped, and DENY still creates a visible transaction with empty `claims_shared` (#116). Local validation for #116: wallet-pwa 162/162, data-flow 67/67, `pnpm test` 46/46 turbo tasks, `pnpm build` 29/29, `guard:rebrand` green.
-- **EPIC G-100 P0-block closed (#98–#102):** EUDI-shaped versioned claim/predicate contract (G-100.2, #98), `asOf`-determinism root-cause fix (G-100.1, #99), `verifier-browser` PoC archived + CI archived-import guard (G-100.6, #100), anti-oracle timing-test de-flaked (G-100.7, #102). Authoritative tracking in [`docs/BACKLOG.md`](docs/BACKLOG.md).
-- **Phase-1 Unlinkability / Proof-Randomization sprint (#83–#96):** single-use credential boundary at issuance (#91), batch issuance with ephemeral holder binding (C2, #92), KB-JWT proof-of-possession gate on verifier `/present` (C1, #94), `brainpoolP512r1` (#90), honest single-use DataFlow display (#88/#96), IndexedDB teardown-deadlock fix (#93). BBS+ (U-10–U-13 remainder) remains deferred.
-- **G-130.1 Passkey-first onboarding landed (#103, #104):** device-bound passkey = account, durable vault, enforced unlock as default, first-run welcome + explicit Reset escape hatch, user-facing Get/Refresh credential UI. (Updates the Video-Gap epic row that still read ⏳; see BACKLOG note.)
-- **"Capsule signature verification failures" RESOLVED (2026-06-18):** root-caused as an incomplete AskMI↔miTch rebrand (DID-namespace + package-scope drift), **not** a crypto defect. `did:mitch`/`@mitch/*` now 0 in `src/`, `guard:rebrand` passes. Verified live: all 4 demo servers up, `POST /wallet-present` returns real disclosed claims for liquor-store/doctor-login/ehds-er/pharmacy and a correct `REVOKED` 403. Evidence: [`docs/qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](docs/qa/CAPSULE_SIG_ROOTCAUSE_2026-06-18.md). Standalone 4-window dev launcher `start-4-servers.ps1` added at repo root.
-- **Full suite re-verified 2026-06-20:** `pnpm test` → **46/46 turbo test tasks green**. Directly re-run package counts this pass: shared-crypto 266, verifier-sdk 59, integration-tests 54, verifier-demo backend 96.
-
-### Recent additions (since Session 16, post full-rebrand — 2026-06-05/06)
-Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct commits to `master`. Plan of record: [`docs/EXECUTION_PLAN_epic4-5.md`](docs/EXECUTION_PLAN_epic4-5.md).
-- **Identity Firewall MVP — Abschlussreview passed (2026-06-07):** the Sprint 1 MVP (`IDENTITY_ACCESS_DETECTED` audit events, PII-minimal `IdentityFirewallMetadata`, DataFlow `identity` category + badge) survived the rebrand/consolidation and is on `master`, `@askmi`-namespaced. Final review confirmed PII-minimal metadata (sanitized actor labels, no raw identifiers, no new cross-RP correlators), `blocked: false` literal (visibility, not blocking), and **230 green tests** (shared-types 69, data-flow 56, wallet-pwa 105). Enforcement/blocking deferred to a later sprint. See [`docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md`](docs/tasks/SPRINT_01_IDENTITY_FIREWALL.md).
-- **Sovereignty Center restored (Epic 2, PR #75):** `SovereigntyCenter.tsx` re-wired into `wallet-pwa` `App.tsx`.
-- **Verifier reputation watchdog (Epic 2):** wallet-side watchdog flagging verifier reputation signals.
-- **Consent Manager UX polish (Epic 4, PR #77 — UX-09):** authored the missing `consent-manager-panel__*` stylesheet in `wallet.css` against shared design tokens; removed all inline styles; added `ConsentManagerPanel.test.tsx` (10 tests, wallet-pwa 105/105).
-- **MCP integration (Epic 5, PRs #78–#80):** `@askmi/mcp-server` `askmi_evaluate_disclosure` wired to the real `policy-engine` (CI-01), stdio smoke validation (#79), and a local evaluation scope loader (#80). Architecture: [`docs/mcp-server-architecture.md`](docs/mcp-server-architecture.md).
-- **Accountable audit export model (PR #81):** `policy-engine` audit export schema for accountable disclosure records — [`docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`](docs/ops/AUDIT_EXPORT_SCHEMA_V1.md).
-- **ADR-013 (PR #73):** WalletService monolith decomposition strategy — [`docs/03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md`](docs/03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md).
-- **Branch cleanup manifest (PR #74):** recorded 2026-06-06 branch hygiene pass — [`docs/ops/BRANCH_CLEANUP_2026-06-06.md`](docs/ops/BRANCH_CLEANUP_2026-06-06.md).
-- **Test-fixture hygiene (PRs #71/#72 — S2-04/S2-05):** centralized scenario claims + a frontend fixture drift guard, and shared StatusList test helpers (no revocation-behavior change).
-
-### Recent additions (since Session 11)
-- **Full AskMI rebrand (2026-06-04, branch `chore/full-askmi-rebrand`):** All active workspace packages, imports, app aliases, demo trust fixtures, local `*.askmi.demo` runtime IDs, and primary `ASKMI_*` environment variables now align on AskMI / `@askmi/*`. Runtime keeps targeted `MITCH_*` compatibility fallbacks where useful. See [`docs/NPM_SCOPE_RENAME_ASKMI.md`](docs/NPM_SCOPE_RENAME_ASKMI.md).
-- **Previous npm scope alignment (2026-06-04, PR #66):** PR #66 aligned the first three published npm packages (`@askmi/shared-types`, `@askmi/shared-crypto`, `@askmi/revocation-statuslist`) before the full workspace rebrand.
-- **QA evidence surface:** `docs/qa/` contains dated validation records, including `WALLET_RECOVERY_RC_2026-06-04.md` and `MIT-10-demo-evidence.md`. These are evidence records, not general task tracking.
-- **Branch/PR Consolidation (2026-05-27):** all 10 open PRs resolved onto `master` and the branch/worktree sprawl cleared (22 → 3 remote branches; only `master`, the active `feat/mitch-ai-guardian`, and audit-retained `claude/relaxed-pike` remain). Stale-base PRs were never merged directly (they would have re-introduced paperclip / reverted recent work) — only their genuine net-new value was salvaged onto clean master: verifier **fail-closed** + no-PII-logging (#34), **Commercial Trust Kit** docs (#35), **B2B use-case modules** + repo-local **agent skills** + **ADR-010** Regulatory-Positioning Boundary (#37), **MCP-server freeze decisions** (#38), a date-coupled **PII-substring test fix** (#36), and the `_tmp_*` ignore rule (#39). Superseded/no-value PRs closed with rationale (#14/#16/#17/#18/#24/#26/#27/#30). Full suite re-verified green on the consolidated master.
-- **Repo Hardening & Hygiene:** `master` branch protection live (PR-only + required CI checks + **verified/signed commits** + no force-push/deletion); SSH commit signing configured and verified end-to-end (`verified: true`); **all 17 Dependabot alerts cleared → 0 open**; paperclip orchestrator runtime (a committed 1,895-file PostgreSQL data dir + phantom submodule) purged from `master` tracking and gitignored — docs `PAPERCLIP.md`/`ASKMI_COMPANY.md` retained; pnpm temp stubs (`_tmp_*`) ignored.
-- **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping AskMI security functions to Common Criteria (ISO/IEC 15408) requirements.
-- **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
-- **EUDI Trust List (TSL) Integration:** `EUDITrustListResolver` implemented in `shared-crypto`, providing dynamic lookup and validation of trusted issuers/verifiers with fail-closed logic. Operational documentation added in `docs/ops/TRUST_ANCHOR_ARCHITECTURE.md`.
-- **Compliance Gap Sprint:** Reached 98% EUDI CIR coverage (52/53). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, dynamic Trust List (TSL) integration, and Certification-Readiness artefacts. Remaining: formal CC certification.
-- **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@askmi/revocation-statuslist` package for live revocation fetch capability.
-- **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
-- **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
-- **`@askmi/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
-- **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
-- **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
-- **`@askmi/mdoc`** package: CBOR codec, COSE Sign1 ES256, **COSE_Mac0** (HMAC-SHA-256, RFC 9052 §6), ISO 18013-5 types, MSO digest verification, DeviceAuth (Sign1 + Mac0), **vollständige Offline-Verifikation** (`verifyMdocOffline()` — 5-Step fail-closed Pipeline: Issuer Auth, MSO Digests, Validity, DocType, Device Auth), x5chain Zertifikatsextraktion + SPKI-Parser, `decodeMdoc()` für integer-keyed CBOR Maps, DeviceResponse Parser, **ECDH Session Key Derivation** (`deriveSessionMacKey()` — ECDH P-256 + HKDF-SHA-256, ISO 18013-5 §9.1.1.5) — 169 tests; **Wallet-Integration** (`addMdocCredential`, mdoc-Presentation-Path, Demo-mDL-Seed, 3 Integrationstests); **Verifier-Integration**: `verifyMdocPresentation()` in `@askmi/oid4vp-verifier` (base64url DeviceResponse → offline verification → claim extraction, 9 tests), `mso_mdoc` Format in OID4VP-Typen + `MdocConstraints` für Namespace/Element-Filterung; **Hybrid Issuance**: `buildMdocDocument()` Issuance-Pipeline (claims→MSO→COSE_Sign1→CBOR), `mso_mdoc` in OID4VCI-Typen, issuer-mock `POST /credential/mdoc` (mDL, 7 Elements), 13 Builder-Tests inkl. build→verify Roundtrip.
-- **brainpoolP512r1 Support (Sprint Kandidat #5, 2026-06-08):** Echte RFC 5639 §3.7 Parameter + SHA-512 in `shared-crypto/src/brainpool.ts` — keygen, sign, verify, ECDH, key export. Pure-JS via `@noble/curves/abstract/weierstrass` (WebCrypto unterstützt Brainpool nicht nativ). 25 Brainpool-Tests gesamt (7 P256r1, 7 P384r1, 7 P512r1, 4 Cross-Curve Isolation).
-- **brainpoolP384r1 Support (E-21):** Echte RFC 5639 §3.6 Parameter + SHA-384 in `shared-crypto/src/brainpool.ts` — keygen, sign, verify, ECDH, key export. 16 Brainpool-Tests (7 P256r1, 7 P384r1, 2 Cross-Curve Isolation).
-- **PQC Readiness:** `shared-crypto/src/pqc.ts` (ML-DSA, ML-KEM via @noble/post-quantum) + `crypto-agility.ts` (algorithm registry, negotiation)
-- **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
-- **EUDI Compliance Hardening (E-30–E-33):** CIR 2024/2981 Certification Analysis (`docs/compliance/`); CIR 2024/2982 **Data Erasure (I9)** & **Reporting Mechanism** (WalletService logic + DataFlow UI buttons); 77% (41/53) CIR compliance score.
-- **Proximity Presentation (E-50):** `ProximityView` UI + QR Device Engagement (ISO 18013-5) + `WalletService.generateProximityResponse` implemented (Mock transport).
-- **Hardware-bound Identity (T-31):** WebAuthn-backed Identity Key implemented in `WalletService` for LoA High compliance.
-- **EHDS Compliance (T-C2, T-C3):** Global Secondary-Use Opt-Out in `PolicyEditor`; Localized medical terms (`CLAIM_DICTIONARY`) for EU-wide patient mobility.
-
-### Completion Summary
-Phase 0–5 complete. AskMI has achieved 98% technical EUDI compliance and is fully containerized for sovereign deployment with a polished visual rendering layer. Technically prepared for formal EUDI evaluation.
-Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
-
----
-
-## Session History
-
-Vollständiger Verlauf abgeschlossener Sessions: [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
+[Previous STATE snapshot](docs/archive/STATE_PRE_EVIDENCE_2026-10-14.md) preserves earlier dates and claims for traceability.
+Its old test totals, “98%/100%”, LoA High, complete-phase and green-by-construction assertions are not current evidence.

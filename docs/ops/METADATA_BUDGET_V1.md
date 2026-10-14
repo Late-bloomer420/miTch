@@ -1,5 +1,7 @@
 # Metadata Budget v1 (Pilot)
 
+> **Implementation boundary (2026-10-14):** this is a normative budget. Helper tests do not establish application sink enforcement, TTL execution, backup cleanup or legal sufficiency. Those are open under #172 and the [current register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md); detailed local Tier-1 history is a separate purpose.
+
 ## Normative principles
 
 - Implementations MUST store only fields needed for security and audit outcomes.

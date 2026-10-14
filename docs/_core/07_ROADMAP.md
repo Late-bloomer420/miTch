@@ -1,5 +1,7 @@
 # miTch Roadmap
 
+> **Historical strategy snapshot:** the May 2026 schedule below is not the active delivery baseline. Use [release roadmap](../RELEASE_READINESS_ROADMAP.md), [GTM plan](../GTM_SPRINT_ROADMAP.md), [findings](../security/REPO_EVIDENCE_STATUS_2026-10-14.md) and #142/#143. No old “stable”/date closes current gates.
+
 **Stand: 02.05.2026 | Basis: Inventur 02.05.2026 + MVP Stand 2026-02-16**
 
 ---

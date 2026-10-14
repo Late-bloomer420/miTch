@@ -1,5 +1,7 @@
 # Spec 112 — Komponenten-Isolations-Modell
 
+> **Runtime boundary (2026-10-14):** TypeScript interfaces, separate packages and signed capsules define intended/API constraints; they do not isolate against malicious code in one JS runtime or attest the loaded code. The security assertions below are requirements, not globally proven properties. See [current register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md).
+
 **Status:** STABLE
 **Stand:** 2026-03-06
 **Scope:** S-04 Security Hardening — Internal Privilege Escalation Defense

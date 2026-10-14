@@ -1,5 +1,7 @@
 # miTch — Uni-Präsentation: Gliederung
 
+> **Presentation qualification (2026-10-14):** intended/illustrative architecture, not a current delivery guarantee. Read [current findings](../security/REPO_EVIDENCE_STATUS_2026-10-14.md). The real SD-JWT path currently shares numeric age; local predicate signatures are not proven ZK derivations; end-to-end replay/eligibility/scope/single-use remain #170/#171. Health/proximity are partial/demo scope. Do not present historical success counts, absolute unlinkability, RAM erasure or regulatory labels as assurance.
+
 **Titel:** miTch — The Forgetting Layer: Privacy-Preserving Compliance Middleware
 **Format:** 20 Min Vortrag + 10 Min Q&A (Bachelor/Master Seminar)
 **Ziel:** Technisches Konzept, Implementierung und gesellschaftliche Relevanz vermitteln

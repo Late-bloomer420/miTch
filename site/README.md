@@ -1,5 +1,7 @@
 # `site/` — GitHub Pages source
 
+> **Public copy qualification (2026-10-14):** the page is a synthetic illustration, not active credential/interoperability/security evidence. Its visible notice points to current GitHub findings; executable fixes are not part of this documentation change. No arbitrary deployed copy is attested by this README.
+
 `index.html` is the self-contained landing page published by
 `.github/workflows/pages.yml` to GitHub Pages.
 

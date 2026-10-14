@@ -1,5 +1,7 @@
 # QA Evidence Records — Index
 
+> **New scoped record:** [PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) records open active HTTP, single-use, CI and evidence boundaries. Current task status stays in the findings register/backlog; a passing characterization reproduces an unsafe behavior, not a fix.
+
 > **Rolle:** Dated, point-in-time **evidence records** (Beweis-Snapshots). Each file captures
 > verification done *on its date* — they are **not** authoritative task-tracking and are not kept
 > current. For "what is done / open" see [`../BACKLOG.md`](../BACKLOG.md); for the operational

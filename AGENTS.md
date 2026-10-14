@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-AskMI is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — ZK-style credential verification with crypto-shredding, fail-closed policy engine, GDPR Art. 25 + eIDAS 2.0 / EUDI compatible. TypeScript monorepo with pnpm workspaces.
+AskMI is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — development/evaluation policy and selective-disclosure components. Current active-path findings, protocol gaps and external validation limits are authoritative in docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md; do not imply ZKP, compliance or readiness. TypeScript monorepo with pnpm workspaces.
 
 ## Commands
 
@@ -15,7 +15,7 @@ pnpm install
 # Build all packages (respects dependency graph)
 pnpm build
 
-# Run all tests (latest QA evidence: 46 turbo tasks, 1820+ individual tests)
+# Run all tests; record exact revision/runtime/scope instead of assuming historical totals
 
 pnpm test
 
@@ -25,7 +25,7 @@ pnpm --filter @askmi/policy-engine test
 # Run a single test file
 cd src/packages/policy-engine && npx vitest run src/__tests__/engine.test.ts
 
-# Lint (0 errors, 0 warnings)
+# Lint; do not assume the result without running and recording it
 pnpm lint
 
 # Format
@@ -48,18 +48,18 @@ pnpm format
 ### Protocol packages
 
 - **oid4vci** — OpenID for Verifiable Credential Issuance (wallet-side)
-- **oid4vp** — OID4VP 1.0 wallet-side (presentation-request, vp-token, response-builder)
+- **oid4vp** — repository OID4VP subset; current 1.0/DCQL parity unproven; wallet-side (presentation-request, vp-token, response-builder)
 - **oid4vp-verifier** — OID4VP verifier-side (request-builder, response-verifier)
 - **mdoc** — ISO 18013-5 mDL/mdoc: CBOR codec, COSE Sign1, mdoc types
-- **verifier-sdk** / **verifier-browser** — Verifier integration libraries
+- **verifier-sdk** — integration helpers with explicit configuration limits; verifier-browser is an archived prototype, not an active integration
 
 ### Infrastructure packages
 
 - **anchor-service** — Merkle batch anchoring + L2 provider stubs
 - **revocation-statuslist** — `@askmi/revocation-statuslist`. StatusList2021, multi-source resolver
 - **secure-storage** — IndexedDB-backed encrypted storage (uses fake-indexeddb in tests)
-- **secure-memory** — Memory-safe credential handling
-- **audit-log** — Immutable audit trail
+- **secure-memory** — owned-buffer lifecycle wrapper; runtime copies/timeout cancellation remain open
+- **audit-log** — tamper-evident local helper; durable storage/sink enforcement has open findings
 - **webauthn-verifier** — WebAuthn + step-up authentication
 - **predicates** — Predicate proof definitions (age-over, range, set-membership)
 - **wallet-core** — Core wallet logic (~700 LOC WalletService, planned for decomposition)
@@ -72,7 +72,7 @@ pnpm format
 
 ## Key Conventions
 
-- **Fail-closed principle:** Ambiguous policy evaluations → DENY. Never default to ALLOW.
+- **Fail-closed requirement:** ambiguous policy should DENY. This is not proof that every active HTTP path enforces it; #170/EV-05 and documented break-glass/residual exceptions remain open.
 - **DecisionCapsule fields:** `verdict`, `decision_id`, `policy_hash` (NOT `policy_manifest_id`)
 - **Conventional commits:** `feat:`, `fix:`, `docs:`, `test:`, `chore:`
 - **Code style:** Prettier (single quotes, 2-space indent, trailing commas es5, 100 print width). ESLint with `@typescript-eslint/no-explicit-any: warn`, unused vars prefixed with `_`.
@@ -92,3 +92,7 @@ pnpm format
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
+
+## Evidence and update discipline
+
+Read docs/DOCS_CANON.md and docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. No gate moves without its linked evidence. Do not duplicate #170–#173.

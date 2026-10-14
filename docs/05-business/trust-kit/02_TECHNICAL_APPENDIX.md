@@ -1,5 +1,7 @@
 # Technical Trust Appendix for Verifiers
 
+> **Current commercial-use boundary (2026-10-14):** dated/internal material, not a current security sign-off or live pilot approval. [Current register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies claims: numeric-age disclosure, #170–#173 open, no established LoA High/certification/official interop. Internal checks are not independent assurance; G0/G1 remain open.
+
 > **GTM-02** · Integration contract for relying parties · Date: 2026-05-25
 > Status legend: ✅ implemented · 🟡 partial · 🔴 not implemented
 > Authoritative status source: [`docs/compliance/EUDI_CIR_MATRIX.md`](../../compliance/EUDI_CIR_MATRIX.md)
@@ -71,7 +73,7 @@ These are `🟡`/`🔴` items from the CIR matrix that affect integration:
   Token Status List fetch endpoint is not deployed. Plan revocation freshness accordingly.
 - **EUDI Trust List registration is pending** (CIR 2982-15): the verifier set is checked against a
   local `trustedVerifiers` set, not a live eIDAS-node trust list.
-- **LoA High is software-only** (CIR 2981-1): no TEE/Secure Element or Common Criteria evaluation yet.
+- **LoA High is not established** (CIR 2981-1): no TEE/Secure Element or Common Criteria evaluation yet.
   Do not rely on miTch for assurance levels that require certified hardware binding.
 - **Proximity / offline presentation** (ISO 18013-5) is partial: codec and offline verification exist;
   the wallet BLE/NFC/QR presentation path is not complete.

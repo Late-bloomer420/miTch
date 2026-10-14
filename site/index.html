@@ -1639,6 +1639,14 @@
 </head>
 
 <body>
+  <aside id="repository-evidence-notice" role="note" style="position:relative;z-index:2;padding:1rem 1.5rem;margin:1rem;border:1px solid #f59e0b;border-radius:12px;background:#171b2c;color:#f8fafc;font-size:.9rem;line-height:1.5">
+    <strong>Synthetic reference demo — not production or certification evidence.</strong>
+    UI proofs and policy scenarios illustrate intended behavior. The real SD-JWT path currently shares numeric age;
+    request binding, eligibility/scope, single-use and audit/evidence findings remain open.
+    ZK derivation, end-to-end unlinkability and all-runtime erasure are not established.
+    <a href="https://github.com/Late-bloomer420/miTch/blob/master/docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md" style="color:#93c5fd">Current GitHub evidence and open findings</a>.
+  </aside>
+
   <!--
     Testing with real WebAuthn / device authorization:
     python -m http.server 8000
@@ -3163,12 +3171,12 @@
 
       <h2>6. What AskMI Structurally Cannot Do</h2>
       <div class="card">
-        <p>These are <strong>architectural guarantees</strong>, not policy promises:</p>
+        <p>These are <strong>intended privacy controls</strong>; current implementation and evidence limits are linked above:</p>
         <ul>
-          <li>🚫 <strong>Cannot store raw PII</strong> — ephemeral keys destroyed after issuance</li>
-          <li>🚫 <strong>Cannot track credential usage</strong> — issuer never contacted during verification</li>
-          <li>🚫 <strong>Cannot see what users share</strong> — selective disclosure happens on-device</li>
-          <li>🚫 <strong>Cannot correlate users across verifiers</strong> — pairwise ephemeral DIDs</li>
+          <li>🚫 <strong>Minimisation goal, not enforced universal non-retention</strong> — see current open findings</li>
+          <li>🔎 <strong>Issuer/network correlation remains profile-dependent</strong> — status and trust lookups are separate data flows</li>
+          <li>🔎 <strong>Selective disclosure limits released claims</strong> — the verifier receives their values on the real SD-JWT path</li>
+          <li>🔎 <strong>Pairwise DIDs limit one correlator</strong> — stable credential content, reuse and network correlation remain open</li>
           <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
         </ul>
         <p class="dim" style="margin-top:0.8rem"><em>"AskMI works not because it knows everything — but because it
@@ -4285,9 +4293,9 @@
         clientCrypto: { label: 'Client-Side Crypto (SD-JWT)', avg: 0, phase: 'verification', source: 'WebCrypto API on user device — free' },
         localBiometric: { label: 'Biometric (Face ID / Touch ID)', avg: 0, phase: 'verification', source: 'Device-local WebAuthn — free (Apple/Google provide it)' },
         pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', source: 'Derived on-device, no network call' },
-        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Crypto-shredded at issuance — nothing to store' },
-        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'No PII retained → no breach vector → €0' },
-        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Automated audit chain replaces manual DPO review' },
+        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Illustrative cost assumption; local credentials persist and verifier non-retention is not established' },
+        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'Illustrative model assumption; no zero-breach-risk claim is established' },
+        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Illustrative cost assumption; audit helpers do not establish completed privacy/legal review' },
         consentMgmt: { label: 'Consent Management', avg: 0, phase: 'both', source: 'Built into wallet UI — no external CMP needed' },
       }
     };

@@ -1,5 +1,7 @@
 # Elevator Pitch: miTch — The Forgetting Layer
 
+> **Presentation qualification (2026-10-14):** intended/illustrative architecture, not a current delivery guarantee. Read [current findings](../security/REPO_EVIDENCE_STATUS_2026-10-14.md). The real SD-JWT path currently shares numeric age; local predicate signatures are not proven ZK derivations; end-to-end replay/eligibility/scope/single-use remain #170/#171. Health/proximity are partial/demo scope. Do not present historical success counts, absolute unlinkability, RAM erasure or regulatory labels as assurance.
+
 ## Das Problem
 In zunehmend regulierten digitalen Räumen geraten Unternehmen in einen massiven Konflikt: Compliance-Vorgaben verlangen weitreichende Identitätsprüfungen (KYC, Altersverifikation, Berufsregister), doch die Speicherung dieser Rohdaten erzeugt **toxische PII-Honeypots** (Personally Identifiable Information). Das Resultat sind massive DSGVO-Risiken, hohe Sicherheitskosten für zentrale Datenbanken und ein gravierender Vertrauensverlust auf Seiten der Nutzer. Bisherige Lösungen setzen auf zentrale Datentöpfe ("Data Broker") oder nutzlose "Policy-Versprechen", die bei einem Hack wirkungslos sind.
 

@@ -1,5 +1,7 @@
 # Security Sign-Off on Public Claims
 
+> **Current commercial-use boundary (2026-10-14):** dated/internal material, not a current security sign-off or live pilot approval. [Current register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies claims: numeric-age disclosure, #170–#173 open, no established LoA High/certification/official interop. Internal checks are not independent assurance; G0/G1 remain open.
+
 > **GTM-04** · Reviewer role: Security Engineer (sign-off), Compliance & Evidence Lead (evidence)
 > Date: 2026-05-25 · Disposition: **CONDITIONAL — one blocking correction required before publication.**
 
@@ -42,7 +44,7 @@ security, privacy, or certification status.**
 - **Risk:** terms like *"zertifizierbar"*, *"EU-first"*, *"compliance interface of the future"* can read
   as achieved certification.
 - **Evidence:** CIR 2024/2981 certification row is **1/5** implemented; Common Criteria **not started**;
-  LoA High is **software-only**; no EUDI Trust List registration.
+  LoA High is **not established**; no EUDI Trust List registration.
 - **Required guardrail:** every external surface must phrase certification as *readiness / mapping*,
   never as a completed conformity assessment. Defer to the §4 legal-review gaps in the evidence index.
 - **Status:** acceptable **only** with that guardrail applied. The three kit documents already comply.

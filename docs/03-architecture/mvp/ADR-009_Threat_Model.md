@@ -1,5 +1,7 @@
 # ADR-009 — Formal Threat Model (STRIDE-basiert)
 
+> **Active-path qualification (2026-10-14):** internal accepted analysis, still pending independent review. [Current EV-01..10 findings](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) override broad closure language for their routes. Existing primitive/STRIDE test evidence does not establish `/oid4vp-present` replay/eligibility, stored-SD-JWT single-use, universal log minimisation or all-runtime erasure. #170–#173 remain open.
+
 > **Hinweis:** Es existieren zwei `ADR-009`-Dateien mit unterschiedlichem Thema: **diese** (mvp/) ist das Threat Model; `docs/compliance/ADR/ADR-009.md` betrifft WebAuthn Native vs. HMAC-Proxy. Beide sind in ihrer Sammlung autoritativ — siehe `docs/DOCS_CANON.md` → "Architecture Decision Records (3 Sammlungen)".
 
 **Status:** Accepted (technical) — pending external review

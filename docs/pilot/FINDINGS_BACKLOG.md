@@ -1,5 +1,7 @@
 # Findings Backlog
 
+> **Scope update (2026-10-14):** closures below are component/simulation evidence only. New active-path EV-01..10 findings are tracked in [current register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md) and #170–#173. They are not closed by this older pilot matrix.
+
 | ID | Priority | Owner | Description | Acceptance test |
 |---|---|---|---|---|
 | AI-01 | P0 ✅ CLOSED | Security Engineering | Block insecure `did:web:localhost` resolution by default in production parity. | `src/packages/shared-crypto/test/did.test.ts` contains `DENY: did:web localhost is blocked by default`. |

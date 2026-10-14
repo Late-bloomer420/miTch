@@ -1,5 +1,7 @@
 # miTch AI-Guardian: Feature Manifest & Technical Moats
 
+> **Current evidence qualification (2026-10-14):** historical/intended/reference material, not proof of complete active-path behavior. “Implemented” concept labels and green component totals do not close request/session/eligibility, real single-use, audit-sink or evidence findings (#170–#173). No universal ZKP, unlinkability, RAM erasure, runtime isolation or certification follows from these descriptions. [Current finding register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) controls present-day claims; dated QA retains its original scope.
+
 ## 1. Core Mission
 The miTch AI-Guardian is the world's first **High-Assurance Privacy Gateway** that replaces "Trust Promises" with "Mathematical Proofs." It enables enterprises to utilize the full power of AI while remaining 100% compliant with the EU AI Act, GDPR, and EHDS.
 

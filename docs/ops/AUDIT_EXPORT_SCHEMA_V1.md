@@ -1,5 +1,7 @@
 # Audit Export Schema v1.1
 
+> **Runtime integration (2026-10-14):** #81 delivers schema/helpers, not a universal live sink guard. Actual output integration, vocabulary checks, retention and PII canaries remain #172. Hash chains establish integrity properties, not anonymity or complete durable storage.
+
 **Status:** Normative
 **Finding:** AI-04 (P1)
 **Date:** 2026-06-06

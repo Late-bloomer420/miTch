@@ -1,5 +1,7 @@
 # Evidence Pack — P0 Blockers (G-01 through G-06)
 
+> **Historical scoped pack, qualified 2026-10-14:** G-01..G-06 component checkmarks do not establish current end-to-end pilot readiness. [Current findings](../security/REPO_EVIDENCE_STATUS_2026-10-14.md) and [dated active-path probes](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) take precedence for their named paths. In particular nonce primitives do not close #170 and local erasure does not prove all runtime/remote copies gone.
+
 > **Generated:** 2026-03-04  
 > **Branch:** consolidation (merged to master)  
 > **Purpose:** Auditable evidence for pilot readiness review  

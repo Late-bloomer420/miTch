@@ -1,92 +1,48 @@
-# AskMI Security Evidence Pack
+# AskMI security evidence — internal and scope-bound
 
-This directory is the navigable entry-point for AskMI's security artifacts. It links every artifact required to assess the project's security posture, reproduce the claim evidence, and understand the open residuals.
+**Current entry:** [REPO_EVIDENCE_STATUS_2026-10-14.md](REPO_EVIDENCE_STATUS_2026-10-14.md).
+**Dated observations:** [PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md).
+This research/evaluation repository uses synthetic test/demo fixtures; this document does not attest what any external deployment processes.
 
-> **Research / pilot project** — AskMI is not a production service. No real personal data is processed.
+| Source | Role |
+|---|---|
+| [Current finding register](REPO_EVIDENCE_STATUS_2026-10-14.md) | Reproduced findings, implemented scope, claim limits and owners |
+| [Residuals](RESIDUALS.md) | GAP-1/GAP-4 and SECURE-1 residuals remain explicit |
+| [Remediation roadmap](SECURITY_AUDIT_ROADMAP_2026-10-01.md) | Existing SEC-AUDIT sequence with dated refresh |
+| [Evidence source](../../src/packages/evidence/) | Manifest, runner and report; #173 limitations |
+| [P0 component pack](../ops/EVIDENCE_PACK_P0.md) | Historical component evidence, not global pilot closure |
+| [Threat model](../03-architecture/mvp/ADR-009_Threat_Model.md) | Internal risk analysis, pending independent review |
+| [Requirement traceability](../compliance/EUDI_CIR_MATRIX.md) | Incomplete engineering mapping; no readiness percentage |
+| [Security-target draft](../compliance/SECURITY_TARGET_CC_READY.md) | Assessment input, not accreditation or EAL/LoA result |
+| [Responsible disclosure](../../SECURITY.md) | Reporting policy; owner-authorised public synthetic finding intake does not change external reporting rules |
 
----
+## Reproduce named evidence, not an assumed success total
 
-## Artifact Map
-
-| Artifact | Path |
-|----------|------|
-| Responsible-disclosure policy | [../../SECURITY.md](../../SECURITY.md) |
-| Security Target (CC-ready) | [../compliance/SECURITY_TARGET_CC_READY.md](../compliance/SECURITY_TARGET_CC_READY.md) |
-| Threat model (ADR-009) | [../03-architecture/mvp/ADR-009_Threat_Model.md](../03-architecture/mvp/ADR-009_Threat_Model.md) |
-| EUDI-CIR compliance matrix | [../compliance/EUDI_CIR_MATRIX.md](../compliance/EUDI_CIR_MATRIX.md) |
-| P0 evidence pack | [../ops/EVIDENCE_PACK_P0.md](../ops/EVIDENCE_PACK_P0.md) |
-| Runbooks | [../ops/RUNBOOKS_V1.md](../ops/RUNBOOKS_V1.md) |
-| Claim→test harness source | [../../src/packages/evidence/](../../src/packages/evidence/) |
-| Latest evidence report | [../qa/evidence-reports/](../qa/evidence-reports/) |
-| SECURE-1 findings register | [../qa/SECURE_1_FINDINGS_REGISTER.md](../qa/SECURE_1_FINDINGS_REGISTER.md) |
-| Open residuals register | [./RESIDUALS.md](./RESIDUALS.md) |
-| Security audit remediation roadmap | [./SECURITY_AUDIT_ROADMAP_2026-10-01.md](./SECURITY_AUDIT_ROADMAP_2026-10-01.md) |
-
----
-
-## Reproduce the Evidence
-
-These commands reproduce every security claim from a clean checkout. Run them on Node 22 + pnpm 9.
+Use the pinned pnpm 9.15.9 for all subprocesses. CI uses Node 22; 14 October local evidence used Node 24.19.0.
 
 ```bash
-# 1. Install dependencies
-pnpm install
-
-# 2. Build all 29 packages
+pnpm install --frozen-lockfile
 pnpm build
-# Expected: 29 tasks, 0 errors (turbo reports "29/29" on a warm cache)
-
-# 3. Run the full test suite
 pnpm test
-# Expected: 47 turbo tasks green, 1820+ individual tests pass, 0 failures
-
-# 4. Run the evidence harness
+pnpm lint
 pnpm evidence
-# Expected output (last line summary):
-#   Proven: 10  Residual: 2  Failed: 0
-# Report written to: docs/qa/evidence-reports/EVIDENCE_<timestamp>.md
 ```
 
-The evidence harness (`@askmi/evidence`) maps each security claim ID to one or more Vitest test suites and replays them programmatically. A `RESIDUAL` result means the claim is intentionally not proven by a test — see [RESIDUALS.md](./RESIDUALS.md) for the rationale on each.
+Record outcomes/versions/SHA/profile and gaps; the commands are not pre-certified to pass.
+In the investigation host, tsx CLI IPC was unavailable; the same harness ran through
+`pnpm --filter @askmi/evidence exec node --import tsx src/cli.ts`.
 
-### Verifying a single claim
+The dated existing manifest run had 10 PASS, 2 RESIDUAL, 0 FAIL. It does not cover #170/#171's active-path counterexamples.
+GAP-1 physical/runtime-erasure and GAP-4 external-review evidence are not closed. No entire-suite or official matrix result is newly inferred.
 
-```bash
-# Example: verify the anti-oracle DENY-path timing claim
-pnpm --filter @askmi/policy-engine test -- --run src/__tests__/anti-oracle.test.ts
-```
+## Known report-integrity defect — #173
 
-### Verifying the latest report integrity
+The generator hashes JSON without final LF, then writes JSON plus LF. Hashing the exact July file bytes therefore does not match
+the header; hashing after removing only final LF does. See the dated record for both hashes. This is not tampering evidence.
+Do not silently normalize future artifacts and claim exact-byte verification; fix or explicitly version the representation and add write/read tests.
 
-Each report file includes a SHA-256 integrity hash of its JSON sibling. To recompute:
+## Current high-priority boundary
 
-```bash
-node -e "
-const crypto = require('crypto');
-const fs = require('fs');
-// Replace EVIDENCE_<timestamp>.json with the filename of your latest report under docs/qa/evidence-reports/
-const json = fs.readFileSync('docs/qa/evidence-reports/EVIDENCE_2026-07-14T00-04-05-971Z.json');
-console.log(crypto.createHash('sha256').update(json).digest('hex'));
-"
-# Must match the hash in the .md report header
-```
-
-> **Note:** The filename `EVIDENCE_2026-07-14T00-04-05-971Z.json` is illustrative. Use the filename of your latest report found under `docs/qa/evidence-reports/` (files are named `EVIDENCE_<timestamp>.json`).
-
----
-
-## Current Evidence Status (as of 2026-10-01)
-
-| Metric | Value |
-|--------|-------|
-| Proven claims | 10 |
-| Residual (documented open items) | 2 |
-| Failed claims | 0 |
-| SECURE-1 sweep | 22 findings — 7 fixed (fail-closed), 9 not-a-bug, 6 documented-residual |
-| SECURE-1 fixed (F-01, F-02, F-03, F-04, F-14, F-16, F-18) | 7 |
-| SECURE-1 not-a-bug (F-07 – F-13, F-17, F-21) | 9 |
-| SECURE-1 documented-residual (F-05, F-06, F-15, F-19, F-20, F-22) | 6 |
-| External security review | Not yet performed (GAP-4) |
-| Active remediation plan | `SECURITY_AUDIT_ROADMAP_2026-10-01.md` |
-
-See [RESIDUALS.md](./RESIDUALS.md) for the full open-items register.
+#170 request/session/eligibility/scope; #171 real SD-JWT single-use; #172 actual audit/telemetry sinks;
+#173 source-bound evidence; EV-05 CI advisory false-success under #141/SEC-AUDIT-1/2.
+The existence of residual descriptions, specs or checklists is not implementation. An internal PASS is not external assurance.

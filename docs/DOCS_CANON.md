@@ -1,5 +1,25 @@
 # Docs Canon
 
+## Current authority chain — 2026-10-14
+
+GitHub is the authoritative home of code, dated evidence, open findings and live trackers.
+External reports/chats are inputs, not a second task-tracking authority.
+
+| Topic | Canonical source |
+|---|---|
+| Current implemented scope / open finding / permitted claim | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md) |
+| Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) |
+| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
+| Operating snapshot | [../STATE.md](../STATE.md) |
+| Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
+| Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
+| Dated upstream version registry | [eudi/EUDI_SOURCE_BASELINE.md](eudi/EUDI_SOURCE_BASELINE.md); not implementation/interoperability evidence |
+
+A spec is normative/planned behavior, not proof of implementation. An accepted design is not completed code.
+No old Evidence Pack, completion rollup, architecture diagram or percentage overrides a newer reproduced finding on an active path.
+Keep original QA run dates/SHAs immutable and attach a qualification/cross-link when scope changes.
+Close a technical issue only with fix commit and profile-specific negatives/integration evidence; close market gates only with auditable counts/artifacts.
+
 This file defines the authoritative document per topic area and serves as navigation entry point.
 
 ---
@@ -83,8 +103,8 @@ neuer Auftrag behandelt werden.
 
 ## Conflict Resolution Rules
 
-- If README conflicts with the Evidence Pack, the Evidence Pack is authoritative.
-- If STATE.md conflicts with a protocol spec, the spec is authoritative.
+- If a public claim conflicts with current active-path evidence, the current findings register and dated executable-path evidence qualify it; older component Evidence Packs are historical scoped inputs.
+- A protocol spec defines intended behavior; dated active-path evidence defines observed implementation. STATE must expose any gap rather than present a normative spec as implementation.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
 - If QA evidence conflicts with STATE.md, prefer the newer dated evidence for
   the specific validation it records, then update STATE.md in the next docs
