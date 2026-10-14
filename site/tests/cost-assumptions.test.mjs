@@ -92,7 +92,8 @@ test('annual TCO excludes missing storage/risk from claims of total savings', ()
 test('hospital and deletion comparison do not promise universal erasure', () => {
   for (const claim of ['Data cryptographically deleted', 'permanently unreadable',
     'Crypto-Shredding = Löschbeweis', '>Nirgends</div>', '>Unmöglich</div>',
-    'All data forgotten']) assert(!html.includes(claim), claim);
+    'All data forgotten', '🗑 deleted', '❌ no — shredded',
+    'Raw data is shredded', 'Everything else is cryptographically destroyed']) assert(!html.includes(claim), claim);
 });
 
 test('interactive break-glass and breach descriptions retain deployment uncertainty', async () => {

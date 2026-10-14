@@ -1765,7 +1765,7 @@
         <div class="hiw-step">
           <span class="hiw-icon">📱</span>
           <h3>2. Wallet</h3>
-          <p>Your device stores the credentials. <strong>Raw data is shredded</strong> after signing.</p>
+          <p>Your device stores the credentials. <strong>Controlled-buffer cleanup is the design goal</strong> after signing.</p>
           <div class="hiw-arrow">→</div>
         </div>
         <div class="hiw-step">
@@ -2034,7 +2034,7 @@
             <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">List</span><span class="risk-badge med">🟡 Medium</span></div>
             <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">ABO+Rh</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">Public/Private</span><span class="risk-badge low">🟢 Low</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Legal basis: GDPR Art. 9(2)(c) — vital interests. Ephemeral credential, automatically deleted at session end.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Legal basis: GDPR Art. 9(2)(c) — vital interests. Ephemeral lifecycle illustration; actual consumption and retention require evidence.</p>
           </div>
 
           <!-- Step 2: Risk Analysis -->
@@ -2075,14 +2075,14 @@
               <div class="ab-title">✓ Simulated session ended — Cleanup illustrated</div>
               <div class="ab-body">This display illustrates session cleanup. It does not prove erasure of runtime copies or data retained by a hospital; the receipt records only the illustrated event.</div>
             </div>
-            <div class="uc-sub-hdr">Consent Receipt (stored in your wallet)</div>
+            <div class="uc-sub-hdr">Example consent receipt (synthetic)</div>
             <div class="receipt-box">
               <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">UKH Innsbruck — Notaufnahme</span></div>
               <div class="receipt-row"><span class="rk">Time</span><span class="rv" id="hospital-ts">—</span></div>
               <div class="receipt-row"><span class="rk">Shared</span><span class="rv">allergies, blood_group, insurance</span></div>
               <div class="receipt-row"><span class="rk">Basis</span><span class="rv">GDPR Art. 9(2)(c)</span></div>
-              <div class="receipt-row"><span class="rk">Session Key</span><span class="rv">🗑 deleted</span></div>
-              <div class="receipt-row"><span class="rk">Data available</span><span class="rv">❌ no — shredded</span></div>
+              <div class="receipt-row"><span class="rk">Session Key</span><span class="rv">Cleanup illustrated; not measured</span></div>
+              <div class="receipt-row"><span class="rk">Data available</span><span class="rv">Unknown outside this simulation</span></div>
             </div>
             <div style="margin-top:1.5rem; text-align:center;">
               <button class="btn btn-success" onclick="activateScenario('hospital')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
@@ -2809,10 +2809,10 @@
           <div class="roadmap-layer">Layer 1 — Built</div>
           <div class="roadmap-icon">🔐</div>
           <div class="roadmap-title">The Forgetting Layer</div>
-          <div class="roadmap-desc">Control exactly what leaves your wallet at every transaction. Everything else is cryptographically destroyed.</div>
+          <div class="roadmap-desc">Control exactly what leaves your wallet at every transaction. Unreleased fields are withheld by the selected policy; cleanup has explicit ownership limits.</div>
           <ul class="roadmap-features">
             <li>Selective disclosure — share only what's needed</li>
-            <li>Crypto-shredding — session keys destroyed after use</li>
+            <li>Controlled-key cleanup — integration and runtime-copy limits apply</li>
             <li>Pairwise DIDs — scoped identifier separation</li>
             <li>Signed consent receipts — portable evidence</li>
             <li>Fail-closed policy engine — deny by default</li>
@@ -3227,13 +3227,13 @@
         policy: {
           rule: 'ad_verification',
           verdict: 'ALLOW',           // always auto-approve (zero PII)
-          reason: 'Zero PII disclosed — deterministic verification only',
+          reason: 'Synthetic minimal-disclosure scenario — not an anonymity proof',
           checks: [
             '🔍 Verifier identity check (did:askmi:adnetwork-gmbh)',
             '📋 Matching policy rule: "ad_blind_provider" → AdNetwork GmbH',
-            '📊 Claims requested: nullifier, budget_slot (zero PII)',
-            '🛡️ Data minimization: PASS — no personal data leaves device',
-            '✅ Deterministic proof, no PII → ALLOW (auto-approve)',
+            '📊 Claims requested: nullifier, budget_slot (synthetic metadata)',
+            '🛡️ Minimisation scenario: selected metadata only; real data flows require verification',
+            '✅ Illustrated minimal-disclosure decision → ALLOW (simulation)',
           ],
         },
         // Cost comparison overrides
@@ -3429,7 +3429,7 @@
           checks: [
             '🔍 Verifier identity check (did:askmi:flirtradar)',
             '📋 Matching policy rule: "social_login" → FlirtRadar.app',
-            '📊 Claims requested: pseudonym, age_range, is_human (zero PII)',
+            '📊 Claims requested: pseudonym, age_range, is_human (synthetic metadata)',
             '🛡️ Data minimization: PASS — site-specific pseudonym, no linkability',
             '✅ Pseudonymous claims only → ALLOW (auto-approve)',
           ],
@@ -3780,7 +3780,7 @@
         <div><strong>${e.action}</strong> <span class="dim">— ${new Date(e.timestamp).toLocaleTimeString()}</span></div>
         <div class="dim" style="font-family:var(--mono);font-size:0.72rem">hash: ${e.entryHash}... → prev: ${e.previousHash.substring(0, 12)}...</div>
         ${e.evidence.categories ? `<div class="dim">categories: ${e.evidence.categories.join(', ')}</div>` : ''}
-        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof} destroyed</div>` : ''}
+        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof} cleanup illustrated</div>` : ''}
       </div>
     </div>
   `).join('');
@@ -3859,7 +3859,7 @@
       </div>
       <div class="rb">
         <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} cleanup illustrated — no all-copy deletion proof</div>
-        <div><span class="k">destroyed_at:</span> ${ts()}</div>
+        <div><span class="k">illustrated_cleanup_at:</span> ${ts()}</div>
       </div>
     </div>`;
       hl('p-shred', 'orange');
@@ -4168,7 +4168,7 @@
       document.getElementById('verifier-ph').style.display = 'none';
       document.getElementById('verifier-result').innerHTML = `
     <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
-    <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Cannot distinguish from "credential not available".</p></div>`;
+    <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Bucketed rejection is the target behavior; this animation does not measure it.</p></div>`;
       setStatus('Rejected by user'); setFlow('wallet');
       addAudit('disclosure_blocked_or_aborted', { reason: 'user_denied_consent', verifier: STATE.verifierName }, 'red');
     }
@@ -4242,7 +4242,7 @@
 
       // Step 5: Shred
       await delay(800);
-      setFlow('shred'); setStatus('Session key shredded ✅');
+      setFlow('shred'); setStatus('Session cleanup illustrated — simulation');
 
       addAudit('session_key_shredded', { categories: ['ephemeral_session_material'] }, 'orange');
 
