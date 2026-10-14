@@ -69,6 +69,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
 
+- **Observable trust milestones and assurance/role boundaries:** `docs/security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md` (planning; #175–#177, complements existing component evidence and #170–#173).
+
 ## Research And Strategy Inputs
 
 These documents are useful inputs, but they do not override `STATE.md`,
