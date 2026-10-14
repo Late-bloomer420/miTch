@@ -1,5 +1,9 @@
 # PCC-learnings repository evidence — 2026-10-14
 
+## Interpretation clarification — 2026-10-14
+
+The observations and diagnostic sources below are retained unchanged. The audit inventoried the repository and selectively inspected/tested paths; it did not manually verify every source file. A signed underage claim may be cryptographically valid: EV-02 concerns original-profile/application eligibility and scope, not a defective signature primitive or a general PolicyEngine failure. EV-04 is a call-site/integration observation, not proof that a particular external leak occurs. EV-07 is a buffer-ownership/asynchronous-lifetime boundary requiring a caller-contract decision, not automatically a defect in a best-effort wipe wrapper. Structural validation and local predicate signing have distinct legitimate contracts (EV-08). Positive component tests remain evidence for their stated scopes.
+
 **Executable baseline:** `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 **Scope:** internal repository investigation; not an external audit, full manual line-by-line review or official conformance.
 **Runtime:** Linux, Node 24.19.0, pnpm 9.15.9, frozen lockfile. CI's Node 22 is not claimed as newly locally tested.

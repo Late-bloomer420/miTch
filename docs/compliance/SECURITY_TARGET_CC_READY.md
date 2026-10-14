@@ -1,28 +1,37 @@
-# AskMI security-target draft — assessment input, not assurance
+# miTch: Security Target (ST) - Security-Target Draft and Evaluation Mapping
 
-**Qualified:** 2026-10-14. This file is a draft engineering description, not an accredited Common Criteria security target,
-evaluated TOE, EAL4+ readiness determination, LoA High claim or certification result.
+**ID:** E-42
+**Version:** 1.0 (2026-05-25)
+**Classification:** Public (engineering assessment input)
+**Target of Evaluation (TOE):** miTch EUDI Wallet Framework
 
-## Intended security objectives and current boundaries
+## 1. Introduction
+This draft retains the intended security objectives and component references for a possible Common Criteria assessment. It is not an accredited/accepted Security Target or an EAL readiness determination. The selected TOE, applicable Protection Profile and clause-level SFR mapping require evaluation work.
 
-| Objective | Existing component | Evidence limit / open work |
-|---|---|---|
-| User/key presence | WebAuthn / IdentityKeyGuardian | Platform/config-dependent; no certified wallet-security assurance |
-| Credential integrity | ECDSA / SD-JWT / COSE helpers | Internal primitive tests; exact official-profile matrix unvalidated |
-| Storage confidentiality | SecureStorage AES-GCM | Local encrypted storage; not whole-process/backup assurance |
-| Request minimisation | Policy + selective disclosure | Active HTTP eligibility/scope incomplete (#170) |
-| Unlinkability | Pairwise DIDs + legacy B+C pool | Stored-SD-JWT reuse (#171), F-20 and network/issuer correlation remain |
-| Revocation / trust | Status-list and JSON trust prototypes | Exact signer/profile/freshness/ETSI deployment requirements remain open |
-| Audit | Hash-chain and Tier-2 schema helpers | Sink/retention/durability (#172/F-19) not universally enforced |
+## 2. Security Objectives & Implementation
 
-## Assurance work still required
+| Objective | Security Function (SF) | Implementation Module |
+| :--- | :--- | :--- |
+| **User Authentication** | WebAuthn Hardware Binding | `@askmi/shared-crypto/webauthn.ts` |
+| **Data Integrity** | ECDSA (P-256) & COSE Sign1 | `@askmi/shared-crypto/signing.ts` |
+| **Confidentiality** | AES-256-GCM Encryption | `@askmi/secure-storage` |
+| **Privacy (Minimization)** | SD-JWT Selective Disclosure | `@askmi/shared-crypto/sd-jwt-vc.ts` |
+| **Unlinkability** | Pairwise Ephemeral DIDs | `@askmi/shared-crypto/pairwise-did.ts` |
+| **Revocation Check** | W3C StatusList2021 | `@askmi/revocation-statuslist` |
 
-Define the TOE and trust boundary, selected role/profile, assumptions and threat model;
-trace requirements to exact code/tests; commission independent review and applicable evaluation;
-record vulnerability findings, operational controls and conformance artifacts.
-Repository-controlled test runs are internal testing, not independent ATE evidence.
-TypeScript interfaces and package separation do not prove runtime isolation against malicious code.
+## 3. Mapping of engineering inputs to CC assurance classes
 
-[Current register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md), [requirement traceability](EUDI_CIR_MATRIX.md),
-[roadmap](../RELEASE_READINESS_ROADMAP.md), GAP-1/GAP-4 and #170–#173 govern current gaps.
-No statement here closes those gates.
+| CC Class | Requirement | miTch Evidence |
+| :--- | :--- | :--- |
+| **ADV (Development)** | Implementation Representation | Versioned source code, TypeScript types and specifications; implementation representation must be evaluated for the selected TOE. |
+| **ATE (Tests)** | Internal Testing Inputs | Repository-controlled tests exercise named cases; they are not independent testing of all security functions. |
+| **AVA (Vulnerability)** | Vulnerability Analysis | STRIDE-based Threat Model (`docs/specs/05_Threat_Model.md`). |
+| **ALC (Lifecycle)** | Configuration Management | Git versioning and CI workflows; configuration/threshold enforcement requires its own evidence (EV-05). |
+
+## 4. Operational Hardening
+1. **Crypto-Shredding**: Owned-buffer zeroization via `SecureBuffer`; runtime copies and physical RAM erasure are outside that evidence (GAP-1).
+2. **Identity Firewall**: Policy claim-filtering components; active SD-JWT request/scope integration remains #170.
+3. **Fail-Closed Integration**: Failed cryptographic checks have named rejection paths; structural validation, eligibility and application authorization are separate contracts.
+
+## 5. Conclusion
+These mappings are useful engineering inputs. Formal readiness, independence of testing, isolation of the selected TOE, vulnerability assessment and certification are not established by this document. Preserve component evidence while recording #170–#173 and the existing residuals as separate scoped work.

@@ -1,7 +1,5 @@
 # miTch Documentation Structure
 
-> **Current entry points (2026-10-14):** [findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated evidence](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [release roadmap](RELEASE_READINESS_ROADMAP.md), [GTM roadmap](GTM_SPRINT_ROADMAP.md). Earlier specs/diagrams are intended or historical behavior, not proof of complete implementation.
-
 ## Einstiegspunkte
 
 | Dokument | Zweck |

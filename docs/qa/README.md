@@ -1,14 +1,13 @@
 # QA Evidence Records — Index
 
-> **New scoped record:** [PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) records open active HTTP, single-use, CI and evidence boundaries. Current task status stays in the findings register/backlog; a passing characterization reproduces an unsafe behavior, not a fix.
+> **New scoped record:** [PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) records open active HTTP, single-use, CI and evidence boundaries. Task status stays in the backlog/issues. The record supplements existing evidence; characterization acceptance does not prove a fix.
 
 > **Rolle:** Dated, point-in-time **evidence records** (Beweis-Snapshots). Each file captures
 > verification done *on its date* — they are **not** authoritative task-tracking and are not kept
 > current. For "what is done / open" see [`../BACKLOG.md`](../BACKLOG.md); for the operational
 > health snapshot see [`../../STATE.md`](../../STATE.md).
 >
-> **Reading rule:** treat every record as true *as of its date* only. A later record or `master`
-> supersedes an earlier one where they differ. Do not cite these as current state.
+> **Reading rule:** treat every record as true *as of its date* only. Later evidence qualifies the same claim/path/profile where it differs; unrelated earlier results remain evidence for their recorded scope. Do not cite these as current state.
 
 ## Records
 

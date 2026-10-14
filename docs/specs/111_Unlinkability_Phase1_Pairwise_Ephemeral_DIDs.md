@@ -1,7 +1,5 @@
 # Spec 111 — Unlinkability Phase 1: Pairwise-Ephemeral DIDs
 
-> **Evidence boundary (2026-10-14):** this spec describes intended properties. DID uniqueness tests do not prove full-payload/network/issuer unlinkability. The real stored-SD-JWT single-use gap is #171; F-20 permits missing DID after generation failure; HKDF material can be regenerated from retained master material. Do not treat key-buffer shredding as universal forward secrecy or all-copy erasure. See [current register](../security/REPO_EVIDENCE_STATUS_2026-10-14.md).
-
 **Status:** DRAFT  
 **Priority:** P0 (next phase)  
 **Principle:** "Alle sind miTch"  

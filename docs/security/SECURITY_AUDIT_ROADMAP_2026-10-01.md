@@ -3,7 +3,7 @@
 > **Refresh (2026-10-14):** #152 is already merged and its shell-free runner must be preserved.
 > #150/#151 remain open, and #141 contains unmerged security work. EV-05 demonstrates that master CI can exit 0 on synthetic critical findings;
 > current registry advisory counts were not re-measured in this documentation pass. #170–#173 own the new concrete slices.
-> [Current register](REPO_EVIDENCE_STATUS_2026-10-14.md) overrides stale completion assumptions, not the dated original intake facts.
+> [Finding index](REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies only overlapping integration/claim scopes; existing component evidence and the original intake facts remain intact.
 
 Date: 2026-10-01
 Status: active triage plan.

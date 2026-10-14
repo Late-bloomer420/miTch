@@ -4,14 +4,14 @@
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
-[release roadmap](RELEASE_READINESS_ROADMAP.md), #142 and #143 are the active authority chain.
+[release roadmap](RELEASE_READINESS_ROADMAP.md), #142 and #143 link current work to the existing component records below.
 
 | Task | Priority | Status | Acceptance / owner |
 |---|---|---|---|
 | ADOPT-1.0/1.1/1.2 | Design | Accepted designs only (#158/#159/#160) | Does not mean SDK/core/store implemented |
 | ADOPT-1.2-code / EV-01/02 | P0 | OPEN #170 | Original server request, crypto + eligibility + scope, atomic session, active HTTP negatives |
 | EV-03 real SD-JWT single-use | P1 / profile-required P0 | OPEN #171 | Atomically reserve/consume stored single-use, holder lifecycle and honest cleanup |
-| EV-04 Tier-2 sink integration | P1 | OPEN #172 | Existing schema enforced at actual outputs; retention/PII canaries; preserve Tier 1 |
+| EV-04 Tier-2 sink integration | P1 | OPEN #172 | Inventory actual outputs first; apply existing schema only to in-scope exports/telemetry; preserve Tier 1 |
 | EV-06 revision-bound evidence | P1 | OPEN #173 / SEC-AUDIT-3 | Actual-file hash and source/profile/config; active-path coverage |
 | EV-05 audit CI gate | P0 | OPEN #141 / SEC-AUDIT-1/2 | Critical/high and audit failures block; preserve #152 runner |
 | Key separation / decision randomness | Existing | OPEN #150/#151 | Re-review on current base with targeted format/key/randomness tests |
@@ -21,10 +21,10 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 | G0/G1 | Gate | OPEN, elapsed targets | No broad expansion until reviewed; public 20/8/3 tally missing, not private-activity inference |
 | GAP-1/GAP-4/F-19/F-20 | Residual | OPEN | Runtime erasure/external review/durable audit/explicit unlinkability downgrade |
 
-No code fix, external evidence, market validation or gate closure is caused by these documentation edits.
-Earlier checkmarks below describe dated component work only; they do not override the open active-path findings.
+These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
+Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
 
-## Historical task/change records (scope-limited)
+## Existing task/change records
 
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).

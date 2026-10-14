@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-AskMI is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — development/evaluation policy and selective-disclosure components. Current active-path findings, protocol gaps and external validation limits are authoritative in docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md; do not imply ZKP, compliance or readiness. TypeScript monorepo with pnpm workspaces.
+AskMI is a privacy-preserving proof mediation middleware ("The Forgetting Layer") — development/evaluation policy and selective-disclosure components. Use component documentation and dated QA for the affected path. docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md indexes additional scoped findings; it does not replace those sources. TypeScript monorepo with pnpm workspaces.
 
 ## Commands
 
@@ -95,4 +95,4 @@ GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 
 
 ## Evidence and update discipline
 
-Read docs/DOCS_CANON.md and docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. No gate moves without its linked evidence. Do not duplicate #170–#173.
+Use docs/DOCS_CANON.md to locate the affected topic and its evidence before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. Refresh evidence for affected paths/profiles/dependencies; docs-only edits do not require a full repository re-audit. Broader release gates need their own broader checks. No gate moves without its linked evidence. Do not duplicate #170–#173.

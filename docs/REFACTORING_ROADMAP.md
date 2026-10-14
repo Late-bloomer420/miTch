@@ -1,7 +1,5 @@
 # AskMI Refactoring Roadmap
 
-> **Current priority (2026-10-14):** #170–#173 and EV-05 are explicit active integration/evidence blockers under the [current register](security/REPO_EVIDENCE_STATUS_2026-10-14.md). Broad decomposition and new cloud/TEE products remain deferred; do not interpret the reference closeout below as pilot readiness.
-
 > **Role:** Deferred architecture work from PoC to production hardening.
 > This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 

@@ -1,7 +1,5 @@
 # ADOPT-1 — AskMI Connect Planning Gate
 
-> **Evidence refresh (2026-10-14):** this is an accepted design/planning contract, not implemented `@askmi/connect`. The package is absent at `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`. #170 owns active server-request/eligibility/scope enforcement; #171 owns real-SD-JWT single-use parity. Numeric age is the current designed request; returning a boolean does not erase what RP middleware received. No gate closes from accepting this document.
-
 Date: 2026-10-01
 Status: ADOPT-1.0, ADOPT-1.1 and ADOPT-1.2 accepted; first code slice is
 the next open gate.

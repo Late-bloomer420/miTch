@@ -1,9 +1,6 @@
 # AskMI maturity and known limitations
 
-> **Current qualification — 2026-10-14:** see [current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md).
-> #170–#173 remain open. The real SD-JWT path currently shares numeric age, can accept replay/underage/excess claims,
-> and does not enforce stored single-use consumption. Accepted Connect designs are not implemented.
-> This document is a statement of permitted claim language, not a deployment, security or certification approval.
+> **Scoped integration update — 2026-10-14:** #170 concerns the original-request/session and application eligibility boundary of the real SD-JWT demo; cryptographic acceptance of an underage credential is not by itself a validator defect. #171 concerns its stored single-use/UI lifecycle. #172 first inventories actual external outputs; #173 covers report provenance/serialization. The [finding index](security/REPO_EVIDENCE_STATUS_2026-10-14.md) complements existing component evidence. Accepted Connect designs are not implemented at the checked baseline.
 
 **Status:** living product-readiness statement
 **Canonical product name:** AskMI
@@ -21,7 +18,7 @@ Use these labels when reading or writing documentation:
 - **Planned:** roadmap, specification, proposed integration, stub, or design without a completed implementation claim.
 - **Externally unvalidated:** no independent security audit, certification, conformance decision, or production ecosystem validation has established the claim.
 
-Unless an artifact explicitly identifies independent evidence, all implementation and compliance claims are externally unvalidated.
+Internal implementation/test evidence remains evidence for its recorded scope. Independent assurance is a separate status; its absence does not negate working components.
 
 ## Product boundary: middleware and reference wallet
 

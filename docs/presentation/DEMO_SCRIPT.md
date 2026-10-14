@@ -1,7 +1,5 @@
 # miTch Live-Demo Script (5-10 Min)
 
-> **Presentation qualification (2026-10-14):** intended/illustrative architecture, not a current delivery guarantee. Read [current findings](../security/REPO_EVIDENCE_STATUS_2026-10-14.md). The real SD-JWT path currently shares numeric age; local predicate signatures are not proven ZK derivations; end-to-end replay/eligibility/scope/single-use remain #170/#171. Health/proximity are partial/demo scope. Do not present historical success counts, absolute unlinkability, RAM erasure or regulatory labels as assurance.
-
 Willkommen zur Live-Demonstration von **miTch — The Forgetting Layer**. Wir zeigen heute, wie miTch als Privacy-Middleware funktioniert und wie wir das Prinzip *Verifiable Trust ohne zentralisierte Datenhaltung* in der Praxis umsetzen.
 
 ---

@@ -1,7 +1,5 @@
 # Compliance Evidence Index
 
-> **Current commercial-use boundary (2026-10-14):** dated/internal material, not a current security sign-off or live pilot approval. [Current register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies claims: numeric-age disclosure, #170–#173 open, no established LoA High/certification/official interop. Internal checks are not independent assurance; G0/G1 remain open.
-
 > **GTM-03** · Owner: Compliance & Evidence Lead · Date: 2026-05-25
 > Purpose: give a reviewer a single map from each compliance claim to its **canonical** evidence,
 > and to **flag where legal review is still required**. This index does not itself certify anything.

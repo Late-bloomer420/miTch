@@ -1,7 +1,5 @@
 # Technical Trust Appendix for Verifiers
 
-> **Current commercial-use boundary (2026-10-14):** dated/internal material, not a current security sign-off or live pilot approval. [Current register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies claims: numeric-age disclosure, #170–#173 open, no established LoA High/certification/official interop. Internal checks are not independent assurance; G0/G1 remain open.
-
 > **GTM-02** · Integration contract for relying parties · Date: 2026-05-25
 > Status legend: ✅ implemented · 🟡 partial · 🔴 not implemented
 > Authoritative status source: [`docs/compliance/EUDI_CIR_MATRIX.md`](../../compliance/EUDI_CIR_MATRIX.md)
@@ -84,3 +82,7 @@ Against the four CIRs, miTch reports **41/53 (77%) implemented, 10 partial, 3 mi
 2026-03-06. The full per-requirement breakdown — and the production-readiness gap list — is the
 [compliance evidence index](03_COMPLIANCE_EVIDENCE_INDEX.md). Do not infer certification from this
 score; see the [security sign-off](04_SECURITY_SIGNOFF.md).
+
+## Scoped follow-up — 2026-10-14
+
+The dated component references and original review disposition above are retained. On the real SD-JWT demo, numeric age is disclosed; original-request/session/application eligibility integration is #170 and stored single-use/UI lifecycle is #171. These findings qualify those paths, not every component in this appendix. #172 inventories actual external outputs before integration; #173 concerns evidence provenance/serialization. No new independent sign-off or pilot approval is recorded here.

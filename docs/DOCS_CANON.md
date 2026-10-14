@@ -1,13 +1,13 @@
 # Docs Canon
 
-## Current authority chain — 2026-10-14
+## Evidence navigation and maintenance — 2026-10-14
 
 GitHub is the authoritative home of code, dated evidence, open findings and live trackers.
 External reports/chats are inputs, not a second task-tracking authority.
 
 | Topic | Canonical source |
 |---|---|
-| Current implemented scope / open finding / permitted claim | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md) |
+| Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
@@ -16,9 +16,13 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Dated upstream version registry | [eudi/EUDI_SOURCE_BASELINE.md](eudi/EUDI_SOURCE_BASELINE.md); not implementation/interoperability evidence |
 
 A spec is normative/planned behavior, not proof of implementation. An accepted design is not completed code.
-No old Evidence Pack, completion rollup, architecture diagram or percentage overrides a newer reproduced finding on an active path.
-Keep original QA run dates/SHAs immutable and attach a qualification/cross-link when scope changes.
+Existing component evidence remains authoritative for its stated scope. A newer counterexample qualifies only an overlapping claim/path/profile; it does not invalidate unrelated passed tests or completed work.
+Keep original QA run dates/SHAs and outcomes immutable. Attach later findings in a separate record or navigation entry.
 Close a technical issue only with fix commit and profile-specific negatives/integration evidence; close market gates only with auditable counts/artifacts.
+
+For each reviewed claim, link the component/path, profile/configuration, source revision, verification date, test/observation and known limits. A source SHA records where the observation was made; it does not require a fresh whole-repository audit whenever prose changes. Recheck affected claims when their implementation, relevant dependencies/configuration or profile changes. Unchanged evidence retains its original date and scope. Broad release/deployment claims require broader integration/release checks.
+
+Distinguish reproduced defects, integration gaps, externally unvalidated assurances, deliberate system boundaries and planned functions. Missing evidence is not proof of a malfunction. A component implementation is not automatically an integrated application guarantee.
 
 This file defines the authoritative document per topic area and serves as navigation entry point.
 
@@ -103,7 +107,7 @@ neuer Auftrag behandelt werden.
 
 ## Conflict Resolution Rules
 
-- If a public claim conflicts with current active-path evidence, the current findings register and dated executable-path evidence qualify it; older component Evidence Packs are historical scoped inputs.
+- If a public claim conflicts with a reproduced finding, qualify the overlapping claim with its specific dated evidence. Preserve other component Evidence Pack results; the finding index is navigation, not a global override.
 - A protocol spec defines intended behavior; dated active-path evidence defines observed implementation. STATE must expose any gap rather than present a normative spec as implementation.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
 - If QA evidence conflicts with STATE.md, prefer the newer dated evidence for

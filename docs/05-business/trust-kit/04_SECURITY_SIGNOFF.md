@@ -1,7 +1,5 @@
 # Security Sign-Off on Public Claims
 
-> **Current commercial-use boundary (2026-10-14):** dated/internal material, not a current security sign-off or live pilot approval. [Current register](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies claims: numeric-age disclosure, #170–#173 open, no established LoA High/certification/official interop. Internal checks are not independent assurance; G0/G1 remain open.
-
 > **GTM-04** · Reviewer role: Security Engineer (sign-off), Compliance & Evidence Lead (evidence)
 > Date: 2026-05-25 · Disposition: **CONDITIONAL — one blocking correction required before publication.**
 
@@ -75,3 +73,7 @@ certification and legal-review framing in the evidence index is honored.
 
 Re-sign required after F-1 is corrected and the dev/runtime vulnerability split is confirmed against a
 fresh `pnpm audit`.
+
+## Scoped follow-up — 2026-10-14
+
+The dated component references and original review disposition above are retained. On the real SD-JWT demo, numeric age is disclosed; original-request/session/application eligibility integration is #170 and stored single-use/UI lifecycle is #171. These findings qualify those paths, not every component in this appendix. #172 inventories actual external outputs before integration; #173 concerns evidence provenance/serialization. No new independent sign-off or pilot approval is recorded here.

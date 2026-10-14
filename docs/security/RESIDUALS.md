@@ -1,6 +1,6 @@
 # AskMI Security Residuals Register
 
-> **Current finding intake (2026-10-14):** [EV-01..10](REPO_EVIDENCE_STATUS_2026-10-14.md) adds reproduced active-path gaps to the older residuals below. #170–#173 and EV-05 remain open. A documented residual is not mitigated merely because it is documented. No external review or runtime erasure is newly established.
+> **Additional scoped findings:** [EV-01..10](REPO_EVIDENCE_STATUS_2026-10-14.md) links the HTTP/session, stored single-use, export-integration and evidence/CI observations. Existing residual dispositions retain their scope; missing independent evidence is not itself a component defect.
 
 This register lists every security item that is **intentionally not closed** in the current codebase. Each row states what the item is, why it remains open, and what would be required to close it.
 

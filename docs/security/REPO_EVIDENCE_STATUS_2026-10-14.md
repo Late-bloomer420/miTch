@@ -4,16 +4,18 @@
 The baseline and relevant open PR heads were re-read before publication and were unchanged.
 Documentation changes do not fix executable behavior or advance a readiness gate.
 
-## Authority and statuses
+## Scope and statuses
 
-This is the current finding/claim register. [Dated verification](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
+This index links additional findings to their exact scope and existing owners. It is not a complete audit of every source file or a replacement for component evidence. [Dated verification](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
 records exactly what was observed. [BACKLOG](../BACKLOG.md) owns task state;
 [release roadmap](../RELEASE_READINESS_ROADMAP.md) owns sequencing; #142/#143 own live gate decisions.
 
 | Status | Meaning |
 |---|---|
 | Implemented, scoped | Active code and specified repository tests establish the named behavior only |
-| Reproduced open finding | A local synthetic counterexample establishes unsafe/incomplete current behavior |
+| Reproduced defect | A local synthetic counterexample contradicts a specific path/profile contract |
+| Integration gap | Existing components are not wired into the inspected application path; this does not negate component tests |
+| Deliberate boundary / investigation | A threat-model limit or unresolved contract question; not automatically a software defect |
 | Accepted design / not implemented | Contract/spec accepted; no completed active implementation evidenced |
 | Partial / demo / stub | Components exist but the complete profile, path or external integration is missing |
 | Externally unvalidated | No independent review, official interop/conformance or certification evidence recorded |
@@ -26,13 +28,13 @@ Neither a green helper test, a documentation PR, a passing HTTP status nor a has
 | ID | Priority | Evidence / exact boundary | Owner / close condition |
 |---|---|---|---|
 | EV-01 | P0 | `/oid4vp-present` accepts repeated valid tokens and caller-selected nonce/state; it reconstructs expectations from incoming data | #170: original server request, atomic one-shot state and active HTTP negatives |
-| EV-02 | P0 | Signed `age:12` yields `ok:true`; extra signed name is returned outside original age request | #170: separate cryptographic validity from eligibility and enforce claim/type/scope constraints |
+| EV-02 | P0 for eligible application success | Signed `age:12` is cryptographically accepted; extra signed name is returned on the demo route. A valid credential may correctly describe an underage holder: this is not a broken signature validator or a general PolicyEngine defect | #170: enforce original profile/scope and distinguish crypto acceptance, age eligibility and application authorization |
 | EV-03 | P1; P0 if required by profile | `singleUse:true` SD-JWT can be presented twice through `presentStoredSdJwtVc`; issuer-JWT identical, no consumedAt; UI marks SHREDDED without that lifecycle | #171: atomic reservation/consumption, holder lifecycle and honest UI; retain explicitly reusable profiles |
-| EV-04 | P1 | Tier-2 schema helpers are tested but not wired to checked app/audit sinks; a retention field is not execution | #172: enforce actual exports/telemetry, data-purpose split, retention and synthetic canaries |
+| EV-04 | P1 integration/inventory | Tier-2 helpers and their tests exist; no invocation found at inspected app/audit call sites. This does not establish an external data leak or negate the separate receipt-export path. A retention field alone is not a scheduler | #172: inventory actual outputs, then wire applicable export/telemetry controls; preserve local history |
 | EV-05 | P0 for asserted security gate | Audit steps are advisory; unchanged ci-security Python snippet exits 0 for synthetic critical=1/high=5 | #141 / SEC-AUDIT-1/2: blocking threshold plus audit-error/malformed-data negatives; no current advisory count inferred |
 | EV-06 | P1 | Evidence JSON hash excludes written final LF; source/profile binding absent; existing manifest excludes EV-01..03 | #173 / SEC-AUDIT-3: exact persisted-byte hash, revision/profile/config and active-path regressions |
-| EV-07 | Residual | Timeout shreds owned buffer but leaves callback copies and does not cancel running work; browser physical RAM wipe unproven | GAP-1: bounded receipt language and lifecycle review; TEE/native work remains deferred |
-| EV-08 | Partial / unvalidated | Predicate/self-signed result is not an issuer-authenticated ZK derivation; structural verifier mode is opt-in crypto | #170/#97: mandatory active cryptographic/eligibility checks; exact official profile decision |
+| EV-07 | Deliberate boundary / investigation | Wrapper overwrite does not cancel asynchronous work or erase caller-owned copies. Browser physical RAM erasure is outside this wrapper's evidence | GAP-1: state ownership/lifetime boundaries; determine whether cancellation is required by the caller contract before treating it as a defect |
+| EV-08 | Distinct trust/API contracts | Local predicate signatures prove a different property from issuer-authenticated ZK derivation. Structural verifier mode explicitly reports whether signatures were checked; it is not inherently defective | #170/#97: consuming adapters must require the checks appropriate to their selected application/profile |
 | EV-09 | Residual | Pairwise-DID failure continues without it; payload/IP/timing/cookie/issuer correlation not excluded by DID uniqueness | F-20 / SEC-AUDIT-4 / #142 Wave 4: explicit profile downgrade behavior and correlation evidence |
 | EV-10 | Missing external evidence | No published official Android/iOS interop, independent security review or conformance result establishing current profile | GAP-4 / #97 / #142 Waves 2–4; exact-version external artifacts required |
 
@@ -61,17 +63,18 @@ G0 and G1 remain open; their September/11 October windows elapsed. Public eviden
 No sprint or pilot gate advances automatically. Broad product expansion remains paused under the existing #143 stop rule;
 remediation and evidence work for the existing profile can continue. Cloud/TEE/ZKP expansion remains deferred.
 
-## Permitted claim language
+## Examples of scoped claim language
 
 - Say “selective disclosure of numeric age on the tested demo path”, not “only a boolean/no PII reaches every verifier”.
 - Say “locally signed predicate result” unless an issuer-authenticated cryptographic derivation is actually evidenced.
 - Say “wrapper-owned buffer overwritten/API reuse blocked”, not “all RAM copies and verifier data erased”.
 - Say “tamper-evident local audit/helper schema”, not universal WORM storage, guaranteed durable write or PII-free telemetry.
 - Say “development/evaluation middleware and reference harness”, not production-ready, certified-ready, LoA High or percentage compliant.
-- State the exact SHA, configuration/profile, runtime, test scope, date and gaps with every behavior claim.
+- Link the claim to its dated source/profile/test record. Ordinary component descriptions need not repeat the whole metadata block; preserve navigation to the evidence.
 
 ## Update rule
 
 Keep one finding ID with issue and evidence links. A fix closes only the tested path/profile, after negative and integration evidence.
 Do not infer completion from accepted designs, closed/superseded PRs, elapsed dates, static totals or internal test counts.
-Preserve dated QA and original source-watch material as historical observations; supersede them explicitly rather than rewriting their runs.
+Preserve dated QA and original source-watch material. Later findings qualify overlapping claims only; unrelated observations remain valid evidence for their recorded scope.
+Documentation-only edits do not trigger a full repository re-audit. Revalidate affected paths/dependencies/configuration/profile changes; full release gates require broader checks.

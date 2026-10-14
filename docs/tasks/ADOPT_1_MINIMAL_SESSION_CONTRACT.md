@@ -1,7 +1,5 @@
 # ADOPT-1.1 — Minimal Session Contract
 
-> **Evidence refresh (2026-10-14):** this is an accepted design/planning contract, not implemented `@askmi/connect`. The package is absent at `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`. #170 owns active server-request/eligibility/scope enforcement; #171 owns real-SD-JWT single-use parity. Numeric age is the current designed request; returning a boolean does not erase what RP middleware received. No gate closes from accepting this document.
-
 Date: 2026-10-01
 Status: accepted implementation contract for the first `@askmi/connect` code
 slice.

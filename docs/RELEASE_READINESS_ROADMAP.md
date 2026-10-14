@@ -4,7 +4,7 @@
 > (`4d4cc604337a88738ec51d9f1ce448d5330e0f56`) onto executable baseline `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 > This imports no #141 security code and closes no technical/market gate. #170–#173 and EV-05 must be dispositioned.
 > [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md) and [dated evidence](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
-> qualify older implementation wording. Official-source tags below are the 12 October repository planning registry, not a newly run interop matrix.
+> qualify only overlapping paths/claims and preserve existing component evidence. Official-source tags below are the 12 October repository planning registry, not a newly run interop matrix.
 
 **Status:** Active, evidence-gated integrated plan  
 **Baseline date:** 2026-10-12  
