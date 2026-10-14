@@ -120,3 +120,12 @@ test('interactive break-glass and breach descriptions retain deployment uncertai
   for (const claim of ['Kosten: € 0', 'Keine PII gespeichert', 'Keine Meldepflicht',
     'Kein Bußgeld-Risiko', 'Kein Reputationsschaden']) assert(!events.includes(claim), claim);
 });
+
+
+test('scenario metadata and audit labels do not claim global unlinkability or real shredding', () => {
+  for (const claim of ['no cross-verifier tracking is possible', 'not linkable to other services',
+    'no linkability', 'STRUCTURAL IMPOSSIBILITY', '[structurally impossible]',
+    "addAudit('crypto_shred'", "addAudit('session_key_shredded'"]) assert(!html.includes(claim), claim);
+  assert(html.includes("addAudit('cleanup_illustrated'"));
+  assert(html.includes("addAudit('session_cleanup_illustrated'"));
+});
