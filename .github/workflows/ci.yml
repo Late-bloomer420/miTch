@@ -44,6 +44,9 @@ jobs:
       - name: 🧪 Run tests
         run: pnpm test
 
+      - name: Public cost-assumption regressions
+        run: node --test site/tests/cost-assumptions.test.mjs
+
       - name: 🔍 Lint
         run: pnpm lint
 
