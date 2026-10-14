@@ -77,10 +77,11 @@ Independent review and market demand remain separate gates. Interviews can test 
 
 ## Next implementation slice
 
-1. Land #174 only after the current public-copy finding is addressed, applicable checks/review are satisfactory and GitHub permits the protected-branch merge. Do not bypass rules or merge stale #141 wholesale.
-2. Reconcile the relevant #141 security work against current master; preserve later issuer/digest/runner fixes. First code slice is #170's original-request binding and explicit result semantics, with focused HTTP/session regressions.
-3. Integrate #171 where the selected profile requires single-use; connect accurate outcomes to #175's user-facing assurances.
-4. Inventory actual outputs for #172 and implement #173 provenance/serialization without duplicating existing schemas/tests. Keep #176/#177 design decisions linked; do not silently expand into a new wallet or agent execution product.
+Publication prerequisite: #174's corrections must be accepted into the target baseline under its applicable checks/review and branch rules. Their presence in a stacked branch does not establish a master merge. The runtime sequence after that publication is:
+
+1. Reconcile the relevant #141 security work against current master; preserve later issuer/digest/runner fixes. First code slice is #170's original-request binding and explicit result semantics, with focused HTTP/session regressions. Do not merge stale #141 wholesale.
+2. Integrate #171 where the selected profile requires single-use; connect accurate outcomes to #175's user-facing assurances.
+3. Inventory actual outputs for #172 and implement #173 provenance/serialization without duplicating existing schemas/tests. Keep #176/#177 design decisions linked; do not silently expand into a new wallet or agent execution product.
 
 ## Primary learning sources (checked 2026-10-14)
 

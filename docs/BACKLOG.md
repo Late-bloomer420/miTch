@@ -4,11 +4,11 @@
 
 ### Observable trust follow-up (planning, #178)
 
-| Work | Status | Boundary |
-|---|---|---|
-| #175 understandable assurances and visible outcomes | OPEN | Link existing evidence to plain-language promises; no new universal guarantee |
-| #176 role separation and provider dependency/exit | OPEN design | Selected RP profile; actual interoperability stays #97 |
-| #177 agent advice versus authenticated action consent | OPEN contract investigation | Evaluation Boolean is not an approval token; runtime enforcement before a live action connector |
+| Work | Priority / sequence | Status | Boundary |
+|---|---|---|---|
+| #175 understandable assurances and visible outcomes | P1 after first verified outcome | OPEN | Link existing evidence to plain-language promises; no new universal guarantee |
+| #176 role separation and provider dependency/exit | P2 design; before independence claims | OPEN design | Selected RP profile; actual interoperability stays #97 |
+| #177 agent advice versus authenticated action consent | P2 design; before live agent actions | OPEN contract investigation | Evaluation Boolean is not an approval token; runtime enforcement before a live action connector |
 
 [Five outcome milestones](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) fit inside #142's existing waves. No dates or gates change. First runtime priority remains #170 with relevant #141 reconciliation, followed by #171 and applicable #172/#173 work. Do not duplicate those issues.
 
