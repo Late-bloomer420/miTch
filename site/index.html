@@ -2150,7 +2150,7 @@
           <div class="uc-panel" id="ehds-p2">
             <div class="uc-label-chip">③ Break-Glass Override</div>
             <div class="uc-panel-title">Emergency Override: Doctor overwrites Policy</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">In real emergencies, an authorized doctor can overwrite the policy. Every override is <strong style="color:var(--text)">permanently stored in the audit trail</strong> — illustrated audit visibility; durable storage and authorization require separate checks.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">This synthetic scenario illustrates an emergency override and its audit entry. <strong style="color:var(--text)">Authorization and durable audit storage depend on the deployment</strong>; this page does not establish either.</p>
             <div class="btn-row">
               <button class="btn btn-orange" id="uc-ehds-bg-btn" onclick="ucRunBreakGlass()">🔓 Activate Break-Glass (Emergency)</button>
             </div>
@@ -4284,8 +4284,8 @@
         clientCrypto: { label: 'Client-Side Crypto (SD-JWT)', avg: 0, phase: 'verification', source: 'WebCrypto API on user device — free' },
         localBiometric: { label: 'Biometric (Face ID / Touch ID)', avg: 0, phase: 'verification', source: 'Device-local WebAuthn — free (Apple/Google provide it)' },
         pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', source: 'Derived on-device, no network call' },
-        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Illustrative cost assumption; local credentials persist and verifier non-retention is not established' },
-        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'Illustrative model assumption; no zero-breach-risk claim is established' },
+        storage: { label: 'PII Storage', avg: null, phase: 'both', source: 'Unknown deployment cost; local credentials persist and verifier non-retention is not established' },
+        breachRisk: { label: 'Data Breach Risk', avg: null, phase: 'both', source: 'Unknown deployment exposure; no zero-breach-risk claim is established' },
         compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Illustrative cost assumption; audit helpers do not establish completed privacy/legal review' },
         consentMgmt: { label: 'Consent Management', avg: 0, phase: 'both', source: 'Built into wallet UI — no external CMP needed' },
       }
@@ -4315,10 +4315,11 @@
       });
 
       const tradPhaseTotal = tradKeys.reduce((s, k) => s + COSTS.traditional[k].avg, 0);
-      const AskMIPhaseTotal = AskMIKeys.reduce((s, k) => s + COSTS.AskMI[k].avg, 0);
+      const unknownAskMIKeys = AskMIKeys.filter(k => !Number.isFinite(COSTS.AskMI[k].avg));
+      const AskMIPhaseTotal = AskMIKeys.reduce((s, k) => Number.isFinite(COSTS.AskMI[k].avg) ? s + COSTS.AskMI[k].avg : s, 0);
 
       // Add to session cumulative
-      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, AskMI: AskMIPhaseTotal });
+      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, AskMI: AskMIPhaseTotal, incomplete: unknownAskMIKeys.length > 0 });
       SESSION_COSTS.traditional = SESSION_COSTS.steps.reduce((s, x) => s + x.trad, 0);
       SESSION_COSTS.AskMI = SESSION_COSTS.steps.reduce((s, x) => s + x.AskMI, 0);
 
@@ -4335,8 +4336,8 @@
         const c = COSTS.AskMI[k];
         return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
       <span>${c.label}</span>
-      <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-        ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+      <span style="font-family:var(--mono);color:${!Number.isFinite(c.avg) ? 'var(--text-dim)' : c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+        ${!Number.isFinite(c.avg) ? 'Unknown' : c.avg === 0 ? '€0.000 (assumed)' : '€' + c.avg.toFixed(3)}
       </span>
     </li>`;
       }).join('');
@@ -4346,7 +4347,7 @@
       document.getElementById('cost-trad-total').innerHTML =
         `<span class="dim">${phaseLabel}:</span> <span style="color:var(--red);font-family:var(--mono)">€${tradPhaseTotal.toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMIPhaseTotal.toFixed(3)}</span>`;
+        `<span class="dim">${phaseLabel} known-cost subtotal:</span> <span style="color:var(--text-dim);font-family:var(--mono)">€${AskMIPhaseTotal.toFixed(3)}${unknownAskMIKeys.length ? ' + unknown costs' : ''}</span>`;
 
       // Session total summary (always visible)
       const savingsPct = SESSION_COSTS.traditional > 0
@@ -4359,7 +4360,12 @@
         `<span style="color:var(--red)">€${s.trad.toFixed(3)}</span> vs <span style="color:var(--green)">€${s.AskMI.toFixed(3)}</span>`
       ).join(' &nbsp;│&nbsp; ');
 
-      document.getElementById('cost-savings').innerHTML = `
+      const hasUnknownCosts = SESSION_COSTS.steps.some(s => s.incomplete);
+      document.getElementById('cost-savings').innerHTML = hasUnknownCosts ? `
+    <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+      <strong>Total cost and savings: unknown</strong>
+      <div class="dim">Known AskMI cost assumptions: €${SESSION_COSTS.AskMI.toFixed(3)}. Storage and breach exposure are not estimated and are excluded from this partial subtotal. No percentage or annual savings is established.</div>
+    </div>` : `
     <div style="margin-bottom:0.5rem;font-size:0.8rem">${stepsHtml}</div>
     <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
       <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO USER (Issuance + Verification)</div>
