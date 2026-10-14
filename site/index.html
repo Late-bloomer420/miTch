@@ -1840,8 +1840,8 @@
             <div class="uc-sub-hdr">Structurally not shareable</div>
             <div class="blocked-row"><span class="br-field">Last Name, First Name</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT IN PREDICATE</span></div>
-            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
-            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
+            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
+            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
               <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots — no continuous fingerprinting is possible.</div>
@@ -1858,7 +1858,7 @@
           <div class="uc-panel" id="adtech-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
             <div class="uc-panel-title">Nullifier + Budget signal are generated</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — no cross-verifier tracking is possible.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — this separates one identifier; shared credential content and network metadata may still correlate transactions.</p>
             <div class="btn-row">
               <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Generate Proof</button>
             </div>
@@ -1879,7 +1879,7 @@
                 <div class="ss-row"><span class="ss-key">budget_slot:</span><span class="ss-val">847 / 1920</span></div>
                 <div class="ss-row"><span class="ss-key">name:</span><span class="ss-blocked">—</span></div>
                 <div class="ss-row"><span class="ss-key">dob:</span><span class="ss-blocked">—</span></div>
-                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">impossible</span></div>
+                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">not in payload; network visibility separate</span></div>
               </div>
               <div class="ss-col user-col">
                 <div class="ss-col-title">🟢 You see (Wallet)</div>
@@ -2229,7 +2229,7 @@
           <div class="uc-panel" id="social-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
             <div class="uc-panel-title">Generate Pseudonymous Login Proof</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">AskMI generates a pairwise-pseudonymous proof: The app only learns "User is ≥18" and receives a unique ID that is not linkable to other services.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">AskMI generates a pairwise-pseudonymous proof: The app only learns "User is ≥18" and receives a service-specific identifier; correlation through other attributes or network metadata remains possible.</p>
             <button class="btn btn-success" id="uc-social-prove-btn" onclick="ucRunSocialProof()">🔐 Generate Pseudonym Login</button>
             <div class="proof-box pending" id="uc-social-proof-box">— Waiting for confirmation —</div>
           </div>
@@ -3430,7 +3430,7 @@
             '🔍 Verifier identity check (did:askmi:flirtradar)',
             '📋 Matching policy rule: "social_login" → FlirtRadar.app',
             '📊 Claims requested: pseudonym, age_range, is_human (synthetic metadata)',
-            '🛡️ Data minimization: PASS — site-specific pseudonym, no linkability',
+            '🛡️ Minimisation illustration — site-specific pseudonym; other correlators remain',
             '✅ Pseudonymous claims only → ALLOW (auto-approve)',
           ],
         },
@@ -3865,7 +3865,7 @@
       hl('p-shred', 'orange');
 
       addAudit('credential_issued', { categories: ['age_predicate', 'email_status', 'jurisdiction'] }, 'blue');
-      addAudit('crypto_shred', { shredProof: STATE.ephemeralKeyId, categories: ['raw_personal_data'] }, 'orange');
+      addAudit('cleanup_illustrated', { shredProof: STATE.ephemeralKeyId, categories: ['raw_personal_data'] }, 'orange');
 
       // Show issuance costs
       renderCosts('issuance');
@@ -4244,7 +4244,7 @@
       await delay(800);
       setFlow('shred'); setStatus('Session cleanup illustrated — simulation');
 
-      addAudit('session_key_shredded', { categories: ['ephemeral_session_material'] }, 'orange');
+      addAudit('session_cleanup_illustrated', { categories: ['ephemeral_session_material'] }, 'orange');
 
       // Update costs
       renderCosts('verification');
@@ -4792,7 +4792,7 @@
         '─────────────────────────────────\n' +
         '✗ name:           [not in predicate]\n' +
         '✗ dob:            [not in predicate]\n' +
-        '✗ ip_address:     [structurally impossible]';
+        '✗ ip_address:     [not in payload; network visibility separate]';
       btn.textContent = 'Proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
