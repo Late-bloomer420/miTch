@@ -30,6 +30,10 @@ The public EC implementation is a multi-repository organization, not one monolit
 
 ## Authority and evidence
 
+### Observable trust outcomes — additive planning, 2026-10-14
+
+The [assurance and role contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) defines TR-1 understandable promises (#175), TR-2 one bounded real transaction (#170/#171), TR-3 authenticated agent authority (#177), TR-4 role/provider dependencies and exit (#176/#97), and TR-5 operating evidence (#172/#173 and existing independent/release gates). These milestones refine the existing waves; they are not completed controls, new calendar commitments or replacements for G0/G1. #178 owns this documentation intake. The first code slice remains #170 plus relevant #141 baseline reconciliation.
+
 | Surface | Authority |
 |---|---|
 | [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md) | Official source/version lock and AskMI role boundary |
