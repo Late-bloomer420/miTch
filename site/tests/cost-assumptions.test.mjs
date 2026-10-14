@@ -88,3 +88,34 @@ test('annual TCO excludes missing storage/risk from claims of total savings', ()
   assert(!/\d+%/.test(elements.get('tco-savings').textContent));
   assert(!/€\s*0/.test(elements.get('tco-savings').textContent));
 });
+
+test('hospital and deletion comparison do not promise universal erasure', () => {
+  for (const claim of ['Data cryptographically deleted', 'permanently unreadable',
+    'Crypto-Shredding = Löschbeweis', '>Nirgends</div>', '>Unmöglich</div>',
+    'All data forgotten']) assert(!html.includes(claim), claim);
+});
+
+test('interactive break-glass and breach descriptions retain deployment uncertainty', async () => {
+  const elements = new Map();
+  const context = { delay: async () => {}, document: { getElementById(id) {
+    if (!elements.has(id)) elements.set(id, { textContent: '', innerHTML: '', style: {} });
+    return elements.get(id);
+  } } };
+  vm.createContext(context);
+  const begin = html.indexOf('    async function ucRunBreakGlass()');
+  const finish = html.indexOf('    function ucFlagVendor', begin);
+  assert(begin >= 0 && finish > begin);
+  vm.runInContext(html.slice(begin, finish), context);
+  await vm.runInContext('ucRunBreakGlass()', context);
+  const log = [...elements.values()].map(e => e.innerHTML).join(' ');
+  assert(log.includes('depend on deployment and authorization'));
+  assert(!log.includes('permanent in the audit trail'));
+  const from = html.indexOf('    const AskMIBreachEvents =');
+  const to = html.indexOf('    async function playBreachAnimation()', from);
+  assert(from >= 0 && to > from);
+  vm.runInContext(html.slice(from, to), context);
+  const events = vm.runInContext('AskMIBreachEvents.map(e => e.desc).join(" ")', context);
+  assert(events.includes('unbekannt'));
+  for (const claim of ['Kosten: € 0', 'Keine PII gespeichert', 'Keine Meldepflicht',
+    'Kein Bußgeld-Risiko', 'Kein Reputationsschaden']) assert(!events.includes(claim), claim);
+});

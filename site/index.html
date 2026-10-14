@@ -2059,7 +2059,7 @@
           <div class="uc-panel" id="hospital-p2">
             <div class="uc-label-chip">③ Consent &amp; Ephemeral Proof</div>
             <div class="uc-panel-title">Release + Session Key Generation</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">After release, an ephemeral session key is generated. The data is encrypted with this key — at the end of the session, the key is automatically deleted (crypto-shredding).</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">This scenario illustrates selected disclosure and ephemeral cleanup. It does not generate or erase real hospital session keys; actual cleanup and recipient retention need separate evidence.</p>
             <div class="btn-row">
               <button class="btn btn-success" id="uc-hospital-prove-btn" onclick="ucRunHospitalProof()">✓ Release Hospital Admission</button>
               <button class="btn btn-danger" onclick="ucDenyHospital()" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">✗ Deny</button>
@@ -2070,10 +2070,10 @@
           <!-- Step 4: Post-Session -->
           <div class="uc-panel" id="hospital-p3">
             <div class="uc-label-chip">④ Post-Session</div>
-            <div class="uc-panel-title">Data cryptographically deleted — Consent receipt issued</div>
+            <div class="uc-panel-title">Cleanup illustrated — Example consent receipt</div>
             <div class="allow-banner">
-              <div class="ab-title">✓ Session ended — Crypto-shredding active</div>
-              <div class="ab-body">The ephemeral session key has been deleted. All encrypted data is permanently unreadable — even for AskMI and the hospital after the session end.</div>
+              <div class="ab-title">✓ Simulated session ended — Cleanup illustrated</div>
+              <div class="ab-body">This display illustrates session cleanup. It does not prove erasure of runtime copies or data retained by a hospital; the receipt records only the illustrated event.</div>
             </div>
             <div class="uc-sub-hdr">Consent Receipt (stored in your wallet)</div>
             <div class="receipt-box">
@@ -2595,23 +2595,23 @@
               
               <div class="a17-row"><span class="dim">PII gespeichert in</span></div>
               <div class="a17-row">8-14 DB-Tabellen, Backups, Logs, CDN-Cache</div>
-              <div class="a17-row" style="color:var(--green)">Nirgends</div>
+              <div class="a17-row" style="color:var(--green)">Wallet storage and recipient data flows; deployment-dependent</div>
               
               <div class="a17-row"><span class="dim">Löschaufwand pro Anfrage</span></div>
               <div class="a17-row">~€ 15 (manuell/semi-automatisch)</div>
-              <div class="a17-row" style="color:var(--green)">€ 0 (nichts da)</div>
+              <div class="a17-row" style="color:var(--green)">Unknown — depends on retained data and operations</div>
               
               <div class="a17-row"><span class="dim">Zeitaufwand</span></div>
               <div class="a17-row">3-30 Tage</div>
-              <div class="a17-row" style="color:var(--green)">0 Sekunden</div>
+              <div class="a17-row" style="color:var(--green)">Depends on storage, backups and recipient policy</div>
               
               <div class="a17-row"><span class="dim">Risiko unvollst. Löschung</span></div>
               <div class="a17-row" style="color:var(--red)">Hoch (Backup-Fragmente, Logs)</div>
-              <div class="a17-row" style="color:var(--green)">Unmöglich</div>
+              <div class="a17-row" style="color:var(--green)">Residual copy/retention risk requires verification</div>
               
               <div class="a17-row" style="border-bottom:none"><span class="dim">Audit-Nachweis</span></div>
               <div class="a17-row" style="border-bottom:none">Manueller Report</div>
-              <div class="a17-row" style="border-bottom:none;color:var(--green)">Automatisch (Crypto-Shredding = Löschbeweis)</div>
+              <div class="a17-row" style="border-bottom:none;color:var(--green)">Cleanup record; no proof that every copy was erased</div>
             </div>
           </div>
         </div>
@@ -2675,7 +2675,7 @@
               <span class="shared-pill pill-red">✗ Address not shared</span>
               <span class="shared-pill pill-red">✗ National ID not shared</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Cleanup illustrated · Example receipt</div>
           </div>
           <div class="review-time">09:14</div>
         </div>
@@ -2691,7 +2691,7 @@
               <span class="shared-pill pill-red">✗ Insurance ID not shared</span>
               <span class="shared-pill pill-red">✗ Genetic data not shared</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Cleanup illustrated · Example receipt</div>
           </div>
           <div class="review-time">12:31</div>
         </div>
@@ -4914,14 +4914,14 @@
         { ts: now, act: 'DUAL_APPROVAL_REQUIRED',     who: 'chef-arzt@ukh-ibk.at' },
         { ts: now, act: 'APPROVAL_GRANTED',           who: 'chef-arzt@ukh-ibk.at [biometric]' },
         { ts: now, act: 'ACCESS_SCOPED',              who: 'EHDS-Scope: emergency_treatment_only' },
-        { ts: now, act: 'AUDIT_IMMUTABLE_WRITE',      who: 'audit-chain-node-7 · hash:3f9a…' },
+        { ts: now, act: 'AUDIT_WRITE_ILLUSTRATED',      who: 'audit-chain-node-7 · hash:3f9a…' },
       ];
       for (const e of entries) {
         await delay(280);
         log.innerHTML += '<div><span class="bgl-ts">' + e.ts.slice(11, 19) + '</span>  <span class="bgl-act">' + e.act + '</span>  <span class="bgl-who">← ' + e.who + '</span></div>';
       }
       await delay(200);
-      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ This override is permanent in the audit trail — also visible to supervisory authorities.</div>';
+      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ Synthetic audit entry shown. Durable storage and supervisory access depend on deployment and authorization.</div>';
       btn.textContent = 'Override logged ✓';
     }
 
@@ -4954,7 +4954,7 @@
         <div>
           <div style="font-size:0.88rem;font-weight:600">${title}</div>
           <div class="review-meta">${metaHtml}</div>
-          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · Data forgotten (Proof of Possession shredded)</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Holder-key cleanup illustrated</div>
         </div>
         <div class="review-time">${time}</div>
       `;
@@ -5043,13 +5043,13 @@
     ];
 
     const AskMIBreachEvents = [
-      { t: "🤷", desc: "\"Was soll geleakt werden?\"", d: 200, bold: true },
-      { t: "📭", desc: "Keine PII gespeichert", d: 700 },
-      { t: "📭", desc: "Keine Datenbank mit User-Daten", d: 1200 },
-      { t: "📭", desc: "Keine Meldepflicht (keine Betroffenen)", d: 1700 },
-      { t: "📭", desc: "Kein Bußgeld-Risiko", d: 2200 },
-      { t: "📭", desc: "Kein Reputationsschaden", d: 2700 },
-      { t: "✅", desc: "Kosten: € 0", d: 3200, bold: true, g: true }
+      { t: "🤷", desc: "Minimierung reduziert die Angriffsfläche; tatsächliche Exposition prüfen", d: 200, bold: true },
+      { t: "📭", desc: "Datenflüsse und gespeicherte Attribute im Deployment prüfen", d: 700 },
+      { t: "📭", desc: "Lokale Credentials und Empfänger-Speicherung getrennt betrachten", d: 1200 },
+      { t: "📭", desc: "Betroffene und Meldepflichten anhand des konkreten Vorfalls prüfen", d: 1700 },
+      { t: "📭", desc: "Rechtliche Folgen sind nicht durch die Demo ausgeschlossen", d: 2200 },
+      { t: "📭", desc: "Reputationsfolgen hängen vom konkreten Vorfall ab", d: 2700 },
+      { t: "✅", desc: "Kosten: unbekannt — kein Nullrisiko-Nachweis", d: 3200, bold: true, g: true }
     ];
 
     async function playBreachAnimation() {
