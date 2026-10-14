@@ -2640,7 +2640,7 @@
         </div>
         <div id="tc-dpia-tab" class="tab-content">
           <div style="text-align:center;padding:1rem">
-            <button class="btn btn-primary" onclick="showDpia()">📋 Open Full DPIA & Compliance Framework</button>
+            <button class="btn btn-primary" onclick="showDpia()">📋 Open privacy assessment draft</button>
             <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment — GDPR Article 35</p>
           </div>
         </div>
@@ -3382,10 +3382,10 @@
           // EHDS has break-glass override
           hasBreakGlass: true,
           breakGlassChecks: [
-            '🔓 Break-Glass activated — emergency research override',
-            '📋 Logging elevated access to immutable audit chain',
-            '⏰ Auto-expiry set: 24 hours',
-            '⚠️ OVERRIDE: ALLOW with mandatory audit trail',
+            '🔓 Synthetic override branch — not a legal authorization for research',
+            '📋 Illustrating elevated-access audit entry; persistence is deployment-dependent',
+            '⏰ Illustrated expiry target: 24 hours; enforcement not established here',
+            '⚠️ Illustrated ALLOW; actual approval and audit durability require verification',
           ],
         },
         costs: {
@@ -4217,13 +4217,13 @@
       document.getElementById('network-ph').style.display = 'none';
       document.getElementById('network-result').innerHTML = `
 <div class="fi">
-  <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
+  <span class="tag tag-red">🔍 NETWORK OBSERVER ILLUSTRATION</span>
   <div class="rb" style="margin-top:0.5rem">
-    <div><span class="k">payload:</span> <span class="hv">4096 bytes padded encrypted blob</span></div>
-    <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B</span></div>
-    <div><span class="k">can_identify_user:</span> <span class="vf">false</span> (pairwise DID)</div>
-    <div><span class="k">can_infer_claims:</span> <span class="vf">false</span> (fixed padding)</div>
-    <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter applied</span></div>
+    <div><span class="k">payload:</span> <span class="hv">Illustrated padding target: 4096 bytes; not an actual captured packet</span></div>
+    <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B target (not measured)</span></div>
+    <div><span class="k">can_identify_user:</span> <span class="vs">not assessed</span> (pairwise DID limits one correlator)</div>
+    <div><span class="k">can_infer_claims:</span> <span class="vs">not assessed</span> (padding does not exclude every inference)</div>
+    <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter illustrated</span></div>
   </div>
 </div>`;
 
@@ -4854,7 +4854,7 @@
         '─────────────────────────────────\n' +
         '✓ ephemeral_key:     ' + keyId + '\n' +
         '✓ session_id:        ' + sesId + '\n' +
-        '✓ auto_shred_at:     session_end';
+        '✓ cleanup_target:    simulated_session_end (not measured)';
       btn.textContent = 'Release granted ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
