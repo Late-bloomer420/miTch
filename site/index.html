@@ -2531,7 +2531,7 @@
                 <div class="tco-row"><span>Data Breach Reserve (Pro-rata)</span><span id="tco-trad-breach">€ 89.000</span></div>
                 <div class="tco-row"><span>Löschpflicht Art. 17 (2%)</span><span id="tco-trad-del">€ 30.000</span></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
-                  <span>Total/Year</span>
+                  <span>Known-cost subtotal/year</span>
                   <span id="tco-trad-total" style="color:var(--red);font-family:var(--mono)">€ 329.000</span>
                 </div>
               </div>
@@ -2541,18 +2541,18 @@
                 <div class="tco-row"><span>eID Authentication</span><span id="tco-AskMI-auth">€ 15.000</span></div>
                 <div class="tco-row"><span>Credential Signing (HSM)</span><span id="tco-AskMI-sign">€ 1.000</span></div>
                 <div class="tco-row"><span>StatusList CDN</span><span id="tco-AskMI-cdn">€ 30</span></div>
-                <div class="tco-row"><span>PII Database</span><span style="color:var(--green)">€ 0</span></div>
-                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span style="color:var(--green)">€ 0</span></div>
+                <div class="tco-row"><span>PII Database</span><span class="dim">Unknown</span></div>
+                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span class="dim">Unknown</span></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
-                  <span>Total/Year</span>
+                  <span>Known-cost subtotal/year</span>
                   <span id="tco-AskMI-total" style="color:var(--green);font-family:var(--mono)">€ 16.030</span>
                 </div>
               </div>
             </div>
             
             <div style="text-align:center;margin-top:2rem">
-              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">JÄHRLICHE ERSPARNIS</div>
-              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">€ 312.970 <span style="font-size:1.2rem;opacity:0.8">(95%)</span></div>
+              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">TOTAL AND ANNUAL SAVINGS</div>
+              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">Unknown — deployment storage and risk costs are not estimated.</div>
             </div>
             
             <div style="margin-top:2rem;font-size:0.7rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
@@ -3254,7 +3254,7 @@
               { label: 'Nullifier generation (on-device)', avg: 0, source: 'WebCrypto — free' },
               { label: 'Budget signal (quantized)', avg: 0, source: 'Local computation — free' },
               { label: 'StatusList CDN check', avg: 0.0003, source: 'CloudFront bitstring' },
-              { label: 'PII stored', avg: 0, source: 'Zero — crypto-shredded' },
+              { label: 'PII stored', avg: null, source: 'Unknown deployment cost; retention is not established' },
             ],
           },
           scaleNote: 'Bei 10M Impressions/Monat',
@@ -3299,7 +3299,7 @@
               { label: 'SD-JWT boolean proof', avg: 0, source: 'On-device selective disclosure' },
               { label: 'Semester validity check', avg: 0.0003, source: 'StatusList CDN' },
               { label: 'Student ID card needed', avg: 0, source: 'Not needed — wallet proof' },
-              { label: 'PII stored by IVB', avg: 0, source: 'Zero — only boolean received' },
+              { label: 'PII stored by IVB', avg: null, source: 'Unknown deployment cost; recipient retention requires review' },
             ],
           },
           scaleNote: 'Bei 50.000 Studenten/Jahr in Innsbruck',
@@ -3350,7 +3350,7 @@
               { label: 'Insurance status proof', avg: 0.01, source: 'Issuer-signed, no API call' },
               { label: 'Consent + audit trail', avg: 0, source: 'Built into wallet flow' },
               { label: 'ELGA bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
-              { label: 'Breach risk reduction', avg: 0.02, source: 'Minimal PII retained post-admission' },
+              { label: 'Breach risk reduction', avg: null, source: 'Unknown deployment exposure; no quantified reduction established' },
             ],
           },
           scaleNote: 'Bei 500.000 Aufnahmen/Jahr in Tirol',
@@ -3405,7 +3405,7 @@
               { label: 'Pseudonymized data proof', avg: 0.05, source: 'ZK proof generation (estimated)' },
               { label: 'Consent verification', avg: 0, source: 'On-chain consent record' },
               { label: 'Automatic audit trail', avg: 0.01, source: 'Transparency log entry' },
-              { label: 'Re-identification risk', avg: 0, source: 'Crypto-shredding prevents re-ID' },
+              { label: 'Re-identification risk', avg: null, source: 'Unknown residual risk; cleanup does not prevent every re-identification path' },
             ],
           },
           scaleNote: 'Bei 100.000 Forschungszugriffen/Jahr EU-weit',
@@ -3451,7 +3451,7 @@
               { label: 'Pseudonym generation (on-device)', avg: 0, source: 'HKDF derivation — free' },
               { label: 'Humanity proof', avg: 0, source: 'Local WebAuthn — free' },
               { label: 'Profile data shared', avg: 0, source: 'Zero — pseudonym only' },
-              { label: 'Cross-site linkability', avg: 0, source: 'Impossible — pairwise pseudonyms' },
+              { label: 'Cross-site linkability', avg: null, source: 'Unquantified correlation exposure; pairwise identifiers cover one correlator' },
             ],
           },
           scaleNote: 'Bei 1M Logins/Monat',
@@ -4404,7 +4404,8 @@
       document.getElementById('cost-result').style.display = 'block';
 
       const tradTotal = costs.traditional.items.reduce((s, c) => s + c.avg, 0);
-      const AskMITotal = costs.AskMI.items.reduce((s, c) => s + c.avg, 0);
+      const hasUnknownCosts = costs.AskMI.items.some(c => !Number.isFinite(c.avg));
+      const AskMITotal = costs.AskMI.items.reduce((s, c) => Number.isFinite(c.avg) ? s + c.avg : s, 0);
 
       document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(c => `
         <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
@@ -4415,19 +4416,19 @@
       document.getElementById('cost-AskMI').innerHTML = costs.AskMI.items.map(c => `
         <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
           <span>${c.label}</span>
-          <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-            ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+          <span style="font-family:var(--mono);color:${!Number.isFinite(c.avg) ? 'var(--text-dim)' : c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+            ${!Number.isFinite(c.avg) ? 'Unknown' : c.avg === 0 ? '€0.000 (assumed)' : '€' + c.avg.toFixed(3)}
           </span>
         </li>`).join('');
 
       document.getElementById('cost-trad-total').innerHTML =
         `<span class="dim">${costs.traditional.label}</span> <span style="color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${costs.AskMI.label}</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMITotal.toFixed(3)}</span>`;
+        `<span class="dim">${costs.AskMI.label} known-cost subtotal:</span> <span style="color:var(--text-dim);font-family:var(--mono)">€${AskMITotal.toFixed(3)}${hasUnknownCosts ? ' + unknown costs' : ''}</span>`;
 
       const savingsPct = tradTotal > 0 ? ((1 - AskMITotal / tradTotal) * 100).toFixed(0) : '0';
 
-      document.getElementById('cost-savings').innerHTML = `
+      document.getElementById('cost-savings').innerHTML = hasUnknownCosts ? `<div class="dim"><strong>Total cost and savings: unknown</strong>. Known cost assumptions: €${AskMITotal.toFixed(3)}. Unquantified deployment exposure is excluded from this partial subtotal; no savings percentage is established.</div>` : `
         <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:1rem;">
           <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO VORGANG</div>
           <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
@@ -4996,8 +4997,6 @@
       const AskMICdn = (users * 1) * 0.0003; // assume 1 verification per user/year for simplicity
       const AskMITotal = AskMIAuth + AskMISign + AskMICdn;
 
-      const savings = tradTotal - AskMITotal;
-      const savingsPct = ((savings / tradTotal) * 100).toFixed(0);
 
       // DOM Updates
       const upd = (id, val, isZero = false) => {
@@ -5020,7 +5019,7 @@
 
       const savEl = document.getElementById('tco-savings');
       if(savEl) {
-        savEl.innerHTML = '€ ' + fmt.format(Math.round(savings)) + ' <span style="font-size:1.2rem;opacity:0.8">(' + savingsPct + '%)</span>';
+        savEl.textContent = 'Unknown — deployment storage and risk costs are excluded from the known-cost subtotal.';
       }
     }
 
