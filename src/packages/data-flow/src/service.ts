@@ -35,8 +35,18 @@ export class DataFlowService {
     const transactions: DataFlowTransaction[] = [];
 
     for (const [decisionId, group] of groups) {
-      // Sort by timestamp ascending
-      group.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      // Sort by timestamp ascending using Schwartzian transform for performance
+      const sortedGroup = group
+        .map(entry => {
+          const time = Date.parse(entry.timestamp);
+          return { entry, time: Number.isNaN(time) ? 0 : time };
+        })
+        .sort((a, b) => a.time - b.time)
+        .map(item => item.entry);
+
+      // Re-assign the sorted entries to the group array (to maintain the variable reference)
+      group.length = 0;
+      group.push(...sortedGroup);
 
       // Find VP_GENERATED event for claim data
       const vpEvent = group.find(e => e.action === 'VP_GENERATED');
@@ -161,9 +171,15 @@ export class DataFlowService {
       });
     }
 
-    // Sort newest first
-    transactions.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+    // Sort newest first using Schwartzian transform for performance
+    const sortedTransactions = transactions
+      .map(tx => {
+        const time = Date.parse(tx.startedAt);
+        return { tx, time: Number.isNaN(time) ? 0 : time };
+      })
+      .sort((a, b) => b.time - a.time)
+      .map(item => item.tx);
 
-    return transactions;
+    return sortedTransactions;
   }
 }
