@@ -90,7 +90,7 @@ Independent review and market demand remain separate gates. Interviews can test 
 
 ## Next implementation slice
 
-Publication prerequisite: #174's corrections must be accepted into the target baseline under its applicable checks/review and branch rules. Their presence in a stacked branch does not establish a master merge. The runtime sequence after that publication is:
+Publication prerequisite satisfied: #174 was merged into `master` on 2026-10-15 as `624cf9af919fe58a7cba34a05b316b17e49c7e0f`, and that baseline is included in this branch. This completed documentation/demo correction does not implement the open runtime controls. The remaining runtime sequence is:
 
 1. Reconcile the relevant #141 security work against current master; preserve later issuer/digest/runner fixes. First code slice is #170's original-request binding and explicit result semantics, with focused HTTP/session regressions. Do not merge stale #141 wholesale.
 2. Integrate #171 where the selected profile requires single-use; connect accurate outcomes to #175's user-facing assurances.
