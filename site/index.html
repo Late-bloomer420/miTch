@@ -1643,7 +1643,7 @@
     <strong>Synthetic reference demo — not production or certification evidence.</strong>
     UI proofs and policy scenarios illustrate intended behavior. The real SD-JWT path currently shares numeric age;
     request binding, eligibility/scope, single-use and audit/evidence findings remain open.
-    ZK derivation, end-to-end unlinkability and all-runtime erasure are not established.
+    The goals remain prevention of fingerprinting and cross-service tracking, control of every disclosure, and a complete, inspectable transaction history. ZK derivation, end-to-end unlinkability and all-runtime erasure are not established; these gaps do not retire the goals.
     <a href="https://github.com/Late-bloomer420/miTch/blob/master/docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md" style="color:#93c5fd">Current GitHub evidence and open findings</a>.
   </aside>
 
@@ -1844,7 +1844,7 @@
             <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
-              <div class="ib-body">Age ≥ 18, Region EU and a timestamp can support demographic inference. This illustration quantizes the budget signal into 1,920 slots, limiting that field’s precision. Credential reuse, IP addresses, timing and browser metadata can still enable correlation or fingerprinting; combined inference has not been assessed.</div>
+              <div class="ib-body"><strong>Goal:</strong> prevent continuous fingerprinting and cross-service tracking. <strong>Current evidence:</strong> Age ≥ 18, Region EU and a timestamp can support demographic inference. This illustration quantizes the budget signal into 1,920 slots, limiting that field’s precision. Credential reuse, IP addresses, timing and browser metadata can still enable correlation or fingerprinting; combined inference has not been assessed. <strong>Remaining work:</strong> test combined correlation paths against a defined adversary and record residual risk.</div>
             </div>
             <div class="uc-sub-hdr">Your Ad-Preferences (remain local)</div>
             <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
@@ -1957,7 +1957,7 @@
             <div class="blocked-row"><span class="br-field">Field of Study</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">This illustrated payload contains student status and an expiry date, without a name. Credential reuse and transport metadata may still support identification or profiling; combined inference has not been assessed.</div>
+              <div class="ib-body">This illustrated payload contains student status and an expiry date, without a name. Credential reuse and transport metadata may still support identification or profiling; combined inference has not been assessed. <strong>Remaining work:</strong> test combined correlation paths against a defined adversary and record residual risk.</div>
             </div>
           </div>
 
@@ -1965,7 +1965,7 @@
           <div class="uc-panel" id="student-p2">
             <div class="uc-label-chip">③ Ephemeral Credential</div>
             <div class="uc-panel-title">Short-term credential is issued</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The credential is valid only for this session and expires automatically at midnight. The university confirms the status — IVB never learns which university.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem"><strong>Goal:</strong> prove current student status without revealing the university, using a short-lived presentation. <strong>Current evidence:</strong> this is a synthetic scenario; a real SD-JWT preserves its signed issuer identifier, which may identify the university even when its name is not disclosed. <strong>Remaining work:</strong> validate an issuer/trust profile that meets the privacy goal and enforce session/expiry limits (#97/#170).</p>
             <div class="btn-row">
               <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Confirm Student Status</button>
             </div>
@@ -2208,11 +2208,11 @@
           <!-- Step 2: Risk Analysis -->
           <div class="uc-panel" id="social-p1">
             <div class="uc-label-chip">② AskMI Analyse</div>
-            <div class="uc-panel-title">Risk Analysis: 🔴 High — structural blockage active</div>
+            <div class="uc-panel-title">Risk Analysis: 🔴 High — intended blocking illustrated</div>
             <div class="uc-sub-hdr">What the app gets (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">unique, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Excluded from this illustrated payload (Policy Engine blocks)</div>
+            <div class="uc-sub-hdr">Excluded from this illustrated payload; active-route enforcement remains open</div>
             <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">email</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
@@ -2221,7 +2221,7 @@
             <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="allow-banner" style="border-left-color:var(--red)">
               <div class="ab-title" style="color:var(--red)">⚠ Inference-Risiko: 🔴 High</div>
-              <div class="ab-body">friends_list enables social graph analysis. location_history allows movement profiles. Both are structurally blocked — the data never leaves the wallet, not even encrypted.</div>
+              <div class="ab-body"><strong>Goal:</strong> unapproved fields never leave the wallet. friends_list enables social graph analysis; location_history allows movement profiles. <strong>Current evidence:</strong> both fields are omitted in this illustration. <strong>Remaining work:</strong> enforce the original approved scope on the real route and test excess disclosure (#170).</div>
             </div>
           </div>
 
@@ -2653,7 +2653,7 @@
     <div class="vsec">
       <div class="vsec-label">Where We're Going</div>
       <h2 class="vsec-title">Your data life, reviewed daily.<br>Like a bank statement — for your privacy.</h2>
-      <p class="vsec-body">Planned daily review: show requested, approved and disclosed data, plus observed cleanup outcomes and their limits. The entries below are synthetic examples. Complete coverage of actual application outputs and durable history remain open integration work (#172).</p>
+      <p class="vsec-body"><strong>Goal:</strong> every wallet transaction is recorded in a complete, user-inspectable history: what was requested, approved, shared, withheld and cleaned up. <strong>Current evidence:</strong> the entries below are synthetic examples; local audit components exist. <strong>Remaining work:</strong> connect every active transaction path, verify coverage and durability, and distinguish attempted, completed and unknown cleanup outcomes (#172/#175).</p>
 
       <div class="review-day-header">
         <span>📅 Monday, 9 March 2026 — 4 interactions</span>
@@ -2809,7 +2809,7 @@
           <div class="roadmap-layer">Layer 1 — Components implemented</div>
           <div class="roadmap-icon">🔐</div>
           <div class="roadmap-title">The Forgetting Layer</div>
-          <div class="roadmap-desc">Policy and selection components support scoped disclosure in their tested configurations. Active-route request binding and extra-claim enforcement remain open (#170); cleanup has explicit ownership limits.</div>
+          <div class="roadmap-desc"><strong>Goal:</strong> control exactly what leaves your wallet at every transaction. <strong>Current evidence:</strong> policy and selection components support scoped disclosure in tested configurations. <strong>Remaining work:</strong> enforce original-request binding and excess-claim rejection on the active route (#170); verify cleanup within its ownership boundary.</div>
           <ul class="roadmap-features">
             <li>Selective disclosure — share only what's needed</li>
             <li>Controlled-key cleanup — integration and runtime-copy limits apply</li>
@@ -4825,7 +4825,7 @@
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
-      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
+      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name omitted; issuer identity may remain visible']);
       ucNext('student');
     }
 
@@ -4886,17 +4886,18 @@
         '✓ pseudonymous_id:   ' + pwDid + '\n' +
         '✓ pairwise_did:      did:peer:0z' + sha256Sim('social' + Date.now()).slice(0, 12) + '…\n' +
         '─────────────────────────────────\n' +
-        '✗ display_name:      [BLOCKED by policy]\n' +
-        '✗ email:             [BLOCKED by policy]\n' +
-        '✗ profile_photo:     [BLOCKED — biometric]\n' +
-        '✗ friends_list:      [BLOCKED — social graph]\n' +
-        '✗ location_history:  [BLOCKED — tracking]\n' +
-        '✗ device_id:         [BLOCKED — fingerprint]';
+        'Illustrated target only — active-route scope enforcement remains open (#170).\n' +
+        '✗ display_name:      [OMITTED in illustration]\n' +
+        '✗ email:             [OMITTED in illustration]\n' +
+        '✗ profile_photo:     [OMITTED in illustration — biometric]\n' +
+        '✗ friends_list:      [OMITTED in illustration — social graph]\n' +
+        '✗ location_history:  [OMITTED in illustration — tracking]\n' +
+        '✗ device_id:         [OMITTED in illustration — fingerprint]';
       btn.textContent = 'Login proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
-      addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Overreach detected: location history BLOCKED']);
+      addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Illustrated target: location history withheld']);
       ucNext('social');
     }
 

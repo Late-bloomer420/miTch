@@ -5,6 +5,19 @@
 
 This document records the PCC/panel and platform-governance learnings as concrete work for the existing profile. It supplements the [Claim Map](../05-business/marketing/06-claim-evidence-map.md), [ADOPT product decision](../tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md), [MCP architecture](../mcp-server-architecture.md) and [dated findings](REPO_EVIDENCE_STATUS_2026-10-14.md). It does not override component evidence, add a compliance score or replace #142/#143 gates.
 
+## Goals retained; implementation gaps remain visible
+
+**Product clarification — 2026-10-15:** correcting a readiness claim does not change the goal. Use **goal → current scoped evidence → remaining work and acceptance**. Retiring or narrowing a goal requires an explicit product decision, not a wording cleanup or an unmet test.
+
+| Retained goal | Current evidence / limit | Work needed to demonstrate progress |
+|---|---|---|
+| Prevent fingerprinting and cross-service tracking | Pairwise identifiers and metadata controls have component evidence; one quantized field does not exclude issuer/credential, IP, timing or browser correlation | #175 assurance/threat-model mapping, existing metadata-budget controls and #173 reproducible evidence: identify observers and combined correlators; define measurable adversarial scenarios, test them and record residual risk. Unproven protection remains an open goal |
+| Complete, user-inspectable log of every wallet transaction | Local audit/history components exist; a synthetic timeline does not establish coverage of every active route or durable storage | #172/#175: enumerate entry points and expected events; reconcile requested/approved/disclosed/withheld outcomes, denials, errors and retries; test missing writes, restart/recovery and supported storage durability. Distinguish attempted/completed/unknown cleanup; protect detailed local history from external disclosure |
+| Control exactly what leaves the wallet at every transaction | Policy/selection components are present; #170 reproduces an active-route excess-claim gap | #170 binds the original approved request and enforces output scope with negative tests; #171 governs the applicable single-use lifecycle |
+| Reveal student status without revealing the university | Omitting a university-name disclosure is insufficient when the preserved signed issuer identifier identifies it | #97 must evaluate the issuer/trust profile and remaining metadata; preserve this scenario goal while marking issuer privacy unproven |
+
+These are acceptance directions for existing work, not newly delivered protections. The threat model makes evaluation explicit; it must not silently lower the product ambition. Separate goals from guarantees in public copy, roadmap entries, receipts and review decisions.
+
 ## Understandable assurances and their actual boundaries
 
 The following are proposed user-facing assurances. They may be presented as enforced only after the stated path/profile checks pass. Until then show their scope and open status.

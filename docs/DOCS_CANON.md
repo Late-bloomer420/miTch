@@ -15,6 +15,8 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
 | Dated upstream version registry | [eudi/EUDI_SOURCE_BASELINE.md](eudi/EUDI_SOURCE_BASELINE.md); not implementation/interoperability evidence |
 
+**Preserve goals when correcting status.** Missing implementation or evidence does not retire or weaken an agreed product goal. Present the goal, the scoped current evidence, and the remaining work/acceptance criteria separately. Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain goals until explicitly changed by a product decision. A threat model defines how progress is tested; it must not silently narrow the goal. Preserve dated evidence and link unresolved work.
+
 A spec is normative/planned behavior, not proof of implementation. An accepted design is not completed code.
 Existing component evidence remains authoritative for its stated scope. A newer counterexample qualifies only an overlapping claim/path/profile; it does not invalidate unrelated passed tests or completed work.
 Keep original QA run dates/SHAs and outcomes immutable. Attach later findings in a separate record or navigation entry.

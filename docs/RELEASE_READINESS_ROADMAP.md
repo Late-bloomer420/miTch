@@ -298,3 +298,8 @@ Production becomes schedulable only after successful pilot exit plus durable gov
 
 Do not move G0/G1 or promote future sprints from this documentation-only reconciliation.
 Numerical `age` is the current accepted Connect profile; a no-raw-age claim needs an explicit profile decision under #97.
+
+
+### Goal preservation — 2026-10-15
+
+Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain product goals. Current limitations describe unfinished work, not a goal change. Track **goal → scoped evidence → remaining acceptance criteria** in [the trust contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md). #175 owns the assurance/correlation mapping; #172/#175 own full transaction-history coverage and actual outcomes; #170 owns active-route disclosure enforcement. Existing component results and dated records remain intact. No goal is retired and no implementation gate is closed by this clarification.

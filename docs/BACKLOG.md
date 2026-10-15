@@ -487,3 +487,8 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 - Unlinkability Vision: `memory/unlinkability-vision.md`
 - Security Patterns: `memory/miTch_security_patterns_memory.md`
 - EHDS Research: `memory/eudi-compliance-research.md`
+
+
+### Goal preservation — 2026-10-15
+
+Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain product goals. Current limitations describe unfinished work, not a goal change. Track **goal → scoped evidence → remaining acceptance criteria** in [the trust contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md). #175 owns the assurance/correlation mapping; #172/#175 own full transaction-history coverage and actual outcomes; #170 owns active-route disclosure enforcement. Existing component results and dated records remain intact. No goal is retired and no implementation gate is closed by this clarification.
