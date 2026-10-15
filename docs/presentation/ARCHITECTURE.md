@@ -41,7 +41,7 @@ flowchart TB
     style Verifier fill:#fff2e6,stroke:#e67300,stroke-width:2px
 ```
 
-**Kernprinzip:** Identitätsdaten verlassen das Gerät nicht. Der Verifier empfängt ausschließlich kryptografische Beweise.
+**Zielprinzip:** möglichst geringe Offenlegung. Aktuell erhält der reale SD-JWT-Verifier numerisches `age`; andere Referenzpfade geben freigegebene Attribute weiter. Ein universeller „nur Proofs/keine PII“-Nachweis liegt nicht vor.
 
 ---
 
@@ -83,7 +83,7 @@ sequenceDiagram
     end
 ```
 
-**Sicherheitseigenschaften:** AAD-Binding verhindert Replay-Angriffe. Pairwise DIDs verhindern Cross-Verifier-Korrelation. Crypto-Shredding eliminiert nach jeder Sitzung alle ephemeren Schlüssel.
+**Implementierungsgrenzen:** AAD bindet Ciphertext an Kontext, ersetzt aber keinen serverseitigen Nonce-Consume. DIDs mindern Kennungs-Korrelation, nicht alle Korrelatoren. Shredding kontrollierter Buffer beweist keine Löschung aller Runtime-Kopien. Siehe #170/#171/GAP-1.
 
 ---
 
@@ -150,7 +150,7 @@ flowchart LR
     style Wallet fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
 ```
 
-**Unlinkability:** Jeder Verifier sieht eine andere DID. Kein Verifier kann Transaktionen eines Nutzers verifier-übergreifend verknüpfen — auch bei Kollusion.
+**Begrenzte Unlinkability:** frische DIDs sind getestet; stabile Credential-/Holder-Inhalte, Netzwerk/Timing und Issuer-Kollusion bleiben gesonderte Grenzen. #171 schließt eine konkrete Wiederverwendungslücke, kein universelles Kollusionsmodell.
 
 ---
 

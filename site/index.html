@@ -11,15 +11,15 @@
   <title>AskMI — The Forgetting Layer | Interactive Demo</title>
   <!-- OpenGraph -->
   <meta property="og:title" content="AskMI — The Forgetting Layer">
-  <meta property="og:description" content="Privacy Middleware for National Identity Wallets. Interactive Demo.">
+  <meta property="og:description" content="Privacy Middleware — Reference Demo. Interactive Demo.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://late-bloomer420.github.io/AskMI/">
-  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' fill='%230a0e17'%3E%3Crect width='1200' height='630' rx='0'/%3E%3Ctext x='600' y='260' text-anchor='middle' font-family='system-ui' font-size='72' font-weight='800' fill='%236366f1'%3E🔒 AskMI%3C/text%3E%3Ctext x='600' y='340' text-anchor='middle' font-family='system-ui' font-size='36' fill='%238892a8'%3EThe Forgetting Layer%3C/text%3E%3Ctext x='600' y='420' text-anchor='middle' font-family='system-ui' font-size='22' fill='%236366f1'%3EPrivacy Middleware for National Identity Wallets%3C/text%3E%3C/svg%3E">
+  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' fill='%230a0e17'%3E%3Crect width='1200' height='630' rx='0'/%3E%3Ctext x='600' y='260' text-anchor='middle' font-family='system-ui' font-size='72' font-weight='800' fill='%236366f1'%3E🔒 AskMI%3C/text%3E%3Ctext x='600' y='340' text-anchor='middle' font-family='system-ui' font-size='36' fill='%238892a8'%3EThe Forgetting Layer%3C/text%3E%3Ctext x='600' y='420' text-anchor='middle' font-family='system-ui' font-size='22' fill='%236366f1'%3EPrivacy Middleware — Reference Demo%3C/text%3E%3C/svg%3E">
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AskMI — The Forgetting Layer">
-  <meta name="twitter:description" content="Privacy Middleware for National Identity Wallets. Interactive Demo.">
-  <meta name="twitter:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' fill='%230a0e17'%3E%3Crect width='1200' height='630' rx='0'/%3E%3Ctext x='600' y='260' text-anchor='middle' font-family='system-ui' font-size='72' font-weight='800' fill='%236366f1'%3E🔒 AskMI%3C/text%3E%3Ctext x='600' y='340' text-anchor='middle' font-family='system-ui' font-size='36' fill='%238892a8'%3EThe Forgetting Layer%3C/text%3E%3Ctext x='600' y='420' text-anchor='middle' font-family='system-ui' font-size='22' fill='%236366f1'%3EPrivacy Middleware for National Identity Wallets%3C/text%3E%3C/svg%3E">
+  <meta name="twitter:description" content="Privacy Middleware — Reference Demo. Interactive Demo.">
+  <meta name="twitter:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' fill='%230a0e17'%3E%3Crect width='1200' height='630' rx='0'/%3E%3Ctext x='600' y='260' text-anchor='middle' font-family='system-ui' font-size='72' font-weight='800' fill='%236366f1'%3E🔒 AskMI%3C/text%3E%3Ctext x='600' y='340' text-anchor='middle' font-family='system-ui' font-size='36' fill='%238892a8'%3EThe Forgetting Layer%3C/text%3E%3Ctext x='600' y='420' text-anchor='middle' font-family='system-ui' font-size='22' fill='%236366f1'%3EPrivacy Middleware — Reference Demo%3C/text%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #0a0e17;
@@ -1639,6 +1639,14 @@
 </head>
 
 <body>
+  <aside id="repository-evidence-notice" role="note" style="position:relative;z-index:2;padding:1rem 1.5rem;margin:1rem;border:1px solid #f59e0b;border-radius:12px;background:#171b2c;color:#f8fafc;font-size:.9rem;line-height:1.5">
+    <strong>Synthetic reference demo — not production or certification evidence.</strong>
+    UI proofs and policy scenarios illustrate intended behavior. The real SD-JWT path currently shares numeric age;
+    request binding, eligibility/scope, single-use and audit/evidence findings remain open.
+    The goals remain prevention of fingerprinting and cross-service tracking, control of every disclosure, and a complete, inspectable transaction history. ZK derivation, end-to-end unlinkability and all-runtime erasure are not established; these gaps do not retire the goals.
+    <a href="https://github.com/Late-bloomer420/miTch/blob/master/docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md" style="color:#93c5fd">Current GitHub evidence and open findings</a>.
+  </aside>
+
   <!--
     Testing with real WebAuthn / device authorization:
     python -m http.server 8000
@@ -1648,13 +1656,14 @@
   <div class="header">
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="theme-toggle">🌓</button>
     <h1>🔒 AskMI — The Forgetting Layer</h1>
-    <div class="tagline">Privacy Middleware for National Identity Wallets</div>
+    <div class="tagline">Privacy Middleware — Reference Demo</div>
     <div
       style="margin-top:0.4rem;font-size:0.85rem;color:var(--text-dim);max-width:700px;margin-left:auto;margin-right:auto">
       AskMI is <strong style="color:var(--text)">not</strong> a replacement for national ID systems — it's the <strong
         style="color:var(--accent)">privacy &amp; policy layer</strong> that sits between them and the services
       requesting your data.
     </div>
+    <p class="dim" style="margin-top:0.6rem;font-size:0.8rem">Illustrative ecosystem targets — verified integrations are recorded separately.</p>
     <div style="margin-top:0.6rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.3rem">
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇪🇺 EUDI Wallet</span>
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">🇦🇹 ID Austria</span>
@@ -1668,13 +1677,13 @@
       <span class="gdpr-badge" style="background:var(--blue-dim);color:var(--blue)">ISO 18013-5</span>
     </div>
     <div style="margin-top:0.5rem">
-      <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
-      <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
-      <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
-      <span class="gdpr-badge">✅ Art. 7 Consent</span>
-      <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
-      <span class="gdpr-badge">✅ Art. 32 Security</span>
-      <span class="gdpr-badge">✅ CIR 82%</span>
+      <span class="gdpr-badge">Design: Art. 25 Privacy by Design</span>
+      <span class="gdpr-badge">Design: Art. 17 Right to Erasure</span>
+      <span class="gdpr-badge">Design: Art. 5 Data Minimization</span>
+      <span class="gdpr-badge">Design: Art. 7 Consent</span>
+      <span class="gdpr-badge">Design: Art. 30 Processing Records</span>
+      <span class="gdpr-badge">Design: Art. 32 Security</span>
+      <span class="gdpr-badge">CIR component mapping</span>
     </div>
   </div>
 
@@ -1720,8 +1729,8 @@
       </div>
 
       <div class="blind-banner">
-        AskMI is a <span class="accent">blind intermediary</span> — we never see your data, and neither does the verifier until you decide what to share.
-        <span class="dim-txt">AskMI structurally cannot store, access, or retain any personal data. This is an architectural guarantee, not a policy promise.</span>
+        AskMI aims to mediate <span class="accent">purpose-bound disclosure</span> between wallets and services.
+        <span class="dim-txt">The real reference flow shares selected attribute values. This synthetic page illustrates the goal; it does not prove universal non-retention.</span>
       </div>
     </div>
   </div>
@@ -1756,7 +1765,7 @@
         <div class="hiw-step">
           <span class="hiw-icon">📱</span>
           <h3>2. Wallet</h3>
-          <p>Your device stores the credentials. <strong>Raw data is shredded</strong> after signing.</p>
+          <p>Your device stores the credentials. <strong>Controlled-buffer cleanup is the design goal</strong> after signing.</p>
           <div class="hiw-arrow">→</div>
         </div>
         <div class="hiw-step">
@@ -1817,7 +1826,7 @@
             <div class="risk-row"><span class="rr-field">region_match</span><span class="rr-val">EU / EEA</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">humanity_proof</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">frequency_cap</span><span class="rr-val">5 / day</span><span class="risk-badge low">🟢 Rate Limit</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">This request is transmitted as an OID4VP Presentation Request. No direct data access is possible.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">This illustration uses an OID4VP presentation request. A request describes desired disclosure; enforcement must bind the response to that request (#170).</p>
           </div>
 
           <!-- Step 2: Transparency Layer -->
@@ -1828,14 +1837,14 @@
             <div class="risk-row"><span class="rr-field">age ≥ 18</span><span class="rr-val">true/false, no age</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">region: EU</span><span class="rr-val">yes/no, no country</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">humanity</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable</div>
+            <div class="uc-sub-hdr">Excluded from this illustrated payload</div>
             <div class="blocked-row"><span class="br-field">Last Name, First Name</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT IN PREDICATE</span></div>
-            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
-            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">STRUCTURAL IMPOSSIBILITY</span></div>
+            <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
+            <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
-              <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots — no continuous fingerprinting is possible.</div>
+              <div class="ib-body"><strong>Goal:</strong> prevent continuous fingerprinting and cross-service tracking. <strong>Current evidence:</strong> Age ≥ 18, Region EU and a timestamp can support demographic inference. This illustration quantizes the budget signal into 1,920 slots, limiting that field’s precision. Credential reuse, IP addresses, timing and browser metadata can still enable correlation or fingerprinting; combined inference has not been assessed. <strong>Remaining work:</strong> test combined correlation paths against a defined adversary and record residual risk.</div>
             </div>
             <div class="uc-sub-hdr">Your Ad-Preferences (remain local)</div>
             <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
@@ -1849,7 +1858,7 @@
           <div class="uc-panel" id="adtech-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
             <div class="uc-panel-title">Nullifier + Budget signal are generated</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — no cross-verifier tracking is possible.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The nullifier is deterministic: SHA-256(user_seed ‖ verifier_did ‖ scope_id). Two verifiers with the same scope receive different nullifiers — this separates one identifier; shared credential content and network metadata may still correlate transactions.</p>
             <div class="btn-row">
               <button class="btn btn-primary" id="uc-adtech-prove-btn" onclick="ucRunProof('adtech')">⚡ Generate Proof</button>
             </div>
@@ -1870,7 +1879,7 @@
                 <div class="ss-row"><span class="ss-key">budget_slot:</span><span class="ss-val">847 / 1920</span></div>
                 <div class="ss-row"><span class="ss-key">name:</span><span class="ss-blocked">—</span></div>
                 <div class="ss-row"><span class="ss-key">dob:</span><span class="ss-blocked">—</span></div>
-                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">impossible</span></div>
+                <div class="ss-row"><span class="ss-key">ip_address:</span><span class="ss-blocked">not in payload; network visibility separate</span></div>
               </div>
               <div class="ss-col user-col">
                 <div class="ss-col-title">🟢 You see (Wallet)</div>
@@ -1940,7 +1949,7 @@
             <div class="uc-sub-hdr">What is shared (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende 23:59</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable (not in request)</div>
+            <div class="uc-sub-hdr">Not requested in this illustration</div>
             <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="blocked-row"><span class="br-field">Matriculation Number</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT REQUESTED</span></div>
@@ -1948,7 +1957,7 @@
             <div class="blocked-row"><span class="br-field">Field of Study</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">Student boolean + semester end date do not allow any conclusions about identity. IVB only learns: This wallet user is a valid student. No profiling possible.</div>
+              <div class="ib-body">This illustrated payload contains student status and an expiry date, without a name. Credential reuse and transport metadata may still support identification or profiling; combined inference has not been assessed. <strong>Remaining work:</strong> test combined correlation paths against a defined adversary and record residual risk.</div>
             </div>
           </div>
 
@@ -1956,7 +1965,7 @@
           <div class="uc-panel" id="student-p2">
             <div class="uc-label-chip">③ Ephemeral Credential</div>
             <div class="uc-panel-title">Short-term credential is issued</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">The credential is valid only for this session and expires automatically at midnight. The university confirms the status — IVB never learns which university.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem"><strong>Goal:</strong> prove current student status without revealing the university, using a short-lived presentation. <strong>Current evidence:</strong> this is a synthetic scenario; a real SD-JWT preserves its signed issuer identifier, which may identify the university even when its name is not disclosed. <strong>Remaining work:</strong> validate an issuer/trust profile that meets the privacy goal and enforce session/expiry limits (#97/#170).</p>
             <div class="btn-row">
               <button class="btn btn-success" id="uc-student-prove-btn" onclick="ucRunStudentProof()">✓ Confirm Student Status</button>
             </div>
@@ -2019,13 +2028,13 @@
                 <span class="vc-name">UKH Innsbruck — Hospital</span>
                 <span class="trust-chip high">Trust 97/100</span>
               </div>
-              <div class="vc-did">did:askmi:ukh-innsbruck · ELGA-zertifiziert · Art. 9 GDPR Basis</div>
+              <div class="vc-did">did:askmi:ukh-innsbruck · synthetic health scenario · Art. 9 GDPR Basis</div>
             </div>
             <div class="uc-sub-hdr">Was wird angefragt?</div>
             <div class="risk-row"><span class="rr-field">allergies</span><span class="rr-val">List</span><span class="risk-badge med">🟡 Medium</span></div>
             <div class="risk-row"><span class="rr-field">blood_group</span><span class="rr-val">ABO+Rh</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">insurance_status</span><span class="rr-val">Public/Private</span><span class="risk-badge low">🟢 Low</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Legal basis: GDPR Art. 9(2)(c) — vital interests. Ephemeral credential, automatically deleted at session end.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">Legal basis: GDPR Art. 9(2)(c) — vital interests. Ephemeral lifecycle illustration; actual consumption and retention require evidence.</p>
           </div>
 
           <!-- Step 2: Risk Analysis -->
@@ -2050,7 +2059,7 @@
           <div class="uc-panel" id="hospital-p2">
             <div class="uc-label-chip">③ Consent &amp; Ephemeral Proof</div>
             <div class="uc-panel-title">Release + Session Key Generation</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">After release, an ephemeral session key is generated. The data is encrypted with this key — at the end of the session, the key is automatically deleted (crypto-shredding).</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">This scenario illustrates selected disclosure and ephemeral cleanup. It does not generate or erase real hospital session keys; actual cleanup and recipient retention need separate evidence.</p>
             <div class="btn-row">
               <button class="btn btn-success" id="uc-hospital-prove-btn" onclick="ucRunHospitalProof()">✓ Release Hospital Admission</button>
               <button class="btn btn-danger" onclick="ucDenyHospital()" style="min-height:40px;padding:0.45rem 0.9rem;font-size:0.82rem">✗ Deny</button>
@@ -2061,19 +2070,19 @@
           <!-- Step 4: Post-Session -->
           <div class="uc-panel" id="hospital-p3">
             <div class="uc-label-chip">④ Post-Session</div>
-            <div class="uc-panel-title">Data cryptographically deleted — Consent receipt issued</div>
+            <div class="uc-panel-title">Cleanup illustrated — Example consent receipt</div>
             <div class="allow-banner">
-              <div class="ab-title">✓ Session ended — Crypto-shredding active</div>
-              <div class="ab-body">The ephemeral session key has been deleted. All encrypted data is permanently unreadable — even for AskMI and the hospital after the session end.</div>
+              <div class="ab-title">✓ Simulated session ended — Cleanup illustrated</div>
+              <div class="ab-body">This display illustrates session cleanup. It does not prove erasure of runtime copies or data retained by a hospital; the receipt records only the illustrated event.</div>
             </div>
-            <div class="uc-sub-hdr">Consent Receipt (stored in your wallet)</div>
+            <div class="uc-sub-hdr">Example consent receipt (synthetic)</div>
             <div class="receipt-box">
               <div class="receipt-row"><span class="rk">Verifier</span><span class="rv">UKH Innsbruck — Notaufnahme</span></div>
               <div class="receipt-row"><span class="rk">Time</span><span class="rv" id="hospital-ts">—</span></div>
               <div class="receipt-row"><span class="rk">Shared</span><span class="rv">allergies, blood_group, insurance</span></div>
               <div class="receipt-row"><span class="rk">Basis</span><span class="rv">GDPR Art. 9(2)(c)</span></div>
-              <div class="receipt-row"><span class="rk">Session Key</span><span class="rv">🗑 deleted</span></div>
-              <div class="receipt-row"><span class="rk">Data available</span><span class="rv">❌ no — shredded</span></div>
+              <div class="receipt-row"><span class="rk">Session Key</span><span class="rv">Cleanup illustrated; not measured</span></div>
+              <div class="receipt-row"><span class="rk">Data available</span><span class="rv">Unknown outside this simulation</span></div>
             </div>
             <div style="margin-top:1.5rem; text-align:center;">
               <button class="btn btn-success" onclick="activateScenario('hospital')" style="font-size:1rem; padding:0.6rem 1.5rem; box-shadow:0 4px 12px rgba(34,197,94,0.3)">Try in Demo →</button>
@@ -2141,7 +2150,7 @@
           <div class="uc-panel" id="ehds-p2">
             <div class="uc-label-chip">③ Break-Glass Override</div>
             <div class="uc-panel-title">Emergency Override: Doctor overwrites Policy</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">In real emergencies, an authorized doctor can overwrite the policy. Every override is <strong style="color:var(--text)">permanently stored in the audit trail</strong> — no possibility to act unnoticed.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">This synthetic scenario illustrates an emergency override and its audit entry. <strong style="color:var(--text)">Authorization and durable audit storage depend on the deployment</strong>; this page does not establish either.</p>
             <div class="btn-row">
               <button class="btn btn-orange" id="uc-ehds-bg-btn" onclick="ucRunBreakGlass()">🔓 Activate Break-Glass (Emergency)</button>
             </div>
@@ -2199,11 +2208,11 @@
           <!-- Step 2: Risk Analysis -->
           <div class="uc-panel" id="social-p1">
             <div class="uc-label-chip">② AskMI Analyse</div>
-            <div class="uc-panel-title">Risk Analysis: 🔴 High — structural blockage active</div>
+            <div class="uc-panel-title">Risk Analysis: 🔴 High — intended blocking illustrated</div>
             <div class="uc-sub-hdr">What the app gets (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">unique, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable (Policy Engine blocks)</div>
+            <div class="uc-sub-hdr">Excluded from this illustrated payload; active-route enforcement remains open</div>
             <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">email</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
@@ -2212,7 +2221,7 @@
             <div class="risk-row"><span class="rr-field">device_id</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="allow-banner" style="border-left-color:var(--red)">
               <div class="ab-title" style="color:var(--red)">⚠ Inference-Risiko: 🔴 High</div>
-              <div class="ab-body">friends_list enables social graph analysis. location_history allows movement profiles. Both are structurally blocked — the data never leaves the wallet, not even encrypted.</div>
+              <div class="ab-body"><strong>Goal:</strong> unapproved fields never leave the wallet. friends_list enables social graph analysis; location_history allows movement profiles. <strong>Current evidence:</strong> both fields are omitted in this illustration. <strong>Remaining work:</strong> enforce the original approved scope on the real route and test excess disclosure (#170).</div>
             </div>
           </div>
 
@@ -2220,7 +2229,7 @@
           <div class="uc-panel" id="social-p2">
             <div class="uc-label-chip">③ Proof Generation</div>
             <div class="uc-panel-title">Generate Pseudonymous Login Proof</div>
-            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">AskMI generates a pairwise-pseudonymous proof: The app only learns "User is ≥18" and receives a unique ID that is not linkable to other services.</p>
+            <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.9rem">AskMI generates a pairwise-pseudonymous proof: The app only learns "User is ≥18" and receives a service-specific identifier; correlation through other attributes or network metadata remains possible.</p>
             <button class="btn btn-success" id="uc-social-prove-btn" onclick="ucRunSocialProof()">🔐 Generate Pseudonym Login</button>
             <div class="proof-box pending" id="uc-social-proof-box">— Waiting for confirmation —</div>
           </div>
@@ -2296,9 +2305,7 @@
       <div class="ph"><span class="icon">🏛️</span> Issuer (National ID System) <span class="tag tag-blue"
           style="margin-left:auto">e.g. ID Austria / EUDI Wallet</span></div>
       <div class="pb" id="issuer-body">
-        <p class="dim">Your government issues a credential via the <strong>national eID system</strong> (ID Austria,
-          Smart-eID, EUDI Wallet, etc.). AskMI receives only signed predicates — raw PII is
-          <strong>crypto-shredded</strong> and never stored.
+        <p class="dim">This page simulates issuance using example claims. The real repository flow uses a mock issuer and a stored SD-JWT. National eID integrations are separate interoperability targets.
         </p>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="doIssue()" id="btn-issue">🔏 Issue Credential</button>
@@ -2468,8 +2475,8 @@
 
     <!-- CRYPTO-SHREDDING -->
     <div class="panel full" id="p-shred">
-      <div class="ph"><span class="icon">🔥</span> Crypto-Shredding (GDPR Art. 17) <span class="tag tag-orange"
-          style="margin-left:auto">Provable Deletion</span></div>
+      <div class="ph"><span class="icon">🔥</span> Ephemeral cleanup demonstration <span class="tag tag-orange"
+          style="margin-left:auto">Cleanup simulation</span></div>
       <div class="pb">
         <div class="placeholder" id="shred-ph"><span class="emoji">🔥</span>Issue a credential to see crypto-shredding
           in action</div>
@@ -2483,7 +2490,7 @@
           style="margin-left:auto">Privacy-Preserving</span></div>
       <div class="pb">
         <p class="dim">Issuer publishes a compressed bitstring. Verifier downloads the <strong>entire list</strong> and
-          checks locally. Issuer <strong>cannot tell</strong> which credential was checked.</p>
+          checks locally. Bulk list retrieval can limit credential-specific queries; network metadata remains a separate concern.</p>
         <div class="btn-row">
           <button class="btn btn-danger" onclick="doRevoke()" id="btn-rev" disabled>⛔ Revoke</button>
           <button class="btn btn-success" onclick="doUnrevoke()" id="btn-unrev" disabled>✅ Unrevoke</button>
@@ -2524,7 +2531,7 @@
                 <div class="tco-row"><span>Data Breach Reserve (Pro-rata)</span><span id="tco-trad-breach">€ 89.000</span></div>
                 <div class="tco-row"><span>Löschpflicht Art. 17 (2%)</span><span id="tco-trad-del">€ 30.000</span></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
-                  <span>Total/Year</span>
+                  <span>Known-cost subtotal/year</span>
                   <span id="tco-trad-total" style="color:var(--red);font-family:var(--mono)">€ 329.000</span>
                 </div>
               </div>
@@ -2534,18 +2541,18 @@
                 <div class="tco-row"><span>eID Authentication</span><span id="tco-AskMI-auth">€ 15.000</span></div>
                 <div class="tco-row"><span>Credential Signing (HSM)</span><span id="tco-AskMI-sign">€ 1.000</span></div>
                 <div class="tco-row"><span>StatusList CDN</span><span id="tco-AskMI-cdn">€ 30</span></div>
-                <div class="tco-row"><span>PII Database</span><span style="color:var(--green)">€ 0</span></div>
-                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span style="color:var(--green)">€ 0</span></div>
+                <div class="tco-row"><span>PII Database</span><span class="dim">Unknown</span></div>
+                <div class="tco-row"><span>Löschanfragen / Breach Risk</span><span class="dim">Unknown</span></div>
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-weight:700;font-size:1.2rem">
-                  <span>Total/Year</span>
+                  <span>Known-cost subtotal/year</span>
                   <span id="tco-AskMI-total" style="color:var(--green);font-family:var(--mono)">€ 16.030</span>
                 </div>
               </div>
             </div>
             
             <div style="text-align:center;margin-top:2rem">
-              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">JÄHRLICHE ERSPARNIS</div>
-              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">€ 312.970 <span style="font-size:1.2rem;opacity:0.8">(95%)</span></div>
+              <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem">TOTAL AND ANNUAL SAVINGS</div>
+              <div id="tco-savings" style="font-size:2.5rem;font-weight:800;color:var(--green);font-family:var(--mono);line-height:1">Unknown — deployment storage and risk costs are not estimated.</div>
             </div>
             
             <div style="margin-top:2rem;font-size:0.7rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
@@ -2588,23 +2595,23 @@
               
               <div class="a17-row"><span class="dim">PII gespeichert in</span></div>
               <div class="a17-row">8-14 DB-Tabellen, Backups, Logs, CDN-Cache</div>
-              <div class="a17-row" style="color:var(--green)">Nirgends</div>
+              <div class="a17-row" style="color:var(--green)">Wallet storage and recipient data flows; deployment-dependent</div>
               
               <div class="a17-row"><span class="dim">Löschaufwand pro Anfrage</span></div>
               <div class="a17-row">~€ 15 (manuell/semi-automatisch)</div>
-              <div class="a17-row" style="color:var(--green)">€ 0 (nichts da)</div>
+              <div class="a17-row" style="color:var(--green)">Unknown — depends on retained data and operations</div>
               
               <div class="a17-row"><span class="dim">Zeitaufwand</span></div>
               <div class="a17-row">3-30 Tage</div>
-              <div class="a17-row" style="color:var(--green)">0 Sekunden</div>
+              <div class="a17-row" style="color:var(--green)">Depends on storage, backups and recipient policy</div>
               
               <div class="a17-row"><span class="dim">Risiko unvollst. Löschung</span></div>
               <div class="a17-row" style="color:var(--red)">Hoch (Backup-Fragmente, Logs)</div>
-              <div class="a17-row" style="color:var(--green)">Unmöglich</div>
+              <div class="a17-row" style="color:var(--green)">Residual copy/retention risk requires verification</div>
               
               <div class="a17-row" style="border-bottom:none"><span class="dim">Audit-Nachweis</span></div>
               <div class="a17-row" style="border-bottom:none">Manueller Report</div>
-              <div class="a17-row" style="border-bottom:none;color:var(--green)">Automatisch (Crypto-Shredding = Löschbeweis)</div>
+              <div class="a17-row" style="border-bottom:none;color:var(--green)">Cleanup record; no proof that every copy was erased</div>
             </div>
           </div>
         </div>
@@ -2615,7 +2622,7 @@
     <!-- AUDIT LOG -->
     <div class="panel full" id="p-audit">
       <div class="ph"><span class="icon">📋</span> Audit & Compliance <span class="tag tag-green"
-          style="margin-left:auto">GDPR Ready</span></div>
+          style="margin-left:auto">Privacy assessment draft</span></div>
       <div class="tabs">
         <div class="tab active" onclick="switchTab(this,'audit-chain')">🔗 Audit Chain</div>
         <div class="tab" onclick="switchTab(this,'consent-log')">📝 Consent Log</div>
@@ -2633,7 +2640,7 @@
         </div>
         <div id="tc-dpia-tab" class="tab-content">
           <div style="text-align:center;padding:1rem">
-            <button class="btn btn-primary" onclick="showDpia()">📋 Open Full DPIA & Compliance Framework</button>
+            <button class="btn btn-primary" onclick="showDpia()">📋 Open privacy assessment draft</button>
             <p class="dim" style="margin-top:0.5rem">Data Protection Impact Assessment — GDPR Article 35</p>
           </div>
         </div>
@@ -2646,7 +2653,7 @@
     <div class="vsec">
       <div class="vsec-label">Where We're Going</div>
       <h2 class="vsec-title">Your data life, reviewed daily.<br>Like a bank statement — for your privacy.</h2>
-      <p class="vsec-body">Every transaction that touches your wallet is logged — what was shared, what was withheld, what was forgotten. At the end of the day, you review your complete data flow and claims lifecycle. No pressure. No decision. Just clarity.</p>
+      <p class="vsec-body"><strong>Goal:</strong> every wallet transaction is recorded in a complete, user-inspectable history: what was requested, approved, shared, withheld and cleaned up. <strong>Current evidence:</strong> the entries below are synthetic examples; local audit components exist. <strong>Remaining work:</strong> connect every active transaction path, verify coverage and durability, and distinguish attempted, completed and unknown cleanup outcomes (#172/#175).</p>
 
       <div class="review-day-header">
         <span>📅 Monday, 9 March 2026 — 4 interactions</span>
@@ -2668,7 +2675,7 @@
               <span class="shared-pill pill-red">✗ Address not shared</span>
               <span class="shared-pill pill-red">✗ National ID not shared</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Cleanup illustrated · Example receipt</div>
           </div>
           <div class="review-time">09:14</div>
         </div>
@@ -2684,7 +2691,7 @@
               <span class="shared-pill pill-red">✗ Insurance ID not shared</span>
               <span class="shared-pill pill-red">✗ Genetic data not shared</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · All data forgotten · Consent receipt saved</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Cleanup illustrated · Example receipt</div>
           </div>
           <div class="review-time">12:31</div>
         </div>
@@ -2799,14 +2806,14 @@
 
       <div class="roadmap-grid">
         <div class="roadmap-card built">
-          <div class="roadmap-layer">Layer 1 — Built</div>
+          <div class="roadmap-layer">Layer 1 — Components implemented</div>
           <div class="roadmap-icon">🔐</div>
           <div class="roadmap-title">The Forgetting Layer</div>
-          <div class="roadmap-desc">Control exactly what leaves your wallet at every transaction. Everything else is cryptographically destroyed.</div>
+          <div class="roadmap-desc"><strong>Goal:</strong> control exactly what leaves your wallet at every transaction. <strong>Current evidence:</strong> policy and selection components support scoped disclosure in tested configurations. <strong>Remaining work:</strong> enforce original-request binding and excess-claim rejection on the active route (#170); verify cleanup within its ownership boundary.</div>
           <ul class="roadmap-features">
             <li>Selective disclosure — share only what's needed</li>
-            <li>Crypto-shredding — session keys destroyed after use</li>
-            <li>Pairwise DIDs — unlinkable across verifiers</li>
+            <li>Controlled-key cleanup — integration and runtime-copy limits apply</li>
+            <li>Pairwise DIDs — scoped identifier separation</li>
             <li>Signed consent receipts — portable evidence</li>
             <li>Fail-closed policy engine — deny by default</li>
           </ul>
@@ -2845,7 +2852,7 @@
         <div style="font-size:0.83rem;color:var(--text-dim);line-height:1.6">
           Privacy middleware for the digital identity layer.<br>
           Built for EUDI Wallet, ID Austria, eIDAS 2.0, and every national eID system that follows.<br>
-          <span style="color:var(--accent)">We never see your data. That's the point.</span>
+          <span style="color:var(--accent)">Request less. Show what is shared and what remains unverified.</span>
         </div>
       </div>
     </div>
@@ -2930,19 +2937,18 @@
     </div>
     
     <p style="margin-top: 2rem; font-size: 0.75rem; color: var(--text-dim); opacity: 0.6;">
-      AskMI — The Forgetting Layer Project · 2026 · Open Source under MIT
+      AskMI — The Forgetting Layer Project · 2026 · Open Source under Apache 2.0
     </p>
   </footer>
   <div id="dpia-popup">
     <div
       style="background:var(--surface); border:1px solid var(--accent); border-radius:16px; padding:2rem; max-width:500px; width:90%; text-align:center; box-shadow:0 0 40px var(--accent-glow);">
       <div style="font-size:2.5rem; margin-bottom:0.8rem;">✅🔒</div>
-      <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Verification Complete — Data Forgotten</h2>
-      <p class="dim" style="margin-bottom:1rem;">The verifier confirmed your claim without seeing any personal data. The
-        session key has been destroyed — this interaction is now mathematically irrecoverable.</p>
-      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Want to see how we meet every GDPR requirement?</p>
+      <h2 style="font-size:1.3rem; margin-bottom:0.5rem;">Simulation Complete — Disclosure Illustrated</h2>
+      <p class="dim" style="margin-bottom:1rem;">This scenario illustrates a disclosure decision and cleanup display. It does not perform a real credential verification or prove deletion of personal data.</p>
+      <p style="margin-bottom:1.5rem; font-size:0.9rem;">Read the privacy design mapping and its open questions.</p>
       <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="showDpia()">📋 Read DPIA & Compliance Framework</button>
+        <button class="btn btn-primary" onclick="showDpia()">📋 Read privacy assessment draft</button>
         <button class="btn btn-ghost" onclick="closeDpiaPopup()">Close & Continue</button>
       </div>
     </div>
@@ -2954,31 +2960,29 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
         <h1
           style="font-size:1.5rem;background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">
-          📋 Data Protection Impact Assessment</h1>
+          📋 Privacy Assessment Draft</h1>
         <button class="btn btn-ghost" onclick="hideDpia()">✕ Close</button>
       </div>
-      <p class="dim">GDPR Article 35 — AskMI Identity Verification Infrastructure</p>
+      <p class="dim">GDPR Article 35 discussion — synthetic reference design, not an approved deployment DPIA</p>
       <div style="margin:1rem 0">
-        <span class="gdpr-badge">✅ Art. 25 Privacy by Design</span>
-        <span class="gdpr-badge">✅ Art. 17 Right to Erasure</span>
-        <span class="gdpr-badge">✅ Art. 5 Data Minimization</span>
-        <span class="gdpr-badge">✅ Art. 7 Consent</span>
-        <span class="gdpr-badge">✅ Art. 30 Processing Records</span>
-        <span class="gdpr-badge">✅ Art. 32 Security</span>
-        <span class="gdpr-badge">✅ Art. 35 DPIA</span>
+        <span class="gdpr-badge">Design: Art. 25 Privacy by Design</span>
+        <span class="gdpr-badge">Design: Art. 17 Right to Erasure</span>
+        <span class="gdpr-badge">Design: Art. 5 Data Minimization</span>
+        <span class="gdpr-badge">Design: Art. 7 Consent</span>
+        <span class="gdpr-badge">Design: Art. 30 Processing Records</span>
+        <span class="gdpr-badge">Design: Art. 32 Security</span>
+        <span class="gdpr-badge">Design: Art. 35 DPIA</span>
       </div>
 
       <h2>1. Description of Processing</h2>
       <h3>1.1 What We Do</h3>
       <p>AskMI is a <strong>privacy middleware layer</strong> for national digital identity systems (EUDI Wallet, ID
-        Austria, Smart-eID, GOV.UK Wallet, France Identité, Swiss E-ID, Nordic eIDs, and all future eIDAS 2.0 wallets).
-        It enables users to prove attributes (e.g., "I am over 18") without revealing raw personal data — acting as a
+        Austria, Smart-eID, GOV.UK Wallet, France Identité, Swiss E-ID, Nordic eIDs, other compatible wallet systems (interoperability must be tested)).
+        Its target is minimal disclosure for attribute checks (e.g., age eligibility), acting as a
         <strong>policy engine and forgetting layer</strong> between government-issued credentials and the services that
         request them.
       </p>
-      <p class="dim">AskMI does not replace national ID systems. It uses their signed credentials and adds: selective
-        disclosure, consent management, crypto-shredding, unlinkability (pairwise DIDs), and a tamper-evident audit
-        chain.</p>
+      <p class="dim">The reference repository contains selective disclosure, consent UX, controlled-buffer cleanup, pairwise-DID and audit-chain components. This page simulates a workflow; national-wallet integration and deployment guarantees require separate evidence.</p>
       <h3>1.2 Roles</h3>
       <table>
         <tr>
@@ -2999,7 +3003,7 @@
         <tr>
           <td><strong>Data Processor</strong></td>
           <td>AskMI Infrastructure</td>
-          <td>Facilitates verification without accessing personal data</td>
+          <td>Deployment-dependent processing role; disclosed values may reach RP-hosted middleware</td>
         </tr>
         <tr>
           <td><strong>Issuer</strong></td>
@@ -3010,12 +3014,10 @@
 
       <h3>1.3 Processing Flow</h3>
       <div class="card">
-        <p><strong>Step 1 — Issuance:</strong> Raw PII encrypted with ephemeral key, predicates derived, credential
-          signed, key destroyed. Raw PII is mathematically irrecoverable.</p>
+        <p><strong>Step 1 — Issuance:</strong> This page simulates issuance. In the real reference flow, the mock issuer signs an SD-JWT that the wallet stores; controlled-buffer cleanup does not erase every copy.</p>
         <p><strong>Step 2 — Presentation:</strong> User selects which claims to disclose. Only selected claims sent as
           SD-JWT proof.</p>
-        <p><strong>Step 3 — Verification:</strong> Verifier validates proof. Receives only disclosed predicates. Issuer
-          is never contacted.</p>
+        <p><strong>Step 3 — Verification:</strong> The real verifier validates issuer/holder signatures and receives disclosed claim values. Application eligibility is separate; trust/status lookups may contact external services.</p>
       </div>
 
       <h2>2. Necessity & Proportionality</h2>
@@ -3026,19 +3028,19 @@
         </tr>
         <tr>
           <td>Upload photo ID → name, birthdate, address collected</td>
-          <td>Prove <code>over_18: true</code> → one boolean, nothing else</td>
+          <td>Target recipe: boolean eligibility; real reference SD-JWT currently shares numeric age</td>
         </tr>
         <tr>
           <td>Data stored in verifier's database → breach risk</td>
-          <td>No data stored → nothing to breach</td>
+          <td>Minimise collected data; retained attributes and deployment breach exposure require review</td>
         </tr>
         <tr>
           <td>Identity provider tracks every verification</td>
-          <td>Issuer doesn't know when/where credentials are used</td>
+          <td>Issuer visibility depends on issuance, status/trust lookups and deployment</td>
         </tr>
         <tr>
           <td>Delete request = hope they actually delete</td>
-          <td>Crypto-shredding = mathematical guarantee</td>
+          <td>Controlled-key cleanup has explicit ownership and copy limits</td>
         </tr>
       </table>
 
@@ -3069,7 +3071,7 @@
           <td>Issuer tracking</td>
           <td class="risk-med">Medium</td>
           <td class="risk-low">Low</td>
-          <td>Pre-issued credentials, issuer never contacted</td>
+          <td>Pre-issued credentials; trust/status retrieval is a separate data flow</td>
           <td class="risk-low">Low</td>
         </tr>
         <tr>
@@ -3093,23 +3095,21 @@
         <h3>🔐 Cryptographic</h3>
         <ul>
           <li><strong>SD-JWT Selective Disclosure:</strong> Only chosen claims revealed</li>
-          <li><strong>Crypto-Shredding:</strong> Ephemeral keys encrypt PII → key destruction = provable data
-            destruction</li>
-          <li><strong>StatusList2021:</strong> Privacy-preserving revocation — issuer can't identify which credential
-            was checked</li>
-          <li><strong>Pairwise Ephemeral DIDs:</strong> Fresh DID per interaction — unlinkable across verifiers</li>
+          <li><strong>Crypto-Shredding:</strong> Owned-key/buffer cleanup; runtime and recipient copies remain separate</li>
+          <li><strong>StatusList2021:</strong> Bulk status-list retrieval can reduce per-credential queries; request metadata remains in scope</li>
+          <li><strong>Pairwise Ephemeral DIDs:</strong> Different DIDs reduce one identifier correlator; reused credentials and network metadata remain</li>
         </ul>
       </div>
       <div class="card">
         <h3>🛡️ Metadata Minimization</h3>
         <ul>
-          <li><strong>Response Padding:</strong> All responses padded to 4KB</li>
+          <li><strong>Response Padding:</strong> 4KB padding target; coverage depends on the path</li>
           <li><strong>Timing Jitter:</strong> 50-200ms random delay</li>
-          <li><strong>Per-Session Identifiers:</strong> HMAC-derived, unlinkable across verifiers</li>
+          <li><strong>Per-Session Identifiers:</strong> Session-scoped identifier design; other correlators require separate checks</li>
         </ul>
       </div>
 
-      <h2>5. GDPR Compliance Matrix</h2>
+      <h2>5. Privacy Design Mapping</h2>
       <table>
         <tr>
           <th>Article</th>
@@ -3120,64 +3120,63 @@
         <tr>
           <td>Art. 5(1)(c)</td>
           <td>Data minimization</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Selective disclosure — only requested predicates</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>Selective-disclosure components; original-request/scope integration remains #170</td>
         </tr>
         <tr>
           <td>Art. 5(1)(e)</td>
           <td>Storage limitation</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Crypto-shredding — data self-destructs</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>Controlled-key cleanup; stored single-use lifecycle #171 and retention #172 remain open</td>
         </tr>
         <tr>
           <td>Art. 7</td>
           <td>Consent conditions</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>Informed, specific, freely given, withdrawable</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>Consent UX goal; authenticity, scope and withdrawal require integration evidence</td>
         </tr>
         <tr>
           <td>Art. 17</td>
           <td>Right to erasure</td>
-          <td><span class="gdpr-badge">✅✅</span></td>
-          <td>Crypto-shredding provides mathematical proof of destruction</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>Cleanup records describe controlled operations; they do not prove all copies were erased</td>
         </tr>
         <tr>
           <td>Art. 25</td>
           <td>Privacy by design</td>
-          <td><span class="gdpr-badge">✅✅</span></td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
           <td>Core architecture — not an add-on</td>
         </tr>
         <tr>
           <td>Art. 30</td>
           <td>Processing records</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>ROPA with aggregate counts, no PII</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>Audit/export components; actual processing records and outputs need deployment review</td>
         </tr>
         <tr>
           <td>Art. 35</td>
           <td>DPIA</td>
-          <td><span class="gdpr-badge">✅</span></td>
-          <td>This document</td>
+          <td><span class="gdpr-badge">Assessment open</span></td>
+          <td>This design draft; actual deployment DPIA not established</td>
         </tr>
       </table>
 
-      <h2>6. What AskMI Structurally Cannot Do</h2>
+      <h2>6. Privacy Goals and Boundaries</h2>
       <div class="card">
-        <p>These are <strong>architectural guarantees</strong>, not policy promises:</p>
+        <p>These are <strong>intended privacy controls</strong>; current implementation and evidence limits are linked above:</p>
         <ul>
-          <li>🚫 <strong>Cannot store raw PII</strong> — ephemeral keys destroyed after issuance</li>
-          <li>🚫 <strong>Cannot track credential usage</strong> — issuer never contacted during verification</li>
-          <li>🚫 <strong>Cannot see what users share</strong> — selective disclosure happens on-device</li>
-          <li>🚫 <strong>Cannot correlate users across verifiers</strong> — pairwise ephemeral DIDs</li>
-          <li>🚫 <strong>Cannot recover shredded data</strong> — encryption key no longer exists</li>
+          <li>🚫 <strong>Minimisation goal, not enforced universal non-retention</strong> — see current open findings</li>
+          <li>🔎 <strong>Issuer/network correlation remains profile-dependent</strong> — status and trust lookups are separate data flows</li>
+          <li>🔎 <strong>Selective disclosure limits released claims</strong> — the verifier receives their values on the real SD-JWT path</li>
+          <li>🔎 <strong>Pairwise DIDs limit one correlator</strong> — stable credential content, reuse and network correlation remain open</li>
+          <li>🚫 <strong>Cleanup is scoped</strong> — receipts do not prove deletion of runtime or recipient copies</li>
         </ul>
-        <p class="dim" style="margin-top:0.8rem"><em>"AskMI works not because it knows everything — but because it
-            structurally cannot know anything."</em></p>
+        <p class="dim" style="margin-top:0.8rem"><em>"Request less, explain the decision, and make the evidence and limits visible."</em></p>
       </div>
 
       <div style="text-align:center;margin-top:2rem;padding:1.5rem;background:var(--surface2);border-radius:12px">
         <p style="font-size:1.1rem;font-weight:600">AskMI — The Forgetting Layer</p>
-        <p class="dim">DPIA Version 1.0 — March 2026</p>
+        <p class="dim">Design draft — assessment needed for each actual deployment</p>
         <button class="btn btn-ghost" onclick="hideDpia()" style="margin-top:1rem">← Back to Demo</button>
       </div>
     </div>
@@ -3228,13 +3227,13 @@
         policy: {
           rule: 'ad_verification',
           verdict: 'ALLOW',           // always auto-approve (zero PII)
-          reason: 'Zero PII disclosed — deterministic verification only',
+          reason: 'Synthetic minimal-disclosure scenario — not an anonymity proof',
           checks: [
             '🔍 Verifier identity check (did:askmi:adnetwork-gmbh)',
             '📋 Matching policy rule: "ad_blind_provider" → AdNetwork GmbH',
-            '📊 Claims requested: nullifier, budget_slot (zero PII)',
-            '🛡️ Data minimization: PASS — no personal data leaves device',
-            '✅ Deterministic proof, no PII → ALLOW (auto-approve)',
+            '📊 Claims requested: nullifier, budget_slot (synthetic metadata)',
+            '🛡️ Minimisation scenario: selected metadata only; real data flows require verification',
+            '✅ Illustrated minimal-disclosure decision → ALLOW (simulation)',
           ],
         },
         // Cost comparison overrides
@@ -3255,7 +3254,7 @@
               { label: 'Nullifier generation (on-device)', avg: 0, source: 'WebCrypto — free' },
               { label: 'Budget signal (quantized)', avg: 0, source: 'Local computation — free' },
               { label: 'StatusList CDN check', avg: 0.0003, source: 'CloudFront bitstring' },
-              { label: 'PII stored', avg: 0, source: 'Zero — crypto-shredded' },
+              { label: 'PII stored', avg: null, source: 'Unknown deployment cost; retention is not established' },
             ],
           },
           scaleNote: 'Bei 10M Impressions/Monat',
@@ -3300,7 +3299,7 @@
               { label: 'SD-JWT boolean proof', avg: 0, source: 'On-device selective disclosure' },
               { label: 'Semester validity check', avg: 0.0003, source: 'StatusList CDN' },
               { label: 'Student ID card needed', avg: 0, source: 'Not needed — wallet proof' },
-              { label: 'PII stored by IVB', avg: 0, source: 'Zero — only boolean received' },
+              { label: 'PII stored by IVB', avg: null, source: 'Unknown deployment cost; recipient retention requires review' },
             ],
           },
           scaleNote: 'Bei 50.000 Studenten/Jahr in Innsbruck',
@@ -3351,7 +3350,7 @@
               { label: 'Insurance status proof', avg: 0.01, source: 'Issuer-signed, no API call' },
               { label: 'Consent + audit trail', avg: 0, source: 'Built into wallet flow' },
               { label: 'ELGA bridge (future)', avg: 0.05, source: 'Estimated FHIR adapter cost' },
-              { label: 'Breach risk reduction', avg: 0.02, source: 'Minimal PII retained post-admission' },
+              { label: 'Breach risk reduction', avg: null, source: 'Unknown deployment exposure; no quantified reduction established' },
             ],
           },
           scaleNote: 'Bei 500.000 Aufnahmen/Jahr in Tirol',
@@ -3383,10 +3382,10 @@
           // EHDS has break-glass override
           hasBreakGlass: true,
           breakGlassChecks: [
-            '🔓 Break-Glass activated — emergency research override',
-            '📋 Logging elevated access to immutable audit chain',
-            '⏰ Auto-expiry set: 24 hours',
-            '⚠️ OVERRIDE: ALLOW with mandatory audit trail',
+            '🔓 Synthetic override branch — not a legal authorization for research',
+            '📋 Illustrating elevated-access audit entry; persistence is deployment-dependent',
+            '⏰ Illustrated expiry target: 24 hours; enforcement not established here',
+            '⚠️ Illustrated ALLOW; actual approval and audit durability require verification',
           ],
         },
         costs: {
@@ -3406,7 +3405,7 @@
               { label: 'Pseudonymized data proof', avg: 0.05, source: 'ZK proof generation (estimated)' },
               { label: 'Consent verification', avg: 0, source: 'On-chain consent record' },
               { label: 'Automatic audit trail', avg: 0.01, source: 'Transparency log entry' },
-              { label: 'Re-identification risk', avg: 0, source: 'Crypto-shredding prevents re-ID' },
+              { label: 'Re-identification risk', avg: null, source: 'Unknown residual risk; cleanup does not prevent every re-identification path' },
             ],
           },
           scaleNote: 'Bei 100.000 Forschungszugriffen/Jahr EU-weit',
@@ -3430,8 +3429,8 @@
           checks: [
             '🔍 Verifier identity check (did:askmi:flirtradar)',
             '📋 Matching policy rule: "social_login" → FlirtRadar.app',
-            '📊 Claims requested: pseudonym, age_range, is_human (zero PII)',
-            '🛡️ Data minimization: PASS — site-specific pseudonym, no linkability',
+            '📊 Claims requested: pseudonym, age_range, is_human (synthetic metadata)',
+            '🛡️ Minimisation illustration — site-specific pseudonym; other correlators remain',
             '✅ Pseudonymous claims only → ALLOW (auto-approve)',
           ],
         },
@@ -3452,7 +3451,7 @@
               { label: 'Pseudonym generation (on-device)', avg: 0, source: 'HKDF derivation — free' },
               { label: 'Humanity proof', avg: 0, source: 'Local WebAuthn — free' },
               { label: 'Profile data shared', avg: 0, source: 'Zero — pseudonym only' },
-              { label: 'Cross-site linkability', avg: 0, source: 'Impossible — pairwise pseudonyms' },
+              { label: 'Cross-site linkability', avg: null, source: 'Unquantified correlation exposure; pairwise identifiers cover one correlator' },
             ],
           },
           scaleNote: 'Bei 1M Logins/Monat',
@@ -3781,7 +3780,7 @@
         <div><strong>${e.action}</strong> <span class="dim">— ${new Date(e.timestamp).toLocaleTimeString()}</span></div>
         <div class="dim" style="font-family:var(--mono);font-size:0.72rem">hash: ${e.entryHash}... → prev: ${e.previousHash.substring(0, 12)}...</div>
         ${e.evidence.categories ? `<div class="dim">categories: ${e.evidence.categories.join(', ')}</div>` : ''}
-        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof} destroyed</div>` : ''}
+        ${e.evidence.shredProof ? `<div style="color:var(--orange)">🔥 Key ${e.evidence.shredProof} cleanup illustrated</div>` : ''}
       </div>
     </div>
   `).join('');
@@ -3852,21 +3851,21 @@
         <div class="cc doesnt">
           <h4>After Shredding</h4>
           <ul>
-            <li>Key zeroed & destroyed</li>
-            <li>Method: overwrite + deref</li>
-            <li>Decryption: IMPOSSIBLE ✅</li>
+            <li>Illustrated key cleanup</li>
+            <li>Simulation display; no real key-erasure measurement</li>
+            <li>Copy erasure: not established by this simulation</li>
           </ul>
         </div>
       </div>
       <div class="rb">
-        <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} shredded — raw PII is mathematically irrecoverable</div>
-        <div><span class="k">destroyed_at:</span> ${ts()}</div>
+        <div style="color:var(--orange)">🔥 Key ${STATE.ephemeralKeyId} cleanup illustrated — no all-copy deletion proof</div>
+        <div><span class="k">illustrated_cleanup_at:</span> ${ts()}</div>
       </div>
     </div>`;
       hl('p-shred', 'orange');
 
       addAudit('credential_issued', { categories: ['age_predicate', 'email_status', 'jurisdiction'] }, 'blue');
-      addAudit('crypto_shred', { shredProof: STATE.ephemeralKeyId, categories: ['raw_personal_data'] }, 'orange');
+      addAudit('cleanup_illustrated', { shredProof: STATE.ephemeralKeyId, categories: ['raw_personal_data'] }, 'orange');
 
       // Show issuance costs
       renderCosts('issuance');
@@ -4169,7 +4168,7 @@
       document.getElementById('verifier-ph').style.display = 'none';
       document.getElementById('verifier-result').innerHTML = `
     <div class="fi"><span class="tag tag-red">❌ USER REJECTED</span>
-    <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Cannot distinguish from "credential not available".</p></div>`;
+    <p class="dim" style="margin-top:0.5rem">Verifier receives an identical-looking encrypted rejection. Bucketed rejection is the target behavior; this animation does not measure it.</p></div>`;
       setStatus('Rejected by user'); setFlow('wallet');
       addAudit('disclosure_blocked_or_aborted', { reason: 'user_denied_consent', verifier: STATE.verifierName }, 'red');
     }
@@ -4218,13 +4217,13 @@
       document.getElementById('network-ph').style.display = 'none';
       document.getElementById('network-result').innerHTML = `
 <div class="fi">
-  <span class="tag tag-red">🔍 TRAFFIC INTERCEPTED</span>
+  <span class="tag tag-red">🔍 NETWORK OBSERVER ILLUSTRATION</span>
   <div class="rb" style="margin-top:0.5rem">
-    <div><span class="k">payload:</span> <span class="hv">4096 bytes padded encrypted blob</span></div>
-    <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B</span></div>
-    <div><span class="k">can_identify_user:</span> <span class="vf">false</span> (pairwise DID)</div>
-    <div><span class="k">can_infer_claims:</span> <span class="vf">false</span> (fixed padding)</div>
-    <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter applied</span></div>
+    <div><span class="k">payload:</span> <span class="hv">Illustrated padding target: 4096 bytes; not an actual captured packet</span></div>
+    <div><span class="k">actual_size:</span> ${actualBytes}B → <span class="k">padded:</span> 4096B target (not measured)</span></div>
+    <div><span class="k">can_identify_user:</span> <span class="vs">not assessed</span> (pairwise DID limits one correlator)</div>
+    <div><span class="k">can_infer_claims:</span> <span class="vs">not assessed</span> (padding does not exclude every inference)</div>
+    <div><span class="k">timing:</span> <span class="vs">+${Math.floor(50 + Math.random() * 150)}ms jitter illustrated</span></div>
   </div>
 </div>`;
 
@@ -4243,9 +4242,9 @@
 
       // Step 5: Shred
       await delay(800);
-      setFlow('shred'); setStatus('Session key shredded ✅');
+      setFlow('shred'); setStatus('Session cleanup illustrated — simulation');
 
-      addAudit('session_key_shredded', { categories: ['ephemeral_session_material'] }, 'orange');
+      addAudit('session_cleanup_illustrated', { categories: ['ephemeral_session_material'] }, 'orange');
 
       // Update costs
       renderCosts('verification');
@@ -4285,9 +4284,9 @@
         clientCrypto: { label: 'Client-Side Crypto (SD-JWT)', avg: 0, phase: 'verification', source: 'WebCrypto API on user device — free' },
         localBiometric: { label: 'Biometric (Face ID / Touch ID)', avg: 0, phase: 'verification', source: 'Device-local WebAuthn — free (Apple/Google provide it)' },
         pairwiseDID: { label: 'Pairwise DID (HKDF)', avg: 0, phase: 'verification', source: 'Derived on-device, no network call' },
-        storage: { label: 'PII Storage', avg: 0, phase: 'both', source: 'Crypto-shredded at issuance — nothing to store' },
-        breachRisk: { label: 'Data Breach Risk', avg: 0, phase: 'both', source: 'No PII retained → no breach vector → €0' },
-        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Automated audit chain replaces manual DPO review' },
+        storage: { label: 'PII Storage', avg: null, phase: 'both', source: 'Unknown deployment cost; local credentials persist and verifier non-retention is not established' },
+        breachRisk: { label: 'Data Breach Risk', avg: null, phase: 'both', source: 'Unknown deployment exposure; no zero-breach-risk claim is established' },
+        compliance: { label: 'GDPR Compliance', avg: 0.02, phase: 'both', source: 'Illustrative cost assumption; audit helpers do not establish completed privacy/legal review' },
         consentMgmt: { label: 'Consent Management', avg: 0, phase: 'both', source: 'Built into wallet UI — no external CMP needed' },
       }
     };
@@ -4316,10 +4315,11 @@
       });
 
       const tradPhaseTotal = tradKeys.reduce((s, k) => s + COSTS.traditional[k].avg, 0);
-      const AskMIPhaseTotal = AskMIKeys.reduce((s, k) => s + COSTS.AskMI[k].avg, 0);
+      const unknownAskMIKeys = AskMIKeys.filter(k => !Number.isFinite(COSTS.AskMI[k].avg));
+      const AskMIPhaseTotal = AskMIKeys.reduce((s, k) => Number.isFinite(COSTS.AskMI[k].avg) ? s + COSTS.AskMI[k].avg : s, 0);
 
       // Add to session cumulative
-      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, AskMI: AskMIPhaseTotal });
+      SESSION_COSTS.steps.push({ phase, trad: tradPhaseTotal, AskMI: AskMIPhaseTotal, incomplete: unknownAskMIKeys.length > 0 });
       SESSION_COSTS.traditional = SESSION_COSTS.steps.reduce((s, x) => s + x.trad, 0);
       SESSION_COSTS.AskMI = SESSION_COSTS.steps.reduce((s, x) => s + x.AskMI, 0);
 
@@ -4336,8 +4336,8 @@
         const c = COSTS.AskMI[k];
         return `<li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
       <span>${c.label}</span>
-      <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-        ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+      <span style="font-family:var(--mono);color:${!Number.isFinite(c.avg) ? 'var(--text-dim)' : c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+        ${!Number.isFinite(c.avg) ? 'Unknown' : c.avg === 0 ? '€0.000 (assumed)' : '€' + c.avg.toFixed(3)}
       </span>
     </li>`;
       }).join('');
@@ -4347,7 +4347,7 @@
       document.getElementById('cost-trad-total').innerHTML =
         `<span class="dim">${phaseLabel}:</span> <span style="color:var(--red);font-family:var(--mono)">€${tradPhaseTotal.toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${phaseLabel}:</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMIPhaseTotal.toFixed(3)}</span>`;
+        `<span class="dim">${phaseLabel} known-cost subtotal:</span> <span style="color:var(--text-dim);font-family:var(--mono)">€${AskMIPhaseTotal.toFixed(3)}${unknownAskMIKeys.length ? ' + unknown costs' : ''}</span>`;
 
       // Session total summary (always visible)
       const savingsPct = SESSION_COSTS.traditional > 0
@@ -4360,7 +4360,12 @@
         `<span style="color:var(--red)">€${s.trad.toFixed(3)}</span> vs <span style="color:var(--green)">€${s.AskMI.toFixed(3)}</span>`
       ).join(' &nbsp;│&nbsp; ');
 
-      document.getElementById('cost-savings').innerHTML = `
+      const hasUnknownCosts = SESSION_COSTS.steps.some(s => s.incomplete);
+      document.getElementById('cost-savings').innerHTML = hasUnknownCosts ? `
+    <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+      <strong>Total cost and savings: unknown</strong>
+      <div class="dim">Known AskMI cost assumptions: €${SESSION_COSTS.AskMI.toFixed(3)}. Storage and breach exposure are not estimated and are excluded from this partial subtotal. No percentage or annual savings is established.</div>
+    </div>` : `
     <div style="margin-bottom:0.5rem;font-size:0.8rem">${stepsHtml}</div>
     <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
       <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO USER (Issuance + Verification)</div>
@@ -4399,7 +4404,8 @@
       document.getElementById('cost-result').style.display = 'block';
 
       const tradTotal = costs.traditional.items.reduce((s, c) => s + c.avg, 0);
-      const AskMITotal = costs.AskMI.items.reduce((s, c) => s + c.avg, 0);
+      const hasUnknownCosts = costs.AskMI.items.some(c => !Number.isFinite(c.avg));
+      const AskMITotal = costs.AskMI.items.reduce((s, c) => Number.isFinite(c.avg) ? s + c.avg : s, 0);
 
       document.getElementById('cost-traditional').innerHTML = costs.traditional.items.map(c => `
         <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
@@ -4410,19 +4416,19 @@
       document.getElementById('cost-AskMI').innerHTML = costs.AskMI.items.map(c => `
         <li style="padding:0.25rem 0;display:flex;justify-content:space-between;gap:1rem">
           <span>${c.label}</span>
-          <span style="font-family:var(--mono);color:${c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
-            ${c.avg === 0 ? '€0.000 ✅' : '€' + c.avg.toFixed(3)}
+          <span style="font-family:var(--mono);color:${!Number.isFinite(c.avg) ? 'var(--text-dim)' : c.avg === 0 ? 'var(--green)' : 'var(--yellow)'};white-space:nowrap">
+            ${!Number.isFinite(c.avg) ? 'Unknown' : c.avg === 0 ? '€0.000 (assumed)' : '€' + c.avg.toFixed(3)}
           </span>
         </li>`).join('');
 
       document.getElementById('cost-trad-total').innerHTML =
         `<span class="dim">${costs.traditional.label}</span> <span style="color:var(--red);font-family:var(--mono)">€${tradTotal.toFixed(3)}</span>`;
       document.getElementById('cost-AskMI-total').innerHTML =
-        `<span class="dim">${costs.AskMI.label}</span> <span style="color:var(--green);font-family:var(--mono)">€${AskMITotal.toFixed(3)}</span>`;
+        `<span class="dim">${costs.AskMI.label} known-cost subtotal:</span> <span style="color:var(--text-dim);font-family:var(--mono)">€${AskMITotal.toFixed(3)}${hasUnknownCosts ? ' + unknown costs' : ''}</span>`;
 
       const savingsPct = tradTotal > 0 ? ((1 - AskMITotal / tradTotal) * 100).toFixed(0) : '0';
 
-      document.getElementById('cost-savings').innerHTML = `
+      document.getElementById('cost-savings').innerHTML = hasUnknownCosts ? `<div class="dim"><strong>Total cost and savings: unknown</strong>. Known cost assumptions: €${AskMITotal.toFixed(3)}. Unquantified deployment exposure is excluded from this partial subtotal; no savings percentage is established.</div>` : `
         <div style="padding:0.6rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-top:1rem;">
           <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem">GESAMTKOSTEN PRO VORGANG</div>
           <div style="display:flex;justify-content:center;gap:2rem;align-items:baseline">
@@ -4786,7 +4792,7 @@
         '─────────────────────────────────\n' +
         '✗ name:           [not in predicate]\n' +
         '✗ dob:            [not in predicate]\n' +
-        '✗ ip_address:     [structurally impossible]';
+        '✗ ip_address:     [not in payload; network visibility separate]';
       btn.textContent = 'Proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
@@ -4819,7 +4825,7 @@
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
-      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name blocked']);
+      addReviewEntry('IVB Innsbruck — Student Status', 'clean', ['✓ Student status confirmed', '✓ Expiry: ' + d.toLocaleDateString('en-GB'), '✗ University name omitted; issuer identity may remain visible']);
       ucNext('student');
     }
 
@@ -4848,7 +4854,7 @@
         '─────────────────────────────────\n' +
         '✓ ephemeral_key:     ' + keyId + '\n' +
         '✓ session_id:        ' + sesId + '\n' +
-        '✓ auto_shred_at:     session_end';
+        '✓ cleanup_target:    simulated_session_end (not measured)';
       btn.textContent = 'Release granted ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
@@ -4880,17 +4886,18 @@
         '✓ pseudonymous_id:   ' + pwDid + '\n' +
         '✓ pairwise_did:      did:peer:0z' + sha256Sim('social' + Date.now()).slice(0, 12) + '…\n' +
         '─────────────────────────────────\n' +
-        '✗ display_name:      [BLOCKED by policy]\n' +
-        '✗ email:             [BLOCKED by policy]\n' +
-        '✗ profile_photo:     [BLOCKED — biometric]\n' +
-        '✗ friends_list:      [BLOCKED — social graph]\n' +
-        '✗ location_history:  [BLOCKED — tracking]\n' +
-        '✗ device_id:         [BLOCKED — fingerprint]';
+        'Illustrated target only — active-route scope enforcement remains open (#170).\n' +
+        '✗ display_name:      [OMITTED in illustration]\n' +
+        '✗ email:             [OMITTED in illustration]\n' +
+        '✗ profile_photo:     [OMITTED in illustration — biometric]\n' +
+        '✗ friends_list:      [OMITTED in illustration — social graph]\n' +
+        '✗ location_history:  [OMITTED in illustration — tracking]\n' +
+        '✗ device_id:         [OMITTED in illustration — fingerprint]';
       btn.textContent = 'Login proof generated ✓';
       btn.style.cssText += ';border:1px solid var(--green);color:var(--green)';
       launchConfetti();
       await delay(700);
-      addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Overreach detected: location history BLOCKED']);
+      addReviewEntry('FlirtRadar™ — Login', 'warn', ['✓ Age verified', '✓ Identity: local pseudonym', '⚠ Illustrated target: location history withheld']);
       ucNext('social');
     }
 
@@ -4908,14 +4915,14 @@
         { ts: now, act: 'DUAL_APPROVAL_REQUIRED',     who: 'chef-arzt@ukh-ibk.at' },
         { ts: now, act: 'APPROVAL_GRANTED',           who: 'chef-arzt@ukh-ibk.at [biometric]' },
         { ts: now, act: 'ACCESS_SCOPED',              who: 'EHDS-Scope: emergency_treatment_only' },
-        { ts: now, act: 'AUDIT_IMMUTABLE_WRITE',      who: 'audit-chain-node-7 · hash:3f9a…' },
+        { ts: now, act: 'AUDIT_WRITE_ILLUSTRATED',      who: 'audit-chain-node-7 · hash:3f9a…' },
       ];
       for (const e of entries) {
         await delay(280);
         log.innerHTML += '<div><span class="bgl-ts">' + e.ts.slice(11, 19) + '</span>  <span class="bgl-act">' + e.act + '</span>  <span class="bgl-who">← ' + e.who + '</span></div>';
       }
       await delay(200);
-      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ This override is permanent in the audit trail — also visible to supervisory authorities.</div>';
+      log.innerHTML += '<div style="color:var(--orange);margin-top:0.4rem">⚠ Synthetic audit entry shown. Durable storage and supervisory access depend on deployment and authorization.</div>';
       btn.textContent = 'Override logged ✓';
     }
 
@@ -4948,7 +4955,7 @@
         <div>
           <div style="font-size:0.88rem;font-weight:600">${title}</div>
           <div class="review-meta">${metaHtml}</div>
-          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Session ended · Data forgotten (Proof of Possession shredded)</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Simulated session ended · Holder-key cleanup illustrated</div>
         </div>
         <div class="review-time">${time}</div>
       `;
@@ -4991,8 +4998,6 @@
       const AskMICdn = (users * 1) * 0.0003; // assume 1 verification per user/year for simplicity
       const AskMITotal = AskMIAuth + AskMISign + AskMICdn;
 
-      const savings = tradTotal - AskMITotal;
-      const savingsPct = ((savings / tradTotal) * 100).toFixed(0);
 
       // DOM Updates
       const upd = (id, val, isZero = false) => {
@@ -5015,7 +5020,7 @@
 
       const savEl = document.getElementById('tco-savings');
       if(savEl) {
-        savEl.innerHTML = '€ ' + fmt.format(Math.round(savings)) + ' <span style="font-size:1.2rem;opacity:0.8">(' + savingsPct + '%)</span>';
+        savEl.textContent = 'Unknown — deployment storage and risk costs are excluded from the known-cost subtotal.';
       }
     }
 
@@ -5039,13 +5044,13 @@
     ];
 
     const AskMIBreachEvents = [
-      { t: "🤷", desc: "\"Was soll geleakt werden?\"", d: 200, bold: true },
-      { t: "📭", desc: "Keine PII gespeichert", d: 700 },
-      { t: "📭", desc: "Keine Datenbank mit User-Daten", d: 1200 },
-      { t: "📭", desc: "Keine Meldepflicht (keine Betroffenen)", d: 1700 },
-      { t: "📭", desc: "Kein Bußgeld-Risiko", d: 2200 },
-      { t: "📭", desc: "Kein Reputationsschaden", d: 2700 },
-      { t: "✅", desc: "Kosten: € 0", d: 3200, bold: true, g: true }
+      { t: "🤷", desc: "Minimierung reduziert die Angriffsfläche; tatsächliche Exposition prüfen", d: 200, bold: true },
+      { t: "📭", desc: "Datenflüsse und gespeicherte Attribute im Deployment prüfen", d: 700 },
+      { t: "📭", desc: "Lokale Credentials und Empfänger-Speicherung getrennt betrachten", d: 1200 },
+      { t: "📭", desc: "Betroffene und Meldepflichten anhand des konkreten Vorfalls prüfen", d: 1700 },
+      { t: "📭", desc: "Rechtliche Folgen sind nicht durch die Demo ausgeschlossen", d: 2200 },
+      { t: "📭", desc: "Reputationsfolgen hängen vom konkreten Vorfall ab", d: 2700 },
+      { t: "✅", desc: "Kosten: unbekannt — kein Nullrisiko-Nachweis", d: 3200, bold: true, g: true }
     ];
 
     async function playBreachAnimation() {

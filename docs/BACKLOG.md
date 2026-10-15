@@ -1,5 +1,31 @@
 # AskMI — Master Backlog
 
+## Current evidence-linked work — 2026-10-14
+
+Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
+[Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
+[release roadmap](RELEASE_READINESS_ROADMAP.md), #142 and #143 link current work to the existing component records below.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| ADOPT-1.0/1.1/1.2 | Design | Accepted designs only (#158/#159/#160) | Does not mean SDK/core/store implemented |
+| ADOPT-1.2-code / EV-01/02 | P0 | OPEN #170 | Original server request, crypto + eligibility + scope, atomic session, active HTTP negatives |
+| EV-03 real SD-JWT single-use | P1 / profile-required P0 | OPEN #171 | Atomically reserve/consume stored single-use, holder lifecycle and honest cleanup |
+| EV-04 Tier-2 sink integration | P1 | OPEN #172 | Inventory actual outputs first; apply existing schema only to in-scope exports/telemetry; preserve Tier 1 |
+| EV-06 revision-bound evidence | P1 | OPEN #173 / SEC-AUDIT-3 | Actual-file hash and source/profile/config; active-path coverage |
+| EV-05 audit CI gate | P0 | OPEN #141 / SEC-AUDIT-1/2 | Critical/high and audit failures block; preserve #152 runner |
+| Key separation / decision randomness | Existing | OPEN #150/#151 | Re-review on current base with targeted format/key/randomness tests |
+| S-11 / #122 named layer gap | Scoped | Implemented #125; scoped closure supported | Two negatives plus fresh 63-test schema/metadata/security run; not full health readiness |
+| Naming / #95 | Decision | Superseded by AskMI + #158 | No implementation guarantee attached |
+| G-100.5 / #97 | Profile | OPEN | Exact current official age/mdoc/ZKP semantics plus interoperability evidence |
+| G0/G1 | Gate | OPEN, elapsed targets | No broad expansion until reviewed; public 20/8/3 tally missing, not private-activity inference |
+| GAP-1/GAP-4/F-19/F-20 | Residual | OPEN | Runtime erasure/external review/durable audit/explicit unlinkability downgrade |
+
+These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
+Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
+
+## Existing task/change records
+
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
@@ -61,7 +87,7 @@ Quelle: [`tasks/ADOPT_1_CONNECT_PLAN.md`](tasks/ADOPT_1_CONNECT_PLAN.md). Dieser
 | ADOPT-1.0 | 🔴 P0 | ✅ | Produktgrenze für `@askmi/connect` festgelegt: RP-deployed Verifier-/Policy-Integration, erster Slice nur Age/Liquor-Store mit echtem ADOPT-0a/0b-Pfad; keine AskMI-issued Credentials, keine issuer-equivalent Claims, keine Roh-Credentials in genereller Telemetrie. Siehe [`tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`](tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md). | Entscheidung dokumentiert; keine Ausgabe wird als neue EUDI-Credential oder issuer-equivalent proof beschrieben |
 | ADOPT-1.1 | 🔴 P0 | ✅ | Minimalen Verification-Session-Contract definiert: `age-liquor-store-v1`, neue `/askmi/connect/sessions`-Routen, one-shot Present, Status-GET, Store-Interface, stabile Fehlercodes und negative Tests gegen die simulierte `/wallet-present`-Route. Siehe [`tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md`](tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md). | Schema dokumentiert; wrong audience, reused nonce, missing session/trust, invalid signature und insufficient claims sind fail-closed Fälle |
 | ADOPT-1.2 | 🟡 P1 | ✅ | SDK/API-Schnitt für `@askmi/connect` entworfen: neues Package, framework-agnostic Core, InMemory Store, dünner Express-Adapter, Browser-Handoff-Helper, constrained policy registration. Siehe [`tasks/ADOPT_1_SDK_API_SHAPE.md`](tasks/ADOPT_1_SDK_API_SHAPE.md). | Kein Holder-Key/Credential-Byte-Export; Sample nutzt echten ADOPT-0 Pfad, nicht `/wallet-present` Simulation |
-| ADOPT-1.2-code | 🔴 P0 | ⏳ | Ersten `@askmi/connect` Code-Slice bauen: Core, Store, Express-Adapter, Handoff-Helper und negative Tests | Package baut/testet; zwei Sessions kollidieren nicht; wrong audience/nonce/replay/expiry/simulated route fail-closed |
+| ADOPT-1.2-code | 🔴 P0 | ⏳ #170 | Ersten `@askmi/connect` Code-Slice bauen: Core, Store, Express-Adapter, Handoff-Helper und negative Tests | Package baut/testet; zwei Sessions kollidieren nicht; wrong audience/nonce/replay/expiry/simulated route fail-closed |
 | ADOPT-1.3 | 🟡 P1 | ⏳ | Ersten Vertikal-Pilot nur über Discovery-Gates auswählen (Buyer, Land, Credential-Quelle, Schmerz, Rechts-/Retention-Annahmen, paid-pilot path) | Kein 72-Use-Case-Buildout; ein konkreter Pilot erfüllt die Gates oder wird verworfen |
 
 ---
@@ -268,7 +294,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 |---|---|---|
 | E-40 | ✅ | Live EUDI Trust List (TSL) Integration |
 | E-41 | ✅ | TSL Signature Verification (eIDAS 2.0 Compliance) |
-| E-42 | ✅ | Functional Coverage 100% (Technical) |
+| E-42 | 🟡 | Historical internal mapping; current functional conformance unproven |
 
 ---
 
@@ -302,7 +328,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.4 Regulatory Compliance
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
-| E-30 | ✅ | CIR 2024/2977 Compliance (PID + EAA Anforderungen) — 100% (Batch Issuance complete) | EU Implementing Reg |
+| E-30 | ✅ | Historical PID/EAA implementation mapping; no complete current-rulebook compliance evidence | EU Implementing Reg |
 | E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool + Hardware Binding) | EU Implementing Reg |
 | E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity + GDPR Rights) | EU Implementing Reg |
 | E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + LoA High Readiness | EU Implementing Reg |
@@ -342,7 +368,7 @@ Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 - **Total requirements:** 53
 - **Implemented:** 52 ✅
 - **Partial:** 1 🟡 — formal Common Criteria certification (CC conformance, E-42; external evaluation pending)
-- **Compliance Score:** 98% (52/53) — consistent with [`../STATE.md`](../STATE.md) and [`compliance/EUDI_CIR_MATRIX.md`](compliance/EUDI_CIR_MATRIX.md)
+- **Historical internal mapping total (not compliance/readiness evidence):** 52/53 entries; superseded for current status by the open findings register. Historical reference: [`../STATE.md`](../STATE.md) and [`compliance/EUDI_CIR_MATRIX.md`](compliance/EUDI_CIR_MATRIX.md)
 
 ---
 

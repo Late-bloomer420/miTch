@@ -1,12 +1,14 @@
 # miTch Claim to Evidence Map
 
-Stand: 2026-05-21
+Mapping baseline: 2026-05-21; scoped qualifications: 2026-10-14
 
 This file maps public-facing claims to concrete repo evidence.
 
 ## Core claims
 
 ### Claim: miTch proves only what is needed
+
+Scope: Policy evaluation and selective-disclosure building blocks are linked below. The real SD-JWT HTTP path needs original-request/scope integration (#170); this does not invalidate policy-engine tests.
 
 Evidence:
 
@@ -18,6 +20,8 @@ Evidence:
 
 ### Claim: raw data stays out
 
+Scope: This is the minimisation goal, not a universal current invariant. Numeric age reaches the real SD-JWT verifier; local wallet history is a separate purpose. #172 first inventories actual external outputs.
+
 Evidence:
 
 - `src/packages/shared-types/src/audit.ts`
@@ -26,6 +30,8 @@ Evidence:
 - `docs/04-legal/MEMO_GDPR_SHREDDING.md`
 
 ### Claim: decisions are auditable
+
+Scope: Hash/signature-chain behavior is component evidence. Durable storage, externally anchored verification and actual export integration require separate evidence.
 
 Evidence:
 
@@ -58,6 +64,8 @@ Evidence:
 
 ### Claim: receipt history can be exported without raw PII
 
+Scope: The linked receipt-export implementation/tests are a specific path. Tier-2 audit integration findings do not by themselves disprove these tests or establish all-output anonymity.
+
 Evidence:
 
 - `src/apps/wallet-pwa/src/consent-manager/receipt-store.ts`
@@ -77,6 +85,8 @@ Evidence:
 - `src/apps/wallet-pwa/src/App.tsx`
 
 ### Claim: fail-closed policy is a real system rule
+
+Scope: The listed policy deny paths retain their evidence. #170 is an HTTP request/session/application integration gap, not proof that the policy evaluator generally allows unsafe requests.
 
 Evidence:
 
@@ -113,3 +123,7 @@ These claims should only be used if the supporting context is shown on the page.
 - One technical proof source
 - One design / architecture reference
 - One concise FAQ or terminology note
+
+## Evidence maintenance
+
+Keep the code/test links above. For a reviewed claim, record its path/profile, source revision, test or observation and known limits. Later evidence qualifies only the overlapping claim and scope. Docs-only edits do not require a full repository re-audit; rerun affected checks when implementation, relevant dependencies/configuration or the profile changes. Broad release claims require broader release checks. [Finding index](../../security/REPO_EVIDENCE_STATUS_2026-10-14.md).

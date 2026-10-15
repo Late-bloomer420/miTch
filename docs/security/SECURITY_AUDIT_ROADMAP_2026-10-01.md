@@ -1,5 +1,10 @@
 # Security Audit Remediation Roadmap
 
+> **Refresh (2026-10-14):** #152 is already merged and its shell-free runner must be preserved.
+> #150/#151 remain open, and #141 contains unmerged security work. EV-05 demonstrates that master CI can exit 0 on synthetic critical findings;
+> current registry advisory counts were not re-measured in this documentation pass. #170–#173 own the new concrete slices.
+> [Finding index](REPO_EVIDENCE_STATUS_2026-10-14.md) qualifies only overlapping integration/claim scopes; existing component evidence and the original intake facts remain intact.
+
 Date: 2026-10-01
 Status: active triage plan.
 
@@ -36,8 +41,8 @@ Scope:
 
 - inspect PR #151 and re-apply only the secure-randomness change if still
   relevant;
-- inspect PR #152 and re-apply only the shell-injection-safe evidence-runner
-  change if still relevant;
+- preserve the merged PR #152 shell-free runner; do not reapply or regress it;
+- close EV-05 by making advisory threshold and audit errors fail closed in the integrated workflows;
 - reject stray/generated files that do not belong in the codebase.
 
 Acceptance:
@@ -74,7 +79,7 @@ Priority: P1.
 
 Scope:
 
-- run `pnpm evidence`;
+- deliver #173 exact source/profile and persisted-byte binding, then run the applicable harness;
 - refresh the latest evidence report if code changed;
 - update `docs/security/README.md` current-status dates and counts;
 - ensure newly added `@askmi/connect` claims enter the harness only after the
@@ -118,5 +123,5 @@ Acceptance:
 Start with SEC-AUDIT-1 after ADOPT-1.2 is accepted:
 
 1. review PR #151 and #152 against current `master`;
-2. create a fresh branch for the first selected fix;
+2. use #170–#173 and EV-05 as named intake; create a fresh focused branch for a selected code fix;
 3. land it with targeted tests and required CI.

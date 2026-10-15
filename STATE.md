@@ -3,11 +3,11 @@
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
-**Date:** 2026-10-01 (ADOPT-1.2 SDK/API shape accepted)
+**Date:** 2026-10-14 (scoped evidence reconciliation; earlier run dates retained)
 **Branch:** `master` (full AskMI rebrand merged via PR #70)
-**Release tag:** `v1.0-RC (Pilot Readiness)`
+**Historical milestone label:** `v1.0-RC`; this label is not a current release approval
 **Repo:** `https://github.com/Late-bloomer420/miTch.git`
-**Current master:** `b6b4517` (PR #159 merged) — ADOPT-1.1 minimal session contract accepted after #158 (ADOPT-1.0 product boundary) and #138 (ADOPT evidence/research intake alignment). Earlier demo honesty fixes #154/#155 remain part of the base.
+**Executable source checked:** `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`. #138/#158/#159/#160 designs/docs and #152 runner work are merged; #141 security reconciliation remains open.
 
 ---
 
@@ -24,18 +24,32 @@
 - QA evidence records: [`docs/qa/`](docs/qa/)
 - Deployment Orchestration: [`docker-compose.yml`](docker-compose.yml)
 
-## Pilot path (v1.0-RC Stable)
+## Reference/pilot-target path
 
 - **Minimal scenario:** Altersverifikation (18+) via OID4VP.
-- **Status:** Release Candidate achieved. All core stabilization and refactoring phases complete.
+- **Status:** historical RC milestone; current integrated release gates remain open in #142. Component completion below does not imply an accepted full deployment.
 
-## Current status
+## Scoped verification update — 2026-10-14
+
+Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`. Build 29/29, rebrand/archived-import guards, and a focused 63-test schema/metadata/engine run passed. The existing harness returned 10 PASS / 2 RESIDUAL / 0 FAIL within its manifest. A new full-suite, lint, browser E2E or official-wallet matrix was not run in this audit.
+
+| Scope | Observation / task | Existing work retained |
+|---|---|---|
+| `/oid4vp-present` | Server request not retained; replay and caller-selected nonce/state accepted (#170) | Issuer-signature, digest and KB-JWT checks (#132/#135/#137) |
+| Age demo/application result | Signed age 12 is cryptographically accepted; eligible success must be a separate application decision (#170) | Cryptographic validity is not an age-policy verdict |
+| Stored SD-JWT lifecycle | Repeated `singleUse:true` presentation and premature SHREDDED UI (#171) | Legacy pool consumption/holder-binding (#86–#94) |
+| External audit/telemetry | Tier-2 helpers not found wired at inspected app/audit call sites (#172); inventory actual outputs first | #81 schema and local Tier-1 history |
+| Evidence report / CI audit | Final-LF hash mismatch (#173); synthetic critical/high check exits 0 (EV-05/#141) | #134 harness and #152 shell-free runner |
+
+[Detailed dated observations](docs/qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) and [finding index](docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md) add to the earlier evidence below; they do not reclassify unrelated completed work. G0/G1 remain open in #142/#143; no published 20/8/3 tally was found, which does not imply zero private interviews.
+
+## Recorded operating status
 
 ### Operational Health
-- **GitHub Actions:** `master` stays green by construction — branch protection requires PR-only merges + passing checks (ci-security, Deploy GitHub Pages, AskMI CI/CD Pipeline, CodeQL) + verified/signed commits. This held through the latest merge, PR #81.
+- **GitHub Actions:** see the run for the exact head being assessed. Older checks are dated evidence; the audit-threshold false-success reproduced in EV-05 is distinct from build/test success. Current branch-protection configuration was not revalidated in this pass.
 - **Tests:** `pnpm test` → **46/46 turbo tasks green** (verified 2026-07-13; 1820+ individual tests). Earlier records (2026-06-04 RC) showed 45/45; the 46th task was added when `integration-tests` joined the turbo graph. PR #66 additionally re-ran targeted package tests for the npm scope alignment (`revocation-statuslist`, `shared-crypto`, `audit-log`, `policy-engine`) before merge.
 - **Lint:** `pnpm lint` → **0 errors, 7 warnings** (verified 2026-07-13). All 7 warnings are pre-existing `@typescript-eslint/no-explicit-any` in `wallet-pwa`, present since the SECURE-1 baseline (Task 0). SECURE-1 introduced zero new warnings (count unchanged 7→7).
-- **Compliance Score:** 100% Technical (52/53 CIR requirements ✅; 1 partial 🟡 — formal CC certification, see [`EUDI_CIR_MATRIX.md`](docs/compliance/EUDI_CIR_MATRIX.md))
+- **Compliance mapping:** retain the detailed [CIR component matrix](docs/compliance/EUDI_CIR_MATRIX.md). Its internal row counts do not establish regulatory compliance, LoA High or independent certification.
 - **Live Demo Flow (real credential path — verified live 2026-07-17):** issuer-mock (3005) issues a real `vc+sd-jwt` (holder-bound `cnf`) → wallet stores it → wallet presents from the stored VC with selective disclosure (`age` only) + KB-JWT → verifier `/oid4vp-present` (3004) resolves the issuer key **authoritatively via the trust list / JWKS** (ignores any wallet-supplied `issuer_jwk`), verifies the signature, decodes disclosures → `200 {ok, disclosedClaims:{age:24}}` + consent receipt. Negative paths proven live: attacker-forged trusted `iss` → `403 Signature verification failed`; untrusted `iss` → `403 untrusted_or_unresolvable_issuer`. Evidence: [`docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md). **Start note:** `pnpm dev` still fails on `@askmi/poc-hardened` (unrelated PoC, `ERR_MODULE_NOT_FOUND`); start the demo per-service (`pnpm --filter issuer-mock dev`, `pnpm --filter verifier-backend dev`) or `--filter=!@askmi/poc-hardened`. **Known gaps:** only the `age`/liquor-store scenario runs end-to-end with a real credential (others fail-closed as "no matching credential"); the browser UI click-through of wallet-pwa (`:5174`, HTTPS self-signed) was not automated this pass; the verifier-demo **frontend** (`:5175`) `/wallet-present` is still the *simulated* wallet, not the real ADOPT path.
 - **Legacy simulated demo (`/wallet-present`):** the verifier-demo frontend still drives a self-contained simulation (ephemeral issuer keys + scenario claims) for visualization across all scenarios; this is demo-only and distinct from the real ADOPT-0a/0b path above.
 - **Containerization:** All services (Wallet, Issuer, Verifier) fully Dockerized with multi-stage builds. Verified via `scripts/verify-deployment.ps1`.
@@ -58,7 +72,7 @@
 ### Recent additions (2026-07-17 — SECURE-2 + ADOPT-0a/0b real credential path, live-verified)
 - **SECURE-2 (#134):** internal evidence pack (`@askmi/evidence`) + runnable harness that regenerates the P0/fail-closed proof artifacts on demand.
 - **`turbo dev dependsOn ^build` (#133):** dev servers now build their workspace deps first (fixes most stale-dist dev breakage). Residual: `@askmi/poc-hardened` still fails `pnpm dev` (`ERR_MODULE_NOT_FOUND`) — start the demo per-service or `--filter=!@askmi/poc-hardened`.
-- **ADOPT-0a (#135) — real issuance + storage:** issuer-mock issues a real holder-bound `vc+sd-jwt` (`cnf` + `_sd` selective-disclosure digests); wallet stores/retrieves it (`addSdJwtVc`/`getSdJwtVc`). The issuer key is resolved via the **trust list**, so a real issuer (Austria ID / eIDAS) plugs in with no code change. This replaced fabricated issuance.
+- **ADOPT-0a (#135) — real issuance + storage:** issuer-mock issues a real holder-bound `vc+sd-jwt` (`cnf` + `_sd` selective-disclosure digests); wallet stores/retrieves it (`addSdJwtVc`/`getSdJwtVc`). The issuer key is resolved via the **trust list**, a real issuer integration still requires an exact protocol, trust and interoperability check. This replaced fabricated issuance.
 - **ADOPT-0b (#136) + e2e fix (#137) — real presentation + verification:** the wallet presents from the **stored** credential with real selective disclosure + KB-JWT; the verifier `/oid4vp-present` resolves the issuer key authoritatively (trust list / JWKS) and decodes the disclosures. #137 fixed two bugs that were unit-green but e2e-broken (verifier ignored disclosures; issuer never issued the requested `age`). Fabrication (ephemeral issuer keys, scenario claims) is gone from the wallet present path; the **circular-verification** gap (verifier trusting a wallet-supplied `issuer_jwk`) is closed.
 - **Live verification (2026-07-17):** drove the real HTTP path against fresh current-`master` servers — happy path `200 {age:24}` + consent receipt; attacker-forged trusted `iss` → `403 Signature verification failed`; untrusted `iss` → `403 untrusted_or_unresolvable_issuer`. **Real-facts finding:** 3-day-old zombie dev processes on `:3004`/`:5174` were serving pre-merge code and initially masked everything — always confirm the running process is current before trusting a live demo. `pnpm test` → **47/47 turbo tasks green** (integration package increment 46→47). Evidence: [`docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](docs/qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md).
 
@@ -98,13 +112,13 @@ Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct c
 - **QA evidence surface:** `docs/qa/` contains dated validation records, including `WALLET_RECOVERY_RC_2026-06-04.md` and `MIT-10-demo-evidence.md`. These are evidence records, not general task tracking.
 - **Branch/PR Consolidation (2026-05-27):** all 10 open PRs resolved onto `master` and the branch/worktree sprawl cleared (22 → 3 remote branches; only `master`, the active `feat/mitch-ai-guardian`, and audit-retained `claude/relaxed-pike` remain). Stale-base PRs were never merged directly (they would have re-introduced paperclip / reverted recent work) — only their genuine net-new value was salvaged onto clean master: verifier **fail-closed** + no-PII-logging (#34), **Commercial Trust Kit** docs (#35), **B2B use-case modules** + repo-local **agent skills** + **ADR-010** Regulatory-Positioning Boundary (#37), **MCP-server freeze decisions** (#38), a date-coupled **PII-substring test fix** (#36), and the `_tmp_*` ignore rule (#39). Superseded/no-value PRs closed with rationale (#14/#16/#17/#18/#24/#26/#27/#30). Full suite re-verified green on the consolidated master.
 - **Repo Hardening & Hygiene:** `master` branch protection live (PR-only + required CI checks + **verified/signed commits** + no force-push/deletion); SSH commit signing configured and verified end-to-end (`verified: true`); **all 17 Dependabot alerts cleared → 0 open**; paperclip orchestrator runtime (a committed 1,895-file PostgreSQL data dir + phantom submodule) purged from `master` tracking and gitignored — docs `PAPERCLIP.md`/`ASKMI_COMPANY.md` retained; pnpm temp stubs (`_tmp_*`) ignored.
-- **Certification Readiness Artefacts (E-42):** Created formal `SECURITY_TARGET_CC_READY.md` mapping AskMI security functions to Common Criteria (ISO/IEC 15408) requirements.
+- **Certification Readiness Artefacts (E-42):** Created draft `SECURITY_TARGET_CC_READY.md` mapping AskMI security functions to Common Criteria (ISO/IEC 15408) requirements.
 - **OID4VCI Batch Issuance (E-41):** Implemented `/batch_credential` endpoint support in `oid4vci` package. Enables parallel issuance of multiple credentials (e.g., PID + EAA) in a single session.
 - **EUDI Trust List (TSL) Integration:** `EUDITrustListResolver` implemented in `shared-crypto`, providing dynamic lookup and validation of trusted issuers/verifiers with fail-closed logic. Operational documentation added in `docs/ops/TRUST_ANCHOR_ARCHITECTURE.md`.
-- **Compliance Gap Sprint:** Reached 98% EUDI CIR coverage (52/53). Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, dynamic Trust List (TSL) integration, and Certification-Readiness artefacts. Remaining: formal CC certification.
+- **Compliance Gap Sprint:** Recorded 52/53 internal mapping rows in the June CIR matrix; this was not an assessed compliance percentage. Completed mapping for LoA High (WebAuthn binding), Proximity (ISO 18013-5), GDPR Data Subject Rights, dynamic Trust List (TSL) integration, and Certification-Readiness artefacts. Remaining: formal CC certification.
 - **StatusList PoC:** `SDJWTStatusResolver` implemented in `shared-crypto`, wiring the `@askmi/revocation-statuslist` package for live revocation fetch capability.
 - **Turbo v2 & Vite 6:** Completed migration of all apps and packages to Turbo v2 and Vite 6, clearing remaining Dependabot alerts.
-- **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, satisfying eIDAS LoA High requirements.
+- **Hardware Binding:** Finalized implementation and documentation (ADR-013) for hardware-bound identity keys, without independently establishing eIDAS LoA High assurance.
 - **`@askmi/data-flow`** package: Transaction view — Audit-Entries nach `decision_id` gruppiert, Claims/Lifecycle/Shredding sichtbar (Phase 1).
 - **Data Flow transparency in wallet-pwa:** `VP_GENERATED` Audit-Event in `WalletService`; `claimsWithheld` aus `claims_requested` vs. `claims_shared` abgeleitet und im `DataFlowPanel` angezeigt (Phase 2).
 - **Plain-language minimization summary:** `summarizeTransaction()` erzeugt verifizierbare Kurz-Zusammenfassungen aus bestehenden `DataFlowTransaction`-Feldern (z. B. bewiesen statt offengelegt, zurückgehaltene Claims, Shredding-Status) — ohne Risk Scoring oder Spekulation (Phase 3).
@@ -115,11 +129,11 @@ Scout & Advisor mode: all work landed via reviewed `proposal/*` PRs, no direct c
 - **SPRINT_PLAN.md F-01–F-18:** recovery SSS, verifier binding, safe glob, CSP, ci-security — details in [`docs/SESSION_HISTORY.md`](docs/SESSION_HISTORY.md)
 - **EUDI Compliance Hardening (E-30–E-33):** CIR 2024/2981 Certification Analysis (`docs/compliance/`); CIR 2024/2982 **Data Erasure (I9)** & **Reporting Mechanism** (WalletService logic + DataFlow UI buttons); 77% (41/53) CIR compliance score.
 - **Proximity Presentation (E-50):** `ProximityView` UI + QR Device Engagement (ISO 18013-5) + `WalletService.generateProximityResponse` implemented (Mock transport).
-- **Hardware-bound Identity (T-31):** WebAuthn-backed Identity Key implemented in `WalletService` for LoA High compliance.
+- **Hardware-bound Identity (T-31):** WebAuthn-backed Identity Key implemented in `WalletService` for hardware-authentication exploration; LoA High is not established by this component alone.
 - **EHDS Compliance (T-C2, T-C3):** Global Secondary-Use Opt-Out in `PolicyEditor`; Localized medical terms (`CLAIM_DICTIONARY`) for EU-wide patient mobility.
 
 ### Completion Summary
-Phase 0–5 complete. AskMI has achieved 98% technical EUDI compliance and is fully containerized for sovereign deployment with a polished visual rendering layer. Technically prepared for formal EUDI evaluation.
+The preceding entries retain their original dates, component scopes and recorded validation. They document substantial delivered work. Current profile integration and independent assurance are separate gates; internal mapping counts are not compliance scores.
 Detailliertes Task-Tracking mit Einzel-IDs: [`docs/BACKLOG.md`](docs/BACKLOG.md)
 
 ---
