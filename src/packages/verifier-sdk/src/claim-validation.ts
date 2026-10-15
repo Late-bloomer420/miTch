@@ -13,20 +13,20 @@
 
 import Ajv2020 from 'ajv/dist/2020.js';
 import {
-    CLAIM_CONTRACT_SCHEMA_V1,
-    resolveClaim,
-    UnknownClaimError,
-    type CanonicalClaim,
+  CLAIM_CONTRACT_SCHEMA_V1,
+  resolveClaim,
+  UnknownClaimError,
+  type CanonicalClaim,
 } from '@askmi/shared-types';
 
 const ajv = new Ajv2020({ allErrors: true });
 const validateStructure = ajv.compile(CLAIM_CONTRACT_SCHEMA_V1);
 
 export interface ClaimRequestValidation {
-    valid: boolean;
-    /** Canonical claim names, present only when `valid` is true. */
-    claims?: CanonicalClaim[];
-    errors: string[];
+  valid: boolean;
+  /** Canonical claim names, present only when `valid` is true. */
+  claims?: CanonicalClaim[];
+  errors: string[];
 }
 
 /**
@@ -35,25 +35,25 @@ export interface ClaimRequestValidation {
  * (no echo of unexpected input values).
  */
 export function validateClaimRequest(input: unknown): ClaimRequestValidation {
-    if (!validateStructure(input)) {
-        const errors = (validateStructure.errors ?? []).map(
-            (e) => `${e.instancePath || '(root)'} ${e.message ?? 'invalid'}`.trim(),
-        );
-        return { valid: false, errors: errors.length ? errors : ['INVALID_REQUEST'] };
+  if (!validateStructure(input)) {
+    const errors = (validateStructure.errors ?? []).map((e) =>
+      `${e.instancePath || '(root)'} ${e.message ?? 'invalid'}`.trim()
+    );
+    return { valid: false, errors: errors.length ? errors : ['INVALID_REQUEST'] };
+  }
+
+  const { claims: requested } = input as { claims: string[] };
+  const claims: CanonicalClaim[] = [];
+  const errors: string[] = [];
+
+  for (const name of requested) {
+    try {
+      claims.push(resolveClaim(name));
+    } catch (e) {
+      errors.push(e instanceof UnknownClaimError ? e.message : 'INVALID_CLAIM');
     }
+  }
 
-    const { claims: requested } = input as { claims: string[] };
-    const claims: CanonicalClaim[] = [];
-    const errors: string[] = [];
-
-    for (const name of requested) {
-        try {
-            claims.push(resolveClaim(name));
-        } catch (e) {
-            errors.push(e instanceof UnknownClaimError ? e.message : 'INVALID_CLAIM');
-        }
-    }
-
-    if (errors.length) return { valid: false, errors };
-    return { valid: true, claims, errors: [] };
+  if (errors.length) return { valid: false, errors };
+  return { valid: true, claims, errors: [] };
 }
