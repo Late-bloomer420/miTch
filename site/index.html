@@ -1826,7 +1826,7 @@
             <div class="risk-row"><span class="rr-field">region_match</span><span class="rr-val">EU / EEA</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">humanity_proof</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Predicate</span></div>
             <div class="risk-row"><span class="rr-field">frequency_cap</span><span class="rr-val">5 / day</span><span class="risk-badge low">🟢 Rate Limit</span></div>
-            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">This request is transmitted as an OID4VP Presentation Request. No direct data access is possible.</p>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.8rem">This illustration uses an OID4VP presentation request. A request describes desired disclosure; enforcement must bind the response to that request (#170).</p>
           </div>
 
           <!-- Step 2: Transparency Layer -->
@@ -1837,14 +1837,14 @@
             <div class="risk-row"><span class="rr-field">age ≥ 18</span><span class="rr-val">true/false, no age</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">region: EU</span><span class="rr-val">yes/no, no country</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">humanity</span><span class="rr-val">verified</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable</div>
+            <div class="uc-sub-hdr">Excluded from this illustrated payload</div>
             <div class="blocked-row"><span class="br-field">Last Name, First Name</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT IN PREDICATE</span></div>
             <div class="blocked-row"><span class="br-field">IP-Adresse</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
             <div class="blocked-row"><span class="br-field">Browsing History</span><span class="br-reason">NOT IN THIS PAYLOAD; NETWORK VISIBILITY SEPARATE</span></div>
             <div class="inference-box">
               <div class="ib-hdr">⚠ Inference-Risiko: 🟡 Medium</div>
-              <div class="ib-body">With Age ≥ 18 + Region EU + timestamp, the verifier can form a rough demographic cluster. Your exact age, country, or profile remains unknown. The budget signal is quantized into 1,920 slots — no continuous fingerprinting is possible.</div>
+              <div class="ib-body">Age ≥ 18, Region EU and a timestamp can support demographic inference. This illustration quantizes the budget signal into 1,920 slots, limiting that field’s precision. Credential reuse, IP addresses, timing and browser metadata can still enable correlation or fingerprinting; combined inference has not been assessed.</div>
             </div>
             <div class="uc-sub-hdr">Your Ad-Preferences (remain local)</div>
             <table style="width:100%;border-collapse:collapse;font-size:0.79rem;margin-top:0.2rem">
@@ -1949,7 +1949,7 @@
             <div class="uc-sub-hdr">What is shared (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">student_status</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">valid_until</span><span class="rr-val">Semesterende 23:59</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable (not in request)</div>
+            <div class="uc-sub-hdr">Not requested in this illustration</div>
             <div class="blocked-row"><span class="br-field">Name, Vorname</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="blocked-row"><span class="br-field">Matriculation Number</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="blocked-row"><span class="br-field">Date of Birth</span><span class="br-reason">NOT REQUESTED</span></div>
@@ -1957,7 +1957,7 @@
             <div class="blocked-row"><span class="br-field">Field of Study</span><span class="br-reason">NOT REQUESTED</span></div>
             <div class="inference-box">
               <div class="ib-hdr">ℹ Inference-Risiko: 🟢 Low</div>
-              <div class="ib-body">Student boolean + semester end date do not allow any conclusions about identity. IVB only learns: This wallet user is a valid student. No profiling possible.</div>
+              <div class="ib-body">This illustrated payload contains student status and an expiry date, without a name. Credential reuse and transport metadata may still support identification or profiling; combined inference has not been assessed.</div>
             </div>
           </div>
 
@@ -2212,7 +2212,7 @@
             <div class="uc-sub-hdr">What the app gets (minimal proof)</div>
             <div class="risk-row"><span class="rr-field">age_gte_18</span><span class="rr-val">true</span><span class="risk-badge low">🟢 Low</span></div>
             <div class="risk-row"><span class="rr-field">pseudonymous_id</span><span class="rr-val">unique, pairwise</span><span class="risk-badge low">🟢 Low</span></div>
-            <div class="uc-sub-hdr">Structurally not shareable (Policy Engine blocks)</div>
+            <div class="uc-sub-hdr">Excluded from this illustrated payload (Policy Engine blocks)</div>
             <div class="risk-row"><span class="rr-field">display_name</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">email</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
             <div class="risk-row"><span class="rr-field">profile_photo</span><span class="rr-val"></span><span class="risk-badge high" style="background:var(--red-dim);color:var(--red)">BLOCKED</span></div>
@@ -2653,7 +2653,7 @@
     <div class="vsec">
       <div class="vsec-label">Where We're Going</div>
       <h2 class="vsec-title">Your data life, reviewed daily.<br>Like a bank statement — for your privacy.</h2>
-      <p class="vsec-body">Every transaction that touches your wallet is logged — what was shared, what was withheld, what was forgotten. At the end of the day, you review your complete data flow and claims lifecycle. No pressure. No decision. Just clarity.</p>
+      <p class="vsec-body">Planned daily review: show requested, approved and disclosed data, plus observed cleanup outcomes and their limits. The entries below are synthetic examples. Complete coverage of actual application outputs and durable history remain open integration work (#172).</p>
 
       <div class="review-day-header">
         <span>📅 Monday, 9 March 2026 — 4 interactions</span>
@@ -2806,10 +2806,10 @@
 
       <div class="roadmap-grid">
         <div class="roadmap-card built">
-          <div class="roadmap-layer">Layer 1 — Built</div>
+          <div class="roadmap-layer">Layer 1 — Components implemented</div>
           <div class="roadmap-icon">🔐</div>
           <div class="roadmap-title">The Forgetting Layer</div>
-          <div class="roadmap-desc">Control exactly what leaves your wallet at every transaction. Unreleased fields are withheld by the selected policy; cleanup has explicit ownership limits.</div>
+          <div class="roadmap-desc">Policy and selection components support scoped disclosure in their tested configurations. Active-route request binding and extra-claim enforcement remain open (#170); cleanup has explicit ownership limits.</div>
           <ul class="roadmap-features">
             <li>Selective disclosure — share only what's needed</li>
             <li>Controlled-key cleanup — integration and runtime-copy limits apply</li>

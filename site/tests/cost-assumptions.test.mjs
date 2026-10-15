@@ -124,7 +124,9 @@ test('interactive break-glass and breach descriptions retain deployment uncertai
 
 test('scenario metadata and audit labels do not claim global unlinkability or real shredding', () => {
   for (const claim of ['no cross-verifier tracking is possible', 'not linkable to other services',
-    'no linkability', 'STRUCTURAL IMPOSSIBILITY', '[structurally impossible]',
+    'no linkability', 'no continuous fingerprinting is possible',
+    'No profiling possible', 'Control exactly what leaves your wallet at every transaction',
+    'Every transaction that touches your wallet is logged', 'STRUCTURAL IMPOSSIBILITY', '[structurally impossible]',
     'Logging elevated access to immutable audit chain',
     'can_identify_user:</span> <span class="vf">false</span>',
     'can_infer_claims:</span> <span class="vf">false</span>',
