@@ -30,6 +30,10 @@ The public EC implementation is a multi-repository organization, not one monolit
 
 ## Authority and evidence
 
+### Observable trust outcomes — additive planning, 2026-10-14
+
+The [assurance and role contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) defines TR-1 understandable promises (#175), TR-2 one bounded real transaction (#170/#171), TR-3 authenticated agent authority (#177), TR-4 role/provider dependencies and exit (#176/#97), and TR-5 operating evidence (#172/#173 and existing independent/release gates). These milestones refine the existing waves; they are not completed controls, new calendar commitments or replacements for G0/G1. #178 owns this documentation intake. The first code slice remains #170 plus relevant #141 baseline reconciliation.
+
 | Surface | Authority |
 |---|---|
 | [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md) | Official source/version lock and AskMI role boundary |
@@ -294,3 +298,8 @@ Production becomes schedulable only after successful pilot exit plus durable gov
 
 Do not move G0/G1 or promote future sprints from this documentation-only reconciliation.
 Numerical `age` is the current accepted Connect profile; a no-raw-age claim needs an explicit profile decision under #97.
+
+
+### Goal preservation — 2026-10-15
+
+Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain product goals. Current limitations describe unfinished work, not a goal change. Track **goal → scoped evidence → remaining acceptance criteria** in [the trust contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md). #175 owns the assurance/correlation mapping; #172/#175 own full transaction-history coverage and actual outcomes; #170 owns active-route disclosure enforcement. Existing component results and dated records remain intact. No goal is retired and no implementation gate is closed by this clarification.
