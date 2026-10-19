@@ -6,7 +6,7 @@
 > Revalidate official sources and exact SHAs before starting interop; no source-watch entry closes a gate.
 > Keep released UI/core coordinates separate and all upstream security requirements as open AskMI work until active code plus tests prove them.
 
-**Locked:** 2026-10-12  
+**Locked:** 2026-10-19  
 **Purpose:** External source/version registry for the AskMI release roadmap  
 **Change rule:** Reconcile any newer official release before carrying evidence forward
 
@@ -26,8 +26,8 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 | [Android wallet](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases/tag/Wallet/Demo_Version%3D2026.10.43-Demo_Build%3D43) | 2026.10.43-Demo, build 43 (`4b295477f69351c1015ae253006bf240dd02d8ef`) | First wallet interop anchor |
 | [iOS wallet](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/releases/tag/Wallet/Demo_2026.10.43-Demo_Build%3D43) | 2026.10.43-Demo, build 43 (`92ac8f7080ae104f4e3615c48c5cd9e40aada33f`) | Second wallet interop anchor; integrates Wallet Kit v0.52.1 |
 | [Android core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core/releases/tag/v0.31.0) | v0.31.0 (`efcd3a48248f75c3767df06c972c5e2361ba1be9`) | Protocol/credential and trust reference |
-| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.54.8) | v0.54.8 (`54858f3f52df88d619ca5c5c8c86bb163f847085`) | Protocol/credential and reader-auth reference; newer than build 43 integration anchor |
-| [Official web issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.9.8) | v0.9.8 | General issuance anchor |
+| [iOS core](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.56.0) | v0.56.0 (`20656c9c8a2bb9f2a3cf922f6389dfbaac515e0b`) | Protocol/credential, reader-trust-policy and key-attestation reference; newer than build 43 integration anchor |
+| [Official web issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.10.0) | v0.10.0 (`4a9233215c12d720ac0ca52c36bfeeb0651c1514`) | General issuance and JWT registration-certificate metadata anchor |
 | [PID issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer/releases/tag/v0.11.1) | v0.11.1 (`9177177071157b20724b04eed619049e40679bbb`) | PID schema and SD-JWT certificate-header anchor |
 | [Verifier UI](https://github.com/eu-digital-identity-wallet/eudi-web-verifier/releases/tag/v0.13.0) | v0.13.0 (`763efa70e5b00eb6bccddc7166b97bd1bca36e8d`) | Presentation UX/comparison anchor |
 | [Verifier endpoint](https://github.com/eu-digital-identity-wallet/eudi-srv-verifier-endpoint/releases/tag/v0.12.0) | v0.12.0 (`19537e72a633b25c94b7450bf582760f52ab2cc9`) | Protocol/configuration comparison anchor |
@@ -58,6 +58,24 @@ The EC describes this as a modular, ARF-driven reference implementation with lim
 ARF v3.0.0 includes current relying-party services/registration, trust-anchor retrieval using ETSI TS 119 612 Trusted Lists and ETSI TS 119 602 Lists of Trusted Entities, wallet-to-wallet updates, and FCAF.
 
 The official stack uses current OpenID4VP/OpenID4VCI profiles, DCQL, mso_mdoc and SD-JWT VC, and native mobile security capabilities. AskMI's Presentation Exchange flow, custom/draft issuance boundary, JSON DID trust list, and browser WebAuthn path are useful prototypes—not equivalence proof.
+
+## Upstream delta — 2026-10-19
+
+[iOS Wallet Kit v0.56.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.56.0) supersedes v0.54.8 as the tagged iOS-core anchor, through intermediate [v0.55.0](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/releases/tag/v0.55.0).
+
+- **Roadmap decision and trust/security risk:** v0.56.0 introduces a separate `readerTrustPolicy`. The default `.enforce` rejects an untrusted OpenID4VP reader certificate chain; an explicit `.warning` policy permits an otherwise valid signed X.509 request to proceed as `authenticatedWithUntrustedCertificate`. Signature verification, chain parsing and leaf/signing-certificate matching still apply. AskMI's pilot profile remains enforce-only: treat the warning status as untrusted/denied, never show a trusted-reader badge, and test that it cannot be conflated with `authenticated`. If a development comparison enables warning mode, record it as a non-gating deviation. See [PR #507](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/pull/507).
+- **Interoperability/evidence invalidation and AskMI implementation gap:** [v0.55.0 / PR #505](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit/pull/505) adds opt-in per-key proof signing for key attestation without exporting private keys. iOS issuance evidence must record whether key proofs are required and prove ordered per-key signatures, nonce forwarding, unlock/authentication context and rejection of missing, reordered or invalid proofs.
+- **No pilot-scope expansion:** v0.55.0 also adds CSC QES transaction-data handling. QES remains outside the frozen AskMI pilot. Keep the default accepted transaction-data set empty and reject unsupported/unconfigured types; do not convert upstream support into an AskMI QES claim.
+
+[Official web issuer v0.10.0](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/releases/tag/v0.10.0) supersedes v0.9.8. It can publish a JWT registration certificate in credential-issuer metadata under `issuer_info` with format `registration_cert` from an optional configured file ([commit `4a9233215`](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py/commit/4a9233215c12d720ac0ca52c36bfeeb0651c1514)). This is an **AskMI implementation gap and trust/security risk**: the issuer adapter must parse, signature/trust/status/validity-check and bind the registration certificate to the expected issuer and registered scope; missing, malformed, expired, revoked, wrong-issuer and wrong-scope cases must fail closed. Metadata presence alone is not trust evidence.
+
+The official [FCAF roadmap update](https://github.com/eu-digital-identity-wallet/eudi-doc-functional-conformance-assessment/commit/f42e3b2d8e4efad311439e632904ea59cbeb455c) is a **roadmap decision**. Submitted baseline test cases and ISO/IEC TS 18013-6 ICS references are usable for pilot feedback but are not a released baseline; a versioned beta follows public-feedback processing and the release candidate is targeted for Q1 2027. Keep FCAF v0.0.10 as the locked reproducible coordinate until deliberately re-locked, record any submitted-branch cases separately, and do not interpret current test execution as certification or RC conformance.
+
+**Watch, not a new release lock:** PID issuer main [commit `e7ed02e6d`](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer/commit/e7ed02e6d05d9e2c99952d84e7b09aa595e31893) marks `iss` and `iat` non-mandatory in PID v1.4 SD-JWT VC Type Metadata. The tagged anchor remains v0.11.1. Add future-schema fixtures for absent metadata declarations without weakening actual credential issuer/signature/time validation. The independently released [Topic AA SCA discussion paper v0.8](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/releases/tag/Topic_AA_rr_paper_v0.8) remains a watch item; ARF stays v3.0.0 and payments/SCA expansion stays outside the frozen pilot.
+
+**No impact to current released anchors:** Android/iOS wallet UIs remain build 43; Android core remains v0.31.0; PID issuer remains v0.11.1; verifier UI/endpoint remain v0.13.0/v0.12.0; FCAF remains v0.0.10; and RP registration remains v0.2.2. iOS UI main now consumes Wallet Kit v0.56.0, but build 43 still integrates v0.52.1 and must not be relabelled.
+
+No readiness gate closes and no target date moves from this delta.
 
 ## Upstream delta — 2026-10-12
 
