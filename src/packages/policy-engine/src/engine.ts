@@ -848,8 +848,11 @@ export class PolicyEngine {
 
       // Minimization Check
       // We only check if the credential has the claims we are EFFECTIVELY allowed to ask for.
-      const claimSet = new Set(cred.claims);
-      const hasClaims = effectiveClaims.every((c) => claimSet.has(c));
+      let hasClaims = true;
+      if (effectiveClaims.length > 0) {
+        const claimSet = new Set(cred.claims);
+        hasClaims = effectiveClaims.every((c) => claimSet.has(c));
+      }
       if (!hasClaims) return false;
 
       if (rule.requiresTrustedIssuer !== false) {

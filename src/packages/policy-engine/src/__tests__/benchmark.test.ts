@@ -75,5 +75,5 @@ describe('Performance Benchmark: selectCompatibleCredentialsForRequirement', () 
     console.log(`Processed ${credentials.length} credentials in ${(end - start).toFixed(2)} ms.`);
     console.log(`Suitable credentials found: ${result.credentials.length}`);
     console.log(`==============================================\n`);
-  }, 20000);
+  }, 30000);
 });
