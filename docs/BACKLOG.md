@@ -2,6 +2,16 @@
 
 ## Current evidence-linked work — 2026-10-14
 
+### Observable trust follow-up (planning, #178)
+
+| Work | Priority / sequence | Status | Boundary |
+|---|---|---|---|
+| #175 understandable assurances and visible outcomes | P1 after first verified outcome | OPEN | Link existing evidence to plain-language promises; no new universal guarantee |
+| #176 role separation and provider dependency/exit | P2 design; before independence claims | OPEN design | Selected RP profile; actual interoperability stays #97 |
+| #177 agent advice versus authenticated action consent | P2 design; before live agent actions | OPEN contract investigation | Evaluation Boolean is not an approval token; runtime enforcement before a live action connector |
+
+[Five outcome milestones](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) fit inside #142's existing waves. No dates or gates change. First runtime priority remains #170 with relevant #141 reconciliation, followed by #171 and applicable #172/#173 work. Do not duplicate those issues.
+
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
 [release roadmap](RELEASE_READINESS_ROADMAP.md), #142 and #143 link current work to the existing component records below.
@@ -477,3 +487,8 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 - Unlinkability Vision: `memory/unlinkability-vision.md`
 - Security Patterns: `memory/miTch_security_patterns_memory.md`
 - EHDS Research: `memory/eudi-compliance-research.md`
+
+
+### Goal preservation — 2026-10-15
+
+Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain product goals. Current limitations describe unfinished work, not a goal change. Track **goal → scoped evidence → remaining acceptance criteria** in [the trust contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md). #175 owns the assurance/correlation mapping; #172/#175 own full transaction-history coverage and actual outcomes; #170 owns active-route disclosure enforcement. Existing component results and dated records remain intact. No goal is retired and no implementation gate is closed by this clarification.
