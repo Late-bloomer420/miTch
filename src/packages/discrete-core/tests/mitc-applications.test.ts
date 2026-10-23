@@ -37,7 +37,8 @@ describe('analyzeComposition (selective-disclosure pipeline analysis)', () => {
 
   it('reports preserved properties for a 1:1 pipeline', () => {
     const a = analyzeComposition(f, g);
-    expect(a.h.bijection ? a.h.bijective : a.h.bijective).toBe(true);
+    expect(a.f.bijective).toBe(true);
+    expect(a.h.bijective).toBe(true);
     expect(a.injectivityPreserved).toBe(true);
     expect(a.informationReduced).toBe(false);
   });
@@ -62,7 +63,6 @@ describe('verifyBijectionPair (encode/decode round-trip guard)', () => {
   it('rejects a broken decode with concrete failures (fail-closed)', () => {
     const encode = Mapping.fromPairs(new Set(['a', 'b']), new Set([1, 2]), [['a', 1], ['b', 2]]);
     const broken = Mapping.fromPairs(new Set([1, 2]), new Set(['a', 'b']), [[1, 'a'], [2, 'a']]);
-    expect(() => verifyBijectionPair(encode, broken)).not.toThrow();
     const result = verifyBijectionPair(encode, broken);
     expect(result.ok).toBe(false);
     expect(result.failures.length).toBeGreaterThan(0);
