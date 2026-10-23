@@ -28,7 +28,7 @@ export interface DuplicateKeyFinding<T> {
  */
 export function findDuplicateKeys<T>(
   items: readonly T[],
-  keyOf: (item: T) => string,
+  keyOf: (item: T) => string
 ): DuplicateKeyFinding<T> | null {
   const byKey = new Map<string, T[]>();
   for (const item of items) {
@@ -51,11 +51,11 @@ export interface MappingProperties {
 }
 
 /** Analysis of a two-step pipeline f then g, with a final composition h = g o f. */
-export interface CompositionAnalysis<M, N, S> {
+export interface CompositionAnalysis<M, _N, S> {
   readonly f: MappingProperties;
   readonly g: MappingProperties;
   readonly h: MappingProperties;
-  /** True when injectivity of f survives the composition. */
+  /** True when the whole pipeline h = g o f is injective (nothing collapses). */
   readonly injectivityPreserved: boolean;
   /**
    * Human-readable note about information reduction, mirroring the
@@ -64,8 +64,15 @@ export interface CompositionAnalysis<M, N, S> {
    * the same output. In miTch terms: this is where selective
    * disclosure reduces credential claims to a minimal proof —
    * decide consciously whether that reduction is intended.
+   *
+   * True whenever h is not injective, regardless of which step collapses.
    */
   readonly informationReduced: boolean;
+  /**
+   * The first step where inputs collapse: 'f' if f itself is not injective,
+   * 'g' if f is injective but g o f is not, null if nothing is lost.
+   */
+  readonly reducedAt: 'f' | 'g' | null;
   readonly firstInjectivityCounterexample: { x1: M; x2: M; image: S } | null;
 }
 
@@ -75,18 +82,24 @@ export interface CompositionAnalysis<M, N, S> {
  */
 export function analyzeComposition<M, N, S>(
   f: Mapping<M, N>,
-  g: Mapping<N, S>,
+  g: Mapping<N, S>
 ): CompositionAnalysis<M, N, S> {
   const h = compose(f, g);
-  const props = (m: Mapping<unknown, unknown>): MappingProperties =>
-    ({ injective: m.isInjective(), surjective: m.isSurjective(), bijective: m.isBijective() });
+  const props = (m: Mapping<unknown, unknown>): MappingProperties => ({
+    injective: m.isInjective(),
+    surjective: m.isSurjective(),
+    bijective: m.isBijective(),
+  });
   const violation = h.injectivityViolation();
+  const hInjective = h.isInjective();
+  const reducedAt = !f.isInjective() ? 'f' : !hInjective ? 'g' : null;
   return {
     f: props(f as unknown as Mapping<unknown, unknown>),
     g: props(g as unknown as Mapping<unknown, unknown>),
     h: props(h as unknown as Mapping<unknown, unknown>),
-    injectivityPreserved: h.isInjective(),
-    informationReduced: f.isInjective() && !h.isInjective(),
+    injectivityPreserved: hInjective,
+    informationReduced: !hInjective,
+    reducedAt,
     firstInjectivityCounterexample: violation,
   };
 }
@@ -106,27 +119,36 @@ export interface BijectionVerification {
  *   encode(decode(y)) = y for all y in domain(decode)
  * Fail-closed: returns every failing witness, ok=false on any failure.
  */
-export function verifyBijectionPair<M, N>(encode: Mapping<M, N>, decode: Mapping<N, M>): BijectionVerification {
+export function verifyBijectionPair<M, N>(
+  encode: Mapping<M, N>,
+  decode: Mapping<N, M>
+): BijectionVerification {
   const failures: string[] = [];
   for (const x of encode.domain) {
     let decoded: M;
     try {
       decoded = decode.apply(encode.apply(x));
     } catch (e) {
-      failures.push(`encode(${String(x)}) could not be decoded: ${e instanceof Error ? e.message : String(e)}`);
+      failures.push(
+        `encode(${String(x)}) could not be decoded: ${e instanceof Error ? e.message : String(e)}`
+      );
       continue;
     }
-    if (decoded !== x) failures.push(`decode(encode(${String(x)})) = ${String(decoded)} !== ${String(x)}`);
+    if (decoded !== x)
+      failures.push(`decode(encode(${String(x)})) = ${String(decoded)} !== ${String(x)}`);
   }
   for (const y of decode.domain) {
     let encoded: N;
     try {
       encoded = encode.apply(decode.apply(y));
     } catch (e) {
-      failures.push(`decode(${String(y)}) could not be re-encoded: ${e instanceof Error ? e.message : String(e)}`);
+      failures.push(
+        `decode(${String(y)}) could not be re-encoded: ${e instanceof Error ? e.message : String(e)}`
+      );
       continue;
     }
-    if (encoded !== y) failures.push(`encode(decode(${String(y)})) = ${String(encoded)} !== ${String(y)}`);
+    if (encoded !== y)
+      failures.push(`encode(decode(${String(y)})) = ${String(encoded)} !== ${String(y)}`);
   }
   return { ok: failures.length === 0, failures };
 }
@@ -144,14 +166,16 @@ export type TrustLevel = 'low' | 'medium' | 'high';
  */
 export function verifyTrustEquivalence(
   credentials: ReadonlySet<string>,
-  sameLevel: (a: string, b: string) => boolean,
+  sameLevel: (a: string, b: string) => boolean
 ): { ok: boolean; reason: string | null } {
   const pairs: [string, string][] = [];
   for (const a of credentials) for (const b of credentials) if (sameLevel(a, b)) pairs.push([a, b]);
   const relation = new Relation<string>(pairs);
-  if (!relation.isReflexiveOn(credentials)) return { ok: false, reason: 'trust relation is not reflexive' };
+  if (!relation.isReflexiveOn(credentials))
+    return { ok: false, reason: 'trust relation is not reflexive' };
   if (!relation.isSymmetric()) return { ok: false, reason: 'trust relation is not symmetric' };
-  if (!relation.isTransitive()) return { ok: false, reason: 'trust relation is not transitive (trust propagation breaks)' };
+  if (!relation.isTransitive())
+    return { ok: false, reason: 'trust relation is not transitive (trust propagation breaks)' };
   return { ok: true, reason: null };
 }
 

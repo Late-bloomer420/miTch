@@ -41,7 +41,7 @@ export class Mapping<M, N> {
   private constructor(
     readonly domain: ReadonlySet<M>,
     readonly codomain: ReadonlySet<N>,
-    table: ReadonlyMap<M, N>,
+    table: ReadonlyMap<M, N>
   ) {
     this.table = table;
   }
@@ -54,19 +54,28 @@ export class Mapping<M, N> {
   static fromPairs<M, N>(
     domain: ReadonlySet<M>,
     codomain: ReadonlySet<N>,
-    pairs: Iterable<readonly [M, N]>,
+    pairs: Iterable<readonly [M, N]>
   ): Mapping<M, N> {
     const table = new Map<M, N>();
     for (const [x, y] of pairs) {
       if (!domain.has(x)) {
-        throw new MappingError('not-well-defined', `argument ${safe(x)} is not an element of the definition set`);
+        throw new MappingError(
+          'not-well-defined',
+          `argument ${safe(x)} is not an element of the definition set`
+        );
       }
       if (!codomain.has(y)) {
-        throw new MappingError('image-not-in-codomain', `image ${safe(y)} of ${safe(x)} is not an element of the target set`);
+        throw new MappingError(
+          'image-not-in-codomain',
+          `image ${safe(y)} of ${safe(x)} is not an element of the target set`
+        );
       }
       const prev = table.get(x);
       if (prev !== undefined && prev !== y) {
-        throw new MappingError('not-well-defined', `${safe(x)} has two different images (${safe(prev)}, ${safe(y)})`);
+        throw new MappingError(
+          'not-well-defined',
+          `${safe(x)} has two different images (${safe(prev)}, ${safe(y)})`
+        );
       }
       table.set(x, y);
     }
@@ -80,7 +89,7 @@ export class Mapping<M, N> {
   static fromFunction<M, N>(
     domain: ReadonlySet<M>,
     codomain: ReadonlySet<N>,
-    f: (x: M) => N,
+    f: (x: M) => N
   ): Mapping<M, N> {
     const pairs: [M, N][] = [];
     for (const x of domain) pairs.push([x, f(x)]);
@@ -91,7 +100,10 @@ export class Mapping<M, N> {
   apply(x: M): N {
     const y = this.table.get(x);
     if (y === undefined) {
-      throw new MappingError('argument-not-in-domain', `argument ${safe(x)} is outside the definition set`);
+      throw new MappingError(
+        'argument-not-in-domain',
+        `argument ${safe(x)} is outside the definition set`
+      );
     }
     return y;
   }
@@ -161,7 +173,10 @@ export class Mapping<M, N> {
 export function compose<M, N, S>(f: Mapping<M, N>, g: Mapping<N, S>): Mapping<M, S> {
   for (const y of f.image()) {
     if (!g.domain.has(y)) {
-      throw new MappingError('incompatible-composition', `image ${safe(y)} of f is outside the definition set of g`);
+      throw new MappingError(
+        'incompatible-composition',
+        `image ${safe(y)} of f is outside the definition set of g`
+      );
     }
   }
   return Mapping.fromFunction(f.domain, g.codomain, (x) => g.apply(f.apply(x)));
@@ -176,7 +191,11 @@ export function inverse<M, N>(f: Mapping<M, N>): Mapping<N, M> {
   if (!f.isBijective()) {
     throw new MappingError('not-bijective', 'f is not bijective; no inverse mapping exists');
   }
-  return Mapping.fromPairs(f.codomain, f.domain, f.entries().map(([x, y]) => [y, x] as [N, M]));
+  return Mapping.fromPairs(
+    f.codomain,
+    f.domain,
+    f.entries().map(([x, y]) => [y, x] as [N, M])
+  );
 }
 
 /**
@@ -188,7 +207,11 @@ export function bijectionWitness<M, N>(a: ReadonlySet<M>, b: ReadonlySet<N>): Ma
   if (a.size !== b.size) return null;
   const ai = Array.from(a);
   const bi = Array.from(b);
-  return Mapping.fromPairs(a, b, ai.map((x, i) => [x, bi[i]] as [M, N]));
+  return Mapping.fromPairs(
+    a,
+    b,
+    ai.map((x, i) => [x, bi[i]] as [M, N])
+  );
 }
 
 function safe(v: unknown): string {

@@ -8,24 +8,40 @@ const grades = new Set([1, 2, 3, 4, 5]);
 describe('Mapping well-definedness ("genau ein Bild")', () => {
   it('rejects an element with two images (fail-closed)', () => {
     expect(() =>
-      Mapping.fromPairs(students, grades, [['Anna', 1], ['Anna', 3], ['Ben', 1], ['Clara', 3]]),
+      Mapping.fromPairs(students, grades, [
+        ['Anna', 1],
+        ['Anna', 3],
+        ['Ben', 1],
+        ['Clara', 3],
+      ])
     ).toThrow(MappingError);
   });
 
   it('rejects an element with no image', () => {
     expect(() =>
-      Mapping.fromPairs(students, grades, [['Anna', 1], ['Ben', 2]]),
+      Mapping.fromPairs(students, grades, [
+        ['Anna', 1],
+        ['Ben', 2],
+      ])
     ).toThrow(MappingError);
   });
 
   it('rejects images outside the codomain', () => {
     expect(() =>
-      Mapping.fromPairs(students, grades, [['Anna', 1], ['Ben', 2], ['Clara', 7]]),
+      Mapping.fromPairs(students, grades, [
+        ['Anna', 1],
+        ['Ben', 2],
+        ['Clara', 7],
+      ])
     ).toThrow(MappingError);
   });
 
   it('apply throws outside the definition set (fail-closed)', () => {
-    const f = Mapping.fromPairs(students, grades, [['Anna', 1], ['Ben', 2], ['Clara', 3]]);
+    const f = Mapping.fromPairs(students, grades, [
+      ['Anna', 1],
+      ['Ben', 2],
+      ['Clara', 3],
+    ]);
     expect(() => f.apply('David' as never)).toThrow(MappingError);
   });
 });
@@ -33,7 +49,9 @@ describe('Mapping well-definedness ("genau ein Bild")', () => {
 describe('injective / surjective / bijective (lecture examples)', () => {
   it('student -> matriculation number is bijective', () => {
     const f = Mapping.fromPairs(students, matriculation, [
-      ['Anna', 241001], ['Ben', 241002], ['Clara', 241003],
+      ['Anna', 241001],
+      ['Ben', 241002],
+      ['Clara', 241003],
     ]);
     expect(f.isInjective()).toBe(true);
     expect(f.isSurjective()).toBe(true);
@@ -41,7 +59,11 @@ describe('injective / surjective / bijective (lecture examples)', () => {
   });
 
   it('student -> grade is not injective (Anna and Ben both get 1)', () => {
-    const f = Mapping.fromPairs(students, grades, [['Anna', 1], ['Ben', 1], ['Clara', 3]]);
+    const f = Mapping.fromPairs(students, grades, [
+      ['Anna', 1],
+      ['Ben', 1],
+      ['Clara', 3],
+    ]);
     expect(f.isInjective()).toBe(false);
     // Gegenbeispiel: one witness is enough
     const violation = f.injectivityViolation();
@@ -57,7 +79,11 @@ describe('injective / surjective / bijective (lecture examples)', () => {
   });
 
   it('surjectivity violation reports the unused target element', () => {
-    const f = Mapping.fromPairs(students, grades, [['Anna', 1], ['Ben', 3], ['Clara', 5]]);
+    const f = Mapping.fromPairs(students, grades, [
+      ['Anna', 1],
+      ['Ben', 3],
+      ['Clara', 5],
+    ]);
     expect(f.isSurjective()).toBe(false);
     expect(f.surjectivityViolation()).toBe(2);
   });
@@ -65,9 +91,13 @@ describe('injective / surjective / bijective (lecture examples)', () => {
 
 describe('Composition (Maxi-Aufgabe: Studierende -> Punkte -> Note)', () => {
   const points = new Set(Array.from({ length: 101 }, (_, i) => i));
-  const f = Mapping.fromPairs(students, points, [['Anna', 95], ['Ben', 52], ['Clara', 85]]);
+  const f = Mapping.fromPairs(students, points, [
+    ['Anna', 95],
+    ['Ben', 52],
+    ['Clara', 85],
+  ]);
   const g = Mapping.fromFunction(points, grades, (p) =>
-    p >= 90 ? 1 : p >= 80 ? 2 : p >= 70 ? 3 : p >= 60 ? 4 : 5,
+    p >= 90 ? 1 : p >= 80 ? 2 : p >= 70 ? 3 : p >= 60 ? 4 : 5
   );
 
   it('g after f assigns each student their grade', () => {
@@ -84,13 +114,27 @@ describe('Composition (Maxi-Aufgabe: Studierende -> Punkte -> Note)', () => {
     expect(g.isInjective()).toBe(false);
   });
 
-  it('the composition loses injectivity (didactic point of the lecture)', () => {
+  it('stays injective here: Anna, Ben and Clara get three different grades', () => {
     const h = compose(f, g);
+    expect(h.isInjective()).toBe(true);
+  });
+
+  it('loses injectivity once two students land in the same grade band', () => {
+    const withDora = new Set([...students, 'Dora']);
+    const f2 = Mapping.fromPairs(withDora, points, [
+      ['Anna', 95],
+      ['Ben', 52],
+      ['Clara', 85],
+      ['Dora', 91],
+    ]);
+    const h = compose(f2, g);
+    expect(f2.isInjective()).toBe(true);
     expect(h.isInjective()).toBe(false);
+    expect(h.injectivityViolation()).toEqual({ x1: 'Anna', x2: 'Dora', image: 1 });
   });
 
   it('composition is fail-closed on interface compatibility', () => {
-    const badG = Mapping.fromFunction(new Set([90, 95]), grades, (p) => 1);
+    const badG = Mapping.fromFunction(new Set([90, 95]), grades, () => 1);
     expect(() => compose(f, badG)).toThrow(MappingError);
   });
 });
@@ -98,7 +142,9 @@ describe('Composition (Maxi-Aufgabe: Studierende -> Punkte -> Note)', () => {
 describe('Inverse mapping and cardinality', () => {
   it('inverse of a bijection round-trips to the identity', () => {
     const f = Mapping.fromPairs(students, matriculation, [
-      ['Anna', 241001], ['Ben', 241002], ['Clara', 241003],
+      ['Anna', 241001],
+      ['Ben', 241002],
+      ['Clara', 241003],
     ]);
     const inv = inverse(f);
     expect(inv.apply(f.apply('Anna'))).toBe('Anna');

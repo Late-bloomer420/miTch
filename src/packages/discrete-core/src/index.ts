@@ -1,7 +1,4 @@
-export {
-  Relation,
-  type RelationPair,
-} from './relation.js';
+export { Relation, type RelationPair } from './relation.js';
 
 export {
   Mapping,

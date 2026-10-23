@@ -50,7 +50,7 @@ export class Relation<A, B = A> {
   /** Antisymmetry: aRb and bRa imply a = b (order relations). */
   isAntisymmetric(): boolean {
     const self = this as unknown as Relation<unknown, unknown>;
-    return this.pairList.every(([a, b]) => a === b || !self.holds(b, a));
+    return this.pairList.every(([a, b]) => (a as unknown) === b || !self.holds(b, a));
   }
 
   /** Transitivity: xRy and yRz imply xRz. */
@@ -58,7 +58,7 @@ export class Relation<A, B = A> {
     const self = this as unknown as Relation<unknown, unknown>;
     for (const [a, b] of this.pairList) {
       for (const [b2, c] of this.pairList) {
-        if (b === b2 && !self.holds(a, c)) return false;
+        if ((b as unknown) === b2 && !self.holds(a, c)) return false;
       }
     }
     return true;
@@ -89,7 +89,7 @@ export class Relation<A, B = A> {
     const self = this as unknown as Relation<unknown, unknown>;
     const classes = new Map<A & B, Set<A & B>>();
     for (const x of M) {
-      let rep: A & B | undefined = undefined;
+      let rep: (A & B) | undefined = undefined;
       for (const [r, set] of classes) {
         if (set.has(x) || self.holds(x, r)) {
           rep = r as A & B;

@@ -9,7 +9,11 @@ const allPairs = (): [number, number][] => {
   return pairs;
 };
 
-const lessThan = new Relation<number>([[3, 2], [5, 2], [5, 3]]);
+const lessThan = new Relation<number>([
+  [3, 2],
+  [5, 2],
+  [5, 3],
+]);
 const leq = new Relation<number>(allPairs().filter(([a, b]) => a <= b));
 const equal = new Relation<number>(allPairs().filter(([a, b]) => a === b));
 const notEqual = new Relation<number>(allPairs().filter(([a, b]) => a !== b));
@@ -44,7 +48,11 @@ describe('Equivalence classes ("hat gleiche Haarfarbe wie")', () => {
     const people = new Set(['Anna', 'Ben', 'Clara']);
     // Anna and Ben share hair colour; Clara does not.
     const sameHair = new Relation<string>([
-      ['Anna', 'Anna'], ['Anna', 'Ben'], ['Ben', 'Anna'], ['Ben', 'Ben'], ['Clara', 'Clara'],
+      ['Anna', 'Anna'],
+      ['Anna', 'Ben'],
+      ['Ben', 'Anna'],
+      ['Ben', 'Ben'],
+      ['Clara', 'Clara'],
     ]);
     expect(sameHair.isEquivalenceOn(people)).toBe(true);
     const classes = Array.from(sameHair.equivalenceClasses(people).values()).map((s) => s.size);
