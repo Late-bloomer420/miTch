@@ -67,3 +67,10 @@ describe('NaN follows SameValueZero like Set membership', () => {
     expect(r.isEquivalenceOn(new Set([NaN]))).toBe(true);
   });
 });
+
+describe('equivalenceClasses is fail-closed', () => {
+  it('throws instead of returning a partition for a non-equivalence', () => {
+    const r = new Relation([[1, 2]]);
+    expect(() => r.equivalenceClasses(new Set([1, 2, 3]))).toThrow(/not an equivalence/);
+  });
+});

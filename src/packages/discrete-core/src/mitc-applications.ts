@@ -179,7 +179,7 @@ export type TrustLevel = 'low' | 'medium' | 'high';
 
 /**
  * Verify that "same trust level" over a credential set is a true
- * EQUIVALENENCE relation (reflexive, symmetric, transitive).
+ * EQUIVALENCE relation (reflexive, symmetric, transitive).
  *
  * Relevance (lecture -> product): propagated issuer trust must be
  * transitive; if it is not, trust hierarchies silently break.

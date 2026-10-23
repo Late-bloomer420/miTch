@@ -22,9 +22,21 @@ export type RelationPair<A, B> = readonly [A, B];
  */
 export class Relation<A, B = A> {
   private readonly pairList: readonly RelationPair<A, B>[];
+  /** x -> { y | xRy }. Map/Set use SameValueZero, so lookups match `sameValueZero`. */
+  private readonly successors: ReadonlyMap<A, ReadonlySet<B>>;
 
   constructor(pairs: Iterable<RelationPair<A, B>>) {
     this.pairList = Array.from(pairs);
+    const index = new Map<A, Set<B>>();
+    for (const [a, b] of this.pairList) {
+      let set = index.get(a);
+      if (set === undefined) {
+        set = new Set();
+        index.set(a, set);
+      }
+      set.add(b);
+    }
+    this.successors = index;
   }
 
   /** All pairs, in insertion order. */
@@ -32,9 +44,9 @@ export class Relation<A, B = A> {
     return this.pairList;
   }
 
-  /** Whether (x, y) in R. */
+  /** Whether (x, y) in R. O(1) via the successor index. */
   holds(x: A, y: B): boolean {
-    return this.pairList.some(([a, b]) => sameValueZero(a, x) && sameValueZero(b, y));
+    return this.successors.get(x)?.has(y) ?? false;
   }
 
   /**
@@ -63,13 +75,17 @@ export class Relation<A, B = A> {
     return this.pairList.every(([a, b]) => sameValueZero(a, b) || !self.holds(b, a));
   }
 
-  /** Transitivity: xRy and yRz imply xRz. */
+  /**
+   * Transitivity: xRy and yRz imply xRz.
+   * For each pair (a, b), every successor of b must be a successor of a.
+   */
   isTransitive(): boolean {
-    const self = this as unknown as Relation<unknown, unknown>;
+    const index = this.successors as unknown as ReadonlyMap<unknown, ReadonlySet<unknown>>;
     for (const [a, b] of this.pairList) {
-      for (const [b2, c] of this.pairList) {
-        if (sameValueZero(b, b2) && !self.holds(a, c)) return false;
-      }
+      const fromB = index.get(b);
+      if (fromB === undefined) continue;
+      const fromA = index.get(a) as ReadonlySet<unknown>;
+      for (const c of fromB) if (!fromA.has(c)) return false;
     }
     return true;
   }
@@ -94,8 +110,14 @@ export class Relation<A, B = A> {
    * Equivalence classes of an equivalence relation on M: the induced
    * partition ("Welche Objekte gehoeren zusammen?").
    * The representative of each class is its first-discovered element.
+   *
+   * Fail-closed: throws if R is not an equivalence relation on M, instead of
+   * returning a partition that does not reflect R.
    */
   equivalenceClasses(M: ReadonlySet<A & B>): Map<A & B, ReadonlySet<A & B>> {
+    if (!this.isEquivalenceOn(M)) {
+      throw new Error('relation is not an equivalence relation on M; no partition exists');
+    }
     const self = this as unknown as Relation<unknown, unknown>;
     const classes = new Map<A & B, Set<A & B>>();
     for (const x of M) {

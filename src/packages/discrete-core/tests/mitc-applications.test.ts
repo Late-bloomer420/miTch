@@ -48,11 +48,11 @@ describe('analyzeComposition (selective-disclosure pipeline analysis)', () => {
     expect(a.reducedAt).toBeNull();
   });
 
-  it('detects intended information reduction (age:24 and age:17 both -> 18+)', () => {
-    const claims = new Set(['age:24', 'age:17']);
+  it('detects intended information reduction (age:24 and age:31 both -> 18+)', () => {
+    const claims = new Set(['age:24', 'age:31']);
     const fAges = Mapping.fromPairs(claims, proof, [
       ['age:24', '18+'],
-      ['age:17', '18+'],
+      ['age:31', '18+'],
     ]);
     const gIds = Mapping.fromFunction(proof, new Set(['ok']), () => 'ok');
     const a = analyzeComposition(fAges, gIds);
@@ -141,6 +141,15 @@ describe('verifyBijectionPair with NaN (SameValueZero)', () => {
     const encode = Mapping.fromPairs(new Set([NaN]), new Set(['e']), [[NaN, 'e']]);
     const decode = Mapping.fromPairs(new Set(['e']), new Set([NaN]), [['e', NaN]]);
     expect(verifyBijectionPair(encode, decode).ok).toBe(true);
+  });
+});
+
+describe('verifyTrustEquivalence scaling', () => {
+  it('checks 80 credentials with full trust in well under a second', () => {
+    const creds = new Set(Array.from({ length: 80 }, (_, i) => `c${i}`));
+    const start = performance.now();
+    expect(verifyTrustEquivalence(creds, () => true).ok).toBe(true);
+    expect(performance.now() - start).toBeLessThan(1000);
   });
 });
 
