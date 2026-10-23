@@ -273,9 +273,9 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 | ID | Status | Beschreibung |
 |---|---|---|
 | R-01 | ✅ | `IStorageAdapter` — Entkopplung von SecureStorage und IndexedDB |
-| R-02 | ⚠️ teilweise | `wallet-core` enthält Repository-/Evaluator-/Presentation-Ports und einen kleinen Facade-Entwurf; `App.tsx` konstruiert aber weiterhin den 2.317-Zeilen-PWA-lokalen `WalletService`. Runtime-Cutover und Entfernung der Doppel-Autorität sind offen (ARCH-01/ARCH-09). |
+| R-02 | ⚠️ teilweise | `wallet-core` enthält Repository-/Evaluator-/Presentation-Ports und einen kleinen Facade-Entwurf; `App.tsx` konstruiert aber weiterhin den PWA-lokalen `WalletService` (2.326 Zeilen @ `624cf9a`). Runtime-Cutover und Entfernung der Doppel-Autorität sind offen (ARCH-01/ARCH-09). |
 
-### 2.2 Canonical Architecture Decoupling Audit (2026-08-20)
+### 2.2 Canonical Architecture Decoupling Audit (2026-08-20, re-check 2026-10-23 @ `624cf9a`)
 
 Quelle und vollständige Akzeptanz-Gates:
 [`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md).
@@ -285,7 +285,7 @@ Quelle und vollständige Akzeptanz-Gates:
 | ARCH-01 | 🟡 P1 | ⬜ offen | Zwei Wallet-Orchestrierungs-Autoritäten: PWA-lokaler Monolith vs. unverdrahteter `wallet-core`-Facade | PWA nutzt genau einen injizierten `wallet-core`-Facade; lokaler Doppel-Service entfernt |
 | ARCH-02 | 🔴 P0 | ⬜ offen | Proximity-Flow lädt caller-gewähltes Raw-Credential vor Policy und bindet Builder nicht strukturell an die policy-selektierte Credential-ID / ein explizites ALLOW | Ein `AuthorizedPresentationPlan` ist einzige Builder-Eingabe; DENY/PROMPT und ID-Mismatch erreichen keinen Builder |
 | ARCH-03 | 🔴 P0 | ⬜ offen | `PolicyEngine` mischt Entscheidung, Rate-State, Clock/UUID, WebCrypto, Capsule, Pairwise-DID und Signing; Pairwise-Fehler läuft aktuell ohne DID weiter | Pure deterministische Policy; erforderliche Crypto-/Binding-Fehler resultieren fail-closed in DENY |
-| ARCH-04 | 🟡 P1 | ⬜ offen / PR #130 | Presentability wird getrennt über `consumedAt`, Pool-`usedAt`, Lifecycle-`status` und Presentation-Consumption bestimmt; PR #130 behebt O(n²), aber nicht die geteilte Status-Autorität | Ein zentraler Eligibility-/Lifecycle-Service; nullifiziertes ältestes Pool-Member verdeckt kein aktives Geschwister |
+| ARCH-04 | 🟡 P1 | ⬜ offen (#130 gemergt, Residual) | Presentability wird getrennt über `consumedAt`, Pool-`usedAt`, Lifecycle-`status` und Presentation-Consumption bestimmt; #130 (gemergt) behebt O(n²), aber nicht die geteilte Status-Autorität | Ein zentraler Eligibility-/Lifecycle-Service; nullifiziertes ältestes Pool-Member verdeckt kein aktives Geschwister |
 | ARCH-05 | 🟡 P1 | ⬜ offen | Key-Name-Bug ist behoben, aber `WalletService` liest weiter private Audit-Keys per Cast und nutzt sie für Identity-/Dokument-Signing | Getrennte `IdentitySigner`-/Audit-Key-Capabilities; keine Private-State-Casts über Paketgrenzen |
 | ARCH-06 | 🟢 P2 | ⬜ offen | `shared-crypto` exportiert Status-/Trust-Resolver und hängt von `revocation-statuslist` ab | Crypto-Primitives ohne Status-/Netzwerk-Infrastruktur; Resolver hinter eigenen Ports |
 | ARCH-07 | 🟡 P1 | ⬜ offen | Mehrere inkompatible `DecisionCapsule`-/Policy-Contracts und breites `shared-types` mit 21 direkten Produktions-Consumern | Ein versionierter Capsule-/Policy-Contract; Storage-Metadata von Policy-View getrennt |

@@ -3,7 +3,7 @@
 > **Role:** Canonical architecture-boundary model, coupling audit, and migration gates.
 > **Status:** AUTHORITATIVE
 > **Owner:** Technology & Architecture Authority
-> **Last verified:** 2026-08-20
+> **Last verified:** 2026-10-23 (static re-check against `master` @ `624cf9a`)
 
 ## Authority and Baseline
 
@@ -23,8 +23,14 @@ Audit baseline:
 
 | Surface | Revision | Meaning |
 |---|---|---|
-| `master` | [`bb340038`](https://github.com/Late-bloomer420/miTch/commit/bb340038fdd4df98c6d2f2936f2a39ba7c872ac1) | Current runtime and documentation baseline |
-| [PR #130](https://github.com/Late-bloomer420/miTch/pull/130) | `045fcdac0592fcbace9913ea377a9f5f45822c6a` | Open credential-pool wiring and dead-code sweep; PR-only findings are labelled |
+| `master` | [`624cf9af`](https://github.com/Late-bloomer420/miTch/commit/624cf9af919fe58a7cba34a05b316b17e49c7e0f) | Re-check baseline (2026-10-23); findings below re-verified statically |
+| `master` (original) | [`bb340038`](https://github.com/Late-bloomer420/miTch/commit/bb340038fdd4df98c6d2f2936f2a39ba7c872ac1) | Original audit baseline (2026-08-20) |
+| [PR #130](https://github.com/Late-bloomer420/miTch/pull/130) | merged as `cacbc95` | Credential-pool wiring and dead-code sweep; now part of `master` |
+
+Overlap with the evidence index: pairwise-DID downgrade is tracked as EV-09 in
+[`../security/REPO_EVIDENCE_STATUS_2026-10-14.md`](../security/REPO_EVIDENCE_STATUS_2026-10-14.md).
+This document records only the structural (architecture) side of that finding
+and does not duplicate #170–#173.
 
 This is a static architecture audit. It does not replace dynamic security
 testing, interoperability testing, or the independent review required for
@@ -103,8 +109,8 @@ browser, persistence, network, audit, or cryptographic adapters.
 and [`wallet-core/WalletService`](../../src/packages/wallet-core/src/WalletService.ts).
 
 The runtime PWA imports and constructs
-`src/apps/wallet-pwa/src/services/WalletService.ts`, which is 2,317 lines at the
-audit baseline. `@askmi/wallet-core` also exports an 84-line `WalletService`
+`src/apps/wallet-pwa/src/services/WalletService.ts`, which was 2,317 lines at the
+original baseline and is 2,326 lines at `624cf9a`. `@askmi/wallet-core` also exports an 84-line `WalletService`
 facade and repository/evaluator interfaces, but the PWA imports only
 `ReputationSensor` from that package.
 
@@ -148,6 +154,16 @@ The code does filter disclosed elements through the authorized claim set, so
 this audit does not claim demonstrated raw-claim exfiltration. The structural
 boundary is nevertheless unsound: the authorization result does not make the
 subsequent credential choice unrepresentable.
+
+**Re-check 2026-10-23 (`624cf9a`):** unchanged. `storage.load(credId)` and
+`mdocDecodeMdoc()` still run before `evaluateRequest()`, and no
+`verdict === 'ALLOW'` gate precedes `buildDeviceResponse()`.
+
+Additional observation (same method): the proximity `DeviceAuth` is a
+placeholder (`deviceSignature: 0xdeadbeef`, commented "Mock signature"). The
+proximity response therefore carries no device/holder binding. This is
+consistent with the PoC status but was not recorded elsewhere in `docs/`; it
+needs its own tracked item before any proximity claim is made.
 
 **Required contract**
 
@@ -194,7 +210,10 @@ the plan, never a free credential ID plus an unrelated decision.
 
 Most critically, pairwise-DID generation catches an exception and logs that it
 is "continuing without it". That contradicts the repository-wide fail-closed
-principle when unlinkability is a required property.
+principle when unlinkability is a required property. Still present at
+`624cf9a` (`engine.ts`, pairwise-DID `catch`). The behavioural residual is
+tracked as EV-09; this entry tracks the structural fix (typed denial via a
+`PairwiseIdentityPort`).
 
 **Target split**
 
@@ -216,7 +235,7 @@ principle when unlinkability is a required property.
 
 ### ARCH-04 — Credential Presentability Has Multiple Authorities
 
-**Priority:** P1 · **Status:** OPEN; PR #130 contains an incomplete bridge
+**Priority:** P1 · **Status:** OPEN; PR #130 merged with an incomplete bridge
 
 **Evidence:** [`single-use.ts`](../../src/apps/wallet-pwa/src/utils/single-use.ts),
 [`credential-pool.ts`](../../src/apps/wallet-pwa/src/utils/credential-pool.ts),
@@ -237,6 +256,12 @@ through lifecycle `status` can still be chosen ahead of a later active sibling,
 after which policy rejects the chosen member.
 
 This is not primarily a performance problem. It is a split-authority problem.
+
+**Re-check 2026-10-23 (`624cf9a`):** PR #130 is merged. The residual remains:
+`selectPoolMembersForPresentation()` still sets `usedAt` from `consumedAt`
+only, and `selectablePresentationCredentials()` filters only consumed
+single-use entries, not `status: 'revoked' | 'dispensed'`. The effect is a
+denial (availability), not a disclosure: policy rejects the chosen member.
 
 **Target**
 
@@ -268,6 +293,11 @@ uses the audit signing key for persistent document/identity signing.
 
 This couples key ownership to an implementation detail, defeats TypeScript
 encapsulation, and conflicts with ADR-013's constitutional key-separation goal.
+
+**Re-check 2026-10-23 (`624cf9a`):** both casts remain (`signData()` reads
+`auditPrivateKey`; a second cast reads `auditPublicKey`). Open PR #150 moves
+`signData()` to `IdentityKeyGuardian.signIdentityPayload()`; it does not
+remove the public-key cast.
 
 **Acceptance**
 
@@ -436,3 +466,8 @@ The architecture migration is complete only when all of the following hold:
 - **2026-08-20:** Initial canonical audit. Corrected the prior `R-02` completion
   claim, recorded master-vs-PR-#130 scope, established the target layer model,
   registered ARCH-01 through ARCH-09, and defined migration/acceptance gates.
+- **2026-10-23:** Static re-check against `master` @ `624cf9a`. ARCH-01 to
+  ARCH-09 are all still open. Recorded that PR #130 is merged with the ARCH-04
+  residual, cross-referenced EV-09 for ARCH-03, linked open PR #150 for
+  ARCH-05, and added the placeholder proximity `DeviceAuth` observation under
+  ARCH-02. No tests were run; this is not security PASS evidence.
