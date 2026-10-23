@@ -104,6 +104,36 @@ describe('verifyBijectionPair (encode/decode round-trip guard)', () => {
     expect(result.ok).toBe(false);
     expect(result.failures.length).toBeGreaterThan(0);
   });
+
+  it('rejects incompatible declared sets even when sampled round-trips pass (fail-closed)', () => {
+    // encode: {a,b} -> {1,2} is bijective on its own, but decode is only
+    // declared over {1} -> {a}: the round-trip loops never see the gap.
+    const encode = Mapping.fromPairs(new Set(['a', 'b']), new Set([1, 2]), [
+      ['a', 1],
+      ['b', 2],
+    ]);
+    const narrow = Mapping.fromPairs(new Set([1]), new Set(['a']), [[1, 'a']]);
+    const result = verifyBijectionPair(encode, narrow);
+    expect(result.ok).toBe(false);
+    expect(result.failures.some((m) => m.includes('declared sets are incompatible'))).toBe(true);
+    expect(result.failures.some((m) => m.includes('2'))).toBe(true);
+  });
+
+  it('rejects a decode whose codomain escapes the encode domain', () => {
+    // decode: {1,2} -> {a,c} — image 'c' is outside encode's domain {a,b},
+    // so encode(decode(y)) is undefined for y=2 regardless of samples.
+    const encode = Mapping.fromPairs(new Set(['a', 'b']), new Set([1, 2]), [
+      ['a', 1],
+      ['b', 2],
+    ]);
+    const escaping = Mapping.fromPairs(new Set([1, 2]), new Set(['a', 'c']), [
+      [1, 'a'],
+      [2, 'c'],
+    ]);
+    const result = verifyBijectionPair(encode, escaping);
+    expect(result.ok).toBe(false);
+    expect(result.failures.some((m) => m.includes('image c of decode'))).toBe(true);
+  });
 });
 
 describe('verifyTrustEquivalence (trust propagation must be transitive)', () => {

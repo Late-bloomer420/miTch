@@ -1,8 +1,9 @@
 # @askmi/discrete-core
 
 Discrete-math primitives from the MCI "Computational Thinking" lecture
-(Mengen & Abbildungen, Hartmann Kap. 1.2–1.3) as a small, dependency-free,
-fail-closed TypeScript library — with miTch-specific application guards.
+(Mengen & Abbildungen, Hartmann Kap. 1.2–1.3) as a small library with
+zero runtime dependencies (TypeScript and Vitest are dev-only),
+fail-closed by design — with miTch-specific application guards.
 
 ## Why this exists
 

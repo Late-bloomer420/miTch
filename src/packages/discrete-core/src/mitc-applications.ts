@@ -51,7 +51,7 @@ export interface MappingProperties {
 }
 
 /** Analysis of a two-step pipeline f then g, with a final composition h = g o f. */
-export interface CompositionAnalysis<M, _N, S> {
+export interface CompositionAnalysis<M, S> {
   readonly f: MappingProperties;
   readonly g: MappingProperties;
   readonly h: MappingProperties;
@@ -83,7 +83,7 @@ export interface CompositionAnalysis<M, _N, S> {
 export function analyzeComposition<M, N, S>(
   f: Mapping<M, N>,
   g: Mapping<N, S>
-): CompositionAnalysis<M, N, S> {
+): CompositionAnalysis<M, S> {
   const h = compose(f, g);
   const props = (m: Mapping<unknown, unknown>): MappingProperties => ({
     injective: m.isInjective(),
@@ -118,12 +118,32 @@ export interface BijectionVerification {
  *   decode(encode(x)) = x for all x in domain(encode)
  *   encode(decode(y)) = y for all y in domain(decode)
  * Fail-closed: returns every failing witness, ok=false on any failure.
+ *
+ * The round-trip loops only cover the DECLARED definition sets. A pair can
+ * only be a bijection if those sets match up, so set incompatibility is
+ * reported as a failure even when all sampled round-trips pass:
+ *   codomain(encode) subset domain(decode)
+ *   codomain(decode) subset domain(encode)
  */
 export function verifyBijectionPair<M, N>(
   encode: Mapping<M, N>,
   decode: Mapping<N, M>
 ): BijectionVerification {
   const failures: string[] = [];
+  for (const y of encode.codomain) {
+    if (!decode.domain.has(y)) {
+      failures.push(
+        `image ${String(y)} of encode is not in the definition set of decode (declared sets are incompatible)`
+      );
+    }
+  }
+  for (const x of decode.codomain) {
+    if (!encode.domain.has(x)) {
+      failures.push(
+        `image ${String(x)} of decode is not in the definition set of encode (declared sets are incompatible)`
+      );
+    }
+  }
   for (const x of encode.domain) {
     let decoded: M;
     try {

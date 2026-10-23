@@ -24,6 +24,18 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
 Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
 
+## discrete-core — Vorlesungs-Kernbibliothek (2026-10-23)
+
+Quelle: kein existierendes Issue/Spec; initiiert aus der MCI-Vorlesung *Mengen & Abbildungen* (Hartmann Kap. 1.2–1.3, Computational Thinking). Rein additives, zero-runtime-dependency Paket — kein Canon/ADR-Trace, deshalb hier als eigener Arbeitsrahmen getrackt.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| DC-01 | 🟢 P2 | Draft PR [#189](https://github.com/Late-bloomer420/miTch/pull/189) | `@askmi/discrete-core`: Relation/Mapping/compose/inverse + miTch-Guards (`findDuplicateKeys`, `analyzeComposition`, `verifyBijectionPair`, `verifyTrustEquivalence`); fail-closed `MappingError`-Codes; 32 Vitest-Tests grün auf `feat/discrete-core` |
+| DC-02 | 🟢 P2 | ✅ auf Branch | Review-Punkte aus dem PR-Audit behoben: `verifyBijectionPair`-Mengenkompatibilitäts-Guard (fail-closed bei inkompatiblen deklarierten Mengen, 2 negative Tests), unbenutzter generischer Parameter `_N` aus `CompositionAnalysis` entfernt, README „dependency-free" → „zero runtime dependencies" präzisiert |
+| DC-03 | 🟢 P2 | ⏳ | Merge-Kriterien PR #189: CI grün auf Head, Draft-Status aufheben, CHANGELOG-Eintrag beim Merge |
+
+Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibliothek, umgeht nicht die Policy Engine); kein bestehender P0/P1-Backlog-Eintrag wird dadurch geschlossen.
+
 ## Existing task/change records
 
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
