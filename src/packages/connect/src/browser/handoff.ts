@@ -25,8 +25,18 @@ export interface AskMIHandoff {
   presentationEndpoint: string;
 }
 
+/**
+ * Linear trailing-slash trim. Deliberately regex-free: CodeQL flags
+ * `/\/+$/` as a polynomial regex on uncontrolled data.
+ */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
+}
+
 export function buildAskMIHandoff(input: BuildAskMIHandoffInput): AskMIHandoff {
-  const base = input.walletBaseUrl.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(input.walletBaseUrl);
   const params = new URLSearchParams({ state: input.sessionId, nonce: input.nonce });
   if (input.returnUrl !== undefined) params.set('returnUrl', input.returnUrl);
   return {

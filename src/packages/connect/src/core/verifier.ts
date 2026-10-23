@@ -53,8 +53,18 @@ function newSessionId(): string {
   return SESSION_ID_PREFIX + globalThis.crypto.randomUUID();
 }
 
+/**
+ * Linear trailing-slash trim. Deliberately regex-free: CodeQL flags
+ * `/\/+$/` as a polynomial regex on uncontrolled data.
+ */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
+}
+
 function presentationEndpoint(audienceBaseUrl: string, sessionId: string): string {
-  const base = audienceBaseUrl.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(audienceBaseUrl);
   return `${base}/askmi/connect/sessions/${encodeURIComponent(sessionId)}/presentation`;
 }
 
