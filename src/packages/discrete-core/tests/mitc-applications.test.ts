@@ -136,6 +136,14 @@ describe('verifyBijectionPair (encode/decode round-trip guard)', () => {
   });
 });
 
+describe('verifyBijectionPair with NaN (SameValueZero)', () => {
+  it('accepts an exact NaN round-trip', () => {
+    const encode = Mapping.fromPairs(new Set([NaN]), new Set(['e']), [[NaN, 'e']]);
+    const decode = Mapping.fromPairs(new Set(['e']), new Set([NaN]), [['e', NaN]]);
+    expect(verifyBijectionPair(encode, decode).ok).toBe(true);
+  });
+});
+
 describe('verifyTrustEquivalence (trust propagation must be transitive)', () => {
   const creds = new Set(['credA', 'credB', 'credC']);
 

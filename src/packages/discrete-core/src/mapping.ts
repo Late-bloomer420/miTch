@@ -11,6 +11,8 @@
  * SameValueZero/identity.
  */
 
+import { sameValueZero } from './equality.js';
+
 /** Domain-codomain mismatch kinds thrown by this module. */
 export type MappingErrorCode =
   | 'not-well-defined'
@@ -70,12 +72,14 @@ export class Mapping<M, N> {
           `image ${safe(y)} of ${safe(x)} is not an element of the target set`
         );
       }
-      const prev = table.get(x);
-      if (prev !== undefined && prev !== y) {
-        throw new MappingError(
-          'not-well-defined',
-          `${safe(x)} has two different images (${safe(prev)}, ${safe(y)})`
-        );
+      if (table.has(x)) {
+        const prev = table.get(x) as N;
+        if (!sameValueZero(prev, y)) {
+          throw new MappingError(
+            'not-well-defined',
+            `${safe(x)} has two different images (${safe(prev)}, ${safe(y)})`
+          );
+        }
       }
       table.set(x, y);
     }
@@ -98,14 +102,13 @@ export class Mapping<M, N> {
 
   /** f(x). Fail-closed: throws if x is outside the definition set. */
   apply(x: M): N {
-    const y = this.table.get(x);
-    if (y === undefined) {
+    if (!this.table.has(x)) {
       throw new MappingError(
         'argument-not-in-domain',
         `argument ${safe(x)} is outside the definition set`
       );
     }
-    return y;
+    return this.table.get(x) as N;
   }
 
   /** The image set f(M) subset N. */
@@ -148,17 +151,20 @@ export class Mapping<M, N> {
   injectivityViolation(): { x1: M; x2: M; image: N } | null {
     const seen = new Map<N, M>();
     for (const [x, y] of this.table) {
-      const prev = seen.get(y);
-      if (prev !== undefined) return { x1: prev, x2: x, image: y };
+      if (seen.has(y)) return { x1: seen.get(y) as M, x2: x, image: y };
       seen.set(y, x);
     }
     return null;
   }
 
-  /** A single element of the target set without preimage, or null. */
-  surjectivityViolation(): N | null {
+  /**
+   * A single element of the target set without preimage, wrapped as
+   * `{ element }` so that null/undefined codomain elements stay
+   * distinguishable from "no violation" (null).
+   */
+  surjectivityViolation(): { element: N } | null {
     const img = this.image();
-    for (const y of this.codomain) if (!img.has(y)) return y;
+    for (const y of this.codomain) if (!img.has(y)) return { element: y };
     return null;
   }
 }

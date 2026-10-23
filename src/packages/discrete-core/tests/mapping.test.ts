@@ -85,7 +85,7 @@ describe('injective / surjective / bijective (lecture examples)', () => {
       ['Clara', 5],
     ]);
     expect(f.isSurjective()).toBe(false);
-    expect(f.surjectivityViolation()).toBe(2);
+    expect(f.surjectivityViolation()).toEqual({ element: 2 });
   });
 });
 
@@ -157,5 +157,35 @@ describe('Inverse mapping and cardinality', () => {
 
   it('sets of different size have no bijection', () => {
     expect(bijectionWitness(new Set(['red', 'green']), new Set([1, 2, 3]))).toBeNull();
+  });
+});
+
+describe('edge-case elements (undefined, null, NaN) use SameValueZero and presence checks', () => {
+  it('rejects two different images even when the first one is undefined', () => {
+    expect(() =>
+      Mapping.fromPairs(new Set(['x']), new Set<number | undefined>([undefined, 1]), [
+        ['x', undefined],
+        ['x', 1],
+      ])
+    ).toThrow(MappingError);
+  });
+
+  it('applies a valid mapping onto undefined instead of throwing', () => {
+    const f = Mapping.fromPairs(new Set(['x']), new Set([undefined]), [['x', undefined]]);
+    expect(f.apply('x')).toBeUndefined();
+  });
+
+  it('finds an injectivity collision whose first preimage is undefined', () => {
+    const f = Mapping.fromPairs(new Set<string | undefined>([undefined, 'b']), new Set([1]), [
+      [undefined, 1],
+      ['b', 1],
+    ]);
+    expect(f.injectivityViolation()).toEqual({ x1: undefined, x2: 'b', image: 1 });
+  });
+
+  it('reports null as a concrete surjectivity witness, distinct from "no violation"', () => {
+    const f = Mapping.fromPairs(new Set(['a']), new Set<number | null>([1, null]), [['a', 1]]);
+    expect(f.isSurjective()).toBe(false);
+    expect(f.surjectivityViolation()).toEqual({ element: null });
   });
 });

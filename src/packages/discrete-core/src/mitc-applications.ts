@@ -10,6 +10,7 @@
  * - Gegenbeispiel     -> one counterexample is enough to disprove
  */
 
+import { sameValueZero } from './equality.js';
 import { Mapping, MappingError, compose, inverse } from './mapping.js';
 import { Relation } from './relation.js';
 
@@ -154,7 +155,7 @@ export function verifyBijectionPair<M, N>(
       );
       continue;
     }
-    if (decoded !== x)
+    if (!sameValueZero(decoded, x))
       failures.push(`decode(encode(${String(x)})) = ${String(decoded)} !== ${String(x)}`);
   }
   for (const y of decode.domain) {
@@ -167,7 +168,7 @@ export function verifyBijectionPair<M, N>(
       );
       continue;
     }
-    if (encoded !== y)
+    if (!sameValueZero(encoded, y))
       failures.push(`encode(decode(${String(y)})) = ${String(encoded)} !== ${String(y)}`);
   }
   return { ok: failures.length === 0, failures };

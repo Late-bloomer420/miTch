@@ -8,6 +8,8 @@
  * SameValueZero/identity, so use primitives or stable references.
  */
 
+import { sameValueZero } from './equality.js';
+
 /** A single pair of a relation. */
 export type RelationPair<A, B> = readonly [A, B];
 
@@ -32,7 +34,7 @@ export class Relation<A, B = A> {
 
   /** Whether (x, y) in R. */
   holds(x: A, y: B): boolean {
-    return this.pairList.some(([a, b]) => a === x && b === y);
+    return this.pairList.some(([a, b]) => sameValueZero(a, x) && sameValueZero(b, y));
   }
 
   /** Reflexivity on M: for all x in M, xRx. (Definition 1.8) */
@@ -50,7 +52,7 @@ export class Relation<A, B = A> {
   /** Antisymmetry: aRb and bRa imply a = b (order relations). */
   isAntisymmetric(): boolean {
     const self = this as unknown as Relation<unknown, unknown>;
-    return this.pairList.every(([a, b]) => (a as unknown) === b || !self.holds(b, a));
+    return this.pairList.every(([a, b]) => sameValueZero(a, b) || !self.holds(b, a));
   }
 
   /** Transitivity: xRy and yRz imply xRz. */
@@ -58,7 +60,7 @@ export class Relation<A, B = A> {
     const self = this as unknown as Relation<unknown, unknown>;
     for (const [a, b] of this.pairList) {
       for (const [b2, c] of this.pairList) {
-        if ((b as unknown) === b2 && !self.holds(a, c)) return false;
+        if (sameValueZero(b, b2) && !self.holds(a, c)) return false;
       }
     }
     return true;
@@ -89,18 +91,18 @@ export class Relation<A, B = A> {
     const self = this as unknown as Relation<unknown, unknown>;
     const classes = new Map<A & B, Set<A & B>>();
     for (const x of M) {
-      let rep: (A & B) | undefined = undefined;
+      let target: Set<A & B> | null = null;
       for (const [r, set] of classes) {
         if (set.has(x) || self.holds(x, r)) {
-          rep = r as A & B;
+          target = set;
           break;
         }
       }
-      if (rep === undefined) {
-        rep = x;
-        classes.set(rep, new Set());
+      if (target === null) {
+        target = new Set();
+        classes.set(x, target);
       }
-      classes.get(rep)!.add(x);
+      target.add(x);
     }
     return classes;
   }

@@ -59,3 +59,11 @@ describe('Equivalence classes ("hat gleiche Haarfarbe wie")', () => {
     expect(classes.sort()).toEqual([1, 2]);
   });
 });
+
+describe('NaN follows SameValueZero like Set membership', () => {
+  it('treats [NaN, NaN] as reflexive on {NaN}', () => {
+    const r = new Relation([[NaN, NaN]]);
+    expect(r.isReflexiveOn(new Set([NaN]))).toBe(true);
+    expect(r.isEquivalenceOn(new Set([NaN]))).toBe(true);
+  });
+});
