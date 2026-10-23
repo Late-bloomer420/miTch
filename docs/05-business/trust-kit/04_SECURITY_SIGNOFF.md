@@ -42,7 +42,7 @@ security, privacy, or certification status.**
 - **Risk:** terms like *"zertifizierbar"*, *"EU-first"*, *"compliance interface of the future"* can read
   as achieved certification.
 - **Evidence:** CIR 2024/2981 certification row is **1/5** implemented; Common Criteria **not started**;
-  LoA High is **software-only**; no EUDI Trust List registration.
+  LoA High is **not established**; no EUDI Trust List registration.
 - **Required guardrail:** every external surface must phrase certification as *readiness / mapping*,
   never as a completed conformity assessment. Defer to the §4 legal-review gaps in the evidence index.
 - **Status:** acceptable **only** with that guardrail applied. The three kit documents already comply.
@@ -73,3 +73,7 @@ certification and legal-review framing in the evidence index is honored.
 
 Re-sign required after F-1 is corrected and the dev/runtime vulnerability split is confirmed against a
 fresh `pnpm audit`.
+
+## Scoped follow-up — 2026-10-14
+
+The dated component references and original review disposition above are retained. On the real SD-JWT demo, numeric age is disclosed; original-request/session/application eligibility integration is #170 and stored single-use/UI lifecycle is #171. These findings qualify those paths, not every component in this appendix. #172 inventories actual external outputs before integration; #173 concerns evidence provenance/serialization. No new independent sign-off or pilot approval is recorded here.

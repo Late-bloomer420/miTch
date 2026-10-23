@@ -3,14 +3,30 @@ import {
   selectPoolMember,
   markMemberUsed,
   poolStats,
+  selectPoolMembersForPresentation,
   type CredentialPoolMember,
 } from '../utils/credential-pool';
+import type { StoredCredentialMetadata } from '@askmi/shared-types';
 
 const member = (
   id: string,
   issuedAt: string,
   usedAt: string | null = null
 ): CredentialPoolMember => ({ id, issuedAt, usedAt });
+
+const meta = (
+  id: string,
+  opts: { issuedAt?: string; poolId?: string; consumedAt?: string; singleUse?: boolean } = {}
+): StoredCredentialMetadata => ({
+  id,
+  issuer: 'did:askmi:issuer',
+  type: ['AgeCredential'],
+  issuedAt: opts.issuedAt ?? '2026-06-08T10:00:00Z',
+  claims: ['age_over_18'],
+  singleUse: opts.singleUse ?? (opts.poolId ? true : undefined),
+  consumedAt: opts.consumedAt,
+  poolId: opts.poolId,
+});
 
 describe('selectPoolMember — single_use', () => {
   it('selects the oldest unused member (deterministic FIFO)', () => {
@@ -116,5 +132,59 @@ describe('poolStats', () => {
 
   it('handles an empty pool', () => {
     expect(poolStats([])).toEqual({ total: 0, used: 0, available: 0 });
+  });
+});
+
+describe('selectPoolMembersForPresentation — wallet bridge (Increment 2)', () => {
+  it('passes standalone credentials (no poolId) through unchanged', () => {
+    const metas = [meta('a'), meta('b'), meta('c')];
+    const out = selectPoolMembersForPresentation(metas);
+    expect(out.map((m) => m.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('narrows a pool to a single member — the oldest unused (FIFO)', () => {
+    const metas = [
+      meta('p2', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:01Z' }),
+      meta('p1', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:00Z' }),
+      meta('p3', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:02Z' }),
+    ];
+    const out = selectPoolMembersForPresentation(metas);
+    expect(out.map((m) => m.id)).toEqual(['p1']);
+  });
+
+  it('skips consumed pool members and keeps the next unused one', () => {
+    const metas = [
+      meta('p1', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:00Z', consumedAt: '2026-06-08T11:00:00Z' }),
+      meta('p2', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:01Z' }),
+    ];
+    expect(selectPoolMembersForPresentation(metas).map((m) => m.id)).toEqual(['p2']);
+  });
+
+  it('drops the whole pool when every member is consumed (fail-closed)', () => {
+    const metas = [
+      meta('p1', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:00Z', consumedAt: '2026-06-08T11:00:00Z' }),
+      meta('p2', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:01Z', consumedAt: '2026-06-08T11:05:00Z' }),
+    ];
+    expect(selectPoolMembersForPresentation(metas)).toEqual([]);
+  });
+
+  it('mixes standalone + pooled: keeps standalone, narrows each pool independently', () => {
+    const metas = [
+      meta('solo'),
+      meta('a1', { poolId: 'pool-A', issuedAt: '2026-06-08T10:00:00Z' }),
+      meta('a2', { poolId: 'pool-A', issuedAt: '2026-06-08T10:00:01Z' }),
+      meta('b1', { poolId: 'pool-B', issuedAt: '2026-06-08T09:00:00Z' }),
+    ];
+    expect(selectPoolMembersForPresentation(metas).map((m) => m.id).sort()).toEqual(['a1', 'b1', 'solo']);
+  });
+
+  it('does not mutate the input array', () => {
+    const metas = [
+      meta('p1', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:00Z' }),
+      meta('p2', { poolId: 'pool-1', issuedAt: '2026-06-08T10:00:01Z' }),
+    ];
+    const before = metas.length;
+    selectPoolMembersForPresentation(metas);
+    expect(metas.length).toBe(before);
   });
 });
