@@ -372,7 +372,17 @@ export async function evaluatePredicates(
     }
 
     // Create decision ID and timestamp
-    const decisionId = `decision_${Date.now()}_${globalThis.crypto.randomUUID()}`;
+    let uuid: string;
+    if (typeof globalThis.crypto?.randomUUID === 'function') {
+        uuid = globalThis.crypto.randomUUID();
+    } else {
+        uuid = '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => {
+            const num = Number(c);
+            return (num ^ (globalThis.crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (num / 4)))).toString(16);
+        });
+    }
+
+    const decisionId = `decision_${Date.now()}_${uuid}`;
     const evaluatedAt = request.timestamp || new Date().toISOString();
 
     // Compute request hash
