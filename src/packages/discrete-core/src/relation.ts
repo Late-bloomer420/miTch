@@ -37,7 +37,15 @@ export class Relation<A, B = A> {
     return this.pairList.some(([a, b]) => sameValueZero(a, x) && sameValueZero(b, y));
   }
 
-  /** Reflexivity on M: for all x in M, xRx. (Definition 1.8) */
+  /**
+   * Reflexivity on M: for all x in M, xRx. (Definition 1.8)
+   *
+   * Only meaningful for a relation on one set (M = N). The `A & B` parameter
+   * type is a typing workaround so M can be passed for both components; it
+   * does not make the check meaningful for relations between two different
+   * sets. The same applies to `isEquivalenceOn`, `isOrderOn` and
+   * `equivalenceClasses`.
+   */
   isReflexiveOn(M: ReadonlySet<A & B>): boolean {
     for (const x of M) if (!this.holds(x, x)) return false;
     return true;
