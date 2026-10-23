@@ -117,9 +117,9 @@
 <table>
   <tr><th>Traditional Approach</th><th>AskMI Approach</th></tr>
   <tr><td>Upload photo ID → name, birthdate, address, photo collected</td><td>Prove <code>over_18: true</code> → one boolean, nothing else</td></tr>
-  <tr><td>Data stored in verifier's database → breach risk</td><td>No data stored → nothing to breach</td></tr>
+  <tr><td>Data stored in verifier's database → breach risk</td><td>Verifier receives only minimized claims → less data exists to breach</td></tr>
   <tr><td>Identity provider tracks every verification</td><td>Issuer doesn't know when/where credentials are used</td></tr>
-  <tr><td>Delete request = hope they actually delete</td><td>Crypto-shredding = mathematical guarantee of destruction</td></tr>
+  <tr><td>Delete request = hope they actually delete</td><td>Crypto-shredding provably destroys keys held on the AskMI/wallet side; it cannot prove what a verifier does out-of-band</td></tr>
 </table>
 
 <!-- SECTION 3 -->
@@ -183,8 +183,8 @@
 <table>
   <tr><th>Risk</th><th>Mitigation</th></tr>
   <tr><td>GDPR non-compliance penalties</td><td>Privacy by design (Art. 25), DPIA (Art. 35), ROPA (Art. 30) — all implemented</td></tr>
-  <tr><td>Data breach notification obligation</td><td>No personal data stored → no data breach possible → no notification needed</td></tr>
-  <tr><td>Right to erasure requests</td><td>Crypto-shredding exceeds Art. 17 requirements — data is already destroyed</td></tr>
+  <tr><td>Data breach notification obligation</td><td>Verifiers receive only minimized claims, which reduces breach exposure; breach-notification duties are assessed per controller</td></tr>
+  <tr><td>Right to erasure requests</td><td>AskMI-held keys are destroyed after use and verifiers receive minimized claims; erasure by a relying party must be requested from that party</td></tr>
 </table>
 
 <!-- SECTION 4 -->
@@ -249,7 +249,7 @@
   <tr><td>Art. 7</td><td>Consent conditions</td><td><span class="badge badge-green">✅</span></td><td>Informed, specific, freely given, withdrawable, demonstrable</td></tr>
   <tr><td>Art. 13/14</td><td>Transparency</td><td><span class="badge badge-green">✅</span></td><td>Transparency report in demo, privacy policy</td></tr>
   <tr><td>Art. 15</td><td>Right of access</td><td><span class="badge badge-green">✅</span></td><td>All data in user's wallet — full visibility</td></tr>
-  <tr><td>Art. 17</td><td>Right to erasure</td><td><span class="badge badge-green">✅✅</span></td><td>Crypto-shredding exceeds requirements — provable destruction</td></tr>
+  <tr><td>Art. 17</td><td>Right to erasure</td><td><span class="badge badge-green">✅✅</span></td><td>Wallet-/AskMI-side key destruction is provable; verifier-side retention is outside AskMI's proof scope</td></tr>
   <tr><td>Art. 20</td><td>Data portability</td><td><span class="badge badge-green">✅</span></td><td>Consent receipt export (JSON)</td></tr>
   <tr><td>Art. 25</td><td>Privacy by design</td><td><span class="badge badge-green">✅✅</span></td><td>Core architecture — not an add-on</td></tr>
   <tr><td>Art. 30</td><td>Processing records</td><td><span class="badge badge-green">✅</span></td><td>ROPA with aggregate counts, no PII</td></tr>
