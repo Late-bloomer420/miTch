@@ -1,8 +1,8 @@
 /**
- * miTch/AskMI applications of the discrete-math primitives.
+ * Lecture concepts applied to miTch/AskMI-style data, as fail-closed helpers.
  *
- * These helpers turn lecture concepts into product-grade, fail-closed
- * guards for the wallet ecosystem:
+ * These are analogies and reusable checks, not product requirements: none of
+ * them is wired into the wallet, verifier or policy engine.
  *
  * - injective keying  -> credential IDs, wallet keys (UUID-style)
  * - composition       -> selective-disclosure pipeline step analysis
@@ -174,15 +174,19 @@ export function verifyBijectionPair<M, N>(
   return { ok: failures.length === 0, failures };
 }
 
-/** Type-level marker so trust levels are not confused with raw booleans. */
-export type TrustLevel = 'low' | 'medium' | 'high';
-
 /**
- * Verify that "same trust level" over a credential set is a true
- * EQUIVALENCE relation (reflexive, symmetric, transitive).
+ * Verify that a "same class" predicate over a credential set is a true
+ * EQUIVALENCE relation (reflexive, symmetric, transitive), i.e. that it
+ * partitions the set into consistent classes (e.g. assurance-level groups).
  *
- * Relevance (lecture -> product): propagated issuer trust must be
- * transitive; if it is not, trust hierarchies silently break.
+ * This is NOT a model of issuer trust. In AskMI a verifier trusts each issuer
+ * explicitly via its trust list; trust is never propagated from one issuer to
+ * another, so there is no transitive trust chain to verify here.
+ *
+ * Only useful for hand-written or ad-hoc predicates: a predicate derived from a
+ * level function, `(a, b) => level(a) === level(b)`, is an equivalence by
+ * construction and always passes.
+ *
  * Returns { ok, reason } describing the FIRST violated property.
  */
 export function verifyTrustEquivalence(
@@ -193,10 +197,10 @@ export function verifyTrustEquivalence(
   for (const a of credentials) for (const b of credentials) if (sameLevel(a, b)) pairs.push([a, b]);
   const relation = new Relation<string>(pairs);
   if (!relation.isReflexiveOn(credentials))
-    return { ok: false, reason: 'trust relation is not reflexive' };
-  if (!relation.isSymmetric()) return { ok: false, reason: 'trust relation is not symmetric' };
+    return { ok: false, reason: 'classification is not reflexive' };
+  if (!relation.isSymmetric()) return { ok: false, reason: 'classification is not symmetric' };
   if (!relation.isTransitive())
-    return { ok: false, reason: 'trust relation is not transitive (trust propagation breaks)' };
+    return { ok: false, reason: 'classification is not transitive (classes are inconsistent)' };
   return { ok: true, reason: null };
 }
 

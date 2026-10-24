@@ -153,7 +153,7 @@ describe('verifyTrustEquivalence scaling', () => {
   });
 });
 
-describe('verifyTrustEquivalence (trust propagation must be transitive)', () => {
+describe('verifyTrustEquivalence (a classification must be an equivalence relation)', () => {
   const creds = new Set(['credA', 'credB', 'credC']);
 
   it('accepts a real equivalence relation', () => {
@@ -161,8 +161,8 @@ describe('verifyTrustEquivalence (trust propagation must be transitive)', () => 
     expect(verifyTrustEquivalence(creds, (a, b) => levels[a] === levels[b]).ok).toBe(true);
   });
 
-  it('rejects a non-transitive trust relation', () => {
-    // credA~credB, credB~credC, but NOT credA~credC: propagation breaks.
+  it('rejects a non-transitive classification', () => {
+    // credA~credB, credB~credC, but NOT credA~credC: the classes are inconsistent.
     const r = verifyTrustEquivalence(
       creds,
       (a, b) =>

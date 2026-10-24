@@ -18,5 +18,4 @@ export {
   type MappingProperties,
   type CompositionAnalysis,
   type BijectionVerification,
-  type TrustLevel,
-} from './mitc-applications.js';
+} from './mitch-applications.js';

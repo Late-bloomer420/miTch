@@ -3,13 +3,16 @@
 Discrete-math primitives from the MCI "Computational Thinking" lecture
 (Mengen & Abbildungen, Hartmann Kap. 1.2–1.3) as a small library with
 zero runtime dependencies (TypeScript and Vitest are dev-only),
-fail-closed by design — with miTch-specific application guards.
+fail-closed by design — with miTch analogies.
 
-## Why this exists
+## Scope
 
-The lecture's concepts map directly onto wallet architecture:
+This package teaches lecture concepts with miTch/AskMI analogies. It is not a
+product requirement and is not wired into the wallet, verifier or policy
+engine; any wiring is a separate, bounded task. Real selective disclosure in
+AskMI is SD-JWT disclosures and predicate proofs, not `analyzeComposition`.
 
-| Lecture concept                                 | miTch/AskMI use                                                                                                |
+| Lecture concept                                 | miTch/AskMI analogy                                                                                            |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Mapping ("every element has EXACTLY ONE image") | credential → credential-ID, user → wallet key, session → token                                                 |
 | Injectivity                                     | unique keys: no two credentials may share an ID                                                                |
@@ -17,7 +20,7 @@ The lecture's concepts map directly onto wallet architecture:
 | Bijection                                       | encryption/decryption, encode/decode — verlustfreie Hin- und Rueckuebersetzung                                 |
 | Composition                                     | selective-disclosure pipeline (credential → disclosed claims → proof); injectivity may be _intentionally_ lost |
 | Inverse mapping                                 | only exists for bijections — inverse() throws otherwise                                                        |
-| Equivalence relations                           | trust levels, credential classifications (reflexive + symmetric + transitive)                                  |
+| Equivalence relations                           | credential classifications, e.g. assurance-level groups (not issuer trust)                                     |
 | Order relations                                 | priorities, versions, expiry sorting                                                                           |
 | Cardinality / bijection witness                 | loss-free 1:1 mapping between data sets (record ↔ primary key)                                                 |
 | Gegenbeispiel                                   | one counterexample disproves a property — used for fast fail-closed tests                                      |
@@ -67,7 +70,7 @@ Fail-closed errors carry machine-readable codes: `not-well-defined`,
 `image-not-in-codomain`, `argument-not-in-domain`,
 `incompatible-composition`, `not-bijective`.
 
-### miTch application guards (from `./mitc-applications.js`)
+### miTch application guards (from `./mitch-applications.js`)
 
 ```ts
 // Injectivity guard for credential IDs (one counterexample suffices)
@@ -79,7 +82,8 @@ analyzeComposition(f, g); // f/g/h properties, injectivityPreserved, information
 // Encode/decode bijection verification (both round-trip identities)
 verifyBijectionPair(encode, decode); // { ok, failures }
 
-// Trust levels must be an equivalence relation (transitive propagation)
+// A classification predicate must be an equivalence relation.
+// Not issuer trust: AskMI verifiers trust issuers explicitly via the trust list.
 verifyTrustEquivalence(credentials, sameLevel); // { ok, reason }
 ```
 
