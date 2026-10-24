@@ -31,21 +31,16 @@ jobs:
       - name: Install
         run: pnpm install
 
-      - name: Dependency audit
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+      - name: Audit gate regression tests
+        run: node --test scripts/check-security-audit.test.mjs
 
-      - name: Check for known vulnerable packages
+      - name: Enforce critical dependency audit gate
+        shell: bash
         run: |
-          echo "Checking for critical CVEs..."
-          pnpm audit --json 2>/dev/null | python3 -c "
-          import json,sys
-          try:
-            data=json.load(sys.stdin)
-            critical=data.get('metadata',{}).get('vulnerabilities',{}).get('critical',0)
-            high=data.get('metadata',{}).get('vulnerabilities',{}).get('high',0)
-            print(f'Critical: {critical}, High: {high}')
-            if critical > 0:
-              sys.exit(1)
-          except: pass
-          " || echo "No critical vulnerabilities found"
+          audit_report="${{ runner.temp }}/askmi-dependency-audit.json"
+          if pnpm audit --json > "$audit_report"; then
+            audit_status=0
+          else
+            audit_status=$?
+          fi
+          node scripts/check-security-audit.mjs "$audit_report" "$audit_status"

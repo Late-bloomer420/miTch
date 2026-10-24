@@ -87,9 +87,19 @@ jobs:
       - name: 📚 Install dependencies
         run: pnpm install
 
-      - name: 🔍 Run pnpm audit
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+      - name: Audit gate regression tests
+        run: node --test scripts/check-security-audit.test.mjs
+
+      - name: Enforce critical dependency audit gate
+        shell: bash
+        run: |
+          audit_report="${{ runner.temp }}/askmi-dependency-audit.json"
+          if pnpm audit --json > "$audit_report"; then
+            audit_status=0
+          else
+            audit_status=$?
+          fi
+          node scripts/check-security-audit.mjs "$audit_report" "$audit_status"
 
   evidence-platforms:
     name: Evidence (${{ matrix.os }})
