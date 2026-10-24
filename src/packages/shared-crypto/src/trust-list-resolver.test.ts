@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EUDITrustListResolver, TrustList } from './trust-list-resolver';
+import { EUDITrustListResolver, TrustList } from './trust-list-resolver.js';
 
 describe('EUDITrustListResolver', () => {
     let resolver: EUDITrustListResolver;

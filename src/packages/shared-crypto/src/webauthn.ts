@@ -18,7 +18,7 @@
  *   - Für native Apps: WebAuthn durch FIDO2 SDK ersetzen
  */
 
-import { canonicalStringify } from './hashing';
+import { canonicalStringify } from './hashing.js';
 import { ASKMI_STORAGE_KEYS } from '@askmi/shared-types';
 
 // ── Typen ────────────────────────────────────────────────────────────────────

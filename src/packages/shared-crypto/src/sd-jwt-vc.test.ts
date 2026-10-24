@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSdJwtPresentation, createSDJWTDisclosures, extractDisclosedClaims } from './sd-jwt-vc';
+import { buildSdJwtPresentation, createSDJWTDisclosures, extractDisclosedClaims } from './sd-jwt-vc.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 
 function b64url(bytes: Uint8Array): string {
