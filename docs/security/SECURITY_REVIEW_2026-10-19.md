@@ -1,5 +1,36 @@
 # Security- und Privacy-Review: miTch
 
+## Nachprüfung am 24.10.2026, 05:33 CEST (03:33 UTC)
+
+**Verifiziert gegen:** master `a21ac24e2e7f091b3652f91dfd26162f5a822914`; PR #193 Head `33c306947c034123bf8e9ad06d7697fa38b9b530`;
+PR #192 vor dieser Ergänzung `ef0303138880650c1d0c0a896a8a87792f2fa0d3`.
+Der folgende Stand ersetzt ausschließlich die überholten #193-Statusangaben des ersten Abgleichs unten.
+
+- [Commit-Vergleich](https://github.com/Late-bloomer420/miTch/compare/624cf9af919fe58a7cba34a05b316b17e49c7e0f...a21ac24e2e7f091b3652f91dfd26162f5a822914): genau eine Datei,
+  `src/packages/verifier-sdk/test/sdk.test.ts`, **+6/−3**. Keine Runtime-Datei geändert.
+- #193 enthält inzwischen den Lifecycle-Korrekturcommit [`33c3069`](https://github.com/Late-bloomer420/miTch/commit/33c306947c034123bf8e9ad06d7697fa38b9b530):
+  Resolver-Rejection wird als terminales `ISSUER_RESOLUTION_FAILED` behandelt; Store-Updates prüfen aktuellen Zustand/TTL,
+  und der Express-Adapter fängt Rejections ab. Statischer Abgleich der drei betroffenen Dateien;
+  [66/66 lokale Tests](https://github.com/Late-bloomer420/miTch/blob/33c306947c034123bf8e9ad06d7697fa38b9b530/docs/qa/CONNECT_LIFECYCLE_CORRECTION_2026-10-24.md) sind **berichtete**,
+  hier nicht erneut ausgeführte Lifecycle-Tests mit Validator-Stubs.
+- [CI am neuen Head](https://github.com/Late-bloomer420/miTch/actions/runs/40058578412): **5/6 erforderliche Checks erfolgreich**;
+  `Layer Protection Validation` läuft noch. Die früheren grünen Checks an `afea2a7` gelten nicht für diesen Head.
+  Die beiden Codex-Threads sind **unresolved und outdated**; die dokumentierte menschliche Freigabe steht aus.
+  Korrigierter Code/überholte Zeilen sind keine Review-Freigabe.
+- [#170 Acceptance criteria](https://github.com/Late-bloomer420/miTch/issues/170) sind bereits konkret:
+  servereigener Request (Audience/Nonce/State/Expiry/Profil), vertrauenswürdige Signatur/Holder-Bindung,
+  atomare Sessions inkl. Konkurrenz/Terminalzuständen, separate Eligibility, Reject von Excess-Claims,
+  Ausschluss von Simulation/Local-Predicate-Erfolg und echte HTTP-/Signatur-Negativtests.
+  **Close erst mit Fix-Commit, exaktem Profil und datierten Testartefakten**; keine aktive verifier-demo-Integration durch #193.
+  Maßgebliche Kriterien stehen unter „Acceptance criteria“ und „Evidence discipline“ im Issue.
+
+**Pflegeregel:** Jeder aktuelle Statusblock nennt Prüfdatum/-zeit, master-SHA und bei PR-Aussagen den PR-Head,
+Quelle und Prüfumfang. Statusaussagen ohne eigenen Stempel oder ausdrücklichen Verweis auf einen gestempelten Block
+gelten als historisch. CI/Reviews sind zusätzlich zeitgebundene Momentaufnahmen. Ältere Komponenten-/QA-Belege
+behalten ihren ursprünglichen Geltungsbereich; sie werden durch fehlende neue Stempel nicht widerlegt.
+
+---
+
 ## Abgleich vom 24.10.2026 — aktuelle Einordnung
 
 Geprüfter `master`: [`a21ac24`](https://github.com/Late-bloomer420/miTch/commit/a21ac24e2e7f091b3652f91dfd26162f5a822914).
@@ -13,7 +44,7 @@ Runtime-/Browser-/Interop-Test durchgeführt. Ein SHA oder statisches Lesen ist 
 |---|---|
 | P0-1 / #170 | Weiter offen auf master: ursprünglicher Server-Request fehlt in der aktiven Route. Fix plus echte HTTP-/Signatur-Negativtests für Replay, Nonce/State/Audience, Ablauf/Konkurrenz, Eligibility und überschüssige Claims nötig. Erst mit Fix-Commit und Artefakten schließen. |
 | P0-2 / Connect | Auf master fehlt das Paket; [#193](https://github.com/Late-bloomer420/miTch/pull/193) bietet es an Head `afea2a778f31d18785eed5aaa981701ac24a94f4` an, ist aber **offen/unmerged** und integriert verifier-demo ausdrücklich noch nicht. Connect ist **RP-seitige** Verifier-/Policy-Integration gemäß [Produktentscheidung](../tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md), kein Beleg für fehlende wallet-seitige Policy-Komponenten. |
-| #193 Restarbeit | Unaufgelöste Reviews: [P1 Resolver-Rejection](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763904), [P2 terminale Expiry überschrieben](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763898). Required checks am genannten Head erfolgreich; alte CodeQL-Regex-Threads resolved/outdated. Grüne Checks schließen diese Reviews nicht. [Core-Tests](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/test/core.test.ts#L7) verwenden einen Validator-Stub; echte aktive HTTP-/Krypto-Integration bleibt separat nachzuweisen. Im Core werden erforderliche Claims geprüft, überschüssige Claims jedoch nicht ausdrücklich abgelehnt ([verifier.ts:312–347](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/src/core/verifier.ts#L312) am genannten Head). |
+| #193 Restarbeit am historischen Head afea2a7 (ersetzt durch Nachprüfung oben) | Damals unaufgelöste Reviews: [P1 Resolver-Rejection](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763904), [P2 terminale Expiry überschrieben](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763898). Required checks am genannten Head erfolgreich; alte CodeQL-Regex-Threads resolved/outdated. Grüne Checks schließen diese Reviews nicht. [Core-Tests](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/test/core.test.ts#L7) verwenden einen Validator-Stub; echte aktive HTTP-/Krypto-Integration bleibt separat nachzuweisen. Im Core werden erforderliche Claims geprüft, überschüssige Claims jedoch nicht ausdrücklich abgelehnt ([verifier.ts:312–347](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/src/core/verifier.ts#L312) am genannten Head). |
 | Wallet-Enforcement | Eigenständige offene Grenze: [#180](https://github.com/Late-bloomer420/miTch/issues/180) finaler Disclosure-PEP und [#181](https://github.com/Late-bloomer420/miTch/issues/181) adversariale Tests. Fehlendes Connect allein beweist keinen generellen PolicyEngine-Ausfall. |
 | P1 Hardware | [`IdentityKeyGuardian.getLevel()`](../../src/packages/shared-crypto/src/IdentityKeyGuardian.ts) produziert HARDWARE_BOUND aus registriertem WebAuthn; [WalletService](../../src/apps/wallet-pwa/src/services/WalletService.ts) instanziiert den Guardian. Die Aussagen „nie produziert/test-only/nicht wired“ in der Juli-Key-Reality-Datei sind hierfür überholt. Kein allgemeiner TEE-/Hardware-Attestationsnachweis; Registrierung nutzt `attestation: 'none'`. BE/BS bedeutet **Backup Eligibility/Backup State**, nicht Browser-Enforcement. |
 | P1 AV / #97 | Lokale Wallet-Predicates, echter ADOPT-Pfad mit numerischem age und offizielles AV-Profil sind unterschiedliche Verträge. #97 bleibt offen; [#182](https://github.com/Late-bloomer420/miTch/issues/182) plant ein predicate-only Profil. Kein stiller Wechsel des akzeptierten Numeric-age-Piloten; aktuelle offizielle Profil-/Issuer-Versionen vor Umsetzung festlegen. |
@@ -295,3 +326,5 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 |-------------|-----------|----------------|
 | 1.0 | 2026-10-19 | Initiale Version (basierend auf Issue #170, PR #174, Code-Analyse) |
 | 1.1 | 2026-10-24 | Statischer Current-master-/PR-/Drive-Abgleich; Scope-/Merge-/Empfehlungskorrekturen, keine neue Runtime-Evidenz oder Gate-Schließung |
+| 1.2 | 2026-10-24 05:33 CEST | Head-bezogene Nachprüfung von #193/CI/Reviews, direkte #170-Close-Kriterien und Stempelregel |
+
