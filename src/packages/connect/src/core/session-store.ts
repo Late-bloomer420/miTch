@@ -1,50 +1,70 @@
 /**
- * ADOPT-1.1 pluggable session storage — first implementation:
- * InMemoryAskMIConnectSessionStore. Concurrent-session safe for ordinary
- * single-process use (single-threaded Map operations are atomic); no global
- * singleton state. The interface is designed so a Redis/DB store is not
- * awkward.
+ * Single-process store. Each read/consume/update performs its state/TTL check
+ * and Map mutation without awaiting: the operation is atomic in this topology.
+ * This is not evidence for a multi-process or durable store.
  */
-
-import type { AskMIConnectSession, AskMIConnectSessionStore } from './types';
+import type {
+  AskMIConnectSession,
+  AskMIConnectSessionStore,
+  AskMIConnectSessionUpdate,
+  AskMIConnectSessionUpdateResult,
+} from './types';
 
 export class InMemoryAskMIConnectSessionStore implements AskMIConnectSessionStore {
   private readonly sessions = new Map<string, AskMIConnectSession>();
   private readonly consumed = new Set<string>();
 
+  constructor(private readonly now: () => number = () => Date.now()) {}
+
+  /** Called only inside synchronous store operations, including the final write. */
+  private current(sessionId: string): AskMIConnectSession | null {
+    const session = this.sessions.get(sessionId);
+    if (!session) return null;
+    if (
+      (session.status === 'pending' || session.status === 'wallet_opened') &&
+      Date.parse(session.expiresAt) <= this.now()
+    ) {
+      const expired: AskMIConnectSession = { ...session, status: 'expired' };
+      this.sessions.set(sessionId, expired);
+      return expired;
+    }
+    return session;
+  }
+
   async create(session: AskMIConnectSession): Promise<void> {
     if (this.sessions.has(session.sessionId)) {
       throw new Error(`session id collision: ${session.sessionId}`);
     }
-    this.sessions.set(session.sessionId, session);
+    // Own the stored record; callers must not mutate the lifecycle by reference.
+    this.sessions.set(session.sessionId, structuredClone(session));
   }
 
   async get(sessionId: string): Promise<AskMIConnectSession | null> {
-    return this.sessions.get(sessionId) ?? null;
+    return structuredClone(this.current(sessionId));
   }
 
-  async update(session: AskMIConnectSession): Promise<void> {
-    if (!this.sessions.has(session.sessionId)) {
-      throw new Error(`cannot update unknown session: ${session.sessionId}`);
+  async update(
+    sessionId: string,
+    update: AskMIConnectSessionUpdate
+  ): Promise<AskMIConnectSessionUpdateResult> {
+    const current = this.current(sessionId);
+    if (!current || (current.status !== 'pending' && current.status !== 'wallet_opened')) {
+      return { applied: false, session: structuredClone(current) };
     }
-    this.sessions.set(session.sessionId, session);
+    const session: AskMIConnectSession = { ...current, ...structuredClone(update) };
+    this.sessions.set(sessionId, session);
+    return { applied: true, session: structuredClone(session) };
   }
 
-  /**
-   * One-shot consume: atomically claims the session for a completion
-   * attempt. A second consume for the same session returns null (replay).
-   * The session record itself stays readable via get() so status remains
-   * observable after the attempt.
-   */
+  /** One consumed attempt, including resolver failure. Never release for retry. */
   async consume(sessionId: string): Promise<AskMIConnectSession | null> {
-    if (this.consumed.has(sessionId)) return null;
-    const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    const session = this.current(sessionId);
+    if (!session || this.consumed.has(sessionId)) return null;
     this.consumed.add(sessionId);
-    return session;
+    return structuredClone(session);
   }
 
-  /** Remove sessions whose expiry elapsed (or already expired). Returns the count. */
+  /** Remove elapsed records; an in-flight update cannot recreate one. */
   async deleteExpired(now: Date): Promise<number> {
     const t = now.getTime();
     let removed = 0;

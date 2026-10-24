@@ -9,6 +9,8 @@ export type {
   AskMIConnectSession,
   AskMIConnectSessionStatus,
   AskMIConnectSessionStore,
+  AskMIConnectSessionUpdate,
+  AskMIConnectSessionUpdateResult,
   AskMIConnectVerification,
   CompleteSessionInput,
   CompleteSessionResult,

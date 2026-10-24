@@ -21,6 +21,7 @@ import type {
   AskMIConnectConfig,
   AskMIConnectErrorCode,
   AskMIConnectSession,
+  AskMIConnectSessionUpdate,
   CompleteSessionInput,
   CompleteSessionResult,
   CreateSessionInput,
@@ -105,7 +106,6 @@ function mapValidationError(errors: readonly string[]): {
   code: AskMIConnectErrorCode;
   message: string;
 } {
-  const first = errors[0] ?? 'presentation validation failed';
   const text = errors.join(' | ');
   if (/nonce/i.test(text)) {
     return { code: 'WRONG_NONCE', message: 'Presentation nonce does not match this session.' };
@@ -131,12 +131,13 @@ function mapValidationError(errors: readonly string[]): {
   if (/signature|verify|expired|expiry|tamper/i.test(text)) {
     return { code: 'SIGNATURE_INVALID', message: 'Cryptographic verification failed.' };
   }
-  return { code: 'SIGNATURE_INVALID', message: first };
+  return { code: 'SIGNATURE_INVALID', message: 'Cryptographic verification failed.' };
 }
 
 export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
   const ttlMs = config.sessionTtlMs ?? DEFAULT_SESSION_TTL_MS;
-  const store = config.store ?? new InMemoryAskMIConnectSessionStore();
+  const now = config.now ?? (() => Date.now());
+  const store = config.store ?? new InMemoryAskMIConnectSessionStore(now);
   const resolveIssuerKey: (iss: string) => Promise<CryptoKey | null> =
     config.issuerKeyResolver ?? (async () => null);
   const validate: PresentationValidator =
@@ -151,22 +152,25 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         checkTrust: opts.checkTrust,
       }));
 
-  async function getLiveSession(
-    sessionId: string
-  ): Promise<
-    | { ok: false; code: 'UNKNOWN_SESSION' }
-    | { ok: false; code: 'SESSION_TERMINAL' }
-    | { ok: false; code: 'SESSION_EXPIRED' }
-    | { ok: true; session: AskMIConnectSession }
-  > {
-    const session = await store.get(sessionId);
-    if (!session) return { ok: false, code: 'UNKNOWN_SESSION' };
-    if (isTerminal(session)) return { ok: false, code: 'SESSION_TERMINAL' };
-    if (Date.parse(session.expiresAt) <= Date.now()) {
-      await store.update({ ...session, status: 'expired' });
-      return { ok: false, code: 'SESSION_EXPIRED' };
+  function rejectedTransition(session: AskMIConnectSession | null): {
+    ok: false;
+    code: 'UNKNOWN_SESSION' | 'SESSION_EXPIRED' | 'SESSION_TERMINAL';
+    message: string;
+  } {
+    if (!session) return { ok: false, code: 'UNKNOWN_SESSION', message: 'Session not found.' };
+    if (session.status === 'expired') {
+      return { ok: false, code: 'SESSION_EXPIRED', message: 'Session expired.' };
     }
-    return { ok: true, session };
+    return { ok: false, code: 'SESSION_TERMINAL', message: 'Session is already terminal.' };
+  }
+
+  async function fail(
+    sessionId: string,
+    code: AskMIConnectErrorCode,
+    message: string
+  ): Promise<CompleteSessionResult> {
+    const updated = await store.update(sessionId, { status: 'failed', errorCode: code });
+    return updated.applied ? { ok: false, code, message } : rejectedTransition(updated.session);
   }
 
   return {
@@ -175,7 +179,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
       const policy = lookupPolicy(clean.policyId);
       if (!policy) return { ok: false, code: 'UNKNOWN_POLICY' };
       const sessionId = newSessionId();
-      const createdAt = new Date();
+      const createdAt = new Date(now());
       const expiresAt = new Date(createdAt.getTime() + ttlMs);
       const session: AskMIConnectSession = {
         sessionId,
@@ -190,172 +194,205 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         correlationId: newCorrelationId(),
         ...(clean.returnUrl !== undefined ? { returnUrl: clean.returnUrl } : {}),
       };
-      await store.create(session);
-      return {
-        ok: true,
-        session,
-        handoff: buildAskMIHandoff({
-          walletBaseUrl: config.walletBaseUrl,
-          sessionId,
-          nonce: session.nonce,
-          presentationEndpoint: session.audience,
-          ...(clean.returnUrl !== undefined ? { returnUrl: clean.returnUrl } : {}),
-        }),
-      };
+      const handoff = buildAskMIHandoff({
+        walletBaseUrl: config.walletBaseUrl,
+        sessionId,
+        nonce: session.nonce,
+        presentationEndpoint: session.audience,
+        ...(clean.returnUrl !== undefined ? { returnUrl: clean.returnUrl } : {}),
+      });
+      try {
+        await store.create(session);
+      } catch (error) {
+        await fail(sessionId, 'INTERNAL_ERROR', 'Session creation failed.');
+        throw error;
+      }
+      return { ok: true, session, handoff };
     },
 
     async markWalletOpened(sessionId: string): Promise<WalletOpenedResult> {
-      const live = await getLiveSession(sessionId);
-      if (!live.ok) return { ok: false, code: live.code };
-      if (live.session.status === 'wallet_opened') return { ok: true };
-      await store.update({ ...live.session, status: 'wallet_opened' });
-      return { ok: true };
+      try {
+        const updated = await store.update(sessionId, { status: 'wallet_opened' });
+        if (updated.applied) return { ok: true };
+        const rejected = rejectedTransition(updated.session);
+        return { ok: false, code: rejected.code };
+      } catch (error) {
+        await fail(sessionId, 'INTERNAL_ERROR', 'Session transition failed.');
+        throw error;
+      }
     },
 
     async completeSession(input: CompleteSessionInput): Promise<CompleteSessionResult> {
-      const fail = async (
-        session: AskMIConnectSession,
-        code: AskMIConnectErrorCode,
-        message: string
-      ): Promise<CompleteSessionResult> => {
-        await store.update({ ...session, status: 'failed', errorCode: code });
-        return { ok: false, code, message };
-      };
-
-      // One-shot consume: a second completion attempt for the same session
-      // cannot race the first into a second `verified`.
-      const claimed = await store.consume(input.sessionId);
-      if (!claimed) {
-        const existing = await store.get(input.sessionId);
-        if (!existing) return { ok: false, code: 'UNKNOWN_SESSION', message: 'Session not found.' };
-        if (isTerminal(existing)) {
+      try {
+        // One-shot consume: a second completion attempt for the same session
+        // cannot race the first into a second `verified`.
+        const claimed = await store.consume(input.sessionId);
+        if (!claimed) {
+          const existing = await store.get(input.sessionId);
+          if (!existing)
+            return { ok: false, code: 'UNKNOWN_SESSION', message: 'Session not found.' };
+          if (isTerminal(existing)) {
+            return {
+              ok: false,
+              code: existing.status === 'verified' ? 'REPLAY_DETECTED' : 'SESSION_TERMINAL',
+              message:
+                existing.status === 'verified'
+                  ? 'Session already verified; presentations are one-shot.'
+                  : 'Session is already in a terminal state.',
+            };
+          }
           return {
             ok: false,
-            code: existing.status === 'verified' ? 'REPLAY_DETECTED' : 'SESSION_TERMINAL',
-            message:
-              existing.status === 'verified'
-                ? 'Session already verified; presentations are one-shot.'
-                : 'Session is already in a terminal state.',
+            code: 'REPLAY_DETECTED',
+            message: 'Session attempt already consumed.',
           };
         }
-        return { ok: false, code: 'REPLAY_DETECTED', message: 'Session attempt already consumed.' };
-      }
-      const session = claimed;
+        const session = claimed;
 
-      const live = await getLiveSession(input.sessionId);
-      if (!live.ok) {
-        if (live.code === 'SESSION_EXPIRED') {
-          await store.update({ ...session, status: 'expired' });
-          return { ok: false, code: 'SESSION_EXPIRED', message: 'Session expired.' };
+        if (isTerminal(session)) return rejectedTransition(session);
+
+        const body = input.body;
+        if (looksLikeSimulatedRoute(body)) {
+          return await fail(
+            session.sessionId,
+            'SIMULATED_ROUTE_REJECTED',
+            'Legacy simulated wallet-present payloads cannot satisfy the Connect flow.'
+          );
         }
-        return { ok: false, code: 'UNKNOWN_SESSION', message: 'Session not found.' };
-      }
+        if (typeof body.vp_token !== 'string' || body.vp_token.length === 0) {
+          return await fail(session.sessionId, 'MALFORMED_PRESENTATION', 'Missing vp_token.');
+        }
+        if (
+          typeof body.presentation_submission !== 'object' ||
+          body.presentation_submission === null
+        ) {
+          return await fail(
+            session.sessionId,
+            'MALFORMED_PRESENTATION',
+            'Missing presentation_submission.'
+          );
+        }
+        if (body.state !== undefined && body.state !== session.sessionId) {
+          return await fail(
+            session.sessionId,
+            'WRONG_NONCE',
+            'Presentation state does not match this session.'
+          );
+        }
 
-      const body = input.body;
-      if (looksLikeSimulatedRoute(body)) {
-        return fail(
-          session,
-          'SIMULATED_ROUTE_REJECTED',
-          'Legacy simulated wallet-present payloads cannot satisfy the Connect flow.'
-        );
-      }
-      if (typeof body.vp_token !== 'string' || body.vp_token.length === 0) {
-        return fail(session, 'MALFORMED_PRESENTATION', 'Missing vp_token.');
-      }
-      if (
-        typeof body.presentation_submission !== 'object' ||
-        body.presentation_submission === null
-      ) {
-        return fail(session, 'MALFORMED_PRESENTATION', 'Missing presentation_submission.');
-      }
-      if (body.state !== undefined && body.state !== session.sessionId) {
-        return fail(session, 'WRONG_NONCE', 'Presentation state does not match this session.');
-      }
+        const iss = extractIss(body.vp_token);
+        if (!iss) {
+          return await fail(
+            session.sessionId,
+            'UNTRUSTED_ISSUER',
+            'Credential issuer cannot be determined.'
+          );
+        }
+        let issuerPublicKey: CryptoKey | null;
+        try {
+          issuerPublicKey = await resolveIssuerKey(iss);
+        } catch {
+          return await fail(
+            session.sessionId,
+            'ISSUER_RESOLUTION_FAILED',
+            'Issuer key lookup failed; start a new session to retry.'
+          );
+        }
+        if (!issuerPublicKey) {
+          return await fail(
+            session.sessionId,
+            'UNTRUSTED_ISSUER',
+            'Issuer is not trusted or cannot be resolved.'
+          );
+        }
 
-      const iss = extractIss(body.vp_token);
-      if (!iss) {
-        return fail(session, 'UNTRUSTED_ISSUER', 'Credential issuer cannot be determined.');
-      }
-      const issuerPublicKey = await resolveIssuerKey(iss);
-      if (!issuerPublicKey) {
-        return fail(session, 'UNTRUSTED_ISSUER', 'Issuer is not trusted or cannot be resolved.');
-      }
+        const request = {
+          response_type: 'vp_token' as const,
+          client_id: session.verifierDid,
+          redirect_uri: presentationEndpoint(config.audienceBaseUrl, session.sessionId),
+          nonce: session.nonce,
+          presentation_definition: { id: 'askmi-connect', input_descriptors: [] as [] },
+          response_mode: 'direct_post' as const,
+          state: session.sessionId,
+        };
 
-      const request = {
-        response_type: 'vp_token' as const,
-        client_id: session.verifierDid,
-        redirect_uri: presentationEndpoint(config.audienceBaseUrl, session.sessionId),
-        nonce: session.nonce,
-        presentation_definition: { id: 'askmi-connect', input_descriptors: [] as [] },
-        response_mode: 'direct_post' as const,
-        state: session.sessionId,
-      };
+        let validation;
+        try {
+          validation = await validate({
+            vpTokenString: body.vp_token,
+            presentationSubmission: body.presentation_submission,
+            request,
+            issuerPublicKey,
+            checkRevocation: true,
+            checkTrust: false,
+          });
+        } catch {
+          return await fail(
+            session.sessionId,
+            'SIGNATURE_INVALID',
+            'Cryptographic verification failed.'
+          );
+        }
+        if (!validation.ok) {
+          const mapped = mapValidationError(validation.errors);
+          return await fail(session.sessionId, mapped.code, mapped.message);
+        }
 
-      let validation;
-      try {
-        validation = await validate({
-          vpTokenString: body.vp_token,
-          presentationSubmission: body.presentation_submission,
-          request,
-          issuerPublicKey,
-          checkRevocation: true,
-          checkTrust: false,
-        });
-      } catch (e) {
-        return fail(session, 'SIGNATURE_INVALID', 'Cryptographic verification failed.');
-      }
-      if (!validation.ok) {
-        const mapped = mapValidationError(validation.errors);
-        return fail(session, mapped.code, mapped.message);
-      }
+        const disclosedClaims = validation.disclosedClaims ?? {};
+        const policy = lookupPolicy(session.policyId);
+        if (!policy) {
+          return await fail(session.sessionId, 'INTERNAL_ERROR', 'Registered policy disappeared.');
+        }
+        const missing = policy.requiredClaims.filter((claim) => !(claim in disclosedClaims));
+        if (missing.length > 0) {
+          return await fail(
+            session.sessionId,
+            'INSUFFICIENT_CLAIMS',
+            'Required claims are missing after valid verification.'
+          );
+        }
 
-      const disclosedClaims = validation.disclosedClaims ?? {};
-      const policy = lookupPolicy(session.policyId);
-      if (!policy) {
-        return fail(session, 'INTERNAL_ERROR', 'Registered policy disappeared.');
-      }
-      const missing = policy.requiredClaims.filter((claim) => !(claim in disclosedClaims));
-      if (missing.length > 0) {
-        return fail(
-          session,
-          'INSUFFICIENT_CLAIMS',
-          'Required claims are missing after valid verification.'
-        );
-      }
+        const result = evaluatePolicyResult(policy, disclosedClaims);
+        if (!result.eligible) {
+          return await fail(
+            session.sessionId,
+            'POLICY_DENIED',
+            'Policy evaluated the presented claims as not eligible.'
+          );
+        }
 
-      const result = evaluatePolicyResult(policy, disclosedClaims);
-      if (!result.eligible) {
-        return fail(
-          session,
-          'POLICY_DENIED',
-          'Policy evaluated the presented claims as not eligible.'
-        );
+        const verified: AskMIConnectSessionUpdate = {
+          status: 'verified',
+          result,
+          verification: {
+            cryptographic: 'passed',
+            issuerTrust: 'passed',
+            policy: 'allowed',
+            userApproval: 'presentation_received',
+          },
+          provenance: provenanceFor(policy, disclosedClaims, session.correlationId),
+        };
+        const updated = await store.update(session.sessionId, verified);
+        if (!updated.applied || !updated.session) return rejectedTransition(updated.session);
+        return { ok: true, session: updated.session };
+      } catch {
+        return await fail(input.sessionId, 'INTERNAL_ERROR', 'Presentation processing failed.');
       }
-
-      const verified: AskMIConnectSession = {
-        ...session,
-        status: 'verified',
-        result,
-        verification: {
-          cryptographic: 'passed',
-          issuerTrust: 'passed',
-          policy: 'allowed',
-          userApproval: 'presentation_received',
-        },
-        provenance: provenanceFor(policy, disclosedClaims, session.correlationId),
-      };
-      await store.update(verified);
-      return { ok: true, session: verified };
     },
 
     async getSession(sessionId: string): Promise<GetSessionResult> {
-      const session = await store.get(sessionId);
-      if (!session) return { ok: false, code: 'UNKNOWN_SESSION' };
-      if (!isTerminal(session) && Date.parse(session.expiresAt) <= Date.now()) {
-        await store.update({ ...session, status: 'expired' });
-        return { ok: true, session: { ...session, status: 'expired' } };
+      try {
+        const session = await store.get(sessionId);
+        if (!session) return { ok: false, code: 'UNKNOWN_SESSION' };
+        return { ok: true, session };
+      } catch (error) {
+        await fail(sessionId, 'INTERNAL_ERROR', 'Session status failed.');
+        throw error;
       }
-      return { ok: true, session };
+    },
+
+    async failSession(sessionId: string): Promise<CompleteSessionResult> {
+      return await fail(sessionId, 'INTERNAL_ERROR', 'Session processing failed.');
     },
   };
 }

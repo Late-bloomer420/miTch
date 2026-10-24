@@ -26,7 +26,7 @@ describe('InMemoryAskMIConnectSessionStore', () => {
     const session = makeSession();
     await store.create(session);
     expect((await store.get('askmi_sess_test'))?.status).toBe('pending');
-    await store.update({ ...session, status: 'wallet_opened' });
+    await store.update(session.sessionId, { status: 'wallet_opened' });
     expect((await store.get('askmi_sess_test'))?.status).toBe('wallet_opened');
   });
 
@@ -36,9 +36,11 @@ describe('InMemoryAskMIConnectSessionStore', () => {
     await expect(store.create(makeSession())).rejects.toThrow(/collision/);
   });
 
-  it('refuses to update an unknown session', async () => {
+  it('does not recreate an unknown session', async () => {
     const store = new InMemoryAskMIConnectSessionStore();
-    await expect(store.update(makeSession())).rejects.toThrow(/unknown session/);
+    expect(
+      await store.update('missing', { status: 'failed', errorCode: 'INTERNAL_ERROR' })
+    ).toEqual({ applied: false, session: null });
   });
 
   it('consumes one-shot: a second consume returns null (replay)', async () => {

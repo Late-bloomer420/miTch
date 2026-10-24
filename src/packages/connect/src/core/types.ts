@@ -30,6 +30,7 @@ export type AskMIConnectErrorCode =
   | 'WRONG_NONCE'
   | 'REPLAY_DETECTED'
   | 'UNTRUSTED_ISSUER'
+  | 'ISSUER_RESOLUTION_FAILED'
   | 'SIGNATURE_INVALID'
   | 'INSUFFICIENT_CLAIMS'
   | 'POLICY_DENIED'
@@ -95,11 +96,37 @@ export interface AskMIConnectSession {
   readonly provenance?: AskMIConnectProvenance;
 }
 
-/** Pluggable session storage (ADOPT-1.1). No global singleton state. */
+/** Only lifecycle fields may change; session bindings remain server-owned. */
+export type AskMIConnectSessionUpdate =
+  | { status: 'wallet_opened' }
+  | { status: 'failed'; errorCode: AskMIConnectErrorCode }
+  | {
+      status: 'verified';
+      result: AskMIConnectResult;
+      verification: AskMIConnectVerification;
+      provenance: AskMIConnectProvenance;
+    };
+
+export interface AskMIConnectSessionUpdateResult {
+  /** False means no requested transition was written. Discard the computed result. */
+  applied: boolean;
+  session: AskMIConnectSession | null;
+}
+
+/**
+ * Pluggable session storage. get/consume/update must evaluate expiry using the
+ * same clock. update MUST atomically check the current state and TTL with the
+ * write: terminal states are absorbing, elapsed TTL becomes expired, and a
+ * removed record is never recreated. No read-then-unconditional-write fallback.
+ * A DB/Redis adapter must enforce these conditions transactionally at commit.
+ */
 export interface AskMIConnectSessionStore {
   create(session: AskMIConnectSession): Promise<void>;
   get(sessionId: string): Promise<AskMIConnectSession | null>;
-  update(session: AskMIConnectSession): Promise<void>;
+  update(
+    sessionId: string,
+    update: AskMIConnectSessionUpdate
+  ): Promise<AskMIConnectSessionUpdateResult>;
   consume(sessionId: string): Promise<AskMIConnectSession | null>;
   deleteExpired(now: Date): Promise<number>;
 }
@@ -114,11 +141,15 @@ export interface AskMIConnectConfig {
   walletBaseUrl: string;
   /** Session TTL in milliseconds (default 5 minutes). */
   sessionTtlMs?: number;
+  /** Millisecond clock for creation and the default store. Custom stores must use this same source. */
+  now?: () => number;
   /** Session store; defaults to a new InMemoryAskMIConnectSessionStore. */
   store?: AskMIConnectSessionStore;
   /**
    * Trust-gated issuer key resolution: returns the issuer's public key for a
-   * credential `iss`, or null when the issuer is not trusted/resolvable.
+   * credential `iss`, or null when the issuer is not trusted. Reject on lookup
+   * failure (ISSUER_RESOLUTION_FAILED); the consumed session is terminal and
+   * retry requires a fresh session/nonce.
    * Fail-closed default: resolve nothing (every presentation fails as
    * UNTRUSTED_ISSUER) until a real trust-list/JWKS resolver is injected.
    */
@@ -154,6 +185,8 @@ export interface AskMIConnect {
   markWalletOpened(sessionId: string): Promise<WalletOpenedResult>;
   completeSession(input: CompleteSessionInput): Promise<CompleteSessionResult>;
   getSession(sessionId: string): Promise<GetSessionResult>;
+  /** Persist terminal failure after an unexpected transport/core exception; never overwrite terminal state. */
+  failSession(sessionId: string): Promise<CompleteSessionResult>;
 }
 
 export interface CreateSessionInput {
