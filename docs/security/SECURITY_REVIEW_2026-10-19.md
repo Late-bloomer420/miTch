@@ -1,6 +1,48 @@
 # Security- und Privacy-Review: miTch
 
-**Baseline:** `624cf9a` (nach PR #174, 2026-10-15)
+## Abgleich vom 24.10.2026 — aktuelle Einordnung
+
+Geprüfter `master`: [`a21ac24`](https://github.com/Late-bloomer420/miTch/commit/a21ac24e2e7f091b3652f91dfd26162f5a822914).
+Gegenüber `624cf9a` ist nur der Ciphertext-Tamper-Test aus [#190](https://github.com/Late-bloomer420/miTch/pull/190) geändert
+([Vergleich](https://github.com/Late-bloomer420/miTch/compare/624cf9af919fe58a7cba34a05b316b17e49c7e0f...a21ac24e2e7f091b3652f91dfd26162f5a822914)).
+Die betroffenen Runtime-Dateien sind unverändert. Die HTTP-Gegenbeispiele bleiben **datierte
+Reproduktionen vom 14.10.**, ergänzt durch statischen Code-Abgleich; hier wurde kein neuer
+Runtime-/Browser-/Interop-Test durchgeführt. Ein SHA oder statisches Lesen ist kein Security-PASS.
+
+| Bereich | Belegte Einordnung / kleinster nächster Schritt |
+|---|---|
+| P0-1 / #170 | Weiter offen auf master: ursprünglicher Server-Request fehlt in der aktiven Route. Fix plus echte HTTP-/Signatur-Negativtests für Replay, Nonce/State/Audience, Ablauf/Konkurrenz, Eligibility und überschüssige Claims nötig. Erst mit Fix-Commit und Artefakten schließen. |
+| P0-2 / Connect | Auf master fehlt das Paket; [#193](https://github.com/Late-bloomer420/miTch/pull/193) bietet es an Head `afea2a778f31d18785eed5aaa981701ac24a94f4` an, ist aber **offen/unmerged** und integriert verifier-demo ausdrücklich noch nicht. Connect ist **RP-seitige** Verifier-/Policy-Integration gemäß [Produktentscheidung](../tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md), kein Beleg für fehlende wallet-seitige Policy-Komponenten. |
+| #193 Restarbeit | Unaufgelöste Reviews: [P1 Resolver-Rejection](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763904), [P2 terminale Expiry überschrieben](https://github.com/Late-bloomer420/miTch/pull/193#discussion_r4364763898). Required checks am genannten Head erfolgreich; alte CodeQL-Regex-Threads resolved/outdated. Grüne Checks schließen diese Reviews nicht. [Core-Tests](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/test/core.test.ts#L7) verwenden einen Validator-Stub; echte aktive HTTP-/Krypto-Integration bleibt separat nachzuweisen. Im Core werden erforderliche Claims geprüft, überschüssige Claims jedoch nicht ausdrücklich abgelehnt ([verifier.ts:312–347](https://github.com/Late-bloomer420/miTch/blob/afea2a778f31d18785eed5aaa981701ac24a94f4/src/packages/connect/src/core/verifier.ts#L312) am genannten Head). |
+| Wallet-Enforcement | Eigenständige offene Grenze: [#180](https://github.com/Late-bloomer420/miTch/issues/180) finaler Disclosure-PEP und [#181](https://github.com/Late-bloomer420/miTch/issues/181) adversariale Tests. Fehlendes Connect allein beweist keinen generellen PolicyEngine-Ausfall. |
+| P1 Hardware | [`IdentityKeyGuardian.getLevel()`](../../src/packages/shared-crypto/src/IdentityKeyGuardian.ts) produziert HARDWARE_BOUND aus registriertem WebAuthn; [WalletService](../../src/apps/wallet-pwa/src/services/WalletService.ts) instanziiert den Guardian. Die Aussagen „nie produziert/test-only/nicht wired“ in der Juli-Key-Reality-Datei sind hierfür überholt. Kein allgemeiner TEE-/Hardware-Attestationsnachweis; Registrierung nutzt `attestation: 'none'`. BE/BS bedeutet **Backup Eligibility/Backup State**, nicht Browser-Enforcement. |
+| P1 AV / #97 | Lokale Wallet-Predicates, echter ADOPT-Pfad mit numerischem age und offizielles AV-Profil sind unterschiedliche Verträge. #97 bleibt offen; [#182](https://github.com/Late-bloomer420/miTch/issues/182) plant ein predicate-only Profil. Kein stiller Wechsel des akzeptierten Numeric-age-Piloten; aktuelle offizielle Profil-/Issuer-Versionen vor Umsetzung festlegen. |
+| P1 decisionId | Math.random() weiterhin in [`evaluate.ts:375`](../../src/packages/predicates/src/evaluate.ts#L375); #151 offen. Nicht-kryptographische Entropie und eingebetteter Zeitstempel sind belegt, kein Signatur-Forgery- oder allgemeiner Tracking-Exploit. Patch am aktuellen Head mit gezielten Randomness-/Format-Tests prüfen. |
+| EV-05 | Weiter offen: [`ci-security.yml`](../../.github/workflows/ci-security.yml) ist advisory und fängt Audit-Fehler ab. Datierte synthetische Fehl-Erfolge sind belegt; aktuelle CVE-Zahlen nicht. #141 / SEC-AUDIT-1/2 bleiben zuständig, #185 ergänzt Assurance-Planung. |
+
+**Merge-Abgleich:** [#152](https://github.com/Late-bloomer420/miTch/pull/152) seit 02.10.2026 gemergt
+(`80587d00f8ca185d0d921e0d6221c8aa800d41ae`), nicht erneut als offenen Blocker führen.
+[#141](https://github.com/Late-bloomer420/miTch/pull/141) offen mit Konflikten: relevante CORS/Session/Key/Recovery-/Audit-Änderungen
+auf aktuellem master gezielt versöhnen, keinen alten Tree pauschal mergen.
+[#150](https://github.com/Late-bloomer420/miTch/pull/150) und [#151](https://github.com/Late-bloomer420/miTch/pull/151) sind offen; aktuelle
+Signaturformat-/Key-Consumer- bzw. Randomness-Evidenz entscheidet über Merge, nicht diese Doku.
+
+**Neuere Doku:** [#178](https://github.com/Late-bloomer420/miTch/pull/178) Assurance-Verträge,
+[#187](https://github.com/Late-bloomer420/miTch/pull/187) STRIDE × LINDDUN (Wallet TB-W / Verifier TB-S),
+[#188](https://github.com/Late-bloomer420/miTch/pull/188) statischer Architektur-Audit (u. a. Proximity-Authorization/Mock-DeviceAuth,
+EV-09), [#179](https://github.com/Late-bloomer420/miTch/pull/179) Source-Watch und [#191](https://github.com/Late-bloomer420/miTch/pull/191) DPIA-Wording
+sind offen/unmerged. Sie sind Review-/Planungsinput, keine implementierten Kontrollen oder neue
+Zertifizierung. `624cf9a` als statische Re-Check-Baseline in #188 darf nicht als
+dynamischer Sicherheitsnachweis für #192 ausgegeben werden.
+
+**Roadmap bleibt kanonisch:** [BACKLOG](../BACKLOG.md), [Release-Roadmap](../RELEASE_READINESS_ROADMAP.md),
+[#142](https://github.com/Late-bloomer420/miTch/issues/142) / [#143](https://github.com/Late-bloomer420/miTch/issues/143).
+G0/G1 bleiben offen; kein Gate, Zieldatum oder Produktziel wird durch diese Korrektur geändert.
+[#171](https://github.com/Late-bloomer420/miTch/issues/171), [#172](https://github.com/Late-bloomer420/miTch/issues/172), [#173](https://github.com/Late-bloomer420/miTch/issues/173) bleiben gesonderte Lifecycle-/Audit-/Evidence-Arbeit.
+
+---
+
+**Historische Review-Baseline:** `624cf9a` (nach PR #174, 2026-10-15)
 **Gelesene Quellen:**
 - [Issue #170](https://github.com/Late-bloomer420/miTch/issues/170) (P0 ADOPT-1: enforce server-owned SD-JWT request binding)
 - [PR #174](https://github.com/Late-bloomer420/miTch/pull/174) (docs: preserve scoped evidence)
@@ -69,7 +111,7 @@ reconstructedRequest.nonce = kbPayload.nonce ?? ''; // ← aus KB-JWT (Angreifer
 | **Status** | NOT PROVEN |
 | **Datei** | – (Paket existiert nicht) |
 | **Lücke** | Keine Implementierung von `src/packages/connect` (Issue #170: "is absent at the checked baseline") |
-| **Impact** | **Keine wallet-seitige Policy-Prüfung** – Verifier prüft nur Signaturen |
+| **Impact** | Akzeptierter RP-seitiger Connect-Vertrag ist auf master nicht integriert; wallet-seitige PEP-Abdeckung separat unter #180/#181 offen |
 
 **Beleg:**
 - Issue #170: "`src/packages/connect` is absent at the checked baseline"
@@ -77,7 +119,7 @@ reconstructedRequest.nonce = kbPayload.nonce ?? ''; // ← aus KB-JWT (Angreifer
 
 **Fix:**
 - `src/packages/connect` implementieren (per [`ADOPT_1_MINIMAL_SESSION_CONTRACT.md`](../tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md))
-- **Wallet-seitige Enforcement** (nicht nur Verifier-Signaturcheck)
+- RP-seitige Request-/Session-/Eligibility-Enforcement integrieren; wallet-seitigen finalen Disclosure-PEP separat unter #180/#181 nachweisen
 
 ---
 
@@ -111,7 +153,7 @@ async getLevel(): Promise<KeyProtectionLevel> {
 - Dokumentation klarstellen: **HARDWARE_BOUND = WebAuthn/passkeys, kein TEE/Attestation**
 
 **Offenes Finding:**
-- **BE/BS-Flags** (Browser-Enforcement/Attestation) werden **nicht geprüft** → NOT PROVEN
+- BE/BS = **Backup Eligibility/Backup State**; diese Flags und Hardware-Attestation sind unterschiedliche Nachweise. Getestete Durchsetzung in dieser Review nicht belegt.
 
 ---
 
@@ -122,7 +164,7 @@ async getLevel(): Promise<KeyProtectionLevel> {
 | **Status** | OPEN |
 | **Datei:Zeile** | `evaluate.ts:20-40` (`CommonPredicates.ageAtLeast(18)`) |
 | **Lücke** | Wallet berechnet `age >= 18` **lokal** aus `dateOfBirth` |
-| **Impact** | **Keine issuer-authentifizierte ZKP** – nicht EUDI AV-compliant |
+| **Impact** | Lokale Predicate-Signatur ist kein Nachweis einer issuer-authentifizierten ZK-Ableitung; vollständige offizielle AV-Profil-Konformität bleibt unbelegt |
 
 **Beleg:**
 - Issue #97: "Local predicate evaluation plus a wallet signature is **not** an evidenced issuer-authenticated ZK derivation"
@@ -130,9 +172,7 @@ async getLevel(): Promise<KeyProtectionLevel> {
 - EUDI AV Profile (`eu.europa.ec.av.1`) erfordert **`age_over_NN` (boolean)**, nicht numerisches `age`
 
 **Fix:**
-- EUDI AV Profile (`eu.europa.ec.av.1`) implementieren
-- `age_over_NN` (boolean) statt numerischem `age`
-- mdoc statt SD-JWT VC für AV-Profil
+- Unter #97/#182 zuerst exakte aktuelle Profil-/Quell-/Issuer-Versionen entscheiden; danach dedizierten AV-Pfad implementieren und interoperabel prüfen. Den akzeptierten Numeric-age-Connect-Piloten nicht stillschweigend ersetzen.
 
 ---
 
@@ -143,7 +183,7 @@ async getLevel(): Promise<KeyProtectionLevel> {
 | **Status** | REAL |
 | **Datei:Zeile** | `evaluate.ts:375` |
 | **Lücke** | `Math.random()` statt `crypto.randomUUID()` |
-| **Impact** | Predictable IDs ermöglichen **Tracking/Korrelation** (keine direkte Sicherheitslücke) |
+| **Impact** | Nicht-kryptographische Entropie und eingebetteter Zeitstempel; konkreter Tracking-/Forgery-Exploit hier nicht nachgewiesen |
 
 **Code-Beleg (`evaluate.ts:375`):**
 ```typescript
@@ -154,7 +194,7 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 - PR #151: `mergedAt: null`, `state: "OPEN"` (nicht gemergt)
 
 **Fix:**
-- PR #151 mergen **oder**
+- PR #151 am aktuellen Head mit Randomness-/Format-Regressions prüfen und erst danach landen **oder**
 - `decisionId` auf `globalThis.crypto.randomUUID()` ändern
 
 ---
@@ -165,8 +205,8 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 
 | **Aspekt** | **Details** |
 |-----------|-------------|
-| **Status** | NOT PROVEN |
-| **Beleg** | `REPO_EVIDENCE_STATUS_2026-10-14.md`: "Audit steps are **advisory**" |
+| **Status** | Datierte Reproduktion; statisch unverändert, keine aktuelle CVE-Anzahl abgeleitet |
+| **Beleg** | `REPO_EVIDENCE_STATUS_2026-10-14.md` EV-05 und `.github/workflows/ci-security.yml` |
 
 **Korrektur:**
 - **Issue #140 ist ein Dependabot PR** (PostCSS Update), **kein Audit**
@@ -188,7 +228,7 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 | **Aspekt** | **Details** |
 |-----------|-------------|
 | **Status** | NOT PROVEN |
-| **Beleg** | Keine direkte Evidenz im gelesenen Code (Wallet nutzt `globalThis.crypto.subtle` in-memory) |
+| **Beleg** | Kein Exploit in dieser Review nachgewiesen. In-memory WebCrypto ist kein allgemeiner Ausschluss: `WalletService.fetchAndStoreSdJwtVc/addSdJwtVc` exportiert und speichert Holder-Private-JWKs im geschützten Store. Key-/XSS-Boundary unter #186 prüfen. |
 
 ---
 
@@ -201,7 +241,7 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 | P1-1 | **P1** | PARTIAL | HARDWARE_BOUND = nur WebAuthn (kein TEE) | Label/Doku korrigieren |
 | P1-2 | **P1** | OPEN | Lokale Predicates ≠ EUDI AV Compliance | `age_over_NN` (mdoc) implementieren |
 | P1-3 | **P1** | REAL | `decisionId` unsicher (`Math.random()`) | PR #151 mergen |
-| P2-1 | **P2** | NOT PROVEN | EV-05 = advisory, keine Findings | Zahlen entfernen |
+| P2-1 | **P0 für behauptetes Security-Gate** | Offen, datiert reproduziert | EV-05 = advisory, aktuelle CVE-Anzahl unbelegt | Gate-/Audit-Fehler-Negativtests (#141/SEC-AUDIT-1/2) |
 | P2-2 | **P2** | NOT PROVEN | Keine SBOM/Signaturen | – |
 | P2-3 | **P2** | NOT PROVEN | XSS/IndexedDB nicht bestätigt | – |
 
@@ -209,29 +249,28 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 
 ## 🎯 Empfehlung (priorisiert)
 
-1. **#170 sofort schließen (P0)**
+1. **#170 beheben und bis zur aktiven Integrations-Evidenz offen halten (P0)**
    - Session-Speicherung in `/oid4vp-present` implementieren
    - Request-Binding (nonce, state, audience) serverseitig validieren
    - **4 Regressionstests** hinzufügen
 
-2. **PR #151 mergen (P1)**
-   - `decisionId` auf `crypto.randomUUID()` ändern
+2. **PR #151 am aktuellen Head prüfen (P1)**
+   - Randomness-/Format-Regressions und Consumer-Kompatibilität vor Merge belegen
 
 3. **HARDWARE_BOUND klären (P1)**
-   - Label in **`WEBAUTHN_BOUND`** umbenennen
+   - WebAuthn von nachgewiesener Hardware-Residency/Attestation trennen; API-Umbenennung benötigt separate Freigabe
    - Dokumentation in [`10_KEY_PROTECTION_REALITY.md`](../_core/10_KEY_PROTECTION_REALITY.md) aktualisieren
 
-4. **EUDI AV Profile umsetzen (P1)**
-   - `age_over_NN` (boolean) statt numerischem `age`
-   - mdoc statt SD-JWT VC für AV-Profil
+4. **EUDI AV Profile separat entscheiden (P1, #97/#182)**
+   - Aktuelle Profil-/Issuer-Versionen und Negativ-/Interop-Evidenz definieren; Numeric-age-Pilot unverändert als solchen benennen
 
 5. **Enforcement-Grenze definieren (P0)**
    - `src/packages/connect` implementieren (per [`ADOPT_1_MINIMAL_SESSION_CONTRACT.md`](../tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md))
-   - **Wallet-seitige Policy-Prüfung** (nicht nur Verifier-Signaturcheck)
+   - RP-Enforcement in #193/aktiver Route; Wallet-PEP gesondert in #180/#181
 
 ---
 
-## 🔗 Quellenverzeichnis (alle Aussagen belegbar)
+## 🔗 Historisches Quellenverzeichnis (Geltungsgrenzen siehe Abgleich oben)
 
 | **Aussage** | **Typ** | **Quelle** |
 |-------------|---------|------------|
@@ -255,3 +294,4 @@ const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2,
 | **Version** | **Datum** | **Änderungen** |
 |-------------|-----------|----------------|
 | 1.0 | 2026-10-19 | Initiale Version (basierend auf Issue #170, PR #174, Code-Analyse) |
+| 1.1 | 2026-10-24 | Statischer Current-master-/PR-/Drive-Abgleich; Scope-/Merge-/Empfehlungskorrekturen, keine neue Runtime-Evidenz oder Gate-Schließung |
