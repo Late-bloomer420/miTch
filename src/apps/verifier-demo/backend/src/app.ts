@@ -54,20 +54,142 @@ if (TRUST_PROXY) {
   }
 }
 
-// Enable CORS so the Wallet PWA and Frontend can talk to us
-app.use(cors());
+const allowedOrigins = new Set(
+  (process.env.CORS_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+);
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(new Error('CORS_ORIGIN_DENIED'));
+    },
+    credentials: true,
+  })
+);
+app.use(
+  (err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof Error && err.message === 'CORS_ORIGIN_DENIED') {
+      return res.status(403).json({ ok: false, error: 'CORS_ORIGIN_DENIED' });
+    }
+    return next(err);
+  }
+);
 app.use(express.json());
 
 // T-44: Metrics Collection
 const metrics = new SimpleMetrics();
 
-// Pilot State (In-memory for PoC)
-let lastVerificationStatus: 'WAITING' | 'SCANNED' | 'VERIFIED' | 'FAILED' | 'EXPIRED' = 'WAITING';
-let lastRequestTimestamp: number = Date.now();
-const REQUEST_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-let lastIssuer: string | null = null;
-let lastDisclosedClaims: Record<string, unknown> | null = null;
-let lastConsentReceipt: Record<string, unknown> | null = null;
+type VerificationState = {
+  status: 'WAITING' | 'SCANNED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
+  timestamp: number;
+  lastAccessedAt: number;
+  issuer: string | null;
+  disclosedClaims: Record<string, unknown> | null;
+  consentReceipt: Record<string, unknown> | null;
+};
+
+const sessions = new Map<string, VerificationState>();
+const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
+const SESSION_TTL_MS = 15 * 60 * 1000;
+const SESSION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;
+const SESSION_PATHS = new Set([
+  '/status',
+  '/notify-scan',
+  '/authorize',
+  '/wallet-present',
+  '/oid4vp-present',
+  '/present',
+  '/reset',
+]);
+const DEFAULT_MAX_VERIFIER_SESSIONS = 10000;
+const ABSOLUTE_MAX_VERIFIER_SESSIONS = 100000;
+
+function parseMaxSessions(value: string | undefined): number {
+  if (!value || !/^\d+$/.test(value)) return DEFAULT_MAX_VERIFIER_SESSIONS;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return DEFAULT_MAX_VERIFIER_SESSIONS;
+  return Math.min(parsed, ABSOLUTE_MAX_VERIFIER_SESSIONS);
+}
+
+const MAX_VERIFIER_SESSIONS = parseMaxSessions(process.env.MAX_VERIFIER_SESSIONS);
+
+function pruneSessions(now: number): void {
+  for (const [id, state] of sessions) {
+    if (now - state.lastAccessedAt > SESSION_TTL_MS) sessions.delete(id);
+  }
+
+  while (sessions.size >= MAX_VERIFIER_SESSIONS) {
+    const oldestId = sessions.keys().next().value as string | undefined;
+    if (!oldestId) break;
+    sessions.delete(oldestId);
+  }
+}
+
+app.use((req, res, next) => {
+  if (!SESSION_PATHS.has(req.path)) return next();
+
+  const headerSessionId = req.get('x-askmi-session-id') || '';
+  const queryValue = req.query['sessionId'];
+  const querySessionId = typeof queryValue === 'string' ? queryValue : '';
+  const bodyValue =
+    req.body && typeof req.body === 'object' && 'sessionId' in req.body
+      ? (req.body as { sessionId?: unknown }).sessionId
+      : undefined;
+  const bodySessionId = typeof bodyValue === 'string' ? bodyValue : '';
+  const suppliedIds = [headerSessionId, querySessionId, bodySessionId].filter(Boolean);
+  const supplied = suppliedIds[0] || '';
+
+  if (
+    (queryValue !== undefined && typeof queryValue !== 'string') ||
+    (bodyValue !== undefined && typeof bodyValue !== 'string') ||
+    suppliedIds.some((id) => id !== supplied) ||
+    (supplied && !SESSION_ID_PATTERN.test(supplied))
+  ) {
+    return res.status(400).json({ ok: false, error: 'INVALID_SESSION_ID' });
+  }
+
+  if (!supplied) {
+    return res.status(400).json({ ok: false, error: 'MISSING_SESSION_ID' });
+  }
+
+  res.locals['askmiSessionId'] = supplied;
+  res.setHeader('X-AskMI-Session-Id', supplied);
+  return next();
+});
+
+function sessionId(_req: express.Request, res: express.Response): string {
+  return res.locals['askmiSessionId'] as string;
+}
+
+function stateFor(id: string): VerificationState {
+  const now = Date.now();
+  let state = sessions.get(id);
+  if (state && now - state.lastAccessedAt > SESSION_TTL_MS) {
+    sessions.delete(id);
+    state = undefined;
+  }
+  if (!state) {
+    pruneSessions(now);
+    state = {
+      status: 'WAITING',
+      timestamp: now,
+      lastAccessedAt: now,
+      issuer: null,
+      disclosedClaims: null,
+      consentReceipt: null,
+    };
+    sessions.set(id, state);
+  } else {
+    state.lastAccessedAt = now;
+    // Refresh insertion order so capacity eviction approximates LRU.
+    sessions.delete(id);
+    sessions.set(id, state);
+  }
+  return state;
+}
 
 // Scenario credential fixtures (wallet simulation claims).
 // Derived from the canonical ASKMI_SCENARIO_CLAIMS so the backend cannot drift
@@ -118,7 +240,8 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
     verifierKeyPair = { publicKey: {} as CryptoKey, privateKey: {} as CryptoKey };
     return verifierKeyPair;
   }
-  if (fs.existsSync(KEY_FILE)) {
+  const persistKeys = process.env.VERIFIER_KEY_PERSISTENCE === 'local';
+  if (persistKeys && fs.existsSync(KEY_FILE)) {
     try {
       const data = JSON.parse(fs.readFileSync(KEY_FILE, 'utf-8'));
       const publicKey = await globalThis.crypto.subtle.importKey(
@@ -151,36 +274,13 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
     true,
     ['decrypt', 'unwrapKey', 'encrypt', 'wrapKey']
   );
-  const pubJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey);
-  const privJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey);
-  fs.writeFileSync(KEY_FILE, JSON.stringify({ publicKey: pubJwk, privateKey: privJwk }, null, 2));
+  if (persistKeys) { const pubJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey); const privJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey); fs.writeFileSync(KEY_FILE, JSON.stringify({ publicKey: pubJwk, privateKey: privJwk }, null, 2), { mode: 0o600 }); }
   return verifierKeyPair;
 }
 
 // 1. Get current status (for the frontend polling)
-app.get('/status', (req, res) => {
-  if (lastVerificationStatus === 'WAITING' || lastVerificationStatus === 'SCANNED') {
-    if (Date.now() - lastRequestTimestamp > REQUEST_TIMEOUT_MS) {
-      lastVerificationStatus = 'EXPIRED';
-    }
-  }
-  res.json({
-    status: lastVerificationStatus,
-    issuer: lastIssuer,
-    verifierDid: ASKMI_DEMO.verifierDid,
-    disclosedClaims: lastDisclosedClaims,
-    consentReceipt: lastConsentReceipt,
-  });
-});
-
-// 1b. Notify that QR was scanned (called by wallet)
-app.post('/notify-scan', (req, res) => {
-  if (lastVerificationStatus === 'WAITING') {
-    lastVerificationStatus = 'SCANNED';
-    console.log('[Verifier] 📱 QR Code scanned by wallet');
-  }
-  res.json({ ok: true });
-});
+app.get('/status', (req, res) => { const state = stateFor(sessionId(req, res)); if ((state.status === 'WAITING' || state.status === 'SCANNED') && Date.now() - state.timestamp > REQUEST_TIMEOUT_MS) state.status = 'EXPIRED'; res.json({ status: state.status, issuer: state.issuer, verifierDid: ASKMI_DEMO.verifierDid, disclosedClaims: state.disclosedClaims, consentReceipt: state.consentReceipt }); });
+app.post('/notify-scan', (req, res) => { const state = stateFor(sessionId(req, res)); if (state.status === 'WAITING') state.status = 'SCANNED'; res.json({ ok: true }); });
 
 app.get('/', (req, res) => {
   res.type('text/plain').send('AskMI Verifier Backend OK.');
@@ -188,6 +288,7 @@ app.get('/', (req, res) => {
 
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
 app.get('/authorize', (req, res) => {
+  const correlationId = sessionId(req, res); stateFor(correlationId);
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
@@ -198,7 +299,7 @@ app.get('/authorize', (req, res) => {
       clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
     });
     nonceStore.add(nonce);
-    res.json({ authRequest: request, nonce, scenarioId });
+    res.json({ authRequest: request, nonce, scenarioId, sessionId: correlationId });
   } catch (e: unknown) {
     res.status(400).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
   }
@@ -206,6 +307,7 @@ app.get('/authorize', (req, res) => {
 
 // ─── W-02/W-03/W-04/W-05: Wallet-simulated Presentation Flow ─────────────────
 app.post('/wallet-present', async (req, res) => {
+  const verificationState = stateFor(sessionId(req, res));
   const scenarioId: string = (req.body as { scenarioId?: string }).scenarioId ?? 'liquor-store';
   try {
     const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
@@ -252,17 +354,17 @@ app.post('/wallet-present', async (req, res) => {
       outcome: validation.ok ? 'SUCCESS' : 'DENIED',
     });
     if (validation.ok) {
-      lastVerificationStatus = 'VERIFIED';
-      lastIssuer = ASKMI_DEMO.issuerUri;
-      lastDisclosedClaims = validation.disclosedClaims ?? null;
-      lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+      verificationState.status = 'VERIFIED';
+      verificationState.issuer = ASKMI_DEMO.issuerUri;
+      verificationState.disclosedClaims = validation.disclosedClaims ?? null;
+      verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
       return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
     } else {
-      lastVerificationStatus = 'FAILED';
+      verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, errors: validation.errors });
     }
   } catch (e: unknown) {
-    lastVerificationStatus = 'FAILED';
+    verificationState.status = 'FAILED';
     return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
   }
 });
@@ -299,6 +401,7 @@ export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | nu
 }
 
 app.post('/oid4vp-present', async (req, res) => {
+  const verificationState = stateFor(sessionId(req, res));
   try {
     const body = req.body as {
       vp_token?: string;
@@ -322,7 +425,7 @@ app.post('/oid4vp-present', async (req, res) => {
     }
     const issuerPublicKey = iss ? await issuerKeyResolver(iss) : null;
     if (!issuerPublicKey) {
-      lastVerificationStatus = 'FAILED';
+      verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, error: 'untrusted_or_unresolvable_issuer' });
     }
     const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
@@ -358,17 +461,17 @@ app.post('/oid4vp-present', async (req, res) => {
       outcome: validation.ok ? 'SUCCESS' : 'DENIED',
     });
     if (validation.ok) {
-      lastVerificationStatus = 'VERIFIED';
-      lastIssuer = ASKMI_DEMO.issuerUri;
-      lastDisclosedClaims = validation.disclosedClaims ?? null;
-      lastConsentReceipt = consentReceipt as unknown as Record<string, unknown>;
+      verificationState.status = 'VERIFIED';
+      verificationState.issuer = ASKMI_DEMO.issuerUri;
+      verificationState.disclosedClaims = validation.disclosedClaims ?? null;
+      verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
       return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
     } else {
-      lastVerificationStatus = 'FAILED';
+      verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, errors: validation.errors });
     }
   } catch (e: unknown) {
-    lastVerificationStatus = 'FAILED';
+    verificationState.status = 'FAILED';
     return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
   }
 });
@@ -421,6 +524,7 @@ async function resolveDidJwkPublicKey(sub: string | undefined): Promise<CryptoKe
 }
 
 app.post('/present', presentRouteLimiter, async (req, res) => {
+  const verificationState = stateFor(sessionId(req, res));
   try {
     const requesterId = getRequesterId(req);
     const rate = rateLimiter.check(requesterId, Date.now());
@@ -450,7 +554,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
       if (!hb?.kb_jwt) continue; // non-pool credentials have no holder_binding → skip
       const holderPublicKey = await resolveDidJwkPublicKey(hb.sub);
       if (!holderPublicKey) {
-        lastVerificationStatus = 'FAILED';
+        verificationState.status = 'FAILED';
         return res.status(403).json({ ok: false, error: 'KB_JWT_INVALID_HOLDER_KEY', details: 'Cannot resolve did:jwk subject' });
       }
       const kbResult = await validateKeyBindingJWT(hb.kb_jwt, holderPublicKey, {
@@ -459,7 +563,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
         sdJwtWithDisclosures: hb.sub ?? '',
       });
       if (!kbResult.ok) {
-        lastVerificationStatus = 'FAILED';
+        verificationState.status = 'FAILED';
         console.warn('[Verifier] KB-JWT verification failed:', kbResult.errors);
         return res.status(403).json({ ok: false, error: 'KB_JWT_VERIFICATION_FAILED', details: kbResult.errors });
       }
@@ -500,13 +604,13 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
       if (verification.valid && zkpProof.proof.allPassed) isVerified = true;
     }
     if (isVerified) {
-      lastVerificationStatus = 'VERIFIED';
+      verificationState.status = 'VERIFIED';
       const issuerRef = (presentation as any).metadata?.issuer_trust_refs?.[0];
-      lastIssuer =
+      verificationState.issuer =
         (typeof issuerRef === 'string' ? issuerRef : issuerRef?.issuer) || 'Unknown Trusted Issuer';
-      res.json({ ok: true, message: `Welcome! Verified via ${lastIssuer}` });
+      res.json({ ok: true, message: `Welcome! Verified via ${verificationState.issuer}` });
     } else {
-      lastVerificationStatus = 'FAILED';
+      verificationState.status = 'FAILED';
       res.status(403).json({ ok: false, error: 'AGE_NOT_VERIFIED' });
     }
   } catch (e: unknown) {
@@ -514,19 +618,25 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
       '[Verifier] /present verification failed:',
       e instanceof Error ? `${e.name}: ${e.message}` : String(e)
     );
-    lastVerificationStatus = 'FAILED';
+    verificationState.status = 'FAILED';
     res.status(400).json({ ok: false, error: 'VERIFICATION_FAILED' });
   }
 });
 
 app.post('/reset', (req, res) => {
-  lastVerificationStatus = 'WAITING';
-  lastRequestTimestamp = Date.now();
-  lastIssuer = null;
-  lastDisclosedClaims = null;
-  lastConsentReceipt = null;
-  nonceStore.clear();
+  const id = sessionId(req, res);
+  const now = Date.now();
+  const state = stateFor(id);
+  Object.assign(state, {
+    status: 'WAITING' as const,
+    timestamp: now,
+    lastAccessedAt: now,
+    issuer: null,
+    disclosedClaims: null,
+    consentReceipt: null,
+  });
   res.json({ ok: true });
 });
+export { getVerifierKeys };
 
 export default app;

@@ -39,6 +39,8 @@ beforeEach(() => {
 });
 
 describe('POST /present rate-limit headers', () => {
+    const sessionId = 'present-header-test';
+
     it('returns 429 with coherent Retry-After and reset headers', { timeout: 30_000 }, async () => {
         const { app } = await import('./app');
         const agent = request(app);
@@ -46,10 +48,18 @@ describe('POST /present rate-limit headers', () => {
         // Fail-closed: these carry only a legacy boolean (no ZK proof), so each is 403 —
         // but still counts toward the rate limit, so the 11th is rate-limited.
         for (let i = 0; i < 10; i++) {
-            await agent.post('/present').send({}).expect(403);
+            await agent
+                .post('/present')
+                .set('X-AskMI-Session-Id', sessionId)
+                .send({})
+                .expect(403);
         }
 
-        const res = await agent.post('/present').send({}).expect(429);
+        const res = await agent
+            .post('/present')
+            .set('X-AskMI-Session-Id', sessionId)
+            .send({})
+            .expect(429);
 
         const retryAfter = Number(res.header['retry-after']);
         const resetAfter = Number(res.header['x-ratelimit-reset-after']);
@@ -65,7 +75,11 @@ describe('POST /present rate-limit headers', () => {
 
     it('fails closed: rejects a legacy boolean proven_claims without a ZK proof', async () => {
         const { app } = await import('./app');
-        const res = await request(app).post('/present').send({}).expect(403);
+        const res = await request(app)
+            .post('/present')
+            .set('X-AskMI-Session-Id', sessionId)
+            .send({})
+            .expect(403);
         expect(res.body.ok).toBe(false);
         expect(res.body.error).toBe('AGE_NOT_VERIFIED');
     });
@@ -105,7 +119,11 @@ describe('POST /present rate-limit headers', () => {
         };
 
         const { app } = await import('./app');
-        const res = await request(app).post('/present').send({}).expect(200);
+        const res = await request(app)
+            .post('/present')
+            .set('X-AskMI-Session-Id', sessionId)
+            .send({})
+            .expect(200);
         expect(res.body.ok).toBe(true);
         expect(res.body.message).toContain('Welcome!');
     });
