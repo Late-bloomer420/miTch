@@ -5,7 +5,8 @@
 - **Method:** read-only code review + throwaway edge-case/scaling probe (sources run via `tsx` outside the repo). The package's own Vitest suite was **not** re-run for this review; the 32/32 claim in `STATE.md` is the branch author's observation.
 - **Recheck:** at `a11dfdb` F-1, F-2, F-3 remain open; F-4 resolved by `95f1fe3` (SameValueZero equality + presence checks).
 - **Recheck 2:** F-1, F-2, F-3 resolved by `beeae79`; verified at `beeae79` on 2026-10-23 (Node 22.22.0, pnpm 9.15.9, Linux cloud container): package 40/40 tests, `pnpm build` ok, `pnpm test` 47/47 turbo tasks, `pnpm lint` 12/12 tasks (0 errors; 7 pre-existing `wallet-pwa` warnings). F-1 probe re-run (`sameLevel = () => true`): n=20 2 ms, n=40 7 ms, n=80 10 ms (before: 25 / 378 / 12 423 ms on the same machine). F-5: typo fixed; `TrustLevel`, file name and the trust-model wording remain open.
-- **Status:** F-1–F-4 resolved; F-5 and the product-scope wording remain open — tracked as DC-04 in `docs/BACKLOG.md`. This document closes no gate.
+- **Recheck 3:** F-5 and the product-scope wording resolved by `44306b1`; verified at `44306b1` on 2026-10-24 (Node 22.22.0, pnpm 9.15.9, Linux cloud container): package 40/40 tests, `pnpm build` ok, `pnpm test` 47/47 turbo tasks, `pnpm lint` 12/12 tasks (0 errors; 7 pre-existing `wallet-pwa` warnings).
+- **Status:** F-1–F-5 and the product-scope wording resolved — tracked as DC-04 in `docs/BACKLOG.md`. This document closes no gate.
 
 ## Findings (most severe first)
 
@@ -43,17 +44,17 @@ The README and module docs claim SameValueZero; checks use `===`:
 
 **Fix:** use `Object.is`-with-zero semantics / `Map.has`, or correct the docs to "`===` identity".
 
-### F-5 Minor
+### F-5 Minor — ✅ resolved in `beeae79` (typo) and `44306b1` (rest)
 
-- `TrustLevel` is exported but unused
+- `TrustLevel` is exported but unused — removed
 - typo "EQUIVALENENCE" in a doc comment
-- file name `mitc-applications.ts` (presumably `mitch-…`)
-- `verifyTrustEquivalence` is tautological when `sameLevel` derives from a level function
+- file name `mitc-applications.ts` (presumably `mitch-…`) — renamed to `mitch-applications.ts`
+- `verifyTrustEquivalence` is tautological when `sameLevel` derives from a level function — now documented in its JSDoc
 
 ## Fit with product scope
 
-- **Trust model:** the comment "propagated issuer trust must be transitive" contradicts the ADOPT-0b model, where verifiers trust issuers explicitly via the trust list, not by propagation. Reword or invert.
-- **Selective disclosure:** `analyzeComposition` is a teaching analogy; real SD is SD-JWT disclosures and predicate proofs, and no product path can feed it today.
+- **Trust model:** the comment "propagated issuer trust must be transitive" contradicts the ADOPT-0b model, where verifiers trust issuers explicitly via the trust list, not by propagation. Reword or invert. — ✅ reworded in `44306b1` (classification check, explicitly not an issuer-trust model).
+- **Selective disclosure:** `analyzeComposition` is a teaching analogy; real SD is SD-JWT disclosures and predicate proofs, and no product path can feed it today. — ✅ README now says so (`44306b1`).
 - **Product value:** `findDuplicateKeys` (credential-ID uniqueness) is the one guard with a direct product use case. Any wiring is a separate, bounded task.
 - **Priority:** does not advance ADOPT-1 or #170–#173 / EV-05. Correctly tracked as P2 and "not wired".
 
