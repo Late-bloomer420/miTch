@@ -207,6 +207,12 @@ beforeEach(() => {
   walletServiceMockState.evaluateRequest.mockResolvedValue(makePromptResult('ALLOW'));
   walletServiceMockState.getRecentAuditLogs.mockReturnValue([]);
   walletServiceMockState.deleteCredential.mockResolvedValue(true);
+  walletServiceMockState.getPolicy.mockReturnValue({
+    version: 'test',
+    rules: [],
+    trustedIssuers: [],
+    globalSettings: {},
+  });
   walletServiceMockState.requestDataErasure.mockResolvedValue({
     success: true,
     message: 'Erasure request sent.',
@@ -273,6 +279,64 @@ describe('G-03 — Wallet App', () => {
       expect(walletServiceMockState.deleteCredential).toHaveBeenCalledWith('vc-age-789');
     });
     expect(walletServiceMockState.getCredentials).toHaveBeenCalledTimes(2);
+  });
+
+  it('marks a card as trusted only when its issuer and type are in the policy trust list', async () => {
+    walletServiceMockState.getPolicy.mockReturnValue({
+      version: 'test',
+      rules: [],
+      trustedIssuers: [
+        { did: 'did:example:gov-issuer', name: 'Gov', credentialTypes: ['AgeCredential'] },
+      ],
+      globalSettings: {},
+    });
+    walletServiceMockState.getCredentials.mockResolvedValue([
+      {
+        id: 'vc-age-789',
+        issuer: 'did:example:gov-issuer',
+        type: ['VerifiableCredential', 'AgeCredential'],
+        issuedAt: new Date().toISOString(),
+        claims: ['age'],
+      },
+      {
+        id: 'vc-self',
+        issuer: 'did:askmi:self',
+        type: ['VerifiableCredential'],
+        issuedAt: new Date().toISOString(),
+        claims: ['created'],
+      },
+    ]);
+
+    render(<App />);
+
+    const trustedCard = (await screen.findByText('Age Credential (GovID)')).closest(
+      '.credential-card'
+    ) as HTMLElement;
+    const selfCard = screen
+      .getByText('Verifiable Credential')
+      .closest('.credential-card') as HTMLElement;
+
+    expect(within(trustedCard).getByText(/Trusted issuer/i)).toBeInTheDocument();
+    expect(within(selfCard).queryByText(/Trusted issuer/i)).not.toBeInTheDocument();
+    expect(within(selfCard).getByText(/Not in trust list/i)).toBeInTheDocument();
+  });
+
+  it('does not mark a card as trusted when the issuer is listed for a different credential type', async () => {
+    walletServiceMockState.getPolicy.mockReturnValue({
+      version: 'test',
+      rules: [],
+      trustedIssuers: [
+        { did: 'did:example:gov-issuer', name: 'Gov', credentialTypes: ['DoctorLicense'] },
+      ],
+      globalSettings: {},
+    });
+
+    render(<App />);
+
+    const card = (await screen.findByText('Age Credential (GovID)')).closest(
+      '.credential-card'
+    ) as HTMLElement;
+    expect(within(card).getByText(/Not in trust list/i)).toBeInTheDocument();
   });
 
   it('first run shows a framed welcome screen and does NOT auto-fire the passkey ceremony (G-130.1 Task 3)', async () => {
@@ -530,6 +594,15 @@ describe('G-03 — Wallet App', () => {
     expect(screen.getByRole('heading', { name: 'DEV Workbench' })).toBeInTheDocument();
   });
 
+  it('offers the guided demo from the Requests page, not only from Tools', async () => {
+    render(<App />);
+    await openWalletPage('Requests');
+
+    fireEvent.click(screen.getByRole('button', { name: /Guided demo/i }));
+
+    expect(await screen.findByRole('button', { name: /Run Scenario/i })).toBeInTheDocument();
+  });
+
   it('wires the dev deep-link parser from the Tools page', async () => {
     render(<App />);
     await openWalletPage('Tools');
@@ -651,6 +724,33 @@ describe('G-03 — Wallet App', () => {
     fireEvent.click(within(trace).getByRole('button', { name: /3 Sent/i }));
 
     expect(trace).toContainElement(document.getElementById('dataflow-section'));
+  });
+
+  it('fills the trace steps from the latest data-flow transaction', async () => {
+    walletServiceMockState.getRecentAuditLogs.mockReturnValue([
+      {
+        id: 'audit-trace-steps',
+        timestamp: '2026-03-15T10:00:00Z',
+        action: 'VP_SENT',
+        previousHash: '0'.repeat(64),
+        currentHash: 'a'.repeat(64),
+        metadata: {
+          decision_id: 'decision-trace-steps',
+          context: 'PROXIMITY_PRESENTATION',
+          verifier_did: 'did:askmi:verifier-liquor-store',
+          claims_requested: ['age', 'birthDate'],
+          claims_shared: ['age'],
+        },
+      },
+    ]);
+
+    render(<App />);
+    await openWalletPage('Trace');
+
+    const trace = screen.getByTestId('trace-summary');
+    expect(within(trace).getByRole('button', { name: /1 Requested\s*2 items/i })).toBeInTheDocument();
+    expect(within(trace).getByRole('button', { name: /3 Sent\s*0 proofs · 1 raw · 1 withheld/i })).toBeInTheDocument();
+    expect(within(trace).queryByText('Request loaded')).not.toBeInTheDocument();
   });
 
   it('wires data-flow erasure action to the wallet service', async () => {

@@ -38,8 +38,13 @@ import { DocumentsTab } from './components/DocumentsTab';
 import { ProximityView } from './components/ProximityView';
 import { LandingPage } from './LandingPage';
 import { translateClaim } from './utils/i18n';
+import { isIssuerTrustedFor } from './utils/issuer-trust';
+import { describeTraceSteps } from './utils/trace-steps';
+import { DataFlowService, type DataFlowTransaction } from '@askmi/data-flow';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
+
+const traceFlowService = new DataFlowService();
 
 type WalletStatus =
   | 'LOCKED'
@@ -144,6 +149,13 @@ function WalletApp() {
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
+
+  // On narrow screens the section rail scrolls sideways; keep the chosen tab visible.
+  useEffect(() => {
+    document
+      .querySelector('.wallet-nav button[aria-current="page"]')
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [activeWalletPage]);
   const [showProximityPreview, setShowProximityPreview] = useState(false);
   const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
   const [flashAllow, setFlashAllow] = useState(false);
@@ -250,6 +262,15 @@ function WalletApp() {
   const walletRef = useRef<WalletService>(new WalletService());
   const verifierSessionIdRef = useRef(crypto.randomUUID());
   const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
+  const traceSteps = useMemo(() => {
+    const latest = traceFlowService
+      .buildTransactions(recentAuditEntries)
+      .reduce<DataFlowTransaction | undefined>(
+        (newest, txn) => (!newest || txn.startedAt > newest.startedAt ? txn : newest),
+        undefined
+      );
+    return describeTraceSteps(latest);
+  }, [recentAuditEntries]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
@@ -1532,7 +1553,13 @@ function WalletApp() {
                   <div className="credential-card-header">
                     <span className="credential-card-label">{subText}</span>
                     <div className="credential-card-actions">
-                      <span className="credential-trust-badge">✓ Trusted</span>
+                      {isIssuerTrustedFor(currentPolicy?.trustedIssuers, cred.issuer, types) ? (
+                        <span className="credential-trust-badge">✓ Trusted issuer</span>
+                      ) : (
+                        <span className="credential-trust-badge credential-trust-badge--unlisted">
+                          Not in trust list
+                        </span>
+                      )}
                       <button
                         type="button"
                         className="credential-delete-btn"
@@ -1627,32 +1654,13 @@ function WalletApp() {
               </button>
             </div>
           ) : (
-            <div
-              className="wallet-credentials-toolbar"
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                maxWidth: 400,
-                margin: '0 auto 16px',
-              }}
-            >
+            <div className="wallet-credentials-toolbar">
               <button
+                type="button"
                 onClick={handleRefreshCredentials}
                 disabled={refreshStatus === 'refreshing'}
                 aria-label="Refresh credentials"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 14px',
-                  background: 'transparent',
-                  color: refreshStatus === 'done' ? '#86efac' : '#7dd3fc',
-                  border: `1px solid ${refreshStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
-                  borderRadius: 8,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: refreshStatus === 'refreshing' ? 'not-allowed' : 'pointer',
-                }}
+                className={`wallet-refresh-btn${refreshStatus === 'done' ? ' wallet-refresh-btn--done' : ''}`}
               >
                 {refreshStatus === 'refreshing'
                   ? '🔄 Refreshing…'
@@ -1832,7 +1840,20 @@ function WalletApp() {
             <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
           <div className="scenario-launcher__header">
             <h3 className="demo-section-title">Verifier Requests</h3>
-            <span className="scenario-launcher__hint">Choose request</span>
+            {status === 'IDLE' && !guidedDemoActive ? (
+              <button
+                type="button"
+                className="scenario-launcher__guide"
+                onClick={() => {
+                  sessionStorage.removeItem('guidedDemoCompleted');
+                  setGuidedDemoActive(true);
+                }}
+              >
+                ▶ Guided demo
+              </button>
+            ) : (
+              <span className="scenario-launcher__hint">Choose request</span>
+            )}
           </div>
 
           <div className="demo-primary-grid scenario-launcher__grid">
@@ -1930,7 +1951,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('consent')}
             >
               <span>1 Requested</span>
-              <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+              <strong>{traceSteps.requested}</strong>
             </button>
             <button
               type="button"
@@ -1940,7 +1961,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('compliance')}
             >
               <span>2 Allowed</span>
-              <strong>{recentAuditEntries.length} events</strong>
+              <strong>{traceSteps.allowed}</strong>
             </button>
             <button
               type="button"
@@ -1950,7 +1971,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('data-flow')}
             >
               <span>3 Sent</span>
-              <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
+              <strong>{traceSteps.sent}</strong>
             </button>
           </div>
 
@@ -2319,6 +2340,7 @@ function WalletApp() {
     </div>
   );
 }
+
 
 export default function App() {
   const showWalletDemo =
