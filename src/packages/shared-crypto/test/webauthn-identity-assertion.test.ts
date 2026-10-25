@@ -81,6 +81,31 @@ describe('registerIdentityKey keeps the real public key', () => {
   });
 });
 
+describe('getIdentityVerificationKey', () => {
+  it('returns the registered rpId with the stored public key', async () => {
+    const auth = await fakePlatformAuthenticator();
+    useAuthenticator(auth.credentials);
+    await WebAuthnService.registerIdentityKey('wallet.example');
+
+    const key = await WebAuthnService.getIdentityVerificationKey();
+
+    expect(key?.rpId).toBe('wallet.example');
+    expect(key?.publicKeyJwk?.x).toBe(auth.jwk.x);
+  });
+
+  it('returns the rpId with a null key for a legacy placeholder registration', async () => {
+    await writeLegacyPlaceholderRegistration();
+    expect(await WebAuthnService.getIdentityVerificationKey()).toEqual({
+      rpId: 'wallet.example',
+      publicKeyJwk: null,
+    });
+  });
+
+  it('returns null without a hardware registration', async () => {
+    expect(await WebAuthnService.getIdentityVerificationKey()).toBeNull();
+  });
+});
+
 describe('signWithIdentityKeyAssertion', () => {
   it('returns an assertion that verifies against the stored public key', async () => {
     const auth = await fakePlatformAuthenticator();

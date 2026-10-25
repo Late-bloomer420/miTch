@@ -38,6 +38,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   handleAction: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
   resetWallet: vi.fn().mockResolvedValue(undefined),
   deleteCredential: vi.fn().mockResolvedValue(true),
+  passkeyNeedsReRegistration: vi.fn().mockResolvedValue(false),
   requestDataErasure: vi
     .fn()
     .mockResolvedValue({ success: true, message: 'Erasure request sent.' }),
@@ -218,6 +219,8 @@ beforeEach(() => {
   walletServiceMockState.evaluateRequest.mockResolvedValue(makePromptResult('ALLOW'));
   walletServiceMockState.getRecentAuditLogs.mockReturnValue([]);
   walletServiceMockState.deleteCredential.mockResolvedValue(true);
+  walletServiceMockState.passkeyNeedsReRegistration.mockResolvedValue(false);
+  localStorage.clear();
   walletServiceMockState.getPolicy.mockReturnValue({
     version: 'test',
     rules: [],
@@ -432,6 +435,43 @@ describe('G-03 — Wallet App', () => {
     await waitFor(() => {
       expect(walletServiceMockState.initialize).toHaveBeenCalledTimes(2);
     });
+  });
+
+  it('asks once to re-register a passkey whose signatures cannot be verified (#218)', async () => {
+    walletServiceMockState.passkeyNeedsReRegistration.mockResolvedValue(true);
+    render(<App />);
+
+    const prompt = await screen.findByRole('region', { name: /passkey/i });
+    expect(within(prompt).getByText(/can.t be verified/i)).toBeInTheDocument();
+    fireEvent.click(within(prompt).getByRole('button', { name: /Re-register passkey/i }));
+
+    await waitFor(() => {
+      expect(vi.mocked(WebAuthnService).registerIdentityKey).toHaveBeenCalledOnce();
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('region', { name: /passkey/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('remembers "Not now" for the passkey re-register prompt', async () => {
+    walletServiceMockState.passkeyNeedsReRegistration.mockResolvedValue(true);
+    const { unmount } = render(<App />);
+
+    const prompt = await screen.findByRole('region', { name: /passkey/i });
+    fireEvent.click(within(prompt).getByRole('button', { name: /Not now/i }));
+    expect(screen.queryByRole('region', { name: /passkey/i })).not.toBeInTheDocument();
+    unmount();
+
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+    expect(screen.queryByRole('region', { name: /passkey/i })).not.toBeInTheDocument();
+    expect(vi.mocked(WebAuthnService).registerIdentityKey).not.toHaveBeenCalled();
+  });
+
+  it('shows no re-register prompt when the passkey is verifiable', async () => {
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+    expect(screen.queryByRole('region', { name: /passkey/i })).not.toBeInTheDocument();
   });
 
   it('Reset Wallet wipes the vault and unlinks the device passkey (explicit escape hatch)', async () => {

@@ -303,6 +303,19 @@ export interface PolicyDenialResolution {
  * The cryptographic "Truth" binding the policy decision.
  * Generalized for T-29 bundle presentations.
  */
+/**
+ * WebAuthn assertion over a decision capsule (same shape as shared-crypto's
+ * IdentityAssertion). All binary fields are base64url; signature is DER.
+ */
+export interface WalletAttestationAssertion {
+    version: 1;
+    credentialId: string;
+    rpId: string;
+    authenticatorData: string;
+    clientDataJSON: string;
+    signature: string;
+}
+
 export interface DecisionCapsule {
     decision_id: string; // UUID
     /** Ephemeral, non-semantic transaction correlation ID for logs/audit only. */
@@ -342,7 +355,18 @@ export interface DecisionCapsule {
     wallet_attestation?: string; // Signature or TEE proof
     wallet_attestation_method?: 'webauthn' | 'software-fallback';
     wallet_attestation_protection?: 'SOFTWARE_EPHEMERAL' | 'SOFTWARE_PERSISTED' | 'HARDWARE_BOUND';
-    wallet_attestation_encoding?: 'hex' | 'base64';
+    /**
+     * 'webauthn-assertion': wallet_attestation holds the assertion signature and the
+     * full assertion is in wallet_attestation_assertion (verifiable).
+     * 'base64': legacy bare passkey signature (not verifiable).
+     */
+    wallet_attestation_encoding?: 'hex' | 'base64' | 'webauthn-assertion';
+    /**
+     * Full WebAuthn assertion for a passkey-signed capsule (optional, additive).
+     * Capsules without it are treated as unverified hardware attestations.
+     * Not part of the signed payload.
+     */
+    wallet_attestation_assertion?: WalletAttestationAssertion;
     presence_proof?: string; // WebAuthn/Passkey signature over decision_id
 
     /** CIR 2024/2982: Persisted erasure endpoint for later use */

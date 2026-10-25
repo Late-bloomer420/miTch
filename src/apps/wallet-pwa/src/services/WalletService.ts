@@ -25,6 +25,7 @@ import {
   canonicalStringify,
   RecoveryService,
   WebAuthnService,
+  verifyIdentityAssertion,
   IdentityKeyGuardian,
   KeyProtectionLevel,
   signData,
@@ -518,14 +519,25 @@ export class WalletService {
               );
             }
 
-            capsule.wallet_attestation_method =
-              level === KeyProtectionLevel.HARDWARE_BOUND ? 'webauthn' : 'software-fallback';
+            const hardware = level === KeyProtectionLevel.HARDWARE_BOUND;
+            capsule.wallet_attestation_method = hardware ? 'webauthn' : 'software-fallback';
             capsule.wallet_attestation_protection = level;
-            capsule.wallet_attestation_encoding =
-              level === KeyProtectionLevel.HARDWARE_BOUND ? 'base64' : 'hex';
+            capsule.wallet_attestation_encoding = hardware ? 'webauthn-assertion' : 'hex';
 
-            const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
+            const {
+              wallet_attestation: _wallet_attestation,
+              wallet_attestation_assertion: _wallet_attestation_assertion,
+              ...toSign
+            } = capsule;
             const payload = canonicalStringify(toSign);
+
+            if (hardware) {
+              // Keep the full assertion so the capsule can be verified (#218).
+              const assertion = await WebAuthnService.signWithIdentityKeyAssertion(payload);
+              capsule.wallet_attestation_assertion = assertion;
+              return assertion.signature;
+            }
+
             const attestation = await this.identityKeyGuardian.signIdentityPayload(payload);
             capsule.wallet_attestation_method = attestation.method;
             capsule.wallet_attestation_protection = attestation.level;
@@ -1003,6 +1015,74 @@ export class WalletService {
     }
   }
 
+  /**
+   * Check a passkey-signed capsule (#218) against this device's own registration —
+   * never against the rpId written inside the assertion. Returns the log line.
+   * - registration with a stored public key: the assertion must verify, else throw
+   * - legacy registration without a public key: cannot be checked → "unverified"
+   *   (proceeds, with a re-register hint); never logged as verified
+   * - no passkey registration, or assertion missing while a key exists: throw
+   */
+  private async verifyHardwareCapsuleAttestation(
+    capsule: DecisionCapsule,
+    payload: string,
+    assertion: DecisionCapsule['wallet_attestation_assertion']
+  ): Promise<string> {
+    if (capsule.wallet_attestation_method !== 'webauthn') {
+      throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+    }
+    const key = await WebAuthnService.getIdentityVerificationKey();
+    if (!key) {
+      throw new Error(
+        'SECURITY ALERT: Capsule claims a device passkey signature, but no passkey is registered on this device.'
+      );
+    }
+
+    if (!key.publicKeyJwk) {
+      if (
+        capsule.wallet_attestation_encoding !== 'webauthn-assertion' &&
+        capsule.wallet_attestation_encoding !== 'base64'
+      ) {
+        throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+      }
+      return (
+        '⚠️ Capsule signed with the device passkey, but not verifiable on this device: ' +
+        'the passkey was set up before the wallet stored its public key. ' +
+        'Re-register the passkey to make these signatures verifiable.'
+      );
+    }
+
+    if (!assertion || capsule.wallet_attestation_encoding !== 'webauthn-assertion') {
+      throw new Error(
+        'SECURITY ALERT: Hardware capsule carries no verifiable passkey assertion. Policy Decision may be forged.'
+      );
+    }
+    if (capsule.wallet_attestation !== assertion.signature) {
+      throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+    }
+    const result = await verifyIdentityAssertion({
+      data: payload,
+      assertion,
+      publicKeyJwk: key.publicKeyJwk,
+      expectedRpId: key.rpId,
+    });
+    if (!result.valid) {
+      throw new Error(
+        `SECURITY ALERT: Capsule passkey signature verification FAILED (${result.reason}). Policy Decision may be forged.`
+      );
+    }
+    return '✅ Capsule Attestation Verified (device passkey)';
+  }
+
+  /**
+   * True when a passkey is registered but its public key was never stored
+   * (registered before #219), so its signatures can't be verified.
+   */
+  async passkeyNeedsReRegistration(): Promise<boolean> {
+    const key = await WebAuthnService.getIdentityVerificationKey();
+    return key !== null && key.publicKeyJwk === null;
+  }
+
   async generatePresentation(
     capsule: DecisionCapsule,
     agentTargetPubKey?: CryptoKey // Force encryption to this key (Lufthansa) instead of DID resolution
@@ -1026,17 +1106,15 @@ export class WalletService {
     if (!capsule.wallet_attestation) {
       throw new Error('SECURITY ALERT: Capsule contains no attestation (Unsigned).');
     }
-    const { wallet_attestation, ...toVerify } = capsule;
+    const {
+      wallet_attestation,
+      wallet_attestation_assertion: assertion,
+      ...toVerify
+    } = capsule;
     const payload = canonicalStringify(toVerify);
 
     if (capsule.wallet_attestation_protection === KeyProtectionLevel.HARDWARE_BOUND) {
-      if (
-        capsule.wallet_attestation_method !== 'webauthn' ||
-        capsule.wallet_attestation_encoding !== 'base64'
-      ) {
-        throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
-      }
-      logs.push('✅ Capsule Attestation Bound to Hardware Identity Key (WebAuthn)');
+      logs.push(await this.verifyHardwareCapsuleAttestation(capsule, payload, assertion));
     } else {
       if (
         capsule.wallet_attestation_method !== 'software-fallback' ||
