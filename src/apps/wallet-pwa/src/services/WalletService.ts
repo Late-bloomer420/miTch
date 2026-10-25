@@ -476,8 +476,8 @@ export class WalletService {
             this.policyPublicKey = null; // WebAuthn assertion verification is not a local ECDSA verify.
           } else if (hardwareAvailable) {
             this.policyPublicKey = null;
-            console.warn(
-              '🛑 Hardware identity key required. Register the platform passkey before signing policy decisions.'
+            console.info(
+              'ℹ️ Hardware identity key not yet registered. Register the platform passkey before signing policy decisions.'
             );
           } else {
             console.log('✨ Creating NODE/TEST software Identity Keypair (RAM only)...');
