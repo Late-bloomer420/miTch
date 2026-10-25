@@ -40,8 +40,32 @@ import { DocumentsTab } from './components/DocumentsTab';
 import { ProximityView } from './components/ProximityView';
 import { LandingPage } from './LandingPage';
 import { translateClaim } from './utils/i18n';
+import { isIssuerTrustedFor } from './utils/issuer-trust';
+import { describeTraceSteps } from './utils/trace-steps';
+import { DataFlowService, type DataFlowTransaction } from '@askmi/data-flow';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
+
+const traceFlowService = new DataFlowService();
+
+const PASSKEY_PROMPT_DISMISSED_KEY = 'askmi.passkeyReRegisterPromptDismissed';
+
+// Per-viewer convenience flag; storage can be blocked (private mode), so never throw.
+function readLocalFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeLocalFlag(key: string): void {
+  try {
+    localStorage.setItem(key, '1');
+  } catch {
+    // ignore: the prompt simply shows again next time
+  }
+}
 
 type WalletStatus =
   | 'LOCKED'
@@ -61,9 +85,6 @@ type WalletPage =
   | 'requests'
   | 'trace'
   | 'sovereignty'
-  | 'documents'
-  | 'proximity'
-  | 'renderer'
   | 'audit'
   | 'settings'
   | 'tools';
@@ -146,6 +167,19 @@ function WalletApp() {
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
+  const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
+
+  // On narrow screens the section rail scrolls sideways; keep the chosen tab visible,
+  // also after a resize or rotation.
+  useEffect(() => {
+    const revealActiveTab = () =>
+      document
+        .querySelector('.wallet-nav button[aria-current="page"]')
+        ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    revealActiveTab();
+    window.addEventListener('resize', revealActiveTab);
+    return () => window.removeEventListener('resize', revealActiveTab);
+  }, [activeWalletPage]);
   const [showProximityPreview, setShowProximityPreview] = useState(false);
   const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
   const [flashAllow, setFlashAllow] = useState(false);
@@ -258,6 +292,14 @@ function WalletApp() {
   const walletRef = useRef<WalletService>(new WalletService());
   const verifierSessionIdRef = useRef(crypto.randomUUID());
   const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
+  const traceSteps = useMemo(() => {
+    const latest = traceFlowService
+      .buildTransactions(recentAuditEntries)
+      .reduce<
+        DataFlowTransaction | undefined
+      >((newest, txn) => (!newest || txn.startedAt > newest.startedAt ? txn : newest), undefined);
+    return describeTraceSteps(latest);
+  }, [recentAuditEntries]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
@@ -353,6 +395,9 @@ function WalletApp() {
   // Holds the latest bootstrap routine so an explicit reset can re-run first-run
   // enrollment in place (no full page reload).
   const bootstrapRef = useRef<() => Promise<void>>(async () => {});
+  // StrictMode (main.tsx) runs mount effects twice in development. Boot only once per
+  // mount; an explicit reset still re-runs bootstrap through bootstrapRef.
+  const hasBootstrappedRef = useRef(false);
 
   useEffect(() => {
     const init = async () => {
@@ -392,6 +437,12 @@ function WalletApp() {
         }
 
         await loadWalletCredentials();
+        if (
+          !readLocalFlag(PASSKEY_PROMPT_DISMISSED_KEY) &&
+          (await walletRef.current.passkeyNeedsReRegistration())
+        ) {
+          setShowPasskeyPrompt(true);
+        }
         setStatus(nextStatus);
       } catch (e) {
         console.error(e);
@@ -400,7 +451,9 @@ function WalletApp() {
       }
     };
     bootstrapRef.current = init;
-    init();
+    if (hasBootstrappedRef.current) return;
+    hasBootstrappedRef.current = true;
+    void init();
   }, []);
 
   // Explicit, user-initiated reset — the only sanctioned way to wipe the wallet.
@@ -433,6 +486,24 @@ function WalletApp() {
   // replaces the old auto-firing mount-time prompt. The enrollment ceremony itself verifies
   // the user (userVerification: required), so this single biometric lands straight in the
   // wallet with no redundant second unlock.
+  // #218: a passkey registered before its public key was stored can't be verified.
+  // Ask once; re-registering stores the key (framed first, no surprise prompt).
+  const handleReRegisterPasskey = async () => {
+    try {
+      await WebAuthnService.registerIdentityKey();
+      setShowPasskeyPrompt(false);
+      addLog('🔑 Passkey re-registered: its signatures are now verifiable.', 'success');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      addLog(`⚠️ Passkey re-registration did not complete: ${message}`, 'warning');
+    }
+  };
+
+  const handleDismissPasskeyPrompt = () => {
+    writeLocalFlag(PASSKEY_PROMPT_DISMISSED_KEY);
+    setShowPasskeyPrompt(false);
+  };
+
   const handleCreateAccount = async () => {
     try {
       setStatus('UNLOCKING');
@@ -544,7 +615,9 @@ function WalletApp() {
         targetKey
       );
 
-      auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+      auditLog.forEach((l: string) =>
+        addLog(l, l.includes('ALERT') ? 'error' : l.startsWith('⚠️') ? 'warning' : 'info')
+      );
 
       // Refresh so a consumed single-use credential reflects its spent state (U-12).
       await loadWalletCredentials();
@@ -1327,9 +1400,6 @@ function WalletApp() {
             ['requests', 'Requests'],
             ['trace', 'Trace'],
             ['sovereignty', 'Sovereignty'],
-            ['documents', 'Documents'],
-            ['proximity', 'Proximity'],
-            ['renderer', 'Renderer'],
             ['audit', 'Audit'],
             ['settings', 'Settings'],
             ['tools', 'Tools'],
@@ -1503,6 +1573,33 @@ function WalletApp() {
         </div>
       )}
 
+      {isWalletReady && activeWalletPage === 'credentials' && showPasskeyPrompt && (
+        <section className="wallet-panel passkey-prompt" aria-label="Passkey re-registration">
+          <p className="passkey-prompt__title">Your passkey's signatures can't be verified</p>
+          <p className="passkey-prompt__text">
+            Your passkey was set up before the wallet started storing its public key, so decisions
+            it signs are marked "unverified". Re-register it once to fix this. You'll confirm with
+            Face ID, fingerprint or Windows Hello.
+          </p>
+          <div className="passkey-prompt__actions">
+            <button
+              type="button"
+              className="passkey-prompt__primary"
+              onClick={handleReRegisterPasskey}
+            >
+              Re-register passkey
+            </button>
+            <button
+              type="button"
+              className="passkey-prompt__secondary"
+              onClick={handleDismissPasskeyPrompt}
+            >
+              Not now
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* UX-03: Dynamic Premium Credential Cards */}
       {isWalletReady && activeWalletPage === 'credentials' ? (
         <section
@@ -1558,7 +1655,13 @@ function WalletApp() {
                   <div className="credential-card-header">
                     <span className="credential-card-label">{subText}</span>
                     <div className="credential-card-actions">
-                      <span className="credential-trust-badge">✓ Trusted</span>
+                      {isIssuerTrustedFor(currentPolicy?.trustedIssuers, cred.issuer, types) ? (
+                        <span className="credential-trust-badge">✓ Trusted issuer</span>
+                      ) : (
+                        <span className="credential-trust-badge credential-trust-badge--unlisted">
+                          Not in trust list
+                        </span>
+                      )}
                       <button
                         type="button"
                         className="credential-delete-btn"
@@ -1653,32 +1756,13 @@ function WalletApp() {
               </button>
             </div>
           ) : (
-            <div
-              className="wallet-credentials-toolbar"
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                maxWidth: 400,
-                margin: '0 auto 16px',
-              }}
-            >
+            <div className="wallet-credentials-toolbar">
               <button
+                type="button"
                 onClick={handleRefreshCredentials}
                 disabled={refreshStatus === 'refreshing'}
                 aria-label="Refresh credentials"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 14px',
-                  background: 'transparent',
-                  color: refreshStatus === 'done' ? '#86efac' : '#7dd3fc',
-                  border: `1px solid ${refreshStatus === 'done' ? '#16a34a' : '#1e3a5f'}`,
-                  borderRadius: 8,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: refreshStatus === 'refreshing' ? 'not-allowed' : 'pointer',
-                }}
+                className={`wallet-refresh-btn${refreshStatus === 'done' ? ' wallet-refresh-btn--done' : ''}`}
               >
                 {refreshStatus === 'refreshing'
                   ? '🔄 Refreshing…'
@@ -1861,7 +1945,20 @@ function WalletApp() {
             >
               <div className="scenario-launcher__header">
                 <h3 className="demo-section-title">Verifier Requests</h3>
-                <span className="scenario-launcher__hint">Choose request</span>
+                {status === 'IDLE' && !guidedDemoActive ? (
+                  <button
+                    type="button"
+                    className="scenario-launcher__guide"
+                    onClick={() => {
+                      sessionStorage.removeItem('guidedDemoCompleted');
+                      setGuidedDemoActive(true);
+                    }}
+                  >
+                    ▶ Guided demo
+                  </button>
+                ) : (
+                  <span className="scenario-launcher__hint">Choose request</span>
+                )}
               </div>
 
               <div className="demo-primary-grid scenario-launcher__grid">
@@ -1927,6 +2024,17 @@ function WalletApp() {
                   <br />
                   <span className="btn-scenario-card__subtitle">ePrescription</span>
                 </button>
+
+                <button
+                  id="btn-in-person"
+                  type="button"
+                  onClick={() => setShowProximityPreview(true)}
+                  className="btn-demo-primary btn-demo-primary--full btn-scenario-card"
+                >
+                  📶 In person
+                  <br />
+                  <span className="btn-scenario-card__subtitle">ISO 18013-5 offline mDL check</span>
+                </button>
               </div>
             </div>
           )}
@@ -1957,7 +2065,7 @@ function WalletApp() {
                   onClick={() => setTraceDetailPanel('consent')}
                 >
                   <span>1 Requested</span>
-                  <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+                  <strong>{traceSteps.requested}</strong>
                 </button>
                 <button
                   type="button"
@@ -1967,7 +2075,7 @@ function WalletApp() {
                   onClick={() => setTraceDetailPanel('compliance')}
                 >
                   <span>2 Allowed</span>
-                  <strong>{recentAuditEntries.length} events</strong>
+                  <strong>{traceSteps.allowed}</strong>
                 </button>
                 <button
                   type="button"
@@ -1977,7 +2085,7 @@ function WalletApp() {
                   onClick={() => setTraceDetailPanel('data-flow')}
                 >
                   <span>3 Sent</span>
-                  <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
+                  <strong>{traceSteps.sent}</strong>
                 </button>
               </div>
 
@@ -2047,73 +2155,12 @@ function WalletApp() {
         </section>
       )}
 
-      {isWalletReady && activeWalletPage === 'documents' && (
-        <section className="wallet-panel" aria-labelledby="documents-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Local Signing</p>
-              <h2 id="documents-heading">Documents</h2>
-            </div>
-            <span>Device-only</span>
-          </div>
-          <DocumentsTab
-            onSign={async (payload) => {
-              const result = await walletRef.current.signData(payload);
-              addLog(`📄 Document proof signed: ${payload.description}`, 'success');
-              return result;
-            }}
-          />
-        </section>
-      )}
-
-      {isWalletReady && activeWalletPage === 'proximity' && (
-        <section className="wallet-panel" aria-labelledby="proximity-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Offline Presentation</p>
-              <h2 id="proximity-heading">Proximity</h2>
-            </div>
-            <span>ISO 18013-5</span>
-          </div>
-          <div className="wallet-empty-state">
-            <h3>Proximity Presentation</h3>
-            <p>Start the existing ISO 18013-5 mock flow and inspect the QR handoff surface.</p>
-            <button className="btn-start-demo" onClick={() => setShowProximityPreview(true)}>
-              Start proximity preview
-            </button>
-          </div>
-        </section>
-      )}
-
       {showProximityPreview && (
         <ProximityView
           wallet={walletRef.current}
           onComplete={() => setShowProximityPreview(false)}
           onCancel={() => setShowProximityPreview(false)}
         />
-      )}
-
-      {isWalletReady && activeWalletPage === 'renderer' && (
-        <section className="wallet-panel" aria-labelledby="renderer-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Legacy Visual Renderer</p>
-              <h2 id="renderer-heading">Credential Renderer</h2>
-            </div>
-            <span>{credentials.length} previews</span>
-          </div>
-          <div className="credential-card-list">
-            {credentials.map((cred) => (
-              <CredentialCard
-                key={cred.id}
-                id={cred.id}
-                name={cred.type?.find((type) => type !== 'VerifiableCredential') ?? 'Credential'}
-                issuer={cred.issuer}
-                claims={Object.fromEntries((cred.claims ?? []).map((claim) => [claim, 'sample']))}
-              />
-            ))}
-          </div>
-        </section>
       )}
 
       {isWalletReady && activeWalletPage === 'settings' && (
@@ -2336,6 +2383,48 @@ function WalletApp() {
               </div>
             </section>
           )}
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'tools' && (
+        <section id="tools-documents" className="wallet-panel" aria-labelledby="documents-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Local Signing</p>
+              <h2 id="documents-heading">Documents</h2>
+            </div>
+            <span>Device-only</span>
+          </div>
+          <DocumentsTab
+            onSign={async (payload) => {
+              const result = await walletRef.current.signData(payload);
+              addLog(`📄 Document proof signed: ${payload.description}`, 'success');
+              return result;
+            }}
+          />
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'tools' && (
+        <section id="tools-renderer" className="wallet-panel" aria-labelledby="renderer-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Legacy Visual Renderer</p>
+              <h2 id="renderer-heading">Credential Renderer</h2>
+            </div>
+            <span>{credentials.length} previews</span>
+          </div>
+          <div className="credential-card-list">
+            {credentials.map((cred) => (
+              <CredentialCard
+                key={cred.id}
+                id={cred.id}
+                name={cred.type?.find((type) => type !== 'VerifiableCredential') ?? 'Credential'}
+                issuer={cred.issuer}
+                claims={Object.fromEntries((cred.claims ?? []).map((claim) => [claim, 'sample']))}
+              />
+            ))}
+          </div>
         </section>
       )}
 

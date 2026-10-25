@@ -25,6 +25,7 @@ import {
   canonicalStringify,
   RecoveryService,
   WebAuthnService,
+  verifyIdentityAssertion,
   IdentityKeyGuardian,
   KeyProtectionLevel,
   signData,
@@ -48,6 +49,7 @@ import {
   selectablePresentationCredentials,
 } from '../utils/single-use';
 import { selectPoolMembersForPresentation } from '../utils/credential-pool';
+import { createProofToken, type ProofTokenSigner } from '../utils/proof-token';
 import { putKey as putHolderKeyDb, getKey as getHolderKeyDb, deleteKey as deleteHolderKeyDb } from '../utils/crypto-db';
 import { ProofOfExistence } from './DocumentService';
 import { evaluatePredicates, CommonPredicates, type PredicateRequest } from '@askmi/predicates';
@@ -380,6 +382,27 @@ export interface WalletServiceOptions {
   recoveryKeyProvider?: RecoveryKeyProvider;
 }
 
+/** Thrown when a signed request needs the device passkey but none is registered. */
+export class IdentityKeyRequiredError extends Error {
+  readonly code = 'IDENTITY_KEY_REQUIRED';
+  constructor() {
+    super(
+      'IDENTITY_KEY_REQUIRED: WebAuthn is available, but no device passkey is registered.'
+    );
+    this.name = 'IdentityKeyRequiredError';
+  }
+}
+
+function isIdentityKeyRequired(err: unknown): boolean {
+  if (err instanceof IdentityKeyRequiredError) return true;
+  const message = err instanceof Error ? err.message : String(err);
+  return /^(IDENTITY_KEY_NOT_REGISTERED|HARDWARE_IDENTITY_REQUIRED)/.test(message);
+}
+
+const PASSKEY_REQUIRED_MESSAGE =
+  'This request has to be signed with your device passkey, and none is set up on this device. ' +
+  'Set up the passkey, then try again.';
+
 export class WalletService {
   private storage: SecureStorage | null = null;
   private auditLog: AuditLog;
@@ -476,8 +499,8 @@ export class WalletService {
             this.policyPublicKey = null; // WebAuthn assertion verification is not a local ECDSA verify.
           } else if (hardwareAvailable) {
             this.policyPublicKey = null;
-            console.warn(
-              '🛑 Hardware identity key required. Register the platform passkey before signing policy decisions.'
+            console.info(
+              'ℹ️ Hardware identity key not yet registered. Register the platform passkey before signing policy decisions.'
             );
           } else {
             console.log('✨ Creating NODE/TEST software Identity Keypair (RAM only)...');
@@ -496,14 +519,25 @@ export class WalletService {
               );
             }
 
-            capsule.wallet_attestation_method =
-              level === KeyProtectionLevel.HARDWARE_BOUND ? 'webauthn' : 'software-fallback';
+            const hardware = level === KeyProtectionLevel.HARDWARE_BOUND;
+            capsule.wallet_attestation_method = hardware ? 'webauthn' : 'software-fallback';
             capsule.wallet_attestation_protection = level;
-            capsule.wallet_attestation_encoding =
-              level === KeyProtectionLevel.HARDWARE_BOUND ? 'base64' : 'hex';
+            capsule.wallet_attestation_encoding = hardware ? 'webauthn-assertion' : 'hex';
 
-            const { wallet_attestation: _wallet_attestation, ...toSign } = capsule;
+            const {
+              wallet_attestation: _wallet_attestation,
+              wallet_attestation_assertion: _wallet_attestation_assertion,
+              ...toSign
+            } = capsule;
             const payload = canonicalStringify(toSign);
+
+            if (hardware) {
+              // Keep the full assertion so the capsule can be verified (#218).
+              const assertion = await WebAuthnService.signWithIdentityKeyAssertion(payload);
+              capsule.wallet_attestation_assertion = assertion;
+              return assertion.signature;
+            }
+
             const attestation = await this.identityKeyGuardian.signIdentityPayload(payload);
             capsule.wallet_attestation_method = attestation.method;
             capsule.wallet_attestation_protection = attestation.level;
@@ -981,6 +1015,74 @@ export class WalletService {
     }
   }
 
+  /**
+   * Check a passkey-signed capsule (#218) against this device's own registration —
+   * never against the rpId written inside the assertion. Returns the log line.
+   * - registration with a stored public key: the assertion must verify, else throw
+   * - legacy registration without a public key: cannot be checked → "unverified"
+   *   (proceeds, with a re-register hint); never logged as verified
+   * - no passkey registration, or assertion missing while a key exists: throw
+   */
+  private async verifyHardwareCapsuleAttestation(
+    capsule: DecisionCapsule,
+    payload: string,
+    assertion: DecisionCapsule['wallet_attestation_assertion']
+  ): Promise<string> {
+    if (capsule.wallet_attestation_method !== 'webauthn') {
+      throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+    }
+    const key = await WebAuthnService.getIdentityVerificationKey();
+    if (!key) {
+      throw new Error(
+        'SECURITY ALERT: Capsule claims a device passkey signature, but no passkey is registered on this device.'
+      );
+    }
+
+    if (!key.publicKeyJwk) {
+      if (
+        capsule.wallet_attestation_encoding !== 'webauthn-assertion' &&
+        capsule.wallet_attestation_encoding !== 'base64'
+      ) {
+        throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+      }
+      return (
+        '⚠️ Capsule signed with the device passkey, but not verifiable on this device: ' +
+        'the passkey was set up before the wallet stored its public key. ' +
+        'Re-register the passkey to make these signatures verifiable.'
+      );
+    }
+
+    if (!assertion || capsule.wallet_attestation_encoding !== 'webauthn-assertion') {
+      throw new Error(
+        'SECURITY ALERT: Hardware capsule carries no verifiable passkey assertion. Policy Decision may be forged.'
+      );
+    }
+    if (capsule.wallet_attestation !== assertion.signature) {
+      throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
+    }
+    const result = await verifyIdentityAssertion({
+      data: payload,
+      assertion,
+      publicKeyJwk: key.publicKeyJwk,
+      expectedRpId: key.rpId,
+    });
+    if (!result.valid) {
+      throw new Error(
+        `SECURITY ALERT: Capsule passkey signature verification FAILED (${result.reason}). Policy Decision may be forged.`
+      );
+    }
+    return '✅ Capsule Attestation Verified (device passkey)';
+  }
+
+  /**
+   * True when a passkey is registered but its public key was never stored
+   * (registered before #219), so its signatures can't be verified.
+   */
+  async passkeyNeedsReRegistration(): Promise<boolean> {
+    const key = await WebAuthnService.getIdentityVerificationKey();
+    return key !== null && key.publicKeyJwk === null;
+  }
+
   async generatePresentation(
     capsule: DecisionCapsule,
     agentTargetPubKey?: CryptoKey // Force encryption to this key (Lufthansa) instead of DID resolution
@@ -1004,17 +1106,15 @@ export class WalletService {
     if (!capsule.wallet_attestation) {
       throw new Error('SECURITY ALERT: Capsule contains no attestation (Unsigned).');
     }
-    const { wallet_attestation, ...toVerify } = capsule;
+    const {
+      wallet_attestation,
+      wallet_attestation_assertion: assertion,
+      ...toVerify
+    } = capsule;
     const payload = canonicalStringify(toVerify);
 
     if (capsule.wallet_attestation_protection === KeyProtectionLevel.HARDWARE_BOUND) {
-      if (
-        capsule.wallet_attestation_method !== 'webauthn' ||
-        capsule.wallet_attestation_encoding !== 'base64'
-      ) {
-        throw new Error('SECURITY ALERT: Hardware capsule attestation metadata is inconsistent.');
-      }
-      logs.push('✅ Capsule Attestation Bound to Hardware Identity Key (WebAuthn)');
+      logs.push(await this.verifyHardwareCapsuleAttestation(capsule, payload, assertion));
     } else {
       if (
         capsule.wallet_attestation_method !== 'software-fallback' ||
@@ -1996,16 +2096,28 @@ export class WalletService {
 
     const content = canonicalStringify(erasureRequest);
 
-    // Sign with the persistent identity key
-    const { proofToken } = await this.signData({
-      type: 'ProofOfExistence',
-      hash: await sha256(content),
-      hashAlg: 'SHA-256',
-      description: `Data Erasure Request for decision ${decisionId}`,
-      mediaType: 'application/json',
-      createdAt: new Date().toISOString(),
-      byteLength: new TextEncoder().encode(content).length,
-    });
+    // Sign with the identity key (passkey where available)
+    let proofToken: string;
+    try {
+      ({ proofToken } = await this.signData({
+        type: 'ProofOfExistence',
+        hash: await sha256(content),
+        hashAlg: 'SHA-256',
+        description: `Data Erasure Request for decision ${decisionId}`,
+        mediaType: 'application/json',
+        createdAt: new Date().toISOString(),
+        byteLength: new TextEncoder().encode(content).length,
+      }));
+    } catch (err) {
+      if (!isIdentityKeyRequired(err)) throw err;
+      await this.auditLog.append('ERASURE_REQUESTED', decisionId, {
+        verifier_id: verifierId,
+        endpoint: erasureEndpoint,
+        status: 'FAILED',
+        delivery_error: 'IDENTITY_KEY_REQUIRED',
+      });
+      return { success: false, message: PASSKEY_REQUIRED_MESSAGE };
+    }
 
     console.info(`[WalletService] Sending Erasure Request to: ${erasureEndpoint}`);
 
@@ -2067,15 +2179,28 @@ export class WalletService {
     };
 
     const content = canonicalStringify(report);
-    const { proofToken } = await this.signData({
-      type: 'ProofOfExistence',
-      hash: await sha256(content),
-      hashAlg: 'SHA-256',
-      description: `Suspicious RP Report: ${verifierId}`,
-      mediaType: 'application/json',
-      createdAt: new Date().toISOString(),
-      byteLength: new TextEncoder().encode(content).length,
-    });
+    let proofToken: string;
+    try {
+      ({ proofToken } = await this.signData({
+        type: 'ProofOfExistence',
+        hash: await sha256(content),
+        hashAlg: 'SHA-256',
+        description: `Suspicious RP Report: ${verifierId}`,
+        mediaType: 'application/json',
+        createdAt: new Date().toISOString(),
+        byteLength: new TextEncoder().encode(content).length,
+      }));
+    } catch (err) {
+      if (!isIdentityKeyRequired(err)) throw err;
+      await this.auditLog.append('REPORT_SENT', decisionId, {
+        verifier_id: verifierId,
+        reason,
+        endpoint: reportEndpoint,
+        status: 'FAILED',
+        delivery_error: 'IDENTITY_KEY_REQUIRED',
+      });
+      return { success: false, message: PASSKEY_REQUIRED_MESSAGE };
+    }
 
     console.info(`[WalletService] Sending RP Report to: ${reportEndpoint}`);
 
@@ -2279,52 +2404,46 @@ export class WalletService {
   }
 
   /**
+   * Pick the identity key for proof tokens. The audit key is never used here.
+   * - passkey registered → hardware assertion (verifiable)
+   * - WebAuthn available but no passkey → refuse (no silent software downgrade)
+   * - no WebAuthn (Node, tests, old browsers) → software session key
+   */
+  private async proofTokenSigner(): Promise<ProofTokenSigner> {
+    if (await WebAuthnService.isIdentityRegistered()) {
+      return {
+        key: 'hardware-passkey',
+        kid: 'did:askmi:user-wallet-001#passkey-identity-key',
+        sign: (input) => WebAuthnService.signWithIdentityKeyAssertion(input),
+      };
+    }
+    if (await WebAuthnService.isAvailable()) {
+      throw new IdentityKeyRequiredError();
+    }
+    await this.identityKeyGuardian.ensureSoftwareKey();
+    return {
+      key: 'software-session',
+      kid: 'did:askmi:user-wallet-001#software-identity-key',
+      sign: (input) =>
+        this.identityKeyGuardian.sign({ keyId: '', challenge: new TextEncoder().encode(input) }),
+    };
+  }
+
+  /**
    * Sign arbitrary data (e.g., document hashes) using the persistent Identity Key.
    * This differs from ephemeral VP signing - these signatures are meant to persist.
    *
-   * NOTE: This returns a "Compact-like proof token" (not RFC7515 JWS).
-   * For production, implement proper ES256 JWS with base64url encoding.
+   * Returns a v2 proof token (utils/proof-token.ts): labelled, covers its header,
+   * and verifiable — with the passkey public key (hardware) or the session key
+   * (software, only where WebAuthn is unavailable). Throws IdentityKeyRequiredError
+   * when WebAuthn is available but no passkey is registered.
    */
   async signData(payload: ProofOfExistence): Promise<{ proofToken: string; auditLog: string[] }> {
     if (!this.storage) throw new Error('Wallet locked');
 
-    // Access audit keys via internal property (AuditLog doesn't expose getAuditKeys)
-    // TODO: Separate identity signing key from audit key (see security review)
-    const auditLogInternal = this.auditLog as unknown as {
-      auditPrivateKey?: CryptoKey;
-      auditPublicKey?: CryptoKey;
-    };
-    const auditKeys = auditLogInternal.auditPrivateKey
-      ? { privateKey: auditLogInternal.auditPrivateKey, publicKey: auditLogInternal.auditPublicKey }
-      : null;
-
-    if (!auditKeys?.privateKey) throw new Error('Identity keys not available');
-
     const logs: string[] = [];
-    const content = canonicalStringify(payload);
-
-    // Sign with ECDSA
-    const signature = await crypto.subtle.sign(
-      { name: 'ECDSA', hash: { name: 'SHA-256' } },
-      auditKeys.privateKey,
-      new TextEncoder().encode(content)
-    );
-
-    const signatureHex = Array.from(new Uint8Array(signature))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    // Create Proof Token (Compact-like format, NOT RFC7515 JWS)
-    // Format: base64(header).base64(payload).hex(signature)
-    // Note: Uses standard Base64, not Base64URL; signature is hex, not base64url(r|s)
-    const header = canonicalStringify({
-      alg: 'ES256-PoC',
-      kid: 'did:askmi:user-wallet-001#audit-key',
-    });
-    const protectedHeader = btoa(header);
-    const encodedPayload = btoa(content);
-
-    const proofToken = `${protectedHeader}.${encodedPayload}.${signatureHex}`;
+    const signer = await this.proofTokenSigner();
+    const proofToken = await createProofToken(payload, signer);
 
     await this.auditLog.append('KEY_USED', payload.hash, {
       context: 'DOCUMENT_SIGNING',
@@ -2334,8 +2453,11 @@ export class WalletService {
 
     logs.push(`✅ Document Signed: ${payload.description}`);
     logs.push(`📝 Hash: ${payload.hash.substring(0, 8)}...`);
-    logs.push('🔑 Key: Persistent Identity Key');
-    logs.push('⚠️  PoC Token Format (not RFC7515 JWS)');
+    logs.push(
+      signer.key === 'hardware-passkey'
+        ? '🔑 Key: device passkey (verifiable with its public key)'
+        : '🔑 Key: software session key (no WebAuthn on this device)'
+    );
 
     return { proofToken, auditLog: logs };
   }
