@@ -5,6 +5,7 @@ import { VerifierSDK } from '@askmi/verifier-sdk';
 import { NonceStore } from './nonce-store';
 import { FixedWindowRateLimiter } from './rate-limiter';
 import { getRequesterId } from './requester-id';
+import { acceptsActiveProfile } from './active-profile';
 import {
   verifyPredicateResult,
   CommonPredicates,
@@ -95,7 +96,7 @@ type VerificationState = {
   issuer: string | null;
   disclosedClaims: Record<string, unknown> | null;
   consentReceipt: Record<string, unknown> | null;
-  authorization: { request: AuthorizationRequest; expiresAt: number } | null;
+  authorization: { request: AuthorizationRequest; expiresAt: number; attempted: boolean } | null;
 };
 
 const sessions = new Map<string, VerificationState>();
@@ -305,6 +306,7 @@ app.get('/status', requireSession, (req, res) => {
     status: state.status,
     issuer: state.issuer,
     verifierDid: ASKMI_DEMO.verifierDid,
+    result: state.authorization && state.status === 'VERIFIED' ? { eligible: true } : null,
     disclosedClaims: state.disclosedClaims,
     consentReceipt: state.consentReceipt,
   });
@@ -322,7 +324,8 @@ app.get('/', (req, res) => {
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
 app.get('/authorize', requireSession, (req, res) => {
   const correlationId = sessionId(req, res);
-  const state = stateFor(correlationId);
+  // A new state object isolates any already-running legacy demo request.
+  const state = { ...stateFor(correlationId) };
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
@@ -334,12 +337,17 @@ app.get('/authorize', requireSession, (req, res) => {
     });
     nonceStore.add(nonce);
     const now = Date.now();
-    state.authorization = { request, expiresAt: now + REQUEST_TIMEOUT_MS };
+    state.authorization = {
+      request: structuredClone(request),
+      expiresAt: now + REQUEST_TIMEOUT_MS,
+      attempted: false,
+    };
     state.timestamp = now;
     state.status = state.status === 'SCANNED' ? 'SCANNED' : 'WAITING';
     state.issuer = null;
     state.disclosedClaims = null;
     state.consentReceipt = null;
+    sessions.set(correlationId, state);
     res.json({ authRequest: request, nonce, scenarioId, sessionId: correlationId });
   } catch (e: unknown) {
     res.status(400).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
@@ -349,6 +357,9 @@ app.get('/authorize', requireSession, (req, res) => {
 // ─── W-02/W-03/W-04/W-05: Wallet-simulated Presentation Flow ─────────────────
 app.post('/wallet-present', requireSession, async (req, res) => {
   const verificationState = stateFor(sessionId(req, res));
+  if (verificationState.authorization) {
+    return res.status(403).json({ ok: false, error: 'SIMULATED_ROUTE_REJECTED' });
+  }
   const scenarioId: string = (req.body as { scenarioId?: string }).scenarioId ?? 'liquor-store';
   try {
     const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
@@ -451,16 +462,29 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     verificationState.authorization === authorization &&
     Date.now() < authorization.expiresAt;
   try {
-    const body = req.body as {
+    const body = (req.body ?? {}) as {
       vp_token?: string;
       presentation_submission?: unknown;
       state?: string;
       issuer_jwk?: JsonWebKey;
     };
-    if (!body.vp_token) return res.status(400).json({ ok: false, error: 'Missing vp_token' });
-    if (!body.presentation_submission)
+    if (authorization) {
+      if (!isCurrentAuthorization() || authorization.attempted) {
+        return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
+      }
+      // Synchronous reservation makes every attempted response terminal.
+      authorization.attempted = true;
+    }
+    if (typeof body.vp_token !== 'string' || !body.vp_token) {
+      if (authorization) verificationState.status = 'FAILED';
+      return res.status(400).json({ ok: false, error: 'Missing vp_token' });
+    }
+    if (!body.presentation_submission) {
+      if (authorization) verificationState.status = 'FAILED';
       return res.status(400).json({ ok: false, error: 'Missing presentation_submission' });
+    }
     if (!authorization || !isCurrentAuthorization() || body.state !== authorization.request.state) {
+      if (authorization && isCurrentAuthorization()) verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
     // ADOPT-0b: resolve the issuer key from the credential's `iss` via the trust
@@ -495,28 +519,39 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
+    if (
+      validation.ok &&
+      !acceptsActiveProfile(
+        authorization.request,
+        body.presentation_submission,
+        presentedIssuerJwt,
+        validation.disclosedClaims ?? {}
+      )
+    ) {
+      verificationState.status = 'FAILED';
+      return res.status(403).json({ ok: false, error: 'PROFILE_OR_POLICY_DENIED' });
+    }
     const { consentReceipt } = buildSessionCleanup({
       request: authorization.request,
       disclosedClaims: validation.disclosedClaims ?? {},
       outcome: validation.ok ? 'SUCCESS' : 'DENIED',
     });
     if (validation.ok) {
-      verificationState.authorization = null;
       verificationState.status = 'VERIFIED';
       verificationState.issuer = ASKMI_DEMO.issuerUri;
-      verificationState.disclosedClaims = validation.disclosedClaims ?? null;
+      verificationState.disclosedClaims = null;
       verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
-      return res.json({ ok: true, disclosedClaims: validation.disclosedClaims, consentReceipt });
+      return res.json({ ok: true, result: { eligible: true }, disclosedClaims: null, consentReceipt });
     } else {
       verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, errors: validation.errors });
     }
-  } catch (e: unknown) {
+  } catch {
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
     verificationState.status = 'FAILED';
-    return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
+    return res.status(500).json({ ok: false, error: 'VERIFICATION_FAILED' });
   }
 });
 
@@ -573,6 +608,9 @@ async function resolveDidJwkPublicKey(sub: string | undefined): Promise<CryptoKe
 
 app.post('/present', requireSession, presentRouteLimiter, async (req, res) => {
   const verificationState = stateFor(sessionId(req, res));
+  if (verificationState.authorization) {
+    return res.status(403).json({ ok: false, error: 'SIMULATED_ROUTE_REJECTED' });
+  }
   try {
     const requesterId = getRequesterId(req);
     const rate = rateLimiter.check(requesterId, Date.now());

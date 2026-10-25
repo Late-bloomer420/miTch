@@ -140,4 +140,39 @@ describe('OID4VP authorization ownership', () => {
     const responses = await Promise.all([present('alice', body), present('alice', body)]);
     expect(responses.map((response) => response.status).sort()).toEqual([200, 403]);
   });
+
+  it('consumes the attempt when issuer resolution fails', async () => {
+    const body = await presentation(await authorize('alice'));
+    setIssuerKeyResolver(async () => null);
+    await present('alice', body).expect(403);
+    setIssuerKeyResolver(async () => issuer.publicKey);
+    await present('alice', body).expect(403);
+  });
+
+  it('reserves the attempt before awaiting issuer resolution', async () => {
+    const body = await presentation(await authorize('alice'));
+    let release!: (key: CryptoKey) => void;
+    let entered!: () => void;
+    const started = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const resolver = vi.fn(() => {
+      entered();
+      return new Promise<CryptoKey>((resolve) => {
+        release = resolve;
+      });
+    });
+    setIssuerKeyResolver(resolver);
+    const first = present('alice', body).then((result) => result);
+    await started;
+    try {
+      // A duplicate must complete without entering the asynchronous resolver.
+      const duplicate = present('alice', body).timeout({ deadline: 1000 });
+      await duplicate.expect(403);
+      expect(resolver).toHaveBeenCalledTimes(1);
+    } finally {
+      release(issuer.publicKey);
+    }
+    expect((await first).status).toBe(200);
+  });
 });
