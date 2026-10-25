@@ -178,9 +178,6 @@ async function openWalletPage(
     | 'Requests'
     | 'Trace'
     | 'Sovereignty'
-    | 'Documents'
-    | 'Proximity'
-    | 'Renderer'
     | 'Audit'
     | 'Settings'
     | 'Tools'
@@ -553,28 +550,11 @@ describe('G-03 — Wallet App', () => {
       0
     );
 
-    fireEvent.click(within(nav).getByRole('button', { name: 'Documents' }));
-    expect(within(nav).getByRole('button', { name: 'Documents' })).toHaveAttribute(
+    fireEvent.click(within(nav).getByRole('button', { name: 'Audit' }));
+    expect(within(nav).getByRole('button', { name: 'Audit' })).toHaveAttribute(
       'aria-current',
       'page'
     );
-    expect(screen.getByRole('heading', { name: 'Documents' })).toBeInTheDocument();
-    expect(screen.getByText(/Document Signing/)).toBeInTheDocument();
-
-    fireEvent.click(within(nav).getByRole('button', { name: 'Proximity' }));
-    expect(within(nav).getByRole('button', { name: 'Proximity' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    expect(screen.getByRole('heading', { name: 'Proximity' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Start proximity preview' })).toBeInTheDocument();
-
-    fireEvent.click(within(nav).getByRole('button', { name: 'Renderer' }));
-    expect(within(nav).getByRole('button', { name: 'Renderer' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    expect(screen.getByRole('heading', { name: 'Credential Renderer' })).toBeInTheDocument();
 
     fireEvent.click(within(nav).getByRole('button', { name: 'Tools' }));
     expect(within(nav).getByRole('button', { name: 'Tools' })).toHaveAttribute(
@@ -583,6 +563,45 @@ describe('G-03 — Wallet App', () => {
     );
     expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
     expect(within(nav).queryByRole('button', { name: 'Dev' })).not.toBeInTheDocument();
+  });
+
+  it('shows seven sections in the wallet navigation', async () => {
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+
+    const nav = screen.getByRole('navigation', { name: /wallet sections/i });
+    expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Credentials',
+      'Requests',
+      'Trace',
+      'Sovereignty',
+      'Audit',
+      'Settings',
+      'Tools',
+    ]);
+  });
+
+  it('starts the in-person (ISO 18013-5) flow from a card on the Requests page', async () => {
+    render(<App />);
+    await openWalletPage('Requests');
+
+    const launcher = screen.getByTestId('scenario-launcher');
+    fireEvent.click(within(launcher).getByRole('button', { name: /In person/i }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Proximity Presentation' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps document signing and the credential renderer as sections on the Tools page', async () => {
+    render(<App />);
+    await openWalletPage('Tools');
+
+    expect(screen.getByRole('heading', { name: 'Documents' })).toBeInTheDocument();
+    expect(screen.getByText(/Document Signing/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Credential Renderer' })).toBeInTheDocument();
+    expect(document.getElementById('tools-documents')).toBeInTheDocument();
+    expect(document.getElementById('tools-renderer')).toBeInTheDocument();
   });
 
   it('combines advanced tools and dev workbench on the Tools page', async () => {
