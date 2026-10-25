@@ -82,7 +82,9 @@ describe('ML-DSA-87', () => {
 
 // ─── SLH-DSA ─────────────────────────────────────────────────────────────────
 
-describe('SLH-DSA-SHA2-128s', () => {
+// SLH-DSA-SHA2-128s (the "small" SPHINCS+ set) is slow to sign by design: ~4 s per
+// test locally, but past 30 s on a busy CI runner. Longer limit for this block only.
+describe('SLH-DSA-SHA2-128s', { timeout: 120_000 }, () => {
     it('round-trip sign/verify', () => {
         const msg = new TextEncoder().encode('SPHINCS+ hash-based test');
         const kp = slhDSASHA2128s.keygen();
