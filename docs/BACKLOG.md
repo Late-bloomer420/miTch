@@ -24,6 +24,19 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
 Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
 
+## discrete-core — Vorlesungs-Kernbibliothek (2026-10-23)
+
+Quelle: kein existierendes Issue/Spec; initiiert aus der MCI-Vorlesung *Mengen & Abbildungen* (Hartmann Kap. 1.2–1.3, Computational Thinking). Rein additives, zero-runtime-dependency Paket — kein Canon/ADR-Trace, deshalb hier als eigener Arbeitsrahmen getrackt.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| DC-01 | 🟢 P2 | PR [#189](https://github.com/Late-bloomer420/miTch/pull/189) | `@askmi/discrete-core`: Relation/Mapping/compose/inverse + miTch-Guards (`findDuplicateKeys`, `analyzeComposition`, `verifyBijectionPair`, `verifyTrustEquivalence`); fail-closed `MappingError`-Codes; 40 Vitest-Tests grün auf `44306b1` |
+| DC-02 | 🟢 P2 | ✅ auf Branch | Review-Punkte aus dem PR-Audit behoben: `verifyBijectionPair`-Mengenkompatibilitäts-Guard (fail-closed bei inkompatiblen deklarierten Mengen, 2 negative Tests), unbenutzter generischer Parameter `_N` aus `CompositionAnalysis` entfernt, README „dependency-free" → „zero runtime dependencies" präzisiert |
+| DC-03 | 🟢 P2 | ⏳ | Merge-Kriterien PR #189: CI grün auf Head, Draft-Status aufheben (✅ erledigt), Owner-Approval, CHANGELOG-Eintrag beim Merge |
+| DC-04 | 🟢 P2 | ✅ F-1–F-4 (`beeae79`), F-5/Framing (`44306b1`) | Review-Befunde 2026-10-23 ([QA](qa/DISCRETE_CORE_REVIEW_2026-10-23.md)) vor Merge beheben: F-1 `Relation`-Pair-Index (Trust-Check n=80 ≈ 27 s), F-2 `equivalenceClasses` fail-closed, F-3 Fixture `age:17 → 18+` ersetzen, (F-4 SameValueZero ✅ in `95f1fe3`); README-Framing (kein transitives Trust-Modell) |
+
+Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibliothek, umgeht nicht die Policy Engine); kein bestehender P0/P1-Backlog-Eintrag wird dadurch geschlossen.
+
 ## Existing task/change records
 
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
