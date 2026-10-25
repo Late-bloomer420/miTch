@@ -49,6 +49,10 @@
     color: var(--wallet-text);
 }
 
+.wallet-app button {
+    font-family: inherit;
+}
+
 .wallet-title {
     margin: 0 0 4px;
     font-size: 22px;
@@ -58,7 +62,7 @@
 
 .wallet-title-accent {
     font-weight: 800;
-    color: #0070f3;
+    color: var(--wallet-accent);
 }
 
 .wallet-subtitle {
@@ -100,23 +104,69 @@
     background: transparent;
     color: #075985;
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 760;
     font: inherit;
+    font-size: 12.5px;
+    font-weight: 650;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .wallet-nav button:hover,
 .wallet-nav button:focus-visible,
-.wallet-nav__item--active {
+.wallet-nav button.wallet-nav__item--active {
     background: var(--wallet-accent-soft);
     color: #0c4a6e;
     outline: none;
 }
 
+.wallet-nav button.wallet-nav__item--active {
+    background: var(--wallet-accent);
+    color: #ffffff;
+}
+
+.wallet-nav button:focus-visible {
+    box-shadow: 0 0 0 2px var(--wallet-accent);
+}
+
 .wallet-section-rail {
     justify-content: space-between;
+}
+
+.wallet-credentials-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.wallet-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--wallet-border-strong);
+    border-radius: var(--wallet-radius-sm);
+    background: var(--wallet-surface-solid);
+    color: var(--wallet-accent);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.wallet-refresh-btn:hover:not(:disabled),
+.wallet-refresh-btn:focus-visible {
+    background: var(--wallet-accent-soft);
+    outline: none;
+}
+
+.wallet-refresh-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.wallet-refresh-btn--done {
+    border-color: rgba(4, 120, 87, 0.4);
+    color: var(--wallet-success);
 }
 
 .wallet-overview {
@@ -216,15 +266,17 @@
 .wallet-flow-stack {
     display: flex;
     flex-direction: column;
-    align-items: start;
+    align-items: stretch;
     gap: 14px;
     width: 100%;
     max-width: var(--wallet-content-max);
     margin: 0 auto 16px;
 }
 
-.wallet-flow-stack .audit-section {
-    margin: 0 auto;
+.wallet-flow-stack .audit-section,
+.wallet-flow-stack .demo-section {
+    max-width: none;
+    margin: 0;
 }
 
 /* ── UX-03: Credential Card ─────────────────────────────────────────────── */
@@ -292,7 +344,8 @@
 .credential-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 12px;
     margin-bottom: 14px;
 }
 
@@ -302,6 +355,9 @@
     letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 600;
+    min-width: 0;
+    padding-top: 4px;
+    line-height: 1.5;
 }
 
 .credential-trust-badge {
@@ -315,20 +371,31 @@
     text-transform: uppercase;
     border: 1px solid rgba(46, 125, 50, 0.5);
     box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+    white-space: nowrap;
+}
+
+/* Issuer not in the policy trust list: neutral, no reassuring green. */
+.credential-trust-badge--unlisted {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: none;
+    letter-spacing: 1px;
 }
 
 .credential-card-actions {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
     justify-content: flex-end;
 }
 
 .credential-delete-btn {
-    border: 1px solid rgba(248, 113, 113, 0.38);
-    background: rgba(127, 29, 29, 0.22);
-    color: #fecaca;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 10px;
@@ -337,9 +404,12 @@
     cursor: pointer;
 }
 
-.credential-delete-btn:hover {
+.credential-delete-btn:hover,
+.credential-delete-btn:focus-visible {
     border-color: rgba(248, 113, 113, 0.68);
     background: rgba(153, 27, 27, 0.34);
+    color: #fecaca;
+    outline: none;
 }
 
 .credential-item {
@@ -578,6 +648,24 @@
     font-weight: 600;
 }
 
+.scenario-launcher__guide {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--wallet-border-strong);
+    border-radius: 999px;
+    background: var(--wallet-surface-solid);
+    color: var(--wallet-accent);
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.scenario-launcher__guide:hover,
+.scenario-launcher__guide:focus-visible {
+    background: var(--wallet-accent-soft);
+    outline: none;
+}
+
 .scenario-launcher__grid {
     margin-bottom: 0;
 }
@@ -664,6 +752,7 @@
 
 .btn-scenario-card--age {
     grid-column: span 2;
+    max-width: none;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -1531,11 +1620,24 @@
         box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
     }
 
+    .wallet-section-rail {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+    .wallet-section-rail::-webkit-scrollbar {
+        display: none;
+    }
+
     .wallet-nav button {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 0 4px;
-        font-size: 10px;
+        flex: 0 0 auto;
+        min-height: 34px;
+        padding: 0 11px;
+        font-size: 12px;
+        scroll-snap-align: start;
     }
 
     .wallet-overview {
@@ -1873,6 +1975,74 @@
 .dataflow-card__tag--withheld {
     background: #ffe4e6;
     color: #be123c;
+}
+
+/* Summary lines ("age >= 18 bewiesen statt offengelegt", ...) — one per line, not run together. */
+.dataflow-card__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+    padding-left: 0;
+    color: var(--wallet-text);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.dataflow-card__summary-point {
+    position: relative;
+    padding-left: 16px;
+}
+
+.dataflow-card__summary-point::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--wallet-success);
+    font-weight: 700;
+}
+
+.dataflow-card__claim-name {
+    margin-right: 6px;
+}
+
+.dataflow-card__identity {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: var(--wallet-warning);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.dataflow-card__actions {
+    flex-wrap: wrap;
+}
+
+/* Renderer page: the parked CredentialCard reuses dark-card text classes; give it a light surface. */
+.wallet-panel .mitch-credential-card-wrapper {
+    width: 100%;
+    margin-bottom: 0 !important;
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-item {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-md);
+    background: var(--wallet-surface-solid);
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-name {
+    color: var(--wallet-text);
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-issuer {
+    color: var(--wallet-text-muted);
+    opacity: 1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dataflow-card__tag--identity {
