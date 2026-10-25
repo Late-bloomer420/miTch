@@ -6,8 +6,8 @@ import {
     checkBitstringIndex,
     encodeStatusListBitstring,
     extractRevokedIndices,
-} from '../multi-source';
-import { makeStatusListEntry } from '../test-helpers';
+} from '../multi-source.js';
+import { makeStatusListEntry } from '../test-helpers.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 

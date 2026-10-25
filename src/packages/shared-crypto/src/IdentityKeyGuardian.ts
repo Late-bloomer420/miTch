@@ -1,7 +1,7 @@
-import { KeyProtectionLevel } from './types/KeyProtectionLevel';
-import { SoftwareKeyGuardian } from './SoftwareKeyGuardian';
-import { WebAuthnService } from './webauthn';
-import type { KeyCreationResult, KeyGuardian, EncryptionKeyCreationResult } from './interfaces/KeyGuardian';
+import { KeyProtectionLevel } from './types/KeyProtectionLevel.js';
+import { SoftwareKeyGuardian } from './SoftwareKeyGuardian.js';
+import { WebAuthnService } from './webauthn.js';
+import type { KeyCreationResult, KeyGuardian, EncryptionKeyCreationResult } from './interfaces/KeyGuardian.js';
 
 export type IdentityAttestationMethod = 'webauthn' | 'software-fallback';
 export type IdentityAttestationEncoding = 'base64' | 'hex';
