@@ -27,10 +27,7 @@ import {
   loadConsentReceiptHistory,
 } from './consent-manager/receipt-store';
 import { GuidedDemoMode, type DemoStep } from './components/GuidedDemoMode';
-import {
-  buildSessionCleanup,
-  type AuthorizationRequest,
-} from '@askmi/oid4vp';
+import { buildSessionCleanup, type AuthorizationRequest } from '@askmi/oid4vp';
 import type { ConsentReceipt } from '@askmi/oid4vp';
 import { DataFlowPanel } from './components/DataFlowPanel';
 import { SovereigntyCenter } from './components/SovereigntyCenter';
@@ -199,7 +196,9 @@ function WalletApp() {
     'mitch://present?verifier=did:askmi:verifier-liquor-store&nonce=dev-nonce-001'
   );
   const [devRawCredentialId, setDevRawCredentialId] = useState('');
-  const [devToolStatus, setDevToolStatus] = useState('DEV tools are local-only and do not send data.');
+  const [devToolStatus, setDevToolStatus] = useState(
+    'DEV tools are local-only and do not send data.'
+  );
 
   // G-120: Listen for Auth Popup messages from opener window
   useEffect(() => {
@@ -267,10 +266,9 @@ function WalletApp() {
   const traceSteps = useMemo(() => {
     const latest = traceFlowService
       .buildTransactions(recentAuditEntries)
-      .reduce<DataFlowTransaction | undefined>(
-        (newest, txn) => (!newest || txn.startedAt > newest.startedAt ? txn : newest),
-        undefined
-      );
+      .reduce<
+        DataFlowTransaction | undefined
+      >((newest, txn) => (!newest || txn.startedAt > newest.startedAt ? txn : newest), undefined);
     return describeTraceSteps(latest);
   }, [recentAuditEntries]);
 
@@ -334,35 +332,28 @@ function WalletApp() {
   const getRecentComplianceLogs = useCallback(() => recentAuditEntries, [recentAuditEntries]);
   const getAuditChainStatus = useCallback(() => walletRef.current.verifyAuditChain(), []);
 
-  const handleDeleteCredential = useCallback(
-    async (credential: StoredCredentialMetadata) => {
-      const label =
-        credential.type?.find((type) => type !== 'VerifiableCredential') ?? credential.id;
-      const confirmed =
-        typeof window !== 'undefined' && typeof window.confirm === 'function'
-          ? window.confirm(
-              `Delete ${label}?\n\nThis removes only this credential from the local wallet. This cannot be undone.`
-            )
-          : true;
-      if (!confirmed) return;
+  const handleDeleteCredential = useCallback(async (credential: StoredCredentialMetadata) => {
+    const label = credential.type?.find((type) => type !== 'VerifiableCredential') ?? credential.id;
+    const confirmed =
+      typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm(
+            `Delete ${label}?\n\nThis removes only this credential from the local wallet. This cannot be undone.`
+          )
+        : true;
+    if (!confirmed) return;
 
-      try {
-        const removed = await walletRef.current.deleteCredential(credential.id);
-        if (removed) {
-          await loadWalletCredentials();
-          addLog(`🗑️ Deleted credential ${label}.`, 'warning');
-        } else {
-          addLog(`⚠️ Credential ${label} was not found in the wallet.`, 'warning');
-        }
-      } catch (e) {
-        addLog(
-          `❌ Credential delete failed: ${e instanceof Error ? e.message : String(e)}`,
-          'error'
-        );
+    try {
+      const removed = await walletRef.current.deleteCredential(credential.id);
+      if (removed) {
+        await loadWalletCredentials();
+        addLog(`🗑️ Deleted credential ${label}.`, 'warning');
+      } else {
+        addLog(`⚠️ Credential ${label} was not found in the wallet.`, 'warning');
       }
-    },
-    []
-  );
+    } catch (e) {
+      addLog(`❌ Credential delete failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+    }
+  }, []);
 
   // Auto-scroll Audit Log (UX-05)
   useEffect(() => {
@@ -906,8 +897,7 @@ function WalletApp() {
 
       // ADOPT-0b: Derive requested claim names from the presentation definition
       const requestedClaimNames = authRequest.presentation_definition.input_descriptors.flatMap(
-        (d) =>
-          d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
+        (d) => d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
       );
 
       // ADOPT-0b: Locate the most recent real stored SD-JWT VC (fail-closed if none)
@@ -919,11 +909,10 @@ function WalletApp() {
       }
 
       // ADOPT-0b: Present the real stored credential
-      const presented = await walletRef.current!.presentStoredSdJwtVc(
-        credId,
-        requestedClaimNames,
-        { aud: authRequest.client_id, nonce: authRequest.nonce }
-      );
+      const presented = await walletRef.current!.presentStoredSdJwtVc(credId, requestedClaimNames, {
+        aud: authRequest.client_id,
+        nonce: authRequest.nonce,
+      });
       if (!presented) {
         addLog('❌ No matching credential for this request.', 'error');
         setStatus('IDLE');
@@ -945,11 +934,13 @@ function WalletApp() {
         presentation_submission: {
           id: `ps-${crypto.randomUUID()}`,
           definition_id: authRequest.presentation_definition.id,
-          descriptor_map: authRequest.presentation_definition.input_descriptors.map((descriptor) => ({
-            id: descriptor.id,
-            format: 'sd-jwt',
-            path: '$',
-          })),
+          descriptor_map: authRequest.presentation_definition.input_descriptors.map(
+            (descriptor) => ({
+              id: descriptor.id,
+              format: 'sd-jwt',
+              path: '$',
+            })
+          ),
         },
         state: authRequest.state,
       };
@@ -1045,9 +1036,12 @@ function WalletApp() {
     try {
       // Step 1: Fetch OID4VP Authorization Request from verifier
       addLog(`🔄 Fetching auth request from ${endpoint}/authorize...`, 'info');
-      const authRes = await fetch(`${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`, {
-        headers: sessionHeaders,
-      });
+      const authRes = await fetch(
+        `${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`,
+        {
+          headers: sessionHeaders,
+        }
+      );
       if (!authRes.ok) throw new Error(`Verifier /authorize returned ${authRes.status}`);
       const { authRequest } = (await authRes.json()) as { authRequest: AuthorizationRequest };
 
@@ -1212,18 +1206,17 @@ function WalletApp() {
   };
 
   const handleDevExplosion = async () => {
-    const request: VerifierRequest =
-      currentRequest ?? {
-        verifierId: 'did:askmi:verifier-dev-explosion',
-        origin: 'https://dev.askmi.local',
-        requirements: [
-          {
-            credentialType: 'AgeCredential',
-            requestedClaims: ['age'],
-            requestedProvenClaims: [],
-          },
-        ],
-      };
+    const request: VerifierRequest = currentRequest ?? {
+      verifierId: 'did:askmi:verifier-dev-explosion',
+      origin: 'https://dev.askmi.local',
+      requirements: [
+        {
+          credentialType: 'AgeCredential',
+          requestedClaims: ['age'],
+          requestedProvenClaims: [],
+        },
+      ],
+    };
 
     try {
       const start = performance.now();
@@ -1408,12 +1401,15 @@ function WalletApp() {
       {/* First-run Welcome / Account Creation (G-130.1 Task 3) */}
       {status === 'WELCOME' && (
         <div className="secure-backdrop" style={{ display: 'flex' }}>
-          <div className="secure-prompt" style={{ textAlign: 'center', padding: 40, maxWidth: 420 }}>
+          <div
+            className="secure-prompt"
+            style={{ textAlign: 'center', padding: 40, maxWidth: 420 }}
+          >
             <div style={{ fontSize: 64, marginBottom: 16 }}>👋</div>
             <h2 style={{ fontSize: 24, marginBottom: 12 }}>Welcome to AskMI</h2>
             <p style={{ color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 }}>
-              This device becomes your AskMI account. We create one passkey
-              (Fingerprint, Face ID or Windows Hello) and it stays on this device.
+              This device becomes your AskMI account. We create one passkey (Fingerprint, Face ID or
+              Windows Hello) and it stays on this device.
             </p>
             <ul
               style={{
@@ -1502,7 +1498,10 @@ function WalletApp() {
 
       {/* UX-03: Dynamic Premium Credential Cards */}
       {isWalletReady && activeWalletPage === 'credentials' ? (
-        <section className="wallet-panel wallet-panel--credentials" aria-labelledby="credentials-heading">
+        <section
+          className="wallet-panel wallet-panel--credentials"
+          aria-labelledby="credentials-heading"
+        >
           <div className="wallet-section-heading">
             <div>
               <p>Identity Wallet</p>
@@ -1572,7 +1571,9 @@ function WalletApp() {
                   </div>
 
                   {cred.singleUse && (
-                    <div className={`credential-single-use ${cred.consumedAt ? 'credential-single-use--consumed' : ''}`}>
+                    <div
+                      className={`credential-single-use ${cred.consumedAt ? 'credential-single-use--consumed' : ''}`}
+                    >
                       {cred.consumedAt
                         ? '🔥 Einmal-Credential — verbraucht (nicht wiederverwendbar)'
                         : '🔁 Einmal-Credential — wird nach Vorlage verbraucht'}
@@ -1580,9 +1581,7 @@ function WalletApp() {
                   )}
 
                   <div className="credential-item credential-card-main">
-                    <span className="credential-icon credential-card-main__icon">
-                      {icon}
-                    </span>
+                    <span className="credential-icon credential-card-main__icon">{icon}</span>
                     <div>
                       <div className="credential-name credential-card-main__name">
                         {displayName}
@@ -1626,8 +1625,8 @@ function WalletApp() {
                 No credentials yet
               </h3>
               <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.5, margin: '0 0 20px' }}>
-                Get your first verifiable credential, then prove things to verifiers without
-                handing over your personal data.
+                Get your first verifiable credential, then prove things to verifiers without handing
+                over your personal data.
               </p>
               <button
                 onClick={handleFetchCredential}
@@ -1669,7 +1668,6 @@ function WalletApp() {
               </button>
             </div>
           )}
-
         </section>
       ) : null}
 
@@ -1836,200 +1834,202 @@ function WalletApp() {
       {isWalletReady && ['requests', 'trace', 'audit'].includes(activeWalletPage) && (
         <section className="wallet-flow-stack" aria-label="Wallet page">
           {activeWalletPage === 'requests' && (
-            <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
-          <div className="scenario-launcher__header">
-            <h3 className="demo-section-title">Verifier Requests</h3>
-            {status === 'IDLE' && !guidedDemoActive ? (
-              <button
-                type="button"
-                className="scenario-launcher__guide"
-                onClick={() => {
-                  sessionStorage.removeItem('guidedDemoCompleted');
-                  setGuidedDemoActive(true);
-                }}
-              >
-                ▶ Guided demo
-              </button>
-            ) : (
-              <span className="scenario-launcher__hint">Choose request</span>
-            )}
-          </div>
-
-          <div className="demo-primary-grid scenario-launcher__grid">
-            <button
-              id="btn-liquor-store"
-              onClick={() => {
-                setActiveScenario('liquor-store');
-                if (status === 'SHREDDED') {
-                  setStatus('IDLE');
-                  setEvaluationResult(null);
-                  setLogs([]);
-                  addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
-                } else {
-                  handleProveAge();
-                }
-              }}
-              disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
-              className={`${getPrimaryBtnClass()} btn-scenario-card btn-scenario-card--age${activeScenario === 'liquor-store' ? ' btn-scenario-card--active' : ''}`}
-              aria-current={activeScenario === 'liquor-store' ? 'true' : undefined}
+            <div
+              id="requests-section"
+              className="demo-section scenario-launcher"
+              data-testid="scenario-launcher"
             >
-              {getPrimaryBtnLabel()}
-              <span>Proof only, no raw PII</span>
-            </button>
+              <div className="scenario-launcher__header">
+                <h3 className="demo-section-title">Verifier Requests</h3>
+                {status === 'IDLE' && !guidedDemoActive ? (
+                  <button
+                    type="button"
+                    className="scenario-launcher__guide"
+                    onClick={() => {
+                      sessionStorage.removeItem('guidedDemoCompleted');
+                      setGuidedDemoActive(true);
+                    }}
+                  >
+                    ▶ Guided demo
+                  </button>
+                ) : (
+                  <span className="scenario-launcher__hint">Choose request</span>
+                )}
+              </div>
 
-            <button
-              id="btn-doctor-login"
-              onClick={() => {
-                setActiveScenario('doctor-login');
-                handleMultiProofDemo();
-              }}
-              className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
-              aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
-            >
-              🏥 Doctor Login
-              <br />
-              <span className="btn-scenario-card__subtitle">High Assurance Multi-VC</span>
-            </button>
+              <div className="demo-primary-grid scenario-launcher__grid">
+                <button
+                  id="btn-liquor-store"
+                  onClick={() => {
+                    setActiveScenario('liquor-store');
+                    if (status === 'SHREDDED') {
+                      setStatus('IDLE');
+                      setEvaluationResult(null);
+                      setLogs([]);
+                      addLog('♻️ Wallet Memory Shredded. Ready.', 'info');
+                    } else {
+                      handleProveAge();
+                    }
+                  }}
+                  disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
+                  className={`${getPrimaryBtnClass()} btn-scenario-card btn-scenario-card--age${activeScenario === 'liquor-store' ? ' btn-scenario-card--active' : ''}`}
+                  aria-current={activeScenario === 'liquor-store' ? 'true' : undefined}
+                >
+                  {getPrimaryBtnLabel()}
+                  <span>Proof only, no raw PII</span>
+                </button>
 
-            <button
-              id="btn-ehds-er"
-              onClick={() => {
-                setActiveScenario('ehds-er');
-                handleHealthAccessDemo();
-              }}
-              className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
-              aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
-            >
-              🚑 ER Access
-              <br />
-              <span className="btn-scenario-card__subtitle">EHDS Emergency</span>
-            </button>
+                <button
+                  id="btn-doctor-login"
+                  onClick={() => {
+                    setActiveScenario('doctor-login');
+                    handleMultiProofDemo();
+                  }}
+                  className={`btn-demo-primary btn-demo-primary--full btn-scenario-card${activeScenario === 'doctor-login' ? ' btn-scenario-card--active' : ''}`}
+                  aria-current={activeScenario === 'doctor-login' ? 'true' : undefined}
+                >
+                  🏥 Doctor Login
+                  <br />
+                  <span className="btn-scenario-card__subtitle">High Assurance Multi-VC</span>
+                </button>
 
-            <button
-              id="btn-pharmacy"
-              onClick={() => {
-                setActiveScenario('pharmacy');
-                handlePharmacyDemo();
-              }}
-              className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
-              aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
-            >
-              💊 Pharmacy
-              <br />
-              <span className="btn-scenario-card__subtitle">ePrescription</span>
-            </button>
+                <button
+                  id="btn-ehds-er"
+                  onClick={() => {
+                    setActiveScenario('ehds-er');
+                    handleHealthAccessDemo();
+                  }}
+                  className={`btn-demo-primary btn-scenario-card${activeScenario === 'ehds-er' ? ' btn-scenario-card--active' : ''}`}
+                  aria-current={activeScenario === 'ehds-er' ? 'true' : undefined}
+                >
+                  🚑 ER Access
+                  <br />
+                  <span className="btn-scenario-card__subtitle">EHDS Emergency</span>
+                </button>
 
-            <button
-              id="btn-in-person"
-              type="button"
-              onClick={() => setShowProximityPreview(true)}
-              className="btn-demo-primary btn-demo-primary--full btn-scenario-card"
-            >
-              📶 In person
-              <br />
-              <span className="btn-scenario-card__subtitle">ISO 18013-5 offline mDL check</span>
-            </button>
-          </div>
+                <button
+                  id="btn-pharmacy"
+                  onClick={() => {
+                    setActiveScenario('pharmacy');
+                    handlePharmacyDemo();
+                  }}
+                  className={`btn-demo-primary btn-scenario-card${activeScenario === 'pharmacy' ? ' btn-scenario-card--active' : ''}`}
+                  aria-current={activeScenario === 'pharmacy' ? 'true' : undefined}
+                >
+                  💊 Pharmacy
+                  <br />
+                  <span className="btn-scenario-card__subtitle">ePrescription</span>
+                </button>
+
+                <button
+                  id="btn-in-person"
+                  type="button"
+                  onClick={() => setShowProximityPreview(true)}
+                  className="btn-demo-primary btn-demo-primary--full btn-scenario-card"
+                >
+                  📶 In person
+                  <br />
+                  <span className="btn-scenario-card__subtitle">ISO 18013-5 offline mDL check</span>
+                </button>
+              </div>
             </div>
           )}
 
-        {/* UX-02: Progress bar during PROVING */}
-        {activeWalletPage === 'requests' && status === 'PROVING' && (
-          <div className="proving-progress wallet-section">
-            <div className="proving-progress-bar" />
-          </div>
-        )}
-
-        {activeWalletPage === 'trace' && (
-          <div id="trace-section" className="trace-summary" data-testid="trace-summary">
-          <div className="trace-summary__header">
-            <div>
-              <h3>Disclosure Trace</h3>
-              <p>What was requested, allowed, withheld and sent.</p>
+          {/* UX-02: Progress bar during PROVING */}
+          {activeWalletPage === 'requests' && status === 'PROVING' && (
+            <div className="proving-progress wallet-section">
+              <div className="proving-progress-bar" />
             </div>
-            <span className="trace-summary__status">
-              {evaluationResult?.verdict ?? 'Idle'}
-            </span>
-          </div>
+          )}
 
-          <div className="trace-summary__steps" aria-label="Trace sequence">
-            <button
-              type="button"
-              className={`trace-summary__step${traceDetailPanel === 'consent' ? ' trace-summary__step--active' : ''}`}
-              data-testid="trace-step"
-              aria-pressed={traceDetailPanel === 'consent'}
-              onClick={() => setTraceDetailPanel('consent')}
-            >
-              <span>1 Requested</span>
-              <strong>{traceSteps.requested}</strong>
-            </button>
-            <button
-              type="button"
-              className={`trace-summary__step${traceDetailPanel === 'compliance' ? ' trace-summary__step--active' : ''}`}
-              data-testid="trace-step"
-              aria-pressed={traceDetailPanel === 'compliance'}
-              onClick={() => setTraceDetailPanel('compliance')}
-            >
-              <span>2 Allowed</span>
-              <strong>{traceSteps.allowed}</strong>
-            </button>
-            <button
-              type="button"
-              className={`trace-summary__step${traceDetailPanel === 'data-flow' ? ' trace-summary__step--active' : ''}`}
-              data-testid="trace-step"
-              aria-pressed={traceDetailPanel === 'data-flow'}
-              onClick={() => setTraceDetailPanel('data-flow')}
-            >
-              <span>3 Sent</span>
-              <strong>{traceSteps.sent}</strong>
-            </button>
-          </div>
+          {activeWalletPage === 'trace' && (
+            <div id="trace-section" className="trace-summary" data-testid="trace-summary">
+              <div className="trace-summary__header">
+                <div>
+                  <h3>Disclosure Trace</h3>
+                  <p>What was requested, allowed, withheld and sent.</p>
+                </div>
+                <span className="trace-summary__status">{evaluationResult?.verdict ?? 'Idle'}</span>
+              </div>
 
-          {traceDetailPanel && (
-            <div className="trace-summary__panel">
-              {traceDetailPanel === 'consent' && (
-                <ConsentManagerPanel
-                  request={currentRequest}
-                  result={evaluationResult}
-                  auditEntries={recentAuditEntries}
-                  privacyConsent={_privacyConsent}
-                  consentReceipt={lastConsentReceipt}
-                  receiptHistory={consentReceiptHistory}
-                  onOpenDataFlow={() => setTraceDetailPanel('data-flow')}
-                />
-              )}
-              {traceDetailPanel === 'compliance' && (
-                <ComplianceDashboard
-                  onExport={handleExportAuditReport}
-                  onSyncL2={handleSyncAuditToL2}
-                  getRecentLogs={getRecentComplianceLogs}
-                  getChainStatus={getAuditChainStatus}
-                />
-              )}
-              {traceDetailPanel === 'data-flow' && (
-                <div id="dataflow-section">
-                  <DataFlowPanel entries={recentAuditEntries} onAction={handleDataFlowAction} />
+              <div className="trace-summary__steps" aria-label="Trace sequence">
+                <button
+                  type="button"
+                  className={`trace-summary__step${traceDetailPanel === 'consent' ? ' trace-summary__step--active' : ''}`}
+                  data-testid="trace-step"
+                  aria-pressed={traceDetailPanel === 'consent'}
+                  onClick={() => setTraceDetailPanel('consent')}
+                >
+                  <span>1 Requested</span>
+                  <strong>{traceSteps.requested}</strong>
+                </button>
+                <button
+                  type="button"
+                  className={`trace-summary__step${traceDetailPanel === 'compliance' ? ' trace-summary__step--active' : ''}`}
+                  data-testid="trace-step"
+                  aria-pressed={traceDetailPanel === 'compliance'}
+                  onClick={() => setTraceDetailPanel('compliance')}
+                >
+                  <span>2 Allowed</span>
+                  <strong>{traceSteps.allowed}</strong>
+                </button>
+                <button
+                  type="button"
+                  className={`trace-summary__step${traceDetailPanel === 'data-flow' ? ' trace-summary__step--active' : ''}`}
+                  data-testid="trace-step"
+                  aria-pressed={traceDetailPanel === 'data-flow'}
+                  onClick={() => setTraceDetailPanel('data-flow')}
+                >
+                  <span>3 Sent</span>
+                  <strong>{traceSteps.sent}</strong>
+                </button>
+              </div>
+
+              {traceDetailPanel && (
+                <div className="trace-summary__panel">
+                  {traceDetailPanel === 'consent' && (
+                    <ConsentManagerPanel
+                      request={currentRequest}
+                      result={evaluationResult}
+                      auditEntries={recentAuditEntries}
+                      privacyConsent={_privacyConsent}
+                      consentReceipt={lastConsentReceipt}
+                      receiptHistory={consentReceiptHistory}
+                      onOpenDataFlow={() => setTraceDetailPanel('data-flow')}
+                    />
+                  )}
+                  {traceDetailPanel === 'compliance' && (
+                    <ComplianceDashboard
+                      onExport={handleExportAuditReport}
+                      onSyncL2={handleSyncAuditToL2}
+                      getRecentLogs={getRecentComplianceLogs}
+                      getChainStatus={getAuditChainStatus}
+                    />
+                  )}
+                  {traceDetailPanel === 'data-flow' && (
+                    <div id="dataflow-section">
+                      <DataFlowPanel entries={recentAuditEntries} onAction={handleDataFlowAction} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
-          </div>
-        )}
 
-        {/* UX-05: Audit Log */}
-        {activeWalletPage === 'audit' && (
-          <div id="audit-section" className="audit-section">
-          <div className="audit-header">
-            <h3 className="audit-title">Local Audit</h3>
-            <button className="audit-copy-btn" onClick={handleCopyLog}>
-              {copyLabel}
-            </button>
-          </div>
-          <div className="audit-log-container" ref={logContainerRef}>
-            {logs.map(renderLogLine)}
-          </div>
-          </div>
-        )}
+          {/* UX-05: Audit Log */}
+          {activeWalletPage === 'audit' && (
+            <div id="audit-section" className="audit-section">
+              <div className="audit-header">
+                <h3 className="audit-title">Local Audit</h3>
+                <button className="audit-copy-btn" onClick={handleCopyLog}>
+                  {copyLabel}
+                </button>
+              </div>
+              <div className="audit-log-container" ref={logContainerRef}>
+                {logs.map(renderLogLine)}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -2079,193 +2079,207 @@ function WalletApp() {
       )}
 
       {isWalletReady && activeWalletPage === 'settings' && (
-      <div id="settings-section" className="wallet-section wallet-settings-section">
-        {currentPolicy && (
-          <PolicyEditor
-            policy={currentPolicy}
-            onSave={(p) => {
-              walletRef.current
-                .savePolicy(p)
-                .then(() => {
-                  setCurrentPolicy(p);
-                  addLog('⚖️ User Policy updated and persisted', 'success');
-                })
-                .catch((e: unknown) => {
-                  addLog(
-                    `❌ Policy save failed: ${e instanceof Error ? e.message : String(e)}`,
-                    'error',
-                  );
-                });
-            }}
-          />
-        )}
-      </div>
+        <div id="settings-section" className="wallet-section wallet-settings-section">
+          {currentPolicy && (
+            <PolicyEditor
+              policy={currentPolicy}
+              onSave={(p) => {
+                walletRef.current
+                  .savePolicy(p)
+                  .then(() => {
+                    setCurrentPolicy(p);
+                    addLog('⚖️ User Policy updated and persisted', 'success');
+                  })
+                  .catch((e: unknown) => {
+                    addLog(
+                      `❌ Policy save failed: ${e instanceof Error ? e.message : String(e)}`,
+                      'error'
+                    );
+                  });
+              }}
+            />
+          )}
+        </div>
       )}
 
       {isWalletReady && activeWalletPage === 'tools' && (
-      <section className="wallet-tools-page" aria-labelledby="tools-heading">
-        <div className="wallet-panel wallet-tools-panel">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Advanced Wallet Tools</p>
-              <h2 id="tools-heading">Tools</h2>
-            </div>
-            <span>advanced</span>
-          </div>
-
-          <div id="advanced-section" className="demo-section advanced-section">
-            {status === 'IDLE' && !guidedDemoActive && (
-              <button
-                className="btn-start-demo"
-                onClick={() => {
-                  sessionStorage.removeItem('guidedDemoCompleted');
-                  setGuidedDemoActive(true);
-                }}
-              >
-                Start guided flow
-              </button>
-            )}
-            {/* Secondary — collapsible */}
-            <button
-              className="demo-secondary-toggle"
-              onClick={() => setShowSecondary((s) => !s)}
-              aria-expanded={showSecondary}
-            >
-              {showSecondary ? 'Hide advanced tools' : 'Show advanced tools'}
-            </button>
-
-            <div className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}>
-              <button
-                onClick={handleWebAuthnDemo}
-                className="btn-demo-secondary btn-demo-secondary--biometric"
-              >
-                🔐 Biometric (WebAuthn)
-              </button>
-              <button
-                onClick={handleRecoveryTest}
-                className="btn-demo-secondary btn-demo-secondary--recovery"
-              >
-                🛡️ Social Recovery
-              </button>
-              <button
-                onClick={handleResearchDemo}
-                disabled={status !== 'IDLE'}
-                className="btn-demo-secondary"
-              >
-                🔬 Research Data
-              </button>
-              <button
-                onClick={handleCrossBorderDemo}
-                disabled={status !== 'IDLE'}
-                className="btn-demo-secondary"
-              >
-                🇪🇸 Cross-Border
-              </button>
-              <button
-                onClick={handleFetchCredential}
-                disabled={credentialStatus === 'fetching'}
-                className={`btn-demo-secondary developer-tool-button${credentialStatus === 'done' ? ' developer-tool-button--done' : ''}`}
-              >
-                {credentialStatus === 'fetching'
-                  ? '⏳ Issuer request running'
-                  : credentialStatus === 'done'
-                    ? '✅ Test credential issued'
-                    : credentialStatus === 'error'
-                      ? '↻ Retry test credential'
-                      : '🎫 Test credential'}
-              </button>
-              {import.meta.env.DEV && (
-                <label
-                  className="developer-tool-toggle"
-                  title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
-                >
-                  <input
-                    type="checkbox"
-                    checked={mintSingleUse}
-                    onChange={(e) => setMintSingleUse(e.target.checked)}
-                  />
-                  <span>Single-use credential</span>
-                </label>
-              )}
-              {import.meta.env.DEV && (
-                <button
-                  onClick={handleFetchBatch}
-                  disabled={credentialStatus === 'fetching'}
-                  className="btn-demo-secondary developer-tool-button"
-                  title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
-                >
-                  Batch issue {BATCH_SIZE}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {import.meta.env.DEV && (
-          <section className="wallet-panel wallet-dev-panel" aria-labelledby="dev-heading">
+        <section className="wallet-tools-page" aria-labelledby="tools-heading">
+          <div className="wallet-panel wallet-tools-panel">
             <div className="wallet-section-heading">
               <div>
-                <p>Local Developer Tools</p>
-                <h2 id="dev-heading">DEV Workbench</h2>
+                <p>Advanced Wallet Tools</p>
+                <h2 id="tools-heading">Tools</h2>
               </div>
-              <span>dev-only</span>
+              <span>advanced</span>
             </div>
 
-            <div className="dev-tool-status" role="status">
-              {devToolStatus}
-            </div>
-
-            <div className="dev-tool-grid">
-              <section className="dev-tool-card" aria-labelledby="dev-deeplink-heading">
-                <h3 id="dev-deeplink-heading">Deep Link Parser</h3>
-                <textarea
-                  value={devDeepLinkInput}
-                  onChange={(e) => setDevDeepLinkInput(e.target.value)}
-                  rows={3}
-                  aria-label="DEV deep link input"
-                />
-                <button type="button" className="btn-demo-secondary" onClick={handleDevParseDeepLink}>
-                  Parse + evaluate
-                </button>
-              </section>
-
-              <section className="dev-tool-card" aria-labelledby="dev-credential-heading">
-                <h3 id="dev-credential-heading">Credential Probes</h3>
-                <button type="button" className="btn-demo-secondary" onClick={handleDevSeedMalicious}>
-                  Seed malicious credential
-                </button>
-                <button type="button" className="btn-demo-secondary" onClick={handleDevCorruptCredential}>
-                  Corrupt credential probe
-                </button>
-              </section>
-
-              <section className="dev-tool-card" aria-labelledby="dev-policy-heading">
-                <h3 id="dev-policy-heading">Policy Stress</h3>
-                <button type="button" className="btn-demo-secondary" onClick={handleDevExplosion}>
-                  Run policy explosion
-                </button>
-              </section>
-
-              <section className="dev-tool-card" aria-labelledby="dev-raw-heading">
-                <h3 id="dev-raw-heading">Raw Document Inspector</h3>
-                <input
-                  value={devRawCredentialId}
-                  onChange={(e) => setDevRawCredentialId(e.target.value)}
-                  placeholder={credentials[0]?.id ?? 'credential id'}
-                  aria-label="Credential id for raw document inspection"
-                />
+            <div id="advanced-section" className="demo-section advanced-section">
+              {status === 'IDLE' && !guidedDemoActive && (
                 <button
-                  type="button"
-                  className="btn-demo-secondary"
-                  onClick={handleDevInspectRawCredential}
+                  className="btn-start-demo"
+                  onClick={() => {
+                    sessionStorage.removeItem('guidedDemoCompleted');
+                    setGuidedDemoActive(true);
+                  }}
                 >
-                  Inspect summary
+                  Start guided flow
                 </button>
-              </section>
+              )}
+              {/* Secondary — collapsible */}
+              <button
+                className="demo-secondary-toggle"
+                onClick={() => setShowSecondary((s) => !s)}
+                aria-expanded={showSecondary}
+              >
+                {showSecondary ? 'Hide advanced tools' : 'Show advanced tools'}
+              </button>
+
+              <div
+                className={`demo-secondary-grid${showSecondary ? ' demo-secondary-grid--open' : ''}`}
+              >
+                <button
+                  onClick={handleWebAuthnDemo}
+                  className="btn-demo-secondary btn-demo-secondary--biometric"
+                >
+                  🔐 Biometric (WebAuthn)
+                </button>
+                <button
+                  onClick={handleRecoveryTest}
+                  className="btn-demo-secondary btn-demo-secondary--recovery"
+                >
+                  🛡️ Social Recovery
+                </button>
+                <button
+                  onClick={handleResearchDemo}
+                  disabled={status !== 'IDLE'}
+                  className="btn-demo-secondary"
+                >
+                  🔬 Research Data
+                </button>
+                <button
+                  onClick={handleCrossBorderDemo}
+                  disabled={status !== 'IDLE'}
+                  className="btn-demo-secondary"
+                >
+                  🇪🇸 Cross-Border
+                </button>
+                <button
+                  onClick={handleFetchCredential}
+                  disabled={credentialStatus === 'fetching'}
+                  className={`btn-demo-secondary developer-tool-button${credentialStatus === 'done' ? ' developer-tool-button--done' : ''}`}
+                >
+                  {credentialStatus === 'fetching'
+                    ? '⏳ Issuer request running'
+                    : credentialStatus === 'done'
+                      ? '✅ Test credential issued'
+                      : credentialStatus === 'error'
+                        ? '↻ Retry test credential'
+                        : '🎫 Test credential'}
+                </button>
+                {import.meta.env.DEV && (
+                  <label
+                    className="developer-tool-toggle"
+                    title="Dev only: mint the next issued credential as single-use (constraint fixed at issuance)"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={mintSingleUse}
+                      onChange={(e) => setMintSingleUse(e.target.checked)}
+                    />
+                    <span>Single-use credential</span>
+                  </label>
+                )}
+                {import.meta.env.DEV && (
+                  <button
+                    onClick={handleFetchBatch}
+                    disabled={credentialStatus === 'fetching'}
+                    className="btn-demo-secondary developer-tool-button"
+                    title="Dev only: batch-issue 5 single-use credentials, each with its own wallet-generated holder key"
+                  >
+                    Batch issue {BATCH_SIZE}
+                  </button>
+                )}
+              </div>
             </div>
-          </section>
-        )}
-      </section>
+          </div>
+
+          {import.meta.env.DEV && (
+            <section className="wallet-panel wallet-dev-panel" aria-labelledby="dev-heading">
+              <div className="wallet-section-heading">
+                <div>
+                  <p>Local Developer Tools</p>
+                  <h2 id="dev-heading">DEV Workbench</h2>
+                </div>
+                <span>dev-only</span>
+              </div>
+
+              <div className="dev-tool-status" role="status">
+                {devToolStatus}
+              </div>
+
+              <div className="dev-tool-grid">
+                <section className="dev-tool-card" aria-labelledby="dev-deeplink-heading">
+                  <h3 id="dev-deeplink-heading">Deep Link Parser</h3>
+                  <textarea
+                    value={devDeepLinkInput}
+                    onChange={(e) => setDevDeepLinkInput(e.target.value)}
+                    rows={3}
+                    aria-label="DEV deep link input"
+                  />
+                  <button
+                    type="button"
+                    className="btn-demo-secondary"
+                    onClick={handleDevParseDeepLink}
+                  >
+                    Parse + evaluate
+                  </button>
+                </section>
+
+                <section className="dev-tool-card" aria-labelledby="dev-credential-heading">
+                  <h3 id="dev-credential-heading">Credential Probes</h3>
+                  <button
+                    type="button"
+                    className="btn-demo-secondary"
+                    onClick={handleDevSeedMalicious}
+                  >
+                    Seed malicious credential
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-demo-secondary"
+                    onClick={handleDevCorruptCredential}
+                  >
+                    Corrupt credential probe
+                  </button>
+                </section>
+
+                <section className="dev-tool-card" aria-labelledby="dev-policy-heading">
+                  <h3 id="dev-policy-heading">Policy Stress</h3>
+                  <button type="button" className="btn-demo-secondary" onClick={handleDevExplosion}>
+                    Run policy explosion
+                  </button>
+                </section>
+
+                <section className="dev-tool-card" aria-labelledby="dev-raw-heading">
+                  <h3 id="dev-raw-heading">Raw Document Inspector</h3>
+                  <input
+                    value={devRawCredentialId}
+                    onChange={(e) => setDevRawCredentialId(e.target.value)}
+                    placeholder={credentials[0]?.id ?? 'credential id'}
+                    aria-label="Credential id for raw document inspection"
+                  />
+                  <button
+                    type="button"
+                    className="btn-demo-secondary"
+                    onClick={handleDevInspectRawCredential}
+                  >
+                    Inspect summary
+                  </button>
+                </section>
+              </div>
+            </section>
+          )}
+        </section>
       )}
 
       {isWalletReady && activeWalletPage === 'tools' && (
@@ -2329,7 +2343,6 @@ function WalletApp() {
     </div>
   );
 }
-
 
 export default function App() {
   const showWalletDemo =
