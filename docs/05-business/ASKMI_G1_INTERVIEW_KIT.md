@@ -27,6 +27,10 @@ Do not lead with a wallet product, zero-knowledge claims, a feature tour, or a s
 - Keep names, contact details, company-confidential notes, recordings, and contracts outside the public repository.
 - Assign each interview an anonymised ID such as `G1-HOSP-01`, `G1-INT-01`, or `G1-ID-01`.
 - Store only aggregate counts and approved anonymised findings in GitHub.
+- **Never commit completed or partially completed scorecards (section 9), raw notes, or transcripts to this repository, in any branch, pull request, issue, or comment.** A scorecard is private working material even when it uses an anonymised ID.
+- Treat field combinations as identifying. Role + organisation type + country/market + concrete workflow can identify a person or organisation even without a name, especially in small markets or niche roles.
+- Keep private interview material outside this repository's working tree (for example, an access-controlled drive or encrypted notes store). The `.gitignore` safety net in section 9 is a fallback, not the primary control.
+- If personal or confidential data is committed by mistake, do not push. If it was already pushed, treat it as a data incident: notify the project owner, remove it from history, and do not rely on a follow-up deletion commit.
 - Obtain permission before recording. A completed interview does not require a recording.
 - Record what the interviewee said. Mark interviewer inference separately.
 - Count one completed interview once. Multiple signals from one interview still count as one buyer/procurement-signal interview.
@@ -264,7 +268,19 @@ Use the same four follow-up questions above.
 
 ## 9. Interview scorecard
 
-Complete this immediately after the interview.
+> [!WARNING]
+> **Do not commit completed scorecards to this repository. Store them privately.**
+> This table is a blank template only. Copy it to a private location *outside* this repository before filling it in. Never paste a filled scorecard, or any part of one, into a file, pull request, issue, commit message, or comment here. Only the anonymised aggregate report (section 11) belongs in GitHub.
+
+Complete this immediately after the interview, in your private copy.
+
+**Safer workflow**
+
+1. Copy the blank template into a private store outside the repository clone (preferred).
+2. If you must keep working files inside the clone, use only the git-ignored locations `docs/05-business/g1-private/` or files named `*.g1-private.md`. Run `git status` before every commit and confirm no such file appears. Never use `git add -f` on them.
+3. Fill fields with the coarsest description that still supports the counting rules: a role function rather than a job title, a broad organisation category rather than a size or niche descriptor, and a region rather than a city where the market is small.
+4. Use an opaque key for **Private evidence reference** (for example `NOTE-2026-017`). Do not enter file paths, URLs, recording names, calendar entries, email subjects, or anything containing a person or organisation name.
+5. Transfer only counts and approved anonymised findings into the section 11 report.
 
 | Field | Entry |
 |---|---|
@@ -404,7 +420,8 @@ Private notes remain outside the public repository. Public entries contain anony
 
 ### After
 
-- [ ] Complete the scorecard immediately.
+- [ ] Complete the scorecard immediately, in a private copy outside the repository.
+- [ ] Run `git status` and confirm no scorecard, notes, or recording is staged or untracked in the clone.
 - [ ] Separate quotes/observations from interviewer inference.
 - [ ] Apply the counting rules.
 - [ ] Store personal and confidential data privately.
