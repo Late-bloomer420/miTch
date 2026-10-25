@@ -9,6 +9,16 @@ export type { IEphemeralKey } from './interfaces/IEphemeralKey.js';
 export * from './recovery.js';
 export * from './secure-buffer.js';
 export * from './webauthn.js';
+export {
+  verifyIdentityAssertion,
+  identityChallenge,
+  isUsableP256Jwk,
+  spkiToP256Jwk,
+  derToP1363,
+  type IdentityAssertion,
+  type AssertionFailure,
+  type AssertionVerification,
+} from './webauthn-assertion.js';
 export * from './did.js';
 export * from './nonce-store.js';
 export * from './presentation-binding.js';
