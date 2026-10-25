@@ -870,7 +870,15 @@ function WalletApp() {
       // U-22/U-23: Apply Anti-Fingerprinting (Padding + Uniform Headers + Jitter)
       const payload = {
         vp_token: vpTokenString,
-        presentation_submission: { id: `ps-${crypto.randomUUID()}`, definition_id: authRequest.presentation_definition.id, descriptor_map: [] },
+        presentation_submission: {
+          id: `ps-${crypto.randomUUID()}`,
+          definition_id: authRequest.presentation_definition.id,
+          descriptor_map: authRequest.presentation_definition.input_descriptors.map((descriptor) => ({
+            id: descriptor.id,
+            format: 'sd-jwt',
+            path: '$',
+          })),
+        },
         state: authRequest.state,
       };
       const paddedPayload = padPayload(payload);
