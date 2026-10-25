@@ -57,3 +57,19 @@ into verifier-demo and its exact disclosure/profile enforcement needs its own
 implementation and real-signature contract evidence. This slice changes no public
 package API. No production deployment, complete browser E2E, official wallet
 interoperability, durable replay protection or broader release approval is claimed.
+
+## Review follow-up
+
+`bcccb2d30f2f722c2c64209d0424e3884390eaac` updates the verifier UI to consume
+eligibility rather than fall back to static "proof only" text. It states that the
+verifier checked numeric age and omits the unsupported key-shredding claim for
+this path. The frontend test include now covers TSX as well as TS, activating the
+existing handoff/reset tests and the new rendered eligibility regression:
+3 files / 13 tests passed, frontend build and lint passed.
+
+After updating to master `1fcd282`, the local whole-graph run hit two 5-second
+backend import timeouts (source and emitted copy of the same hardening test).
+The backend rerun with `--testTimeout=30000` passed 24 files / 174 executions
+(87 distinct source tests plus their build output). This is recorded as a local
+resource-sensitive timeout, not a passing whole-graph run. PR #208's initial
+head CI build/test passed; subsequent head checks remain the merge gate.
