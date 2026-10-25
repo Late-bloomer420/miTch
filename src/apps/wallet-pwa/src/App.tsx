@@ -64,9 +64,6 @@ type WalletPage =
   | 'requests'
   | 'trace'
   | 'sovereignty'
-  | 'documents'
-  | 'proximity'
-  | 'renderer'
   | 'audit'
   | 'settings'
   | 'tools';
@@ -150,11 +147,16 @@ function WalletApp() {
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
 
-  // On narrow screens the section rail scrolls sideways; keep the chosen tab visible.
+  // On narrow screens the section rail scrolls sideways; keep the chosen tab visible,
+  // also after a resize or rotation.
   useEffect(() => {
-    document
-      .querySelector('.wallet-nav button[aria-current="page"]')
-      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    const revealActiveTab = () =>
+      document
+        .querySelector('.wallet-nav button[aria-current="page"]')
+        ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    revealActiveTab();
+    window.addEventListener('resize', revealActiveTab);
+    return () => window.removeEventListener('resize', revealActiveTab);
   }, [activeWalletPage]);
   const [showProximityPreview, setShowProximityPreview] = useState(false);
   const [traceDetailPanel, setTraceDetailPanel] = useState<TraceDetailPanel | null>('data-flow');
@@ -1328,9 +1330,6 @@ function WalletApp() {
             ['requests', 'Requests'],
             ['trace', 'Trace'],
             ['sovereignty', 'Sovereignty'],
-            ['documents', 'Documents'],
-            ['proximity', 'Proximity'],
-            ['renderer', 'Renderer'],
             ['audit', 'Audit'],
             ['settings', 'Settings'],
             ['tools', 'Tools'],
@@ -1919,6 +1918,17 @@ function WalletApp() {
               <br />
               <span className="btn-scenario-card__subtitle">ePrescription</span>
             </button>
+
+            <button
+              id="btn-in-person"
+              type="button"
+              onClick={() => setShowProximityPreview(true)}
+              className="btn-demo-primary btn-demo-primary--full btn-scenario-card"
+            >
+              📶 In person
+              <br />
+              <span className="btn-scenario-card__subtitle">ISO 18013-5 offline mDL check</span>
+            </button>
           </div>
             </div>
           )}
@@ -2041,75 +2051,12 @@ function WalletApp() {
         </section>
       )}
 
-      {isWalletReady && activeWalletPage === 'documents' && (
-        <section className="wallet-panel" aria-labelledby="documents-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Local Signing</p>
-              <h2 id="documents-heading">Documents</h2>
-            </div>
-            <span>Device-only</span>
-          </div>
-          <DocumentsTab
-            onSign={async (payload) => {
-              const result = await walletRef.current.signData(payload);
-              addLog(`📄 Document proof signed: ${payload.description}`, 'success');
-              return result;
-            }}
-          />
-        </section>
-      )}
-
-      {isWalletReady && activeWalletPage === 'proximity' && (
-        <section className="wallet-panel" aria-labelledby="proximity-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Offline Presentation</p>
-              <h2 id="proximity-heading">Proximity</h2>
-            </div>
-            <span>ISO 18013-5</span>
-          </div>
-          <div className="wallet-empty-state">
-            <h3>Proximity Presentation</h3>
-            <p>
-              Start the existing ISO 18013-5 mock flow and inspect the QR handoff surface.
-            </p>
-            <button className="btn-start-demo" onClick={() => setShowProximityPreview(true)}>
-              Start proximity preview
-            </button>
-          </div>
-        </section>
-      )}
-
       {showProximityPreview && (
         <ProximityView
           wallet={walletRef.current}
           onComplete={() => setShowProximityPreview(false)}
           onCancel={() => setShowProximityPreview(false)}
         />
-      )}
-
-      {isWalletReady && activeWalletPage === 'renderer' && (
-        <section className="wallet-panel" aria-labelledby="renderer-heading">
-          <div className="wallet-section-heading">
-            <div>
-              <p>Legacy Visual Renderer</p>
-              <h2 id="renderer-heading">Credential Renderer</h2>
-            </div>
-            <span>{credentials.length} previews</span>
-          </div>
-          <div className="credential-card-list">
-            {credentials.map((cred) => (
-              <CredentialCard
-                key={cred.id}
-                id={cred.id}
-                name={cred.type?.find((type) => type !== 'VerifiableCredential') ?? 'Credential'}
-                issuer={cred.issuer}
-                claims={Object.fromEntries((cred.claims ?? []).map((claim) => [claim, 'sample']))}
-              />
-            ))}
-          </div>
-        </section>
       )}
 
       {isWalletReady && activeWalletPage === 'settings' && (
@@ -2319,6 +2266,48 @@ function WalletApp() {
           </section>
         )}
       </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'tools' && (
+        <section id="tools-documents" className="wallet-panel" aria-labelledby="documents-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Local Signing</p>
+              <h2 id="documents-heading">Documents</h2>
+            </div>
+            <span>Device-only</span>
+          </div>
+          <DocumentsTab
+            onSign={async (payload) => {
+              const result = await walletRef.current.signData(payload);
+              addLog(`📄 Document proof signed: ${payload.description}`, 'success');
+              return result;
+            }}
+          />
+        </section>
+      )}
+
+      {isWalletReady && activeWalletPage === 'tools' && (
+        <section id="tools-renderer" className="wallet-panel" aria-labelledby="renderer-heading">
+          <div className="wallet-section-heading">
+            <div>
+              <p>Legacy Visual Renderer</p>
+              <h2 id="renderer-heading">Credential Renderer</h2>
+            </div>
+            <span>{credentials.length} previews</span>
+          </div>
+          <div className="credential-card-list">
+            {credentials.map((cred) => (
+              <CredentialCard
+                key={cred.id}
+                id={cred.id}
+                name={cred.type?.find((type) => type !== 'VerifiableCredential') ?? 'Credential'}
+                issuer={cred.issuer}
+                claims={Object.fromEntries((cred.claims ?? []).map((claim) => [claim, 'sample']))}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       <GuidedDemoMode

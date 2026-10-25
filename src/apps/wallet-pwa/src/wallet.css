@@ -129,7 +129,8 @@
 }
 
 .wallet-section-rail {
-    justify-content: space-between;
+    justify-content: center;
+    gap: 6px;
 }
 
 .wallet-credentials-toolbar {
@@ -620,7 +621,8 @@
 
 .wallet-tools-page {
     width: 100%;
-    max-width: var(--wallet-column-max);
+    max-width: var(--wallet-content-max);
+    margin-bottom: 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
