@@ -361,6 +361,23 @@ export class WebAuthnService {
   }
 
   /**
+   * What a verifier on this device needs: the registered rpId (to check assertions
+   * against — never the rpId written inside the assertion) and the stored public
+   * key (null for legacy placeholder registrations). Null without a hardware key.
+   */
+  static async getIdentityVerificationKey(): Promise<{
+    rpId: string;
+    publicKeyJwk: JsonWebKey | null;
+  } | null> {
+    const meta = await loadIdentityKeyMeta();
+    if (!meta || meta.credentialId === 'software-fallback') return null;
+    return {
+      rpId: meta.rpId,
+      publicKeyJwk: isUsableP256Jwk(meta.publicKeyJwk) ? meta.publicKeyJwk : null,
+    };
+  }
+
+  /**
    * Prüft ob der Identity-Key registriert ist.
    */
   static async isIdentityRegistered(): Promise<boolean> {

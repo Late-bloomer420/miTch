@@ -12,9 +12,11 @@ import {
   IdentityKeyGuardian,
   KeyProtectionLevel,
   WebAuthnService,
+  canonicalStringify,
   generateHolderBinding,
 } from '@askmi/shared-crypto';
 import { decodeProofTokenHeader, verifyProofToken } from '../utils/proof-token';
+import { fakePasskey } from './helpers/fake-passkey';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
@@ -121,26 +123,163 @@ describe('WalletService — Identity key protection gate', () => {
     await expect(evaluateAge(wallet)).rejects.toThrow(/HARDWARE_IDENTITY_REQUIRED/);
   });
 
-  it('uses the registered WebAuthn identity key for policy capsule attestation', async () => {
+  it('signs policy capsules with the full passkey assertion, not the bare signature', async () => {
+    const passkey = await fakePasskey();
     vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
     vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(true);
-    const signSpy = vi
-      .spyOn(WebAuthnService, 'signWithIdentityKey')
-      .mockResolvedValue(btoa('hardware-attestation'));
+    const detailed = vi
+      .spyOn(WebAuthnService, 'signWithIdentityKeyAssertion')
+      .mockImplementation(passkey.sign);
+    const bare = vi.spyOn(WebAuthnService, 'signWithIdentityKey');
 
     const wallet = makeWallet();
     await wallet.initialize(PIN, SALT);
 
     const result = await evaluateAge(wallet);
+    const capsule = result.decisionCapsule!;
 
     expect(result.verdict).toBe('ALLOW');
-    expect(signSpy).toHaveBeenCalled();
-    expect(result.decisionCapsule?.wallet_attestation).toBe(btoa('hardware-attestation'));
-    expect(result.decisionCapsule?.wallet_attestation_method).toBe('webauthn');
-    expect(result.decisionCapsule?.wallet_attestation_protection).toBe(
-      KeyProtectionLevel.HARDWARE_BOUND
+    expect(bare).not.toHaveBeenCalled();
+    expect(capsule.wallet_attestation_method).toBe('webauthn');
+    expect(capsule.wallet_attestation_protection).toBe(KeyProtectionLevel.HARDWARE_BOUND);
+    expect(capsule.wallet_attestation_encoding).toBe('webauthn-assertion');
+    expect(capsule.wallet_attestation_assertion).toBeDefined();
+    expect(capsule.wallet_attestation).toBe(capsule.wallet_attestation_assertion!.signature);
+    // The signed payload is the capsule without the attestation fields themselves.
+    const {
+      wallet_attestation: _sig,
+      wallet_attestation_assertion: _assertion,
+      ...signedPart
+    } = capsule;
+    expect(detailed).toHaveBeenCalledWith(canonicalStringify(signedPart));
+  });
+});
+
+describe('WalletService — Hardware capsule attestation is verified before presenting (#218)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function walletWithPasskey(
+    verificationKey: (
+      passkey: Awaited<ReturnType<typeof fakePasskey>>
+    ) => { rpId: string; publicKeyJwk: JsonWebKey | null } | null
+  ) {
+    const passkey = await fakePasskey();
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'signWithIdentityKeyAssertion').mockImplementation(passkey.sign);
+    vi.spyOn(WebAuthnService, 'provePresence').mockResolvedValue('presence');
+    vi.spyOn(WebAuthnService, 'getIdentityVerificationKey').mockResolvedValue(
+      verificationKey(passkey)
     );
-    expect(result.decisionCapsule?.wallet_attestation_encoding).toBe('base64');
+    const wallet = makeWallet();
+    await wallet.initialize(PIN, SALT);
+    const verifierKeys = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: 'SHA-256',
+      },
+      true,
+      ['encrypt', 'wrapKey', 'decrypt', 'unwrapKey']
+    );
+    const result = await wallet.evaluateRequest(
+      {
+        verifierId: 'did:askmi:verifier-liquor-store',
+        nonce: crypto.randomUUID(),
+        requestedClaims: [],
+        requestedProvenClaims: ['age >= 18'],
+        origin: 'http://localhost:3004',
+        serviceEndpoint: 'http://localhost:3004/present',
+        ephemeralResponseKey: verifierKeys.publicKey,
+      },
+      { userAgent: 'test-agent', timestamp: Date.now() }
+    );
+    expect(result.verdict).toBe('ALLOW');
+    return { wallet, capsule: result.decisionCapsule! };
+  }
+
+  const withKey = (p: Awaited<ReturnType<typeof fakePasskey>>) => ({
+    rpId: p.rpId,
+    publicKeyJwk: p.jwk,
+  });
+  const legacyNoKey = (p: Awaited<ReturnType<typeof fakePasskey>>) => ({
+    rpId: p.rpId,
+    publicKeyJwk: null,
+  });
+
+  it('verifies a passkey-signed capsule and only then says so', async () => {
+    const { wallet, capsule } = await walletWithPasskey(withKey);
+
+    const { auditLog } = await wallet.generatePresentation(capsule);
+
+    expect(auditLog.some((l) => l.includes('Capsule Attestation Verified (device passkey)'))).toBe(
+      true
+    );
+    expect(auditLog.some((l) => l.includes('Bound to Hardware Identity Key'))).toBe(false);
+  });
+
+  it('blocks a capsule changed after signing', async () => {
+    const { wallet, capsule } = await walletWithPasskey(withKey);
+
+    await expect(
+      wallet.generatePresentation({ ...capsule, risk_level: 'HIGH' })
+    ).rejects.toThrow(/SECURITY ALERT/);
+  });
+
+  it('blocks a capsule signed for another site (rpId checked against the registration)', async () => {
+    const { wallet, capsule } = await walletWithPasskey((p) => ({
+      rpId: 'other.example',
+      publicKeyJwk: p.jwk,
+    }));
+
+    await expect(wallet.generatePresentation(capsule)).rejects.toThrow(/SECURITY ALERT/);
+  });
+
+  it('blocks a hardware capsule whose assertion was stripped when the device has a key', async () => {
+    const { wallet, capsule } = await walletWithPasskey(withKey);
+    const { wallet_attestation_assertion: _a, ...stripped } = capsule;
+
+    await expect(wallet.generatePresentation(stripped)).rejects.toThrow(/SECURITY ALERT/);
+  });
+
+  it('blocks a capsule that claims hardware when no passkey is registered', async () => {
+    const { wallet, capsule } = await walletWithPasskey(() => null);
+
+    await expect(wallet.generatePresentation(capsule)).rejects.toThrow(/SECURITY ALERT/);
+  });
+
+  it('marks it unverified (and proceeds) on a legacy passkey without a stored public key', async () => {
+    const { wallet, capsule } = await walletWithPasskey(legacyNoKey);
+
+    const { auditLog } = await wallet.generatePresentation(capsule);
+
+    expect(auditLog.some((l) => /not verifiable/i.test(l) && /re-register/i.test(l))).toBe(true);
+    expect(auditLog.some((l) => l.includes('Capsule Attestation Verified'))).toBe(false);
+  });
+
+  it('treats an old capsule without the assertion as unverified on a legacy passkey', async () => {
+    const { wallet, capsule } = await walletWithPasskey(legacyNoKey);
+    const { wallet_attestation_assertion: _a, ...legacy } = capsule;
+
+    const { auditLog } = await wallet.generatePresentation({
+      ...legacy,
+      wallet_attestation_encoding: 'base64',
+    });
+
+    expect(auditLog.some((l) => /not verifiable/i.test(l))).toBe(true);
+  });
+
+  it('reports whether the passkey needs re-registering', async () => {
+    const { wallet } = await walletWithPasskey(legacyNoKey);
+    expect(await wallet.passkeyNeedsReRegistration()).toBe(true);
+    vi.spyOn(WebAuthnService, 'getIdentityVerificationKey').mockResolvedValue({
+      rpId: 'wallet.example',
+      publicKeyJwk: { kty: 'EC', crv: 'P-256', x: 'x', y: 'y' },
+    });
+    expect(await wallet.passkeyNeedsReRegistration()).toBe(false);
   });
 });
 

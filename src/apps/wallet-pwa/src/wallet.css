@@ -3086,3 +3086,57 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* #218: one-time prompt to re-register a passkey whose public key was never stored */
+.passkey-prompt {
+    border-color: rgba(146, 64, 14, 0.28);
+    background: #fffbeb;
+}
+
+.passkey-prompt__title {
+    margin: 0 0 6px;
+    color: var(--wallet-warning);
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.passkey-prompt__text {
+    margin: 0 0 12px;
+    color: var(--wallet-text);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.passkey-prompt__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.passkey-prompt__primary,
+.passkey-prompt__secondary {
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: var(--wallet-radius-sm);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.passkey-prompt__primary {
+    border: 1px solid var(--wallet-accent);
+    background: var(--wallet-accent);
+    color: #ffffff;
+}
+
+.passkey-prompt__secondary {
+    border: 1px solid var(--wallet-border-strong);
+    background: var(--wallet-surface-solid);
+    color: var(--wallet-accent);
+}
+
+.passkey-prompt__primary:focus-visible,
+.passkey-prompt__secondary:focus-visible {
+    outline: 2px solid var(--wallet-accent);
+    outline-offset: 2px;
+}

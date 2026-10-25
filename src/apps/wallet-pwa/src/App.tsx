@@ -43,6 +43,25 @@ import { isSingleUsePresentation } from './utils/single-use';
 
 const traceFlowService = new DataFlowService();
 
+const PASSKEY_PROMPT_DISMISSED_KEY = 'askmi.passkeyReRegisterPromptDismissed';
+
+// Per-viewer convenience flag; storage can be blocked (private mode), so never throw.
+function readLocalFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeLocalFlag(key: string): void {
+  try {
+    localStorage.setItem(key, '1');
+  } catch {
+    // ignore: the prompt simply shows again next time
+  }
+}
+
 type WalletStatus =
   | 'LOCKED'
   | 'WELCOME'
@@ -143,6 +162,7 @@ function WalletApp() {
   const [showSecondary, setShowSecondary] = useState(false);
   const [activeScenario, setActiveScenario] = useState<DemoScenarioId>('liquor-store');
   const [activeWalletPage, setActiveWalletPage] = useState<WalletPage>('credentials');
+  const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
 
   // On narrow screens the section rail scrolls sideways; keep the chosen tab visible,
   // also after a resize or rotation.
@@ -408,6 +428,12 @@ function WalletApp() {
         }
 
         await loadWalletCredentials();
+        if (
+          !readLocalFlag(PASSKEY_PROMPT_DISMISSED_KEY) &&
+          (await walletRef.current.passkeyNeedsReRegistration())
+        ) {
+          setShowPasskeyPrompt(true);
+        }
         setStatus(nextStatus);
       } catch (e) {
         console.error(e);
@@ -451,6 +477,24 @@ function WalletApp() {
   // replaces the old auto-firing mount-time prompt. The enrollment ceremony itself verifies
   // the user (userVerification: required), so this single biometric lands straight in the
   // wallet with no redundant second unlock.
+  // #218: a passkey registered before its public key was stored can't be verified.
+  // Ask once; re-registering stores the key (framed first, no surprise prompt).
+  const handleReRegisterPasskey = async () => {
+    try {
+      await WebAuthnService.registerIdentityKey();
+      setShowPasskeyPrompt(false);
+      addLog('🔑 Passkey re-registered: its signatures are now verifiable.', 'success');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      addLog(`⚠️ Passkey re-registration did not complete: ${message}`, 'warning');
+    }
+  };
+
+  const handleDismissPasskeyPrompt = () => {
+    writeLocalFlag(PASSKEY_PROMPT_DISMISSED_KEY);
+    setShowPasskeyPrompt(false);
+  };
+
   const handleCreateAccount = async () => {
     try {
       setStatus('UNLOCKING');
@@ -562,7 +606,9 @@ function WalletApp() {
         targetKey
       );
 
-      auditLog.forEach((l: string) => addLog(l, l.includes('ALERT') ? 'error' : 'info'));
+      auditLog.forEach((l: string) =>
+        addLog(l, l.includes('ALERT') ? 'error' : l.startsWith('⚠️') ? 'warning' : 'info')
+      );
 
       // Refresh so a consumed single-use credential reflects its spent state (U-12).
       await loadWalletCredentials();
@@ -1499,6 +1545,33 @@ function WalletApp() {
             </button>
           </div>
         </div>
+      )}
+
+      {isWalletReady && activeWalletPage === 'credentials' && showPasskeyPrompt && (
+        <section className="wallet-panel passkey-prompt" aria-label="Passkey re-registration">
+          <p className="passkey-prompt__title">Your passkey's signatures can't be verified</p>
+          <p className="passkey-prompt__text">
+            Your passkey was set up before the wallet started storing its public key, so decisions
+            it signs are marked "unverified". Re-register it once to fix this. You'll confirm with
+            Face ID, fingerprint or Windows Hello.
+          </p>
+          <div className="passkey-prompt__actions">
+            <button
+              type="button"
+              className="passkey-prompt__primary"
+              onClick={handleReRegisterPasskey}
+            >
+              Re-register passkey
+            </button>
+            <button
+              type="button"
+              className="passkey-prompt__secondary"
+              onClick={handleDismissPasskeyPrompt}
+            >
+              Not now
+            </button>
+          </div>
+        </section>
       )}
 
       {/* UX-03: Dynamic Premium Credential Cards */}
