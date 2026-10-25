@@ -30,7 +30,7 @@ jobs:
           cache: 'pnpm'
 
       - name: 📚 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 🔎 Active rebrand guard
         run: pnpm guard:rebrand
@@ -65,7 +65,7 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
       - name: 🛡️ Validate Layer Enforcement
@@ -85,7 +85,7 @@ jobs:
           node-version: 22
 
       - name: 📚 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Audit gate regression tests
         run: node --test scripts/check-security-audit.test.mjs

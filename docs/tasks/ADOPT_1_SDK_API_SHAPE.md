@@ -72,13 +72,16 @@ export interface AskMIConnectConfig {
   audienceBaseUrl: string;
   walletBaseUrl: string;
   sessionTtlMs?: number;
+  now?: () => number; // also used by the default store
   store?: AskMIConnectSessionStore;
 }
 
 export interface AskMIConnectSessionStore {
   create(session: AskMIConnectSession): Promise<void>;
   get(sessionId: string): Promise<AskMIConnectSession | null>;
-  update(session: AskMIConnectSession): Promise<void>;
+  // Lifecycle-only update; atomically enforce TTL and absorbing terminal states.
+  update(sessionId: string, update: AskMIConnectSessionUpdate):
+    Promise<{ applied: boolean; session: AskMIConnectSession | null }>;
   consume(sessionId: string): Promise<AskMIConnectSession | null>;
   deleteExpired(now: Date): Promise<number>;
 }
@@ -102,6 +105,17 @@ No public API accepts:
 - arbitrary `requestedClaims`;
 - caller-supplied nonce, audience, verifier DID, issuer, result or `eligible`.
 
+## Corrective lifecycle contract — 2026-10-24 (PR #193)
+
+The [minimal session contract](ADOPT_1_MINIMAL_SESSION_CONTRACT.md#corrective-lifecycle-contract--2026-10-24-pr-193)
+now requires guarded atomic lifecycle updates, a shared clock, distinct
+`ISSUER_RESOLUTION_FAILED` (503) versus `UNTRUSTED_ISSUER` (403), and terminal
+one-shot failure (retry requires a fresh session/nonce). Custom stores must
+implement the revised `update` signature above; no unconditional-write fallback.
+`failSession` lets the Express rejection wrapper persist unexpected failure;
+storage outages are reported as unconfirmed state, not fabricated persistence.
+See that contract for tests, topology limits and the human-review merge gate.
+
 ## Core Interface
 
 The core is transport-neutral:
@@ -112,6 +126,7 @@ interface AskMIConnect {
   markWalletOpened(sessionId: string): Promise<WalletOpenedResult>;
   completeSession(input: CompleteSessionInput): Promise<CompleteSessionResult>;
   getSession(sessionId: string): Promise<GetSessionResult>;
+  failSession(sessionId: string): Promise<CompleteSessionResult>;
 }
 ```
 
