@@ -73,3 +73,9 @@ The backend rerun with `--testTimeout=30000` passed 24 files / 174 executions
 (87 distinct source tests plus their build output). This is recorded as a local
 resource-sensitive timeout, not a passing whole-graph run. PR #208's initial
 head CI build/test passed; subsequent head checks remain the merge gate.
+
+The subsequent whole-graph rerun at `8f4a25479dd958d94ffc9106bb5782454803e1e9`
+with `pnpm run test --concurrency=1` passed all 48 tasks (42 cached), including
+the updated wallet suite's 210 tests. The earlier timeout remains recorded above.
+All six required PR checks passed at that head, including build/test, both audit
+jobs, CodeQL, Windows evidence and layer validation.
