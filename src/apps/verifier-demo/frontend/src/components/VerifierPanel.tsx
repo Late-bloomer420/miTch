@@ -7,17 +7,30 @@ interface StatusResponse {
   status: 'WAITING' | 'SCANNED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
   issuer?: string;
   verifierDid?: string;
-  disclosedClaims?: Record<string, unknown>;
+  disclosedClaims?: Record<string, unknown> | null;
+  result?: { eligible: boolean } | null;
   consentReceipt?: { id: string; claimsShared: string[]; purpose: string; timestamp: string };
 }
 
 interface VerifierPanelProps {
   scenario: ScenarioDefinition;
   backendUrl: string;
+  sessionId: string;
   runNonce: number;
 }
 
-export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelProps) {
+export function resetVerifierSession(
+  backendUrl: string,
+  sessionId: string,
+  request: typeof fetch = fetch
+): Promise<Response> {
+  return request(`${backendUrl}/reset`, {
+    method: 'POST',
+    headers: { 'X-AskMI-Session-Id': sessionId },
+  });
+}
+
+export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: VerifierPanelProps) {
   const [panelState, setPanelState] = useState<
     'waiting' | 'scanned' | 'verified' | 'failed' | 'expired' | 'offline'
   >('waiting');
@@ -35,7 +48,9 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
     const MAX_CONSECUTIVE_ERRORS = 3;
     const poll = async () => {
       try {
-        const res = await fetch(`${backendUrl}/status`);
+        const res = await fetch(`${backendUrl}/status`, {
+          headers: { 'X-AskMI-Session-Id': sessionId },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as StatusResponse;
         errorCount = 0;
@@ -56,12 +71,12 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
     const intervalId = setInterval(poll, 1200);
     poll();
     return () => clearInterval(intervalId);
-  }, [backendUrl, runNonce]);
+  }, [backendUrl, runNonce, sessionId]);
 
   if (panelState === 'waiting') {
     const meta = import.meta as ImportMeta & { env?: { VITE_WALLET_URL?: string } };
     const walletBaseUrl = meta.env?.VITE_WALLET_URL ?? 'http://localhost:5174';
-    const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=${encodeURIComponent(ASKMI_DEMO.verifierDid)}`;
+    const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=${encodeURIComponent(ASKMI_DEMO.verifierDid)}&sessionId=${encodeURIComponent(sessionId)}`;
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>
         <QRCode value={walletDeepLink} size={160} bgColor="#ffffff" fgColor="#0a0a0a" />
@@ -119,7 +134,7 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
           The verification request has timed out for security.
         </div>
         <button
-          onClick={() => fetch(`${backendUrl}/reset`, { method: 'POST' })}
+          onClick={() => void resetVerifierSession(backendUrl, sessionId)}
           style={{
             marginTop: 20,
             padding: '10px 20px',
@@ -140,9 +155,18 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
   if (panelState === 'verified') {
     const disclosed = statusData?.disclosedClaims ?? {};
     const hasRealData = Object.keys(disclosed).length > 0;
+    const hasEligibilityResult = statusData?.result?.eligible === true;
     return (
       <div>
-        {hasRealData ? (
+        {hasEligibilityResult ? (
+          <>
+            <div style={{ color: '#2e7d32', fontWeight: 700 }}>Age eligibility: confirmed (18+)</div>
+            <p style={{ color: '#555', fontSize: 13 }}>
+              The verifier received and checked numeric age. The result contains only eligibility;
+              numeric age is omitted from the response and session status.
+            </p>
+          </>
+        ) : hasRealData ? (
           <>
             <div style={{ fontSize: 11, color: '#2e7d32', marginBottom: 10, fontWeight: 700 }}>
               ✅ Cryptographically verified claims:
@@ -194,7 +218,9 @@ export function VerifierPanel({ scenario, backendUrl, runNonce }: VerifierPanelP
             fontFamily: 'monospace',
           }}
         >
-          🔐 Session keys shredded — W-05 cleanup complete
+          {hasEligibilityResult
+            ? 'Single-use verification attempt completed'
+            : '🔐 Session keys shredded — W-05 cleanup complete'}
         </div>
       </div>
     );

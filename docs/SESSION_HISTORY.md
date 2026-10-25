@@ -127,3 +127,9 @@ Ausgelagert aus `STATE.md` am 2026-03-14. Enthält den Verlauf abgeschlossener S
 - fix: document.elementFromPoint stub for jsdom (SecureZone component)
 - fix: config-profiles.test.ts manifestId→trustedIssuers (TS type error)
 - fix: jurisdiction.ts unused purpose param, proof-fatigue.ts let→const
+# 2026-10-25 — #170 bounded active-route correction
+
+Implemented and tested one-shot request attempts, numeric-age eligibility, exact
+disclosure/VCT/submission checks, minimal application/status results and isolation
+from simulated routes. [Dated revision-bound evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
+The separate Connect API and integration remain outstanding under #170.

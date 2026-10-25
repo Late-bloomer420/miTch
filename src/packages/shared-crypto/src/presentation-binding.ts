@@ -6,7 +6,7 @@
  * Spec: docs/specs/108_Presentation_Binding_AntiReplay_Spec_v1.md
  */
 
-import { sha256, canonicalStringify } from './hashing';
+import { sha256, canonicalStringify } from './hashing.js';
 import {
     BindingNonceStore,
     DENY_SCHEMA_MISSING_FIELD,
@@ -14,7 +14,7 @@ import {
     DENY_BINDING_AUDIENCE_MISMATCH,
     DENY_BINDING_EXPIRED,
     type ConsumeResult,
-} from './nonce-store';
+} from './nonce-store.js';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,9 +1,9 @@
 # EUDI Wallet — CIR Compliance Matrix
 
-> Last updated: 2026-06-02
-> Coverage: miTch v1.0-RC (Session 11 — Pilot Readiness)
+> Mapping baseline: 2026-06-02; targeted qualifications added 2026-10-14
+> Scope: repository component mapping; selected profile conformance and external evaluation are separate
 >
-> Legend: ✅ Implemented | 🟡 Partial | 🔴 Missing | ➖ Not applicable
+> Legend: ✅ recorded component implementation | 🟡 partial/integration or assurance work | 🔴 missing | ➖ not applicable. Unchanged rows retain their June mapping provenance, not a new October validation.
 
 ---
 
@@ -11,7 +11,7 @@
 
 | # | Requirement | Status | Package / Test |
 |---|-------------|--------|----------------|
-| 2977-1 | PID issued as SD-JWT VC (`vct` claim identifies credential type) | ✅ | `shared-crypto/sd-jwt-vc.ts` · `issueSDJWTVC` |
+| 2977-1 | SD-JWT VC issuance building block (`vct` identifies credential type; mock issuance is not national PID issuance) | ✅ | `shared-crypto/sd-jwt-vc.ts` · `issueSDJWTVC` |
 | 2977-2 | `iss` MUST be a URI identifying the issuing authority | ✅ | `sd-jwt-vc.ts:validateSDJWTVC` · `isURI()` guard |
 | 2977-3 | `sub` present when PID bound to a subject | ✅ | Passed through `SDJWTVCPayload.sub` |
 | 2977-4 | `exp` / `nbf` validity window enforced | ✅ | Manual exp/nbf validation (jose clockTolerance bypass) |
@@ -41,10 +41,10 @@
 | 2979-6 | DPoP (RFC 9449) proof of key possession at token endpoints | ✅ | `dpop.ts` · 13 tests · `dpop.test.ts` |
 | 2979-7 | DPoP `jti` replay attack prevention | ✅ | `validateDPoPProof(opts.seenJtis: Set<string>)` |
 | 2979-8 | DPoP `ath` (access token hash) binding | ✅ | `computeDPoPThumbprint` + `ath` claim in `createDPoPProof` |
-| 2979-9 | Private key never exported from secure element | ✅ | `WebAuthn` Hardware Binding (ADR-013) · `shared-crypto/webauthn.ts` |
-| 2979-10 | Key separation (signing vs encryption vs key-binding keys) | ✅ | G-07 — `keys.ts` with separate key purpose enum |
-| 2979-11 | Secure buffer zeroization after use | ✅ | `secure-buffer.ts` — `SecureBuffer.wipe()` |
-| 2979-12 | Nonce freshness enforcement (presentation) | ✅ | `nonce-store.ts` — TTL-based, single-use |
+| 2979-9 | Platform/WebAuthn key-binding integration; universal secure-element non-exportability not established | 🟡 | `WebAuthn` Hardware Binding (ADR-013) · `shared-crypto/webauthn.ts` |
+| 2979-10 | Key-purpose separation building blocks; active integration review remains #150 | 🟡 | G-07 — `keys.ts` with separate key purpose enum |
+| 2979-11 | Owned-buffer zeroization after use (runtime copies are GAP-1) | ✅ | `secure-buffer.ts` — `SecureBuffer.wipe()` |
+| 2979-12 | Nonce freshness building block; active SD-JWT route binding missing | 🟡 | `nonce-store.ts` — TTL/single-use helper retained; `/oid4vp-present` integration #170 |
 | 2979-13 | OAuth 2.0 Attestation-Based Client Auth | ✅ | `client-attestation.ts` · `attestation+pop+jwt` chain |
 | 2979-14 | Client attestation `jti` replay prevention | ✅ | `validateClientAttestationChain(seenJtis)` |
 | 2979-15 | Verifier Attestation JWT (`verifier_attestation` client_id_scheme) | ✅ | `haip.ts:issueVerifierAttestation` / `validateVerifierAttestation` |
@@ -64,7 +64,7 @@
 | 2982-7 | HAIP `limit_disclosure=required` enforcement | ✅ | `buildHAIPPresentationDefinition` sets per-field |
 | 2982-8 | HAIP JWE response (`ECDH-ES+A256GCM`) | ✅ | `encryptDirectPostResponse` / `decryptDirectPostResponse` |
 | 2982-9 | DID-based subject identifier support | ✅ | `did.ts` + `did-verification.ts` |
-| 2982-10 | Pairwise ephemeral DIDs (Spec 111 — unlinkability) | ✅ | `pairwise-did.ts` · Phase 1 committed |
+| 2982-10 | Pairwise ephemeral DID component (Spec 111; not all-channel unlinkability) | ✅ | `pairwise-did.ts` · Phase 1 committed |
 | 2982-11 | SD-JWT disclosure selective release | ✅ | Holder-side selective disclosure via SD-JWT `_sd` arrays |
 | 2982-12 | `vp_token` + `id_token` combined response | ✅ | `siopv2.ts` · `CombinedPresentation` verified |
 | 2982-13 | Response encryption at verifier (`direct_post.jwt`) | ✅ | `haip.ts` JWE encrypt/decrypt path |
@@ -72,7 +72,7 @@
 | 2982-15 | Trust anchor registry / trusted issuer list | ✅ | `EUDITrustListResolver` with dynamic JSON LOTL fetching · `trust-list-plan.md` |
 | 2982-16 | Data Erasure Request (Right to be Forgotten) | ✅ | `WalletService.requestDataErasure` · `App.tsx` |
 | 2982-17 | Reporting mechanism for suspicious RPs | ✅ | `WalletService.reportRelyingParty` · `App.tsx` |
-| 2982-18 | Proximity/Offline Presentation (ISO/IEC 18013-5) | ✅ | `@askmi/mdoc` + `ProximityView.tsx` |
+| 2982-18 | Proximity/offline presentation components | ✅ | `@askmi/mdoc` + `ProximityView.tsx`; reference/mock transport, official-wallet interoperability separately unvalidated |
 
 ---
 
@@ -80,27 +80,23 @@
 
 | # | Requirement | Status | Package / Test |
 |---|-------------|--------|----------------|
-| 2981-1 | Level of Assurance "High" (LoA High) | ✅ | Hardware-bound keys via WebAuthn (ADR-013) |
+| 2981-1 | Level of Assurance "High" (LoA High) | 🟡 | WebAuthn components do not establish scheme-level LoA High; assessment evidence absent |
 | 2981-2 | Common Criteria (ISO/IEC 15408) conformance | 🟡 | Security Target **artefact prepared** (`SECURITY_TARGET_CC_READY.md`); formal evaluation by accredited CAB **pending** |
-| 2981-3 | Reuse of existing platform certificates (Annex VI) | ✅ | WebAuthn relies on platform-native SE/TEE |
-| 2981-4 | Functional Conformance Assessment (FCAF) readiness | ✅ | 96% functional coverage (51/53); artefacts ready for assessment |
-| 2981-5 | Privacy-by-design / Data minimization auditability | ✅ | `audit-log` + `DataFlowPanel` + Crypto-Shredding |
+| 2981-3 | Reuse of existing platform certificates (Annex VI) | 🟡 | Platform reliance exists; applicable certificate and evaluation scope must be identified |
+| 2981-4 | Functional Conformance Assessment (FCAF) inputs | 🟡 | Internal mappings exist; exact-profile assessment/ICS artifacts and external results not evidenced |
+| 2981-5 | Privacy/data-minimisation auditability components | ✅ | `audit-log`, `DataFlowPanel`, cleanup helpers; external export integration #172 and assurance remain separate |
 
 ---
 
-## Summary
+## Mapping interpretation
 
-| CIR | Total | ✅ | 🟡 | 🔴 |
-|-----|-------|----|----|----|
-| 2024/2977 PID & EAA | 15 | 15 | 0 | 0 |
-| 2024/2979 Integrity & Core | 15 | 15 | 0 | 0 |
-| 2024/2982 Protocols & Interfaces | 18 | 18 | 0 | 0 |
-| 2024/2981 Certification | 5 | 4 | 1 | 0 |
-| **Total** | **53** | **52 (98%)** | **1 (2%)** | **0 (0%)** |
+All 53 internal row identifiers and their code/test references are retained. They are an engineering crosswalk, not a substitute for the regulation's clauses or a conformance assessment. The former 52/53 summary counted internal labels; it is not a technical-compliance percentage. The [unaltered June snapshot](archive/EUDI_CIR_MATRIX_2026-06-02.md) preserves that record.
+
+The October review changes only the rows with identified integration/assurance conflicts above. A component checkmark does not imply its control is wired into every route; missing external evidence does not negate its implementation. #170 concerns the active SD-JWT request/eligibility route, #171 its single-use lifecycle, #172 actual external outputs after an inventory, and #173 evidence provenance. Other rows were not freshly conformance-tested in this pass.
 
 ### Open gaps for production readiness
 
 | Gap | Priority | Notes |
 |-----|----------|-------|
-| Formal CC certification (2981-2) | P2 | Security Target prepared; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
+| Formal CC certification (2981-2) | P2 | Security Target draft mapping retained; evaluation by an accredited Conformity Assessment Body is external/organizational and pending. |
 . |

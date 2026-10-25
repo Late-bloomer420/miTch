@@ -20,6 +20,9 @@
   "keywords": ["AskMI", "security", "evidence", "audit"],
   "author": "Late-bloomer420 <jonas.f.meyer@googlemail.com>",
   "license": "MIT",
+  "dependencies": {
+    "pnpm": "9.15.9"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "rimraf": "^5.0.0",
