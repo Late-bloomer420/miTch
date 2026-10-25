@@ -170,6 +170,43 @@
     color: var(--wallet-success);
 }
 
+.wallet-credentials-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.wallet-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--wallet-border-strong);
+    border-radius: var(--wallet-radius-sm);
+    background: var(--wallet-surface-solid);
+    color: var(--wallet-accent);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.wallet-refresh-btn:hover:not(:disabled),
+.wallet-refresh-btn:focus-visible {
+    background: var(--wallet-accent-soft);
+    outline: none;
+}
+
+.wallet-refresh-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.wallet-refresh-btn--done {
+    border-color: rgba(4, 120, 87, 0.4);
+    color: var(--wallet-success);
+}
+
 .wallet-overview {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -7,7 +7,8 @@ interface StatusResponse {
   status: 'WAITING' | 'SCANNED' | 'VERIFIED' | 'FAILED' | 'EXPIRED';
   issuer?: string;
   verifierDid?: string;
-  disclosedClaims?: Record<string, unknown>;
+  disclosedClaims?: Record<string, unknown> | null;
+  result?: { eligible: boolean } | null;
   consentReceipt?: { id: string; claimsShared: string[]; purpose: string; timestamp: string };
 }
 
@@ -154,9 +155,18 @@ export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: Ver
   if (panelState === 'verified') {
     const disclosed = statusData?.disclosedClaims ?? {};
     const hasRealData = Object.keys(disclosed).length > 0;
+    const hasEligibilityResult = statusData?.result?.eligible === true;
     return (
       <div>
-        {hasRealData ? (
+        {hasEligibilityResult ? (
+          <>
+            <div style={{ color: '#2e7d32', fontWeight: 700 }}>Age eligibility: confirmed (18+)</div>
+            <p style={{ color: '#555', fontSize: 13 }}>
+              The verifier received and checked numeric age. The result contains only eligibility;
+              numeric age is omitted from the response and session status.
+            </p>
+          </>
+        ) : hasRealData ? (
           <>
             <div style={{ fontSize: 11, color: '#2e7d32', marginBottom: 10, fontWeight: 700 }}>
               ✅ Cryptographically verified claims:
@@ -208,7 +218,9 @@ export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: Ver
             fontFamily: 'monospace',
           }}
         >
-          🔐 Session keys shredded — W-05 cleanup complete
+          {hasEligibilityResult
+            ? 'Single-use verification attempt completed'
+            : '🔐 Session keys shredded — W-05 cleanup complete'}
         </div>
       </div>
     );
