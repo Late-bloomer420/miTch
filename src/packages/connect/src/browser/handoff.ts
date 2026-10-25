@@ -17,6 +17,8 @@ export interface BuildAskMIHandoffInput {
   presentationEndpoint: string;
   /** Optional display/navigation target after completion (never a trust source). */
   returnUrl?: string;
+  /** Server-owned request endpoint for wallets supporting the Connect flow. */
+  requestUri?: string;
 }
 
 export interface AskMIHandoff {
@@ -39,6 +41,7 @@ export function buildAskMIHandoff(input: BuildAskMIHandoffInput): AskMIHandoff {
   const base = trimTrailingSlashes(input.walletBaseUrl);
   const params = new URLSearchParams({ state: input.sessionId, nonce: input.nonce });
   if (input.returnUrl !== undefined) params.set('returnUrl', input.returnUrl);
+  if (input.requestUri !== undefined) params.set('request_uri', input.requestUri);
   return {
     url: `${base}?${params.toString()}`,
     method: 'browser-redirect-or-qr',

@@ -16,6 +16,7 @@ import { buildAskMIHandoff } from '../browser/handoff';
 
 import { evaluatePolicyResult, lookupPolicy, provenanceFor, sanitizeCreateInput } from './policies';
 import { InMemoryAskMIConnectSessionStore } from './session-store';
+import { ageRequest, matchesCredentialType, matchesSubmission } from './profile';
 import type {
   AskMIConnect,
   AskMIConnectConfig,
@@ -146,7 +147,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
       validateSDJWTPresentation({
         vpTokenString: opts.vpTokenString,
         presentationSubmission: opts.presentationSubmission as never,
-        request: opts.request,
+        request: opts.authorizationRequest ?? opts.request,
         issuerPublicKey: opts.issuerPublicKey,
         checkRevocation: opts.checkRevocation,
         checkTrust: opts.checkTrust,
@@ -181,17 +182,25 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
       const sessionId = newSessionId();
       const createdAt = new Date(now());
       const expiresAt = new Date(createdAt.getTime() + ttlMs);
+      const nonce = randomNonce();
+      const audience = presentationEndpoint(config.audienceBaseUrl, sessionId);
       const session: AskMIConnectSession = {
         sessionId,
         status: 'pending',
         createdAt: createdAt.toISOString(),
         expiresAt: expiresAt.toISOString(),
-        nonce: randomNonce(),
-        audience: presentationEndpoint(config.audienceBaseUrl, sessionId),
+        nonce,
+        audience,
         verifierDid: config.verifierDid,
         policyId: policy.id,
         policyVersion: policy.version,
         correlationId: newCorrelationId(),
+        authorizationRequest: ageRequest({
+          verifierDid: config.verifierDid,
+          audience,
+          nonce,
+          sessionId,
+        }),
         ...(clean.returnUrl !== undefined ? { returnUrl: clean.returnUrl } : {}),
       };
       const handoff = buildAskMIHandoff({
@@ -199,6 +208,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         sessionId,
         nonce: session.nonce,
         presentationEndpoint: session.audience,
+        requestUri: `${trimTrailingSlashes(config.audienceBaseUrl)}/askmi/connect/sessions/${encodeURIComponent(sessionId)}/request`,
         ...(clean.returnUrl !== undefined ? { returnUrl: clean.returnUrl } : {}),
       });
       try {
@@ -272,7 +282,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
             'Missing presentation_submission.'
           );
         }
-        if (body.state !== undefined && body.state !== session.sessionId) {
+        if (body.state !== session.sessionId) {
           return await fail(
             session.sessionId,
             'WRONG_NONCE',
@@ -306,14 +316,29 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
           );
         }
 
+        const originalRequest = session.authorizationRequest;
+        if (
+          !originalRequest ||
+          originalRequest.response_type !== 'vp_token' ||
+          originalRequest.response_mode !== 'direct_post' ||
+          !matchesSubmission(body.presentation_submission, originalRequest)
+        ) {
+          return await fail(
+            session.sessionId,
+            'POLICY_DENIED',
+            'Presentation does not match the stored request profile.'
+          );
+        }
+        // Preserve the existing crypto-only callback contract. Scope is checked
+        // against the persisted full request here, separately from signature validity.
         const request = {
+          ...originalRequest,
           response_type: 'vp_token' as const,
-          client_id: session.verifierDid,
-          redirect_uri: presentationEndpoint(config.audienceBaseUrl, session.sessionId),
-          nonce: session.nonce,
-          presentation_definition: { id: 'askmi-connect', input_descriptors: [] as [] },
           response_mode: 'direct_post' as const,
-          state: session.sessionId,
+          presentation_definition: {
+            id: originalRequest.presentation_definition.id,
+            input_descriptors: [] as [],
+          },
         };
 
         let validation;
@@ -322,6 +347,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
             vpTokenString: body.vp_token,
             presentationSubmission: body.presentation_submission,
             request,
+            authorizationRequest: structuredClone(originalRequest),
             issuerPublicKey,
             checkRevocation: true,
             checkTrust: false,
@@ -339,11 +365,24 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         }
 
         const disclosedClaims = validation.disclosedClaims ?? {};
+        if (
+          !matchesCredentialType(body.vp_token) ||
+          ![Object.prototype, null].includes(Object.getPrototypeOf(disclosedClaims)) ||
+          Object.keys(disclosedClaims).some((key) => key !== 'age')
+        ) {
+          return await fail(
+            session.sessionId,
+            'POLICY_DENIED',
+            'Credential type or disclosure exceeds the registered profile.'
+          );
+        }
         const policy = lookupPolicy(session.policyId);
         if (!policy) {
           return await fail(session.sessionId, 'INTERNAL_ERROR', 'Registered policy disappeared.');
         }
-        const missing = policy.requiredClaims.filter((claim) => !(claim in disclosedClaims));
+        const missing = policy.requiredClaims.filter(
+          (claim) => !Object.prototype.hasOwnProperty.call(disclosedClaims, claim)
+        );
         if (missing.length > 0) {
           return await fail(
             session.sessionId,

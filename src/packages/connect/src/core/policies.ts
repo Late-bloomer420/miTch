@@ -13,15 +13,15 @@ import type {
 
 import type { CreateSessionInput } from './types';
 
-export const ageLiquorStorePolicy: AskMIConnectPolicy = {
+export const ageLiquorStorePolicy: AskMIConnectPolicy = Object.freeze({
   id: 'age-liquor-store-v1',
   version: 1,
   purpose: 'Liquor purchase age eligibility',
   profile: 'sd-jwt-vc-age-v1',
-  requestedClaims: ['age'],
-  requiredClaims: ['age'],
+  requestedClaims: Object.freeze(['age'] as const),
+  requiredClaims: Object.freeze(['age'] as const),
   resultClaim: 'eligible',
-} as const;
+} as const);
 
 const POLICIES: ReadonlyMap<AskMIConnectPolicyId, AskMIConnectPolicy> = new Map([
   [ageLiquorStorePolicy.id, ageLiquorStorePolicy],

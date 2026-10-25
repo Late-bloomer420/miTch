@@ -133,3 +133,14 @@ Implemented and tested one-shot request attempts, numeric-age eligibility, exact
 disclosure/VCT/submission checks, minimal application/status results and isolation
 from simulated routes. [Dated revision-bound evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
 The separate Connect API and integration remain outstanding under #170.
+
+
+### Connect profile integration — 2026-10-25 (branch, merge pending)
+
+- Confirmed #208 post-merge checks and removed its completed branch/worktree.
+- Completed the remaining #170 Connect profile and verifier/wallet integration;
+  preserved current master wallet/passkey changes and integrated #211's timeout fix.
+- Added real signed HTTP rejection cases and configured issuer/JWKS binding.
+- [Exact code revision, commands, results and boundaries](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
+  This is numeric-age middleware with minimized application results, not ZKP or
+  official-wallet interoperability evidence. No pilot/release gate changes.

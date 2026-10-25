@@ -1,5 +1,12 @@
 # AskMI — Master Backlog
 
+**2026-10-25 — #170 remaining Connect integration:** implemented on the fix
+branch, with a stored-request wallet handoff, mounted verifier adapter, exact
+numeric-age profile and real signed HTTP negatives. [Evidence and limits](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
+Implementation and scoped closure are tracked in #224 (closes #170 on merge);
+#97, #171–#173 and pilot/release gates remain open. The older active-route entry below describes
+its earlier partial slice.
+
 **2026-10-25 — #170 active-route slice:** server-owned request snapshot, one-shot
 attempt reservation, numeric-age eligibility and exact disclosure/VCT/submission
 checks implemented on the fix branch. Real-signature HTTP negatives and minimized
@@ -22,7 +29,7 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 | Task | Priority | Status | Acceptance / owner |
 |---|---|---|---|
 | ADOPT-1.0/1.1/1.2 | Design | Accepted designs only (#158/#159/#160) | Does not mean SDK/core/store implemented |
-| ADOPT-1.2-code / EV-01/02 | P0 | OPEN #170 | Original server request, crypto + eligibility + scope, atomic session, active HTTP negatives |
+| ADOPT-1.2-code / EV-01/02 | P0 | Implemented #208 + #224; #170 closes on merge | Stored request, crypto + numeric-age eligibility + exact scope, single-process atomic sessions and signed HTTP negatives; [evidence](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md) |
 | EV-03 real SD-JWT single-use | P1 / profile-required P0 | OPEN #171 | Atomically reserve/consume stored single-use, holder lifecycle and honest cleanup |
 | EV-04 Tier-2 sink integration | P1 | OPEN #172 | Inventory actual outputs first; apply existing schema only to in-scope exports/telemetry; preserve Tier 1 |
 | EV-06 revision-bound evidence | P1 | OPEN #173 / SEC-AUDIT-3 | Actual-file hash and source/profile/config; active-path coverage |

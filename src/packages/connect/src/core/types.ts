@@ -1,4 +1,5 @@
 import type { AskMIHandoff } from '../browser/handoff';
+import type { AuthorizationRequest } from '@askmi/oid4vp';
 
 /**
  * ADOPT-1.1 minimal session contract types for `@askmi/connect`.
@@ -88,6 +89,8 @@ export interface AskMIConnectSession {
   readonly policyVersion: 1;
   readonly correlationId: string;
   readonly returnUrl?: string;
+  /** Original server request. Older records without it cannot complete verification. */
+  readonly authorizationRequest?: AuthorizationRequest;
   /** Terminal failure code (only when status === 'failed'). */
   readonly errorCode?: AskMIConnectErrorCode;
   /** Present on 'verified' sessions only; claim names only, no values. */
@@ -165,6 +168,8 @@ export interface AskMIConnectConfig {
 export type PresentationValidator = (opts: {
   vpTokenString: string;
   presentationSubmission: unknown;
+  /** Full persisted request. The default validator uses this; request retains the original callback shape for compatibility. */
+  authorizationRequest?: AuthorizationRequest;
   request: {
     response_type: 'vp_token';
     client_id: string;
