@@ -56,6 +56,19 @@ const walletServiceMockState = vi.hoisted(() => ({
   }),
 }));
 
+// The real ProximityView starts a BLE/QR session against the wallet identity key;
+// App tests only check that the Requests card opens it.
+vi.mock('./components/ProximityView', () => ({
+  ProximityView: ({ onCancel }: { onCancel: () => void }) => (
+    <div role="dialog">
+      <h2>Proximity Presentation</h2>
+      <button type="button" onClick={onCancel}>
+        Close
+      </button>
+    </div>
+  ),
+}));
+
 vi.mock('./components/SecureZone', () => ({
   SecureZone: ({
     children,
