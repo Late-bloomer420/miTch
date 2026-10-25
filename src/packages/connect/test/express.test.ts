@@ -1,3 +1,4 @@
+import { ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +9,7 @@ import type { PresentationValidator } from '../src/core/types';
 
 /** VP token with a decodable issuer segment so the trust gate is exercised. */
 function vpWithIss(iss: string): string {
-  const payload = btoa(JSON.stringify({ iss }))
+  const payload = btoa(JSON.stringify({ iss, vct: ASKMI_SCENARIO_VCT['liquor-store'] }))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -97,7 +98,10 @@ describe('POST .../presentation', () => {
       .post(`/askmi/connect/sessions/${sessionId}/presentation`)
       .send({
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: sessionId,
       });
     expect(res.status).toBe(200);
@@ -114,7 +118,10 @@ describe('POST .../presentation', () => {
       .post(`/askmi/connect/sessions/${sessionId}/presentation`)
       .send({
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: sessionId,
       });
     expect(res.status).toBe(403);
@@ -137,7 +144,13 @@ describe('POST .../presentation', () => {
     const app = makeApp(async () => ({ ok: true, disclosedClaims: { age: 24 }, errors: [] }));
     const res = await request(app)
       .post('/askmi/connect/sessions/askmi_sess_missing/presentation')
-      .send({ vp_token: vpWithIss('did:askmi:issuer'), presentation_submission: {} });
+      .send({
+        vp_token: vpWithIss('did:askmi:issuer'),
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
+      });
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('UNKNOWN_SESSION');
   });
@@ -147,7 +160,10 @@ describe('POST .../presentation', () => {
     const sessionId = await createSessionId(app);
     const body = {
       vp_token: vpWithIss('did:askmi:issuer'),
-      presentation_submission: {},
+      presentation_submission: {
+        definition_id: 'askmi-connect',
+        descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+      },
       state: sessionId,
     };
     const first = await request(app)
@@ -166,7 +182,7 @@ describe('GET /askmi/connect/sessions/:sessionId', () => {
   it('returns the minimal status and never raw credential content', async () => {
     const app = makeApp(async () => ({
       ok: true,
-      disclosedClaims: { age: 24, name: 'Zoe' },
+      disclosedClaims: { age: 24 },
       errors: [],
     }));
     const sessionId = await createSessionId(app);
@@ -174,7 +190,10 @@ describe('GET /askmi/connect/sessions/:sessionId', () => {
       .post(`/askmi/connect/sessions/${sessionId}/presentation`)
       .send({
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: sessionId,
       });
     const res = await request(app).get(`/askmi/connect/sessions/${sessionId}`);

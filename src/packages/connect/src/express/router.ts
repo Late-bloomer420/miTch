@@ -68,6 +68,10 @@ function sessionResponseBody(session: AskMIConnectSession): Record<string, unkno
  */
 export function askmiConnectExpressRouter(connect: AskMIConnect): Router {
   const router = Router();
+  router.use('/askmi/connect', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
 
   // Express 4 does not forward rejected async handlers. Attempt persistence
   // before responding; if the store is unavailable, report uncertainty rather
@@ -156,6 +160,33 @@ export function askmiConnectExpressRouter(connect: AskMIConnect): Router {
         status: 'failed',
         error: { code: result.code, message: result.message },
       });
+    })
+  );
+
+  router.get(
+    '/askmi/connect/sessions/:sessionId/request',
+    guard(async (req, res) => {
+      res.setHeader('Cache-Control', 'no-store');
+      const result = await connect.getSession(req.params.sessionId);
+      if (!result.ok) {
+        res.status(404).json({ error: { code: 'UNKNOWN_SESSION' } });
+        return;
+      }
+      const session = result.session;
+      if (session.status === 'expired') {
+        res.status(410).json({ error: { code: 'SESSION_EXPIRED' } });
+        return;
+      }
+      if (session.status !== 'pending' && session.status !== 'wallet_opened') {
+        res.status(409).json({ error: { code: 'SESSION_TERMINAL' } });
+        return;
+      }
+      if (!session.authorizationRequest) {
+        await connect.failSession(session.sessionId);
+        res.status(409).json({ error: { code: 'SESSION_TERMINAL' } });
+        return;
+      }
+      res.json({ authRequest: session.authorizationRequest });
     })
   );
 

@@ -9,6 +9,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@askmi/connect": "workspace:*",
         "@askmi/oid4vp": "workspace:*",
         "@askmi/predicates": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",
