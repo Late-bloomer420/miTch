@@ -207,6 +207,12 @@ beforeEach(() => {
   walletServiceMockState.evaluateRequest.mockResolvedValue(makePromptResult('ALLOW'));
   walletServiceMockState.getRecentAuditLogs.mockReturnValue([]);
   walletServiceMockState.deleteCredential.mockResolvedValue(true);
+  walletServiceMockState.getPolicy.mockReturnValue({
+    version: 'test',
+    rules: [],
+    trustedIssuers: [],
+    globalSettings: {},
+  });
   walletServiceMockState.requestDataErasure.mockResolvedValue({
     success: true,
     message: 'Erasure request sent.',
@@ -273,6 +279,64 @@ describe('G-03 — Wallet App', () => {
       expect(walletServiceMockState.deleteCredential).toHaveBeenCalledWith('vc-age-789');
     });
     expect(walletServiceMockState.getCredentials).toHaveBeenCalledTimes(2);
+  });
+
+  it('marks a card as trusted only when its issuer and type are in the policy trust list', async () => {
+    walletServiceMockState.getPolicy.mockReturnValue({
+      version: 'test',
+      rules: [],
+      trustedIssuers: [
+        { did: 'did:example:gov-issuer', name: 'Gov', credentialTypes: ['AgeCredential'] },
+      ],
+      globalSettings: {},
+    });
+    walletServiceMockState.getCredentials.mockResolvedValue([
+      {
+        id: 'vc-age-789',
+        issuer: 'did:example:gov-issuer',
+        type: ['VerifiableCredential', 'AgeCredential'],
+        issuedAt: new Date().toISOString(),
+        claims: ['age'],
+      },
+      {
+        id: 'vc-self',
+        issuer: 'did:askmi:self',
+        type: ['VerifiableCredential'],
+        issuedAt: new Date().toISOString(),
+        claims: ['created'],
+      },
+    ]);
+
+    render(<App />);
+
+    const trustedCard = (await screen.findByText('Age Credential (GovID)')).closest(
+      '.credential-card'
+    ) as HTMLElement;
+    const selfCard = screen
+      .getByText('Verifiable Credential')
+      .closest('.credential-card') as HTMLElement;
+
+    expect(within(trustedCard).getByText(/Trusted issuer/i)).toBeInTheDocument();
+    expect(within(selfCard).queryByText(/Trusted issuer/i)).not.toBeInTheDocument();
+    expect(within(selfCard).getByText(/Not in trust list/i)).toBeInTheDocument();
+  });
+
+  it('does not mark a card as trusted when the issuer is listed for a different credential type', async () => {
+    walletServiceMockState.getPolicy.mockReturnValue({
+      version: 'test',
+      rules: [],
+      trustedIssuers: [
+        { did: 'did:example:gov-issuer', name: 'Gov', credentialTypes: ['DoctorLicense'] },
+      ],
+      globalSettings: {},
+    });
+
+    render(<App />);
+
+    const card = (await screen.findByText('Age Credential (GovID)')).closest(
+      '.credential-card'
+    ) as HTMLElement;
+    expect(within(card).getByText(/Not in trust list/i)).toBeInTheDocument();
   });
 
   it('first run shows a framed welcome screen and does NOT auto-fire the passkey ceremony (G-130.1 Task 3)', async () => {
