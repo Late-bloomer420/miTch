@@ -39,8 +39,12 @@ import { ProximityView } from './components/ProximityView';
 import { LandingPage } from './LandingPage';
 import { translateClaim } from './utils/i18n';
 import { isIssuerTrustedFor } from './utils/issuer-trust';
+import { describeTraceSteps } from './utils/trace-steps';
+import { DataFlowService, type DataFlowTransaction } from '@askmi/data-flow';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
+
+const traceFlowService = new DataFlowService();
 
 type WalletStatus =
   | 'LOCKED'
@@ -258,6 +262,15 @@ function WalletApp() {
   const walletRef = useRef<WalletService>(new WalletService());
   const verifierSessionIdRef = useRef(crypto.randomUUID());
   const recentAuditEntries = useMemo(() => walletRef.current.getRecentAuditLogs(200), [logs]);
+  const traceSteps = useMemo(() => {
+    const latest = traceFlowService
+      .buildTransactions(recentAuditEntries)
+      .reduce<DataFlowTransaction | undefined>(
+        (newest, txn) => (!newest || txn.startedAt > newest.startedAt ? txn : newest),
+        undefined
+      );
+    return describeTraceSteps(latest);
+  }, [recentAuditEntries]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
@@ -1819,7 +1832,20 @@ function WalletApp() {
             <div id="requests-section" className="demo-section scenario-launcher" data-testid="scenario-launcher">
           <div className="scenario-launcher__header">
             <h3 className="demo-section-title">Verifier Requests</h3>
-            <span className="scenario-launcher__hint">Choose request</span>
+            {status === 'IDLE' && !guidedDemoActive ? (
+              <button
+                type="button"
+                className="scenario-launcher__guide"
+                onClick={() => {
+                  sessionStorage.removeItem('guidedDemoCompleted');
+                  setGuidedDemoActive(true);
+                }}
+              >
+                ▶ Guided demo
+              </button>
+            ) : (
+              <span className="scenario-launcher__hint">Choose request</span>
+            )}
           </div>
 
           <div className="demo-primary-grid scenario-launcher__grid">
@@ -1917,7 +1943,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('consent')}
             >
               <span>1 Requested</span>
-              <strong>{evaluationResult?.verdict ?? 'Idle'}</strong>
+              <strong>{traceSteps.requested}</strong>
             </button>
             <button
               type="button"
@@ -1927,7 +1953,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('compliance')}
             >
               <span>2 Allowed</span>
-              <strong>{recentAuditEntries.length} events</strong>
+              <strong>{traceSteps.allowed}</strong>
             </button>
             <button
               type="button"
@@ -1937,7 +1963,7 @@ function WalletApp() {
               onClick={() => setTraceDetailPanel('data-flow')}
             >
               <span>3 Sent</span>
-              <strong>{currentRequest ? 'Request loaded' : 'Waiting'}</strong>
+              <strong>{traceSteps.sent}</strong>
             </button>
           </div>
 
@@ -2306,6 +2332,7 @@ function WalletApp() {
     </div>
   );
 }
+
 
 export default function App() {
   const showWalletDemo =

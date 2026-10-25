@@ -648,6 +648,24 @@
     font-weight: 600;
 }
 
+.scenario-launcher__guide {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--wallet-border-strong);
+    border-radius: 999px;
+    background: var(--wallet-surface-solid);
+    color: var(--wallet-accent);
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.scenario-launcher__guide:hover,
+.scenario-launcher__guide:focus-visible {
+    background: var(--wallet-accent-soft);
+    outline: none;
+}
+
 .scenario-launcher__grid {
     margin-bottom: 0;
 }
@@ -1957,6 +1975,74 @@
 .dataflow-card__tag--withheld {
     background: #ffe4e6;
     color: #be123c;
+}
+
+/* Summary lines ("age >= 18 bewiesen statt offengelegt", ...) — one per line, not run together. */
+.dataflow-card__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+    padding-left: 0;
+    color: var(--wallet-text);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.dataflow-card__summary-point {
+    position: relative;
+    padding-left: 16px;
+}
+
+.dataflow-card__summary-point::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--wallet-success);
+    font-weight: 700;
+}
+
+.dataflow-card__claim-name {
+    margin-right: 6px;
+}
+
+.dataflow-card__identity {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: var(--wallet-warning);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.dataflow-card__actions {
+    flex-wrap: wrap;
+}
+
+/* Renderer page: the parked CredentialCard reuses dark-card text classes; give it a light surface. */
+.wallet-panel .mitch-credential-card-wrapper {
+    width: 100%;
+    margin-bottom: 0 !important;
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-item {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--wallet-border);
+    border-radius: var(--wallet-radius-md);
+    background: var(--wallet-surface-solid);
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-name {
+    color: var(--wallet-text);
+}
+
+.wallet-panel .mitch-credential-card-wrapper .credential-issuer {
+    color: var(--wallet-text-muted);
+    opacity: 1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dataflow-card__tag--identity {
