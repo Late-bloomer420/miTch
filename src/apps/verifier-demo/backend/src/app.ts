@@ -228,6 +228,13 @@ const presentRouteLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const oid4vpRouteLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 /**
  * PoC Key Resolution Hub
  */
@@ -433,7 +440,7 @@ export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | nu
   issuerKeyResolver = fn;
 }
 
-app.post('/oid4vp-present', requireSession, async (req, res) => {
+app.post('/oid4vp-present', requireSession, oid4vpRouteLimiter, async (req, res) => {
   const id = sessionId(req, res);
   const verificationState = stateFor(id);
   const authorization = verificationState.authorization;
@@ -595,13 +602,11 @@ app.post('/present', requireSession, presentRouteLimiter, async (req, res) => {
       const holderPublicKey = await resolveDidJwkPublicKey(hb.sub);
       if (!holderPublicKey) {
         verificationState.status = 'FAILED';
-        return res
-          .status(403)
-          .json({
-            ok: false,
-            error: 'KB_JWT_INVALID_HOLDER_KEY',
-            details: 'Cannot resolve did:jwk subject',
-          });
+        return res.status(403).json({
+          ok: false,
+          error: 'KB_JWT_INVALID_HOLDER_KEY',
+          details: 'Cannot resolve did:jwk subject',
+        });
       }
       const kbResult = await validateKeyBindingJWT(hb.kb_jwt, holderPublicKey, {
         expectedAud: ASKMI_DEMO.verifierDid,
