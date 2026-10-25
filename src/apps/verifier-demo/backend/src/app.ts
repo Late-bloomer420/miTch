@@ -228,6 +228,14 @@ const presentRouteLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Separate budget for the OID4VP direct_post endpoint so it cannot drain /present.
+const oid4vpPresentRouteLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 /**
  * PoC Key Resolution Hub
  */
@@ -433,7 +441,7 @@ export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | nu
   issuerKeyResolver = fn;
 }
 
-app.post('/oid4vp-present', requireSession, async (req, res) => {
+app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (req, res) => {
   const id = sessionId(req, res);
   const verificationState = stateFor(id);
   const authorization = verificationState.authorization;
