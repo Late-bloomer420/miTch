@@ -19,6 +19,20 @@ records 17 gate regressions and the current live audit (146 total, 52 high,
 1 critical), which the proposed gate rejects. This does not remediate dependencies,
 close #185/EV-05, or establish a merged CI result. #193 lifecycle work stays separate.
 
+## SEC-AUDIT-2 batch checkpoint — 2026-10-25 (body-parser@1.x pin)
+
+First SEC-AUDIT-2 runtime batch landed as one dependency family: the
+`body-parser <1.20.9` high advisory (DoS via trailing bytes after a number) in
+the **Express 4 runtime chain** of `issuer-mock`, `verifier-backend`,
+`verifier-demo` and `@askmi/connect` is cleared by a `pnpm.overrides` pin
+`body-parser@<1.20.9 >=1.20.9 <2` (upper bound prevents a major jump that would
+break Express 4). The Express 5 `body-parser@2` advisories stay open and are
+owned by the `@modelcontextprotocol/sdk >=1.32.0` bump (batch ②). Live audit:
+**high 49 → 48, critical 0**. [Dated local
+evidence](../qa/SECURITY_AUDIT_2_BODY_PARSER_2026-10-25.md). Residual high
+batches (fast-uri via ajv, undici/brace-expansion/js-yaml tooling, pnpm CLI
+devDep in `@askmi/evidence`, MCP SDK runtime bump, zod) remain open.
+
 ## Purpose
 
 This document turns the current security-audit backlog into small, reviewable
