@@ -242,7 +242,7 @@ describe('/oid4vp-present endpoint', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should verify doctor-login scenario with selective disclosure', async () => {
+  it('rejects doctor-login because no active eligibility policy is registered for it', async () => {
     const authRes = await request(app)
       .get('/authorize?scenario=doctor-login')
       .set('X-AskMI-Session-Id', 'oid4vp-test');
@@ -258,7 +258,7 @@ describe('/oid4vp-present endpoint', () => {
       homeAddress: 'redacted',
     };
 
-    const { vpTokenString, presentationSubmission, disclosedClaims } = await buildSDJWTPresentation(
+    const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation(
       {
         request: authRequest,
         issuerPrivateKey: issuerKeys.privateKey,
@@ -279,12 +279,9 @@ describe('/oid4vp-present endpoint', () => {
       issuer_jwk: issuerJwk,
     });
 
-    expect(res.status).toBe(200);
-    expect(res.body.ok).toBe(true);
-    // Selective disclosure: salary and homeAddress should be redacted
-    if (res.body.disclosedClaims) {
-      expect(disclosedClaims).toBeDefined();
-    }
+    expect(res.status).toBe(403);
+    expect(res.body.ok).toBe(false);
+    expect(res.body.error).toBe('PROFILE_OR_POLICY_DENIED');
   });
 
   it('should return 500 for malformed vp_token with valid issuer_jwk', async () => {

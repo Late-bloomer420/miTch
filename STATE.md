@@ -1,5 +1,12 @@
 # STATE.md — Current Operating State
 
+**Scoped update 2026-10-25 — #170 fix branch:** the active numeric-age presentation
+route now reserves attempts once, checks eligibility and exact profile/scope,
+and returns a minimized result. Backend 87 source tests passed; affected apps
+built; wallet 203 tests passed. [Revision, commands and limits](docs/qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
+This supersedes the older active-route observations below only for that tested
+profile. Connect integration and #170 remain open; no release gate changes.
+
 **Scoped update 2026-10-25 — audit gate branch:** PR #206's dependency remediation
 allows the minimum critical gate in #194 to pass a fresh audit (141 total,
 49 high, 0 critical). Gate regressions: 17/17 passed. [Exact revision and limits](docs/qa/SECURITY_AUDIT_GATE_2026-10-25.md).

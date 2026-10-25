@@ -1,5 +1,12 @@
 # AskMI — Master Backlog
 
+**2026-10-25 — #170 active-route slice:** server-owned request snapshot, one-shot
+attempt reservation, numeric-age eligibility and exact disclosure/VCT/submission
+checks implemented on the fix branch. Real-signature HTTP negatives and minimized
+results: [dated evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
+#170 remains OPEN for separate Connect profile enforcement and integration;
+no pilot gate moves.
+
 **2026-10-25 — minimum critical audit gate (#194):** PR #206 remediates the
 critical proxy-addr advisory; the shared gate now passes the live report with
 0 critical / 49 high findings and all 17 regression tests. Both audit workflows
