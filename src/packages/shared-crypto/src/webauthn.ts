@@ -20,6 +20,13 @@
 
 import { canonicalStringify } from './hashing.js';
 import { ASKMI_STORAGE_KEYS } from '@askmi/shared-types';
+import {
+  bytesToBase64url,
+  identityChallenge,
+  isUsableP256Jwk,
+  spkiToP256Jwk,
+  type IdentityAssertion,
+} from './webauthn-assertion.js';
 
 // ── Typen ────────────────────────────────────────────────────────────────────
 
@@ -244,16 +251,16 @@ export class WebAuthnService {
     })) as PublicKeyCredential;
     const credentialId = bufferToBase64url(credential.rawId);
 
-    // Versuche den Public Key zu extrahieren (SPKI)
+    // Keep the real P-256 public key so identity signatures can be verified later
+    // (verifyIdentityAssertion). RS256 or a missing key → null: signatures from this
+    // passkey stay unverifiable and callers must treat them as such.
     let publicKeyJwk: JsonWebKey | null = null;
     const response = credential.response as AuthenticatorAttestationResponse;
-    if (typeof response.getPublicKey === 'function') {
+    const algorithm =
+      typeof response.getPublicKeyAlgorithm === 'function' ? response.getPublicKeyAlgorithm() : -7;
+    if (algorithm === -7 && typeof response.getPublicKey === 'function') {
       const spki = response.getPublicKey();
-      if (spki) {
-        // In einer echten Implementierung würden wir SPKI zu JWK konvertieren.
-        // Für diesen PoC speichern wir die Information dass ein HW-Key existiert.
-        publicKeyJwk = { kty: 'EC', crv: 'P-256', x: '', y: '', alg: 'ES256', ext: true };
-      }
+      if (spki) publicKeyJwk = await spkiToP256Jwk(spki);
     }
 
     const registration: PasskeyRegistration = {
@@ -305,6 +312,52 @@ export class WebAuthnService {
     const response = assertion.response as AuthenticatorAssertionResponse;
 
     return bufferToBase64(response.signature);
+  }
+
+  /**
+   * Sign `data` with the hardware identity key and return everything needed to
+   * verify it: authenticatorData, clientDataJSON and the DER signature. The
+   * challenge is always SHA-256(data). Never falls back to a software key: without
+   * a registered passkey (or without WebAuthn) it throws IDENTITY_KEY_NOT_REGISTERED.
+   */
+  static async signWithIdentityKeyAssertion(data: string): Promise<IdentityAssertion> {
+    const meta = await loadIdentityKeyMeta();
+    if (!meta || meta.credentialId === 'software-fallback' || !isWebAuthnAvailable()) {
+      throw new Error(
+        'IDENTITY_KEY_NOT_REGISTERED: no hardware identity key — register the passkey first.'
+      );
+    }
+
+    const getOptions: PublicKeyCredentialRequestOptions = {
+      rpId: meta.rpId,
+      challenge: await identityChallenge(data),
+      allowCredentials: [{ type: 'public-key', id: base64urlToBuffer(meta.credentialId) }],
+      userVerification: 'required',
+    };
+    const credential = (await navigator.credentials.get({
+      publicKey: getOptions,
+    })) as PublicKeyCredential | null;
+    if (!credential) throw new Error('IDENTITY_ASSERTION_CANCELLED: no assertion returned.');
+    const response = credential.response as AuthenticatorAssertionResponse;
+
+    return {
+      version: 1,
+      credentialId: bytesToBase64url(credential.rawId),
+      rpId: meta.rpId,
+      authenticatorData: bytesToBase64url(response.authenticatorData),
+      clientDataJSON: bytesToBase64url(response.clientDataJSON),
+      signature: bytesToBase64url(response.signature),
+    };
+  }
+
+  /**
+   * Public key of the registered hardware identity key, or null when there is none
+   * or it was registered before real keys were stored (legacy placeholder).
+   */
+  static async getIdentityPublicKeyJwk(): Promise<JsonWebKey | null> {
+    const meta = await loadIdentityKeyMeta();
+    if (!meta || meta.credentialId === 'software-fallback') return null;
+    return isUsableP256Jwk(meta.publicKeyJwk) ? meta.publicKeyJwk : null;
   }
 
   /**
