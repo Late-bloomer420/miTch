@@ -27,6 +27,12 @@ coverage/
 !.env.example
 !.env.strict.example
 
+# ── Private Interview-Daten (G1, niemals committen) ─────────
+# Safety net only; primary location is outside the repo.
+# See docs/05-business/ASKMI_G1_INTERVIEW_KIT.md §2 and §9.
+docs/05-business/g1-private/
+*.g1-private.md
+
 # ── Runtime-Artefakte (generiert, nicht committen) ──────────
 src/apps/verifier-demo/backend/verifier-key.json
 src/apps/verifier-demo/backend/nonce-cache.json
