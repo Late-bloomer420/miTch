@@ -26,7 +26,7 @@ export class Relation<A, B = A> {
   private readonly successors: ReadonlyMap<A, ReadonlySet<B>>;
 
   constructor(pairs: Iterable<RelationPair<A, B>>) {
-    this.pairList = Array.from(pairs);
+    this.pairList = Array.from(pairs, ([a, b]) => [a, b] as const);
     const index = new Map<A, Set<B>>();
     for (const [a, b] of this.pairList) {
       let set = index.get(a);
@@ -39,9 +39,9 @@ export class Relation<A, B = A> {
     this.successors = index;
   }
 
-  /** All pairs, in insertion order. */
+  /** Detached pairs, in insertion order; neither the list nor tuples expose internal state. */
   pairs(): readonly RelationPair<A, B>[] {
-    return this.pairList;
+    return this.pairList.map(([a, b]) => [a, b] as const);
   }
 
   /** Whether (x, y) in R. O(1) via the successor index. */

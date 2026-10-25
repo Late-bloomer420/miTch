@@ -41,11 +41,20 @@ export class Mapping<M, N> {
   private readonly table: ReadonlyMap<M, N>;
 
   private constructor(
-    readonly domain: ReadonlySet<M>,
-    readonly codomain: ReadonlySet<N>,
+    private readonly domainSet: ReadonlySet<M>,
+    private readonly codomainSet: ReadonlySet<N>,
     table: ReadonlyMap<M, N>
   ) {
     this.table = table;
+  }
+
+  /** Detached views preserve the validated sets even for JavaScript callers. */
+  get domain(): ReadonlySet<M> {
+    return new Set(this.domainSet);
+  }
+
+  get codomain(): ReadonlySet<N> {
+    return new Set(this.codomainSet);
   }
 
   /**
@@ -58,6 +67,9 @@ export class Mapping<M, N> {
     codomain: ReadonlySet<N>,
     pairs: Iterable<readonly [M, N]>
   ): Mapping<M, N> {
+    // Snapshot before iterating user-provided pairs, which may have side effects.
+    domain = new Set(domain);
+    codomain = new Set(codomain);
     const table = new Map<M, N>();
     for (const [x, y] of pairs) {
       if (!domain.has(x)) {
@@ -95,6 +107,8 @@ export class Mapping<M, N> {
     codomain: ReadonlySet<N>,
     f: (x: M) => N
   ): Mapping<M, N> {
+    domain = new Set(domain);
+    codomain = new Set(codomain);
     const pairs: [M, N][] = [];
     for (const x of domain) pairs.push([x, f(x)]);
     return Mapping.fromPairs(domain, codomain, pairs);
@@ -135,7 +149,7 @@ export class Mapping<M, N> {
    */
   isSurjective(): boolean {
     const img = this.image();
-    for (const y of this.codomain) if (!img.has(y)) return false;
+    for (const y of this.codomainSet) if (!img.has(y)) return false;
     return true;
   }
 
@@ -164,7 +178,7 @@ export class Mapping<M, N> {
    */
   surjectivityViolation(): { element: N } | null {
     const img = this.image();
-    for (const y of this.codomain) if (!img.has(y)) return { element: y };
+    for (const y of this.codomainSet) if (!img.has(y)) return { element: y };
     return null;
   }
 }
@@ -177,8 +191,9 @@ export class Mapping<M, N> {
  * domain(g) — otherwise the composition is not defined.
  */
 export function compose<M, N, S>(f: Mapping<M, N>, g: Mapping<N, S>): Mapping<M, S> {
+  const gDomain = g.domain;
   for (const y of f.image()) {
-    if (!g.domain.has(y)) {
+    if (!gDomain.has(y)) {
       throw new MappingError(
         'incompatible-composition',
         `image ${safe(y)} of f is outside the definition set of g`

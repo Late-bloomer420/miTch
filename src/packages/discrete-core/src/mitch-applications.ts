@@ -131,21 +131,23 @@ export function verifyBijectionPair<M, N>(
   decode: Mapping<N, M>
 ): BijectionVerification {
   const failures: string[] = [];
+  const decodeDomain = decode.domain;
+  const encodeDomain = encode.domain;
   for (const y of encode.codomain) {
-    if (!decode.domain.has(y)) {
+    if (!decodeDomain.has(y)) {
       failures.push(
         `image ${String(y)} of encode is not in the definition set of decode (declared sets are incompatible)`
       );
     }
   }
   for (const x of decode.codomain) {
-    if (!encode.domain.has(x)) {
+    if (!encodeDomain.has(x)) {
       failures.push(
         `image ${String(x)} of decode is not in the definition set of encode (declared sets are incompatible)`
       );
     }
   }
-  for (const x of encode.domain) {
+  for (const x of encodeDomain) {
     let decoded: M;
     try {
       decoded = decode.apply(encode.apply(x));
@@ -158,7 +160,7 @@ export function verifyBijectionPair<M, N>(
     if (!sameValueZero(decoded, x))
       failures.push(`decode(encode(${String(x)})) = ${String(decoded)} !== ${String(x)}`);
   }
-  for (const y of decode.domain) {
+  for (const y of decodeDomain) {
     let encoded: N;
     try {
       encoded = encode.apply(decode.apply(y));
