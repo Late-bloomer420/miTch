@@ -1,6 +1,7 @@
 /**
  * G-03 — Wallet PWA App Tests
  */
+import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { PolicyEvaluationResult } from '@askmi/shared-types';
@@ -401,6 +402,36 @@ describe('G-03 — Wallet App', () => {
 
     expect(await screen.findByText('Age Credential (GovID)')).toBeInTheDocument();
     expect(webAuthnServiceMock.provePresence).toHaveBeenCalledWith('AskMI-wallet-unlock');
+  });
+
+  it('boots the wallet once under StrictMode (main.tsx renders App in StrictMode)', async () => {
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+    await openWalletPage('Audit');
+
+    expect(screen.getAllByText(/Initializing Wallet Service/)).toHaveLength(1);
+    expect(screen.getAllByText(/Wallet Decrypted & Ready/)).toHaveLength(1);
+    expect(walletServiceMockState.initialize).toHaveBeenCalledTimes(1);
+  });
+
+  it('Reset Wallet still re-runs the bootstrap after the once-only guard', async () => {
+    const webAuthnServiceMock = vi.mocked(WebAuthnService);
+    webAuthnServiceMock.isAvailable.mockResolvedValueOnce(true);
+    webAuthnServiceMock.isIdentityRegistered.mockResolvedValueOnce(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+
+    await screen.findByText('Wallet Locked');
+    expect(walletServiceMockState.initialize).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: /Reset Wallet/i }));
+
+    await waitFor(() => {
+      expect(walletServiceMockState.initialize).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('Reset Wallet wipes the vault and unlinks the device passkey (explicit escape hatch)', async () => {

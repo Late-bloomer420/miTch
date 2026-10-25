@@ -366,6 +366,9 @@ function WalletApp() {
   // Holds the latest bootstrap routine so an explicit reset can re-run first-run
   // enrollment in place (no full page reload).
   const bootstrapRef = useRef<() => Promise<void>>(async () => {});
+  // StrictMode (main.tsx) runs mount effects twice in development. Boot only once per
+  // mount; an explicit reset still re-runs bootstrap through bootstrapRef.
+  const hasBootstrappedRef = useRef(false);
 
   useEffect(() => {
     const init = async () => {
@@ -413,7 +416,9 @@ function WalletApp() {
       }
     };
     bootstrapRef.current = init;
-    init();
+    if (hasBootstrappedRef.current) return;
+    hasBootstrappedRef.current = true;
+    void init();
   }, []);
 
   // Explicit, user-initiated reset — the only sanctioned way to wipe the wallet.
