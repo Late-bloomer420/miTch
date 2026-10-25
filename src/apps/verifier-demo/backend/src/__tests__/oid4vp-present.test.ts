@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
-import { app } from '../app';
+import { app, setIssuerKeyResolver } from '../app';
 import { buildSDJWTPresentation, SCENARIO_VCT } from '@askmi/oid4vp';
 import { statusResolver, trustListResolver } from '@askmi/shared-crypto';
 import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
@@ -59,12 +59,15 @@ describe('/oid4vp-present endpoint', () => {
 
   beforeEach(async () => {
     // Reset verifier state
-    await request(app).post('/reset');
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'oid4vp-test');
+    // ADOPT-0b: the verifier resolves the issuer key itself (trust list / JWKS),
+    // NOT from the wallet. Inject the test issuer key as the "resolved" key.
+    setIssuerKeyResolver(async () => issuerKeys.publicKey);
   });
 
   it('should return 400 when vp_token is missing', async () => {
     const res = await request(app)
-      .post('/oid4vp-present')
+      .post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test')
       .send({ presentation_submission: {}, issuer_jwk: {} });
 
     expect(res.status).toBe(400);
@@ -74,7 +77,7 @@ describe('/oid4vp-present endpoint', () => {
 
   it('should return 400 when presentation_submission is missing', async () => {
     const res = await request(app)
-      .post('/oid4vp-present')
+      .post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test')
       .send({ vp_token: 'fake.token.here', issuer_jwk: {} });
 
     expect(res.status).toBe(400);
@@ -82,19 +85,67 @@ describe('/oid4vp-present endpoint', () => {
     expect(res.body.error).toBe('Missing presentation_submission');
   });
 
-  it('should return 400 when issuer_jwk is missing', async () => {
+  it('rejects (403) when the issuer key cannot be resolved / issuer is untrusted', async () => {
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
+    const { authRequest } = authRes.body;
+    const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
+      request: authRequest,
+      issuerPrivateKey: issuerKeys.privateKey,
+      holderKeyPair: holderKeys,
+      claims: AGE_CLAIMS,
+      vct: SCENARIO_VCT['liquor-store'] ?? ASKMI_SCENARIO_VCT['liquor-store'],
+      issuerDid: ASKMI_DEMO.issuerUri,
+      revoked: false,
+    });
+    // Issuer untrusted / JWKS unresolvable → the verifier must not accept it.
+    setIssuerKeyResolver(async () => null);
     const res = await request(app)
-      .post('/oid4vp-present')
-      .send({ vp_token: 'fake.token.here', presentation_submission: {} });
+      .post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test')
+      .send({ vp_token: vpTokenString, presentation_submission: presentationSubmission, state: authRequest.state });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
     expect(res.body.ok).toBe(false);
-    expect(res.body.error).toBe('Missing issuer_jwk');
+    expect(res.body.error).toBe('untrusted_or_unresolvable_issuer');
+  });
+
+  it('ignores a wallet-supplied issuer_jwk and verifies against the resolved key (closes circular-verification)', async () => {
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
+    const { authRequest } = authRes.body;
+    const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
+      request: authRequest,
+      issuerPrivateKey: issuerKeys.privateKey,
+      holderKeyPair: holderKeys,
+      claims: AGE_CLAIMS,
+      vct: SCENARIO_VCT['liquor-store'] ?? ASKMI_SCENARIO_VCT['liquor-store'],
+      issuerDid: ASKMI_DEMO.issuerUri,
+      revoked: false,
+    });
+    // Resolver (beforeEach) returns the REAL issuer key. Send an ATTACKER key as
+    // issuer_jwk — it must be ignored; verification uses the resolved key → 200.
+    const attacker = await globalThis.crypto.subtle.exportKey(
+      'jwk',
+      (await generateKeyPair()).publicKey
+    );
+    const res = await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
+      vp_token: vpTokenString,
+      presentation_submission: presentationSubmission,
+      state: authRequest.state,
+      issuer_jwk: attacker,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
   });
 
   it('should verify a valid SD-JWT VP (happy path)', async () => {
     // Step 1: Get an auth request with a valid nonce
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -113,7 +164,7 @@ describe('/oid4vp-present endpoint', () => {
     const issuerJwk = await globalThis.crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
     // Step 4: POST to /oid4vp-present
-    const res = await request(app).post('/oid4vp-present').send({
+    const res = await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
       vp_token: vpTokenString,
       presentation_submission: presentationSubmission,
       state: authRequest.state,
@@ -126,7 +177,7 @@ describe('/oid4vp-present endpoint', () => {
     expect(res.body.consentReceipt).toBeDefined();
 
     // Verify status endpoint reflects the result
-    const statusRes = await request(app).get('/status');
+    const statusRes = await request(app).get('/status').set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(statusRes.body.status).toBe('VERIFIED');
     expect(statusRes.body.disclosedClaims).toBeDefined();
   });
@@ -158,7 +209,9 @@ describe('/oid4vp-present endpoint', () => {
     vi.stubGlobal('fetch', fetchFn);
     statusResolver.setFetch(fetchFn as any);
 
-    const authRes = await request(app).get('/authorize?scenario=revoked');
+    const authRes = await request(app)
+      .get('/authorize?scenario=revoked')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -174,7 +227,7 @@ describe('/oid4vp-present endpoint', () => {
 
     const issuerJwk = await globalThis.crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
-    const res = await request(app).post('/oid4vp-present').send({
+    const res = await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
       vp_token: vpTokenString,
       presentation_submission: presentationSubmission,
       state: authRequest.state,
@@ -190,7 +243,9 @@ describe('/oid4vp-present endpoint', () => {
   });
 
   it('should verify doctor-login scenario with selective disclosure', async () => {
-    const authRes = await request(app).get('/authorize?scenario=doctor-login');
+    const authRes = await request(app)
+      .get('/authorize?scenario=doctor-login')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(authRes.status).toBe(200);
     const { authRequest } = authRes.body;
 
@@ -217,7 +272,7 @@ describe('/oid4vp-present endpoint', () => {
 
     const issuerJwk = await globalThis.crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
-    const res = await request(app).post('/oid4vp-present').send({
+    const res = await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
       vp_token: vpTokenString,
       presentation_submission: presentationSubmission,
       state: authRequest.state,
@@ -236,7 +291,7 @@ describe('/oid4vp-present endpoint', () => {
     const issuerJwk = await globalThis.crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
     const res = await request(app)
-      .post('/oid4vp-present')
+      .post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test')
       .send({
         vp_token: 'not.a.valid.sd-jwt~token',
         presentation_submission: { id: 'test', definition_id: 'test', descriptor_map: [] },
@@ -249,12 +304,15 @@ describe('/oid4vp-present endpoint', () => {
   });
 
   it('should update /status after successful verification', async () => {
+    await request(app).post('/reset').set('X-AskMI-Session-Id', 'oid4vp-test');
     // Initial status should be WAITING (after reset)
-    const initialStatus = await request(app).get('/status');
+    const initialStatus = await request(app).get('/status').set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(initialStatus.body.status).toBe('WAITING');
 
     // Run a successful verification
-    const authRes = await request(app).get('/authorize?scenario=liquor-store');
+    const authRes = await request(app)
+      .get('/authorize?scenario=liquor-store')
+      .set('X-AskMI-Session-Id', 'oid4vp-test');
     const { authRequest } = authRes.body;
 
     const { vpTokenString, presentationSubmission } = await buildSDJWTPresentation({
@@ -269,14 +327,15 @@ describe('/oid4vp-present endpoint', () => {
 
     const issuerJwk = await globalThis.crypto.subtle.exportKey('jwk', issuerKeys.publicKey);
 
-    await request(app).post('/oid4vp-present').send({
+    await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
       vp_token: vpTokenString,
       presentation_submission: presentationSubmission,
+      state: authRequest.state,
       issuer_jwk: issuerJwk,
     });
 
     // Status should now be VERIFIED
-    const updatedStatus = await request(app).get('/status');
+    const updatedStatus = await request(app).get('/status').set('X-AskMI-Session-Id', 'oid4vp-test');
     expect(updatedStatus.body.status).toBe('VERIFIED');
     expect(updatedStatus.body.disclosedClaims).toBeDefined();
     expect(updatedStatus.body.consentReceipt).toBeDefined();

@@ -1,5 +1,44 @@
 # AskMI — Master Backlog
 
+## Current evidence-linked work — 2026-10-14
+
+Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
+[Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
+[release roadmap](RELEASE_READINESS_ROADMAP.md), #142 and #143 link current work to the existing component records below.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| ADOPT-1.0/1.1/1.2 | Design | Accepted designs only (#158/#159/#160) | Does not mean SDK/core/store implemented |
+| ADOPT-1.2-code / EV-01/02 | P0 | OPEN #170 | Original server request, crypto + eligibility + scope, atomic session, active HTTP negatives |
+| EV-03 real SD-JWT single-use | P1 / profile-required P0 | OPEN #171 | Atomically reserve/consume stored single-use, holder lifecycle and honest cleanup |
+| EV-04 Tier-2 sink integration | P1 | OPEN #172 | Inventory actual outputs first; apply existing schema only to in-scope exports/telemetry; preserve Tier 1 |
+| EV-06 revision-bound evidence | P1 | OPEN #173 / SEC-AUDIT-3 | Actual-file hash and source/profile/config; active-path coverage |
+| EV-05 audit CI gate | P0 | OPEN #141 / SEC-AUDIT-1/2 | Critical/high and audit failures block; preserve #152 runner |
+| Key separation / decision randomness | Existing | OPEN #150/#151 | Re-review on current base with targeted format/key/randomness tests |
+| S-11 / #122 named layer gap | Scoped | Implemented #125; scoped closure supported | Two negatives plus fresh 63-test schema/metadata/security run; not full health readiness |
+| Naming / #95 | Decision | Superseded by AskMI + #158 | No implementation guarantee attached |
+| G-100.5 / #97 | Profile | OPEN | Exact current official age/mdoc/ZKP semantics plus interoperability evidence |
+| G0/G1 | Gate | OPEN, elapsed targets | No broad expansion until reviewed; public 20/8/3 tally missing, not private-activity inference |
+| GAP-1/GAP-4/F-19/F-20 | Residual | OPEN | Runtime erasure/external review/durable audit/explicit unlinkability downgrade |
+
+These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
+Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
+
+## discrete-core — Vorlesungs-Kernbibliothek (2026-10-23)
+
+Quelle: kein existierendes Issue/Spec; initiiert aus der MCI-Vorlesung *Mengen & Abbildungen* (Hartmann Kap. 1.2–1.3, Computational Thinking). Rein additives, zero-runtime-dependency Paket — kein Canon/ADR-Trace, deshalb hier als eigener Arbeitsrahmen getrackt.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| DC-01 | 🟢 P2 | PR [#189](https://github.com/Late-bloomer420/miTch/pull/189) | `@askmi/discrete-core`: Relation/Mapping/compose/inverse + miTch-Guards (`findDuplicateKeys`, `analyzeComposition`, `verifyBijectionPair`, `verifyTrustEquivalence`); fail-closed `MappingError`-Codes; 40 Vitest-Tests grün auf `44306b1` |
+| DC-02 | 🟢 P2 | ✅ auf Branch | Review-Punkte aus dem PR-Audit behoben: `verifyBijectionPair`-Mengenkompatibilitäts-Guard (fail-closed bei inkompatiblen deklarierten Mengen, 2 negative Tests), unbenutzter generischer Parameter `_N` aus `CompositionAnalysis` entfernt, README „dependency-free" → „zero runtime dependencies" präzisiert |
+| DC-03 | 🟢 P2 | ⏳ | Merge-Kriterien PR #189: CI grün auf Head, Draft-Status aufheben (✅ erledigt), Owner-Approval, CHANGELOG-Eintrag beim Merge |
+| DC-04 | 🟢 P2 | ✅ F-1–F-4 (`beeae79`), F-5/Framing (`44306b1`) | Review-Befunde 2026-10-23 ([QA](qa/DISCRETE_CORE_REVIEW_2026-10-23.md)) vor Merge beheben: F-1 `Relation`-Pair-Index (Trust-Check n=80 ≈ 27 s), F-2 `equivalenceClasses` fail-closed, F-3 Fixture `age:17 → 18+` ersetzen, (F-4 SameValueZero ✅ in `95f1fe3`); README-Framing (kein transitives Trust-Modell) |
+
+Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibliothek, umgeht nicht die Policy Engine); kein bestehender P0/P1-Backlog-Eintrag wird dadurch geschlossen.
+
+## Existing task/change records
+
 > **Rolle:** Autoritatives Task-Tracking — was ist erledigt, was ist offen, was ist geplant.
 > Für operativen Health-Snapshot (Tests, Lint, Demo) siehe [`../STATE.md`](../STATE.md).
 
@@ -22,6 +61,28 @@
 
 **Update 2026-07-01 (S-11 Enforcement-Layer geschlossen):** S-11 ist im Arbeitsstand geschlossen und heute validiert. Die konkreten Health-/Professional-Claims (`bloodGroup`, `allergies`, `activeProblems`, `emergencyContacts`, `medication`, `dosageInstruction`, `refillsRemaining`, `role`, `licenseId`) sind jetzt im Enforcement-`LAYER_MAP` als `VULNERABLE` klassifiziert; die Visibility bleibt ein Superset fuer display-only Claims. Legitime Doctor/EHDS/Research/Pharmacy-Regeln deklarieren explizit `minimumLayer: VULNERABLE`, sodass Consent, Presence, Break-Glass, HDAB und Geo-Scope nicht durch fruehe `LAYER_VIOLATION`s kurzgeschlossen werden. Negative Regression: WELT/default-Verifier bekommen `bloodGroup` nicht, Layer-1-Verifier bekommen `licenseId` nicht. Validierung: `pnpm --filter @askmi/layer-resolver test`, `pnpm --filter @askmi/policy-engine test`, `pnpm --filter @askmi/integration-tests exec vitest run src/demo-scenarios.test.ts`, `pnpm test` (46/46 Turbo-Tasks) und `pnpm guard:rebrand` gruen.
 
+**Update 2026-07-13 (Dead-Code-Sichtung — parked, nicht gelöscht):** Eine knip-Sichtung fand eine in sich geschlossene, aber **nirgends verdrahtete** Komponenten-Insel in `wallet-pwa`, die de facto die **schon getrackte** Visual-Rendering-Arbeit ist (E-45 / V-01–V-04) bzw. Proximity-UX (G-110). Kein `App.tsx`-Pfad importiert die Wurzeln. **Bewusst behalten** (TODO-Marker im Code, Backlog-Referenz), nicht entfernt: `components/SecureIframeRenderer.tsx` (V-02, sandboxed CSP-iframe), `components/CredentialRenderer.tsx` (V-01 renderMethod + V-03 svg-mustache + V-04 digestMultibase), `components/CredentialCard.tsx` (E-45 branded card), `components/ProximityView.tsx` + `services/ProximityService.ts` (G-110 / E-11 ISO-18013-5 Proximity-UI), `components/DocumentsTab.tsx` (Proof-of-Existence-Tab, `DocumentService` bleibt anderweitig genutzt). Deshalb bleiben auch die zugehörigen Deps `mustache`/`@types/mustache` (CredentialRenderer) und `qrcode.react` (ProximityView) deklariert. **Aufgeräumt:** ungenutzte `i18n/medical-terms.ts` in `utils/i18n.ts` konsolidiert (E-38/T-C3, war Dublette der `CLAIM_DICTIONARY`); ungenutzte `jose`-Dependency aus `verifier-demo/backend` und `@askmi/revocation-statuslist` entfernt. `@simplewebauthn/*` in `webauthn-verifier` bleibt bewusst deklariert (per ADR-009 für die künftige vollständige Signatur-Verifikation reserviert).
+
+**Update 2026-07-13 (SECURE-1 Gap-Closure — 6 Fail-Closed Bugs + F-14 Credential-Sig-Verification + GAP-3 Guard):** Sprint SECURE-1 schloss 6 fail-closed Bugs (F-01 wrong key field, F-02 fire-and-forget savePolicy, F-03 false-success WebAuthn stub, F-04 double fail-open geo-scope, F-16/F-18 swallowed IndexedDB errors) + F-14 (echte SD-JWT VC Issuer-Signatur- + KB-JWT-Verifikation in oid4vp-verifier, opt-in, fail-closed) + GAP-3 (bounded-variance timing guard, kein sekretabhängiger I/O-Branch gefunden). 22 Findings insgesamt: 6 fixed + F-14 + 7 documented-residual + 9 not-a-bug. Validierung 2026-07-13: **46/46 Turbo-Tasks grün**, 0 Lint-Errors + 7 pre-existing `no-explicit-any`-Warnings in wallet-pwa (Baseline unverändert), `guard:rebrand` grün. Threat-Model-Gaps: **GAP-2 geschlossen mit Residual** (Shamir-Recovery war bereits implementiert — ADR-009-Eintrag war veraltet); **GAP-3 mitigiert** (bounded-variance Guard + dokumentiertes Residual — echte Konstant-Zeit in V8 unerreichbar); **GAP-1** (Browser-RAM) und **GAP-4** (externer Security-Review) bleiben offen. Evidenz: `docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md`.
+
+**Update 2026-07-13 (Fail-Closed für GDPR-Outward-Actions — 2 Bugs behoben):** Beim Prüfen einer ESLint-„unused proofToken"-Meldung fielen zwei echte Bugs in `WalletService` auf, die jetzt behoben + getestet sind. (1) **False-Success:** `requestDataErasure` (CIR 2024/2982 I9) und `reportRelyingParty` (Art. 7) gaben bedingungslos `success:true` zurück und schrieben Audit `status:'SENT'`/`REPORT_SENT`, **ohne** je etwas zu senden — der signierte `proofToken` wurde verworfen (Netzwerk-POST auskommentiert bzw. ganz fehlend). Jetzt: gemeinsamer `postSignedRequest()`-Helfer POSTet den signierten Token echt und **fail-closed** — Erfolg nur bei HTTP 2xx, sonst `success:false` + Audit `status:'FAILED'` (mit `delivery_error`/`http_status`); bei Erfolg wird `proof_token` in den unveränderlichen Audit-Trail geschrieben. Beide Methoden sind jetzt symmetrisch. (2) **signData Key-Name-Mismatch:** `signData()` las per Cast `auditLog.privateKey`/`publicKey`, während `AuditLog.setAuditKeys()` unter `auditPrivateKey`/`auditPublicKey` speichert → `signData` warf **immer** „Identity keys not available", d. h. der ganze Erasure-/Report-Pfad war faktisch tot. Korrigiert. Neue Coverage: 5 Tests in `WalletService.test.ts` (2xx→SENT+proof_token, HTTP-Fehler→fail-closed, Netzwerk-Fehler→fail-closed, für Erasure + Report). **UI-Anbindung erledigt (2026-07-13):** die pro-Transaktion-Controls im `DataFlowPanel` („🗑️ Löschung anfordern" / „🚩 Melden") existierten bereits, aber `App.tsx` übergab **kein** `onAction` → Klick war ein No-op. Jetzt ist `handleDataFlowAction(type, decisionId)` verdrahtet: ruft `requestDataErasure`/`reportRelyingParty` (Report mit `window.prompt`-Grund), spiegelt das fail-closed-Ergebnis via `addLog` (Erfolg/Fehler) und lässt das Panel über den Audit-Refresh die neue `ERASURE_REQUESTED`/`REPORT_SENT`-Transaktion zeigen. Der Erasure-Button bleibt disabled, wenn die Transaktion keinen `erasure_endpoint` hat. Coverage: 2 `DataFlowPanel`-Wiring-Tests (Buttons → `onAction` mit korrekter `decision_id`; disabled ohne Endpoint).
+
+**Update 2026-07-17 (SECURE-2 + ADOPT-0a/0b real credential path — live verifiziert):** master jetzt `bb34003`/**PR #137** (war `e9bec3c`/#120 in den älteren Stand-Zeilen). Gemerged seit SECURE-1: **#133** (`turbo dev dependsOn ^build`), **#134** (SECURE-2 internes Evidence-Pack + runnable Harness), **#135 (ADOPT-0a)** echte SD-JWT-VC-Ausstellung + Speicherung, **#136 (ADOPT-0b)** echte Credential-Präsentation aus der gespeicherten VC, **#137** Korrektur-Fix (Verifier dekodiert SD-JWT-Disclosures; Issuer stellt den angefragten Claim `age` aus — beide Bugs waren unit-grün aber e2e kaputt). **ERLEDIGT (live verifiziert 2026-07-17 gegen frische current-`master`-Server):** Der echte Pfad Wallet→issuer-mock→Verifier `/oid4vp-present` funktioniert end-to-end — Ausstellung `vc+sd-jwt` (holder-bound `cnf`) → selektive Offenlegung nur `age` + KB-JWT → Verifier löst den Issuer-Key **autoritativ** über die Trust-List/JWKS auf und dekodiert die Disclosures. Drei Live-Fälle grün: Happy-Path (`200 disclosedClaims:{age:24}`), **Circular-Verification geschlossen** (Angreifer-signierte Cred mit vertrautem `iss` + eigenem `issuer_jwk` → `403 Signature verification failed`, wallet-gelieferter Key ignoriert), **fail-closed Trust-Gate** (`did:web:evil.example` → `403 untrusted_or_unresolvable_issuer`). `pnpm test` → **47/47 Turbo-Tasks** grün. Real-Facts-Fund: auf `:3004`/`:5174` liefen 3 Tage alte Zombie-Prozesse (pre-merge Code) — vor jeder Live-Demo den laufenden Prozess als current bestätigen. Evidenz: [`qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](qa/ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md). **OFFEN / KNOWN GAP:** (a) nur das `age`/liquor-store-Szenario läuft mit echter Credential end-to-end — Doctor/EHDS/Pharmacy fallen korrekt fail-closed ("no matching credential"); (b) Browser-UI-Click-through (wallet-pwa `:5174` HTTPS + IndexedDB + In-Browser-OID4VCI/QR) **nicht** automatisiert gefahren — nur der HTTP-Pfad; (c) **GEFIXT 2026-10-24 auf `feat/adopt-1-connect-slice`:** `pnpm dev` scheiterte an `@askmi/poc-hardened` (`ERR_MODULE_NOT_FOUND`) — Ursache: extensionslose Relative-Imports in den unter plain Node geladenen ESM-Dist-Ausgaben von `@askmi/shared-crypto` + `@askmi/revocation-statuslist` (`type: module`); Quellen tragen jetzt explizite `.js`-Suffixe, `poc-hardened` bootet via `tsc && node dist/server.js` (Node v24.16.0), Paket-Tests grün (285/26/132); (d) verifier-demo **Frontend** (`:5175`) `/wallet-present` bleibt die **simulierte** Wallet (ephemere Issuer-Keys), nicht der echte ADOPT-Pfad; (e) Carry-over-Minors: issuer-mock 500 statt 400 bei nicht-P-256 Holder-JWK, `x-correlation-id` beim OID4VCI-Fetch fallen gelassen. **Nächster Track:** ADOPT-1 (`@askmi/connect` "Sign in with AskMI" Kit) — Re-Brainstorm auf realer Faktenbasis, gedrafteter Spec nur als „old truth".
+
+**Update 2026-09-20 (DPIA & Demo-Aussagen):** Neuer Abschnitt „DPIA & öffentliche Demo-Aussagen“ (DP-01…DP-05, CL-01…CL-03). DP-01 umgesetzt: Die öffentliche Demo zeigt statt einer scheinbar fertigen DPIA nur noch den Status „in Vorbereitung“. Es existiert noch keine abgeschlossene oder freigegebene DPIA; die Fristen DP-02 bis DP-04 sind Vorschläge. Ebenfalls umgesetzt: CL-01 (Demo-Aussagen bereinigt) und CL-02 (Kostenmodell mit Belegen und einstellbaren Annahmen); neu: CL-04, CL-05.
+
+**Update 2026-10-01 (Research intake + ADOPT-1 gate):** Die September-Dokumente `EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md`, `USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` und `USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` sind eingeordnet als Research-/Strategie-Inputs, **nicht** als Zertifizierung, Rechtsgutachten, Customer Validation oder autoritativer Delivery-Backlog. Neuer Plan `docs/tasks/ADOPT_1_CONNECT_PLAN.md` beschreibt den nächsten Gate für `@askmi/connect` / "Sign in with AskMI": zuerst RP-deployed Verifier-/Policy-Integration, keine AskMI-issued Attestations, keine Zertifizierungsclaims, keine Exposure-Aktionen.
+
+**Update 2026-10-01 (ADOPT-1.0 Produktgrenze entschieden):** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md` akzeptiert die erste `@askmi/connect`-Grenze: relying-party deployed Verifier-/Policy-Integration, erster Slice nur Age/Liquor-Store auf dem echten ADOPT-0a/0b-Pfad, keine AskMI-issued Credentials, keine issuer-equivalent Claims, keine Roh-Credentials oder stabilen Personenkennungen in genereller Telemetrie. ADOPT-1.1 (Minimal Session Contract) bleibt der nächste offene Gate vor Code.
+
+**Update 2026-10-01 (ADOPT-1.1 Minimal Session Contract entschieden):** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md` definiert den ersten `@askmi/connect`-Contract: registrierte Policy `age-liquor-store-v1`, neue `/askmi/connect/sessions`-Routen, one-shot Session-State-Machine, pluggable SessionStore, stabile Fehlercodes und negative Tests inkl. explizitem Ausschluss der simulierten `/wallet-present`-Route. ADOPT-1.2 (SDK/API Shape) ist der nächste offene Gate vor Code.
+
+**Update 2026-10-01 (ADOPT-1.2 SDK/API Shape + Security-Audit-Remediation gestartet):** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md` akzeptiert die erste SDK-Grenze: neues `@askmi/connect`-Package, framework-agnostic Core, `InMemoryAskMIConnectSessionStore`, dünner Express-Adapter, Browser-Handoff-Helper, keine Holder-Keys/Credential-Bytes/arbitrary Claims als App-Input, kein `/wallet-present`-Simulationserfolg. `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md` startet die Security-Audit-Spur in kleinen PRs: zuerst #151/#152 prüfen und sauber neu landen, danach Dependency-Alert-Batches und Evidence-Freshness.
+
+**Update 2026-10-23 (ADOPT-1.2-code erster Code-Slice auf Branch):** Branch `feat/adopt-1-connect-slice` implementiert den ersten `@askmi/connect` Code-Slice nach ADOPT-1.1/1.2: framework-agnostic Core (`createAskMIConnect` mit Policy-Registry `age-liquor-store-v1`, Session-State-Machine, cryptografisch zufälligen `askmi_sess_`-IDs/Nonces), `InMemoryAskMIConnectSessionStore` (one-shot consume, deleteExpired), Express-Adapter (`/askmi/connect/sessions`-Routen, stabile Fehlercodes → ADOPT-1.1-HTTP-Tabelle) und Browser-Handoff-Helper als Subpath-Exports. Verifikation greift auf den echten ADOPT-0-Pfad zu (`@askmi/oid4vp` `validateSDJWTPresentation` + trust-gegate Issuer-Key-Resolution, fail-closed ohne Resolver); `eligible` ist separate Policy-Entscheidung (`age >= 18`), nicht bloß Signatur-Validität (#170-Finding). 37 Tests decken die ADOPT-1.1-Negativmatrix ab (Kollision, unknown/expired/terminal, replay, wrong audience/nonce, UNTRUSTED_ISSUER default, INSUFFICIENT_CLAIMS, POLICY_DENIED age 12, `SIMULATED_ROUTE_REJECTED` für `/wallet-present`-Bodies, PII-minimale Status-Responses). Validierung 2026-10-23 auf dem Branch: Package build/lint grün, 37/37 Tests, `pnpm test` 47/47 Turbo-Tasks, `pnpm lint` 12/12, `guard:rebrand` grün. Noch nicht auf `master` gemerged; Core importiert keine Express-Typen.
+
+**Update 2026-10-24 (PR #193 lifecycle correction, branch only):** distinguish resolver infrastructure failure from untrusted issuer; a failed consumed attempt is terminal (new session/nonce to retry). Store updates now atomically enforce TTL and absorbing terminal states; Express rejected handlers persist guarded failure or explicitly report unavailable persistence. Custom stores must adopt the revised update API. [Scoped tests/evidence](qa/CONNECT_LIFECYCLE_CORRECTION_2026-10-24.md); human review + head CI pending. #170 stays open; independent audit gate/critical dependency triage stays under #185.
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---
@@ -31,6 +92,20 @@
 - 🟡 P1 — Wichtig, sollte bald passieren
 - 🟢 P2 — Nice-to-have / Langfristig
 - ✅ — Erledigt
+
+---
+
+## ADOPT-1 — AskMI Connect Gate (proposed)
+
+Quelle: [`tasks/ADOPT_1_CONNECT_PLAN.md`](tasks/ADOPT_1_CONNECT_PLAN.md). Dieser Abschnitt ist der nächste konkrete Arbeitsrahmen nach ADOPT-0a/0b; er bleibt Gate/Plan, bis Umsetzung explizit gestartet wird.
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| ADOPT-1.0 | 🔴 P0 | ✅ | Produktgrenze für `@askmi/connect` festgelegt: RP-deployed Verifier-/Policy-Integration, erster Slice nur Age/Liquor-Store mit echtem ADOPT-0a/0b-Pfad; keine AskMI-issued Credentials, keine issuer-equivalent Claims, keine Roh-Credentials in genereller Telemetrie. Siehe [`tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`](tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md). | Entscheidung dokumentiert; keine Ausgabe wird als neue EUDI-Credential oder issuer-equivalent proof beschrieben |
+| ADOPT-1.1 | 🔴 P0 | ✅ | Minimalen Verification-Session-Contract definiert: `age-liquor-store-v1`, neue `/askmi/connect/sessions`-Routen, one-shot Present, Status-GET, Store-Interface, stabile Fehlercodes und negative Tests gegen die simulierte `/wallet-present`-Route. Siehe [`tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md`](tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md). | Schema dokumentiert; wrong audience, reused nonce, missing session/trust, invalid signature und insufficient claims sind fail-closed Fälle |
+| ADOPT-1.2 | 🟡 P1 | ✅ | SDK/API-Schnitt für `@askmi/connect` entworfen: neues Package, framework-agnostic Core, InMemory Store, dünner Express-Adapter, Browser-Handoff-Helper, constrained policy registration. Siehe [`tasks/ADOPT_1_SDK_API_SHAPE.md`](tasks/ADOPT_1_SDK_API_SHAPE.md). | Kein Holder-Key/Credential-Byte-Export; Sample nutzt echten ADOPT-0 Pfad, nicht `/wallet-present` Simulation |
+| ADOPT-1.2-code | 🔴 P0 | ⏳ #170 — PR #193, corrective commit awaiting human review/CI | Ersten `@askmi/connect` Code-Slice bauen: Core, Store, Express-Adapter, Handoff-Helper und negative Tests | Package baut/testet; zwei Sessions kollidieren nicht; wrong audience/nonce/replay/expiry/simulated route fail-closed |
+| ADOPT-1.3 | 🟡 P1 | ⏳ | Ersten Vertikal-Pilot nur über Discovery-Gates auswählen (Buyer, Land, Credential-Quelle, Schmerz, Rechts-/Retention-Annahmen, paid-pilot path) | Kein 72-Use-Case-Buildout; ein konkreter Pilot erfüllt die Gates oder wird verworfen |
 
 ---
 
@@ -46,6 +121,25 @@ Quelle: `docs/tasks/SPRINT_02_BIG_AUDIT.md` und
 | S2-03 | ✅ | ✅ | Active-code Rebrand Guard in CI | `src`, `.github`, Root Configs brechen bei `@mitch/*`, `did:mitch`, `mitch.demo`, `MitchPolicyEvaluator` |
 | S2-04 | ✅ | ✅ | Demo-Scenario-Fixtures prüfen/extrahieren | Canonical `ASKMI_SCENARIO_CLAIMS` in `@askmi/shared-types`; Wallet- und Verifier-Backend-Fixtures leiten daraus ab (Backend aliast `birthDate`→`dateOfBirth` an der Protokollgrenze); Frontend-Anzeige-Copy bleibt lokal; `doctor-login` age-Drift (24/35) auf 35 vereinheitlicht |
 | S2-05 | ✅ | ✅ | Trust-/StatusList-Test-Fixtures als Testhelper | `@askmi/revocation-statuslist/test-helpers` exportiert `makeStatusListEntry`/`makeStatusListCredential`; `revocation-statuslist`-Tests und `@askmi/integration-tests` nutzen sie ohne Copy/Paste; Bitstring-Encoding bleibt pro Aufrufer lokal (kein geändertes Revocation-Verhalten) |
+
+---
+
+## DPIA & öffentliche Demo-Aussagen (2026-09-20)
+
+Quelle: Aussagen-Prüfung der öffentlichen Demo vom 2026-09-20 und DPIA-Arbeitsentwurf. Es existiert **noch keine abgeschlossene oder freigegebene DPIA**; die Demo zeigt bis dahin nur einen Status-Hinweis. Die Fristen sind Vorschläge, weil die Doku kein Pilotdatum nennt. Sie gelten, bis ein Pilotstart festgelegt ist. Vorschlag für ein Freigabe-Gate: kein Pilot mit echten personenbezogenen Daten vor freigegebener DPIA (Art. 35 Abs. 1 DSGVO verlangt die Bewertung vor der Verarbeitung).
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| DP-01 | 🔴 P0 | ✅ | Demo: DPIA-Overlay, Tab, Popup und Badge zeigen nur noch „in Vorbereitung“ statt einer scheinbar fertigen DPIA („Version 1.0 — March 2026“) | Keine Stelle der öffentlichen Demo behauptet eine abgeschlossene DPIA; das Overlay nennt die geplante Gliederung nach Art. 35 Abs. 7 (EN/DE), ohne Termine |
+| DP-02 | 🔴 P0 | ⏳ | **Frist 2026-10-31:** Grundsatzentscheidungen: Verantwortlicher und Rolle von AskMI im Pilot, Produkt-DPIA oder Pilot-DPIA, Datenschutzbeauftragte/r benennen, Hosting/Auftragsverarbeiter/Standorte, Inhalt des Audit-Logs klären (`MEMO_GDPR_SHREDDING.md` nennt verschlüsselte personenbezogene Daten, `METADATA_BUDGET_V1.md` verbietet Roh-PII) | Entscheidungen schriftlich festgehalten, Widerspruch beim Audit-Inhalt aufgelöst |
+| DP-03 | 🔴 P0 | ⏳ | **Frist 2026-11-30:** Erster vollständiger DPIA-Entwurf (Art. 35 Abs. 7 lit. a–d) mit bewerteten Risiken | Alle vier Abschnitte ausgefüllt, Risiken mit Wahrscheinlichkeit, Schwere und Restrisiko bewertet |
+| DP-04 | 🟡 P1 | ⏳ | **Frist 2026-12-15:** Review durch die/den Datenschutzbeauftragte/n, Sicht der Betroffenen (Art. 35 Abs. 2, 9), bei hohem Restrisiko Vorab-Konsultation (Art. 36) | Freigabe dokumentiert; erst dann ersetzt die freigegebene DPIA den Hinweis aus DP-01 |
+| DP-05 | 🟡 P1 | ⏳ | Rechtsmemo `docs/04-legal/MEMO_GDPR_SHREDDING.md` unabhängig prüfen lassen: Es stützt die Löschwirkung auf „EDPB Guidelines 04/2020“, diese behandeln Standortdaten im COVID-Kontext | Unabhängige Stellungnahme liegt vor; bis dahin wird die Löschwirkung nur als Annahme ausgewiesen |
+| CL-01 | 🔴 P0 | ✅ | Demo-Aussagen bereinigen: „CIR 82%“, grüne Compliance-Häkchen, Interoperabilitäts-Flaggen, Absolutformulierungen („cannot“, „mathematically“), Kennzeichnung als Simulation (FNV-Hash statt SHA-256, `Date.now()` im Nullifier), reale Organisationsnamen als fiktive Verifier. **Umgesetzt 2026-09-20** (Wortlaut, echtes SHA-256 mit Sitzungs-Seed, Simulationshinweis, fiktive Namen, „Frequency cap“ statt „Sybil Prevention“, EHDS-Text ohne ungeprüfte Artikelnummer) | Alle in der Aussagen-Prüfung genannten Aussagen sind qualifiziert oder ersetzt; offene Belege und rechtliche Prüfung siehe CL-04 und CL-05 |
+| CL-02 | 🟡 P1 | ✅ | Kostenmodell der Demo: belegte Werte (IBM-Report als Annahme mit Ausgabe und USD, HSM- und CDN-Listenpreise, Beispielpreis Verifizierung) mit Quelle und Stand kennzeichnen; alle übrigen Posten als frei einstellbare Annahmen; keine „Ersparnis in %“ als Überschrift. **Umgesetzt 2026-09-20**: ein Modell in USD für Session-Panel, Szenario-Panels und Jahresrechner; belegt sind Veriff-Beispielpreis, AWS CloudHSM (Fixkosten, Frankfurt 1,92 USD/h) und CloudFront, alles andere ist einstellbare Annahme; IBM 2025 nur als Kontext | Jeder Wert trägt ein Etikett mit Quelle und Stand oder ist als Annahme einstellbar |
+| CL-03 | 🟢 P2 | ⏳ | Doku angleichen: Namensregel (miTch = Dach, AskMI = Produkt) in `MATURITY_AND_LIMITATIONS.md`; Compliance-Prozentwerte in Gap-Report, CIR-Matrix und `STATE.md` vereinheitlichen | Keine widersprüchlichen Zahlen oder Regeln zwischen den Dokumenten |
+| CL-04 | 🟡 P1 | ⏳ | Neue Website-Aussagen der Demo mit Beleg in `docs/05-business/marketing/06-claim-evidence-map.md` eintragen (Nullifier und Pairwise-ID aus Seed, Simulationshinweis, Kostenmodell mit Etiketten) | Jede öffentliche Aussage der Demo hat einen Eintrag mit Beleg oder ist als Annahme oder Simulation gekennzeichnet |
+| CL-05 | 🟡 P1 | ⏳ | EHDS-Aussagen der Demo rechtlich prüfen: Die frühere Angabe „Art. 33“ und der Satz, Direktzugriff sei „auch mit Einwilligung“ unzulässig, waren nicht belegbar und sind entfernt. Zu prüfen: korrekte Artikel für den HDAB-Weg und der Anwendungsbeginn der Sekundärnutzung gegen den offiziellen Text der Verordnung (EU) 2025/327 | Jede EHDS-Aussage der Demo nennt den geprüften Artikel und den geltenden Zeitpunkt oder ist gestrichen |
 
 ---
 
@@ -217,7 +311,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 |---|---|---|
 | E-40 | ✅ | Live EUDI Trust List (TSL) Integration |
 | E-41 | ✅ | TSL Signature Verification (eIDAS 2.0 Compliance) |
-| E-42 | ✅ | Functional Coverage 100% (Technical) |
+| E-42 | 🟡 | Historical internal mapping; current functional conformance unproven |
 
 ---
 
@@ -251,7 +345,7 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 ### 2.4 Regulatory Compliance
 | ID | Prio | Beschreibung | Referenz |
 |---|---|---|---|
-| E-30 | ✅ | CIR 2024/2977 Compliance (PID + EAA Anforderungen) — 100% (Batch Issuance complete) | EU Implementing Reg |
+| E-30 | ✅ | Historical PID/EAA implementation mapping; no complete current-rulebook compliance evidence | EU Implementing Reg |
 | E-31 | ✅ | CIR 2024/2979 Compliance (Integrität + Brainpool + Hardware Binding) | EU Implementing Reg |
 | E-32 | ✅ | CIR 2024/2982 Compliance (Protokolle + mdoc Proximity + GDPR Rights) | EU Implementing Reg |
 | E-33 | ✅ | CIR 2024/2981 — Zertifizierungsanforderungen verstehen + LoA High Readiness | EU Implementing Reg |
@@ -276,12 +370,14 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 
+> **Hinweis (2026-07-13):** Eine **nicht verdrahtete** Referenz-Implementierung dieser Zeilen existiert bereits im Code (parked, TODO-Marker): `wallet-pwa/src/components/CredentialRenderer.tsx` (V-01 `renderMethod`, V-03 svg-mustache, V-04 `verifyDigestMultibase`), `wallet-pwa/src/components/SecureIframeRenderer.tsx` (V-02 sandboxed CSP-iframe), `wallet-pwa/src/components/CredentialCard.tsx` (Branded Card). Offen = Einbindung in die Wallet-UI, nicht Neubau.
+
 | ID | Prio | Beschreibung | Standard |
 |---|---|---|---|
-| V-01 | 🟡 | `renderMethod` Property Support in SD-JWT VC Parser | W3C VC-Render |
-| V-02 | 🟡 | Sandboxed Iframe Renderer mit strikter CSP (No-Tracking Enforcement) | W3C §4.2 |
-| V-03 | 🟢 | `svg-mustache` Template-Engine Integration für Branded Cards | W3C §3.1.1 |
-| V-04 | 🟢 | Cryptographic Digest Verification (`digestMultibase`) für Templates | W3C §3.1.3 |
+| V-01 | 🟡 | `renderMethod` Property Support in SD-JWT VC Parser — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C VC-Render |
+| V-02 | 🟡 | Sandboxed Iframe Renderer mit strikter CSP (No-Tracking Enforcement) — Impl. parked in `SecureIframeRenderer.tsx` (unwired) | W3C §4.2 |
+| V-03 | 🟢 | `svg-mustache` Template-Engine Integration für Branded Cards — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C §3.1.1 |
+| V-04 | 🟢 | Cryptographic Digest Verification (`digestMultibase`) für Templates — Impl. parked in `CredentialRenderer.tsx` (unwired) | W3C §3.1.3 |
 
 ---
 
@@ -289,7 +385,7 @@ Basierend auf: `W3C Verifiable Credential Rendering Methods v1.0`
 - **Total requirements:** 53
 - **Implemented:** 52 ✅
 - **Partial:** 1 🟡 — formal Common Criteria certification (CC conformance, E-42; external evaluation pending)
-- **Compliance Score:** 98% (52/53) — consistent with [`../STATE.md`](../STATE.md) and [`compliance/EUDI_CIR_MATRIX.md`](compliance/EUDI_CIR_MATRIX.md)
+- **Historical internal mapping total (not compliance/readiness evidence):** 52/53 entries; superseded for current status by the open findings register. Historical reference: [`../STATE.md`](../STATE.md) and [`compliance/EUDI_CIR_MATRIX.md`](compliance/EUDI_CIR_MATRIX.md)
 
 ---
 
@@ -304,7 +400,7 @@ Basierend auf: `memory/miTch_security_patterns_memory.md` — *lokale OpenClaw-W
 | S-03 | ✅ | Input Validation Schema (Whitelist-basiert) für Policy Parser | Claim-Name Injection |
 | S-04 | ✅ | Komponenten-Isolations-Modell (Engine/Consent/Audit) | Internal Privilege Escalation |
 | S-05 | ✅ | Zero Trust intern dokumentieren + implementieren | Chained Attacks |
-| S-10 | 🟡 | Formales Threat Model (STRIDE) — ADR-009: STRIDE-Tabelle vollständig (22 Einträge, alle belegt), 3 Szenarien, 4 Gaps dokumentiert. Status PROPOSED — externer Security Review offen (menschliche Vorbedingung) | BSI TR-02102 + EUDI-CIR Risiko-Assessment |
+| S-10 | 🟡 | Formales Threat Model (STRIDE) — ADR-009: STRIDE-Tabelle vollständig (31 Einträge nach SECURE-1, alle belegt), 3 Szenarien, Gaps reconciled (GAP-2 geschlossen mit Residual — Shamir-Recovery war bereits implementiert; GAP-3 mitigiert — bounded-variance Guard, dokumentiertes Residual, echte Konstant-Zeit in V8 unerreichbar; GAP-1 Browser-RAM offen; GAP-4 externer Review offen). Status: **Accepted (technical) — pending external review** (GAP-4 🔴 bleibt menschliche Vorbedingung) | BSI TR-02102 + EUDI-CIR Risiko-Assessment |
 | S-11 | ✅ | **Enforcement-Layer schuetzt Health/Professional-Vokabular** ([Issue #122](https://github.com/Late-bloomer420/miTch/issues/122)) — geschlossen/validiert 2026-07-01: `bloodGroup`/`allergies`/`activeProblems`/`emergencyContacts`/`medication`/`dosageInstruction`/`refillsRemaining`/`role`/`licenseId` sind Enforcement-seitig `VULNERABLE`; legitime Doctor/EHDS/Research/Pharmacy-Regeln optieren explizit mit `minimumLayer: VULNERABLE` ein. Regressionen sichern, dass WELT/default-Verifier `bloodGroup` und Layer-1-Verifier `licenseId` mit `LAYER_VIOLATION` verlieren, waehrend autorisierte Layer-2 Demo-Flows weiter gruen bleiben. | Low-Layer-Verifier erhalten keine Layer-2-Gesundheits-/Professional-Claims mehr; 46/46 Turbo-Tasks + rebrand guard gruen |
 
 ---

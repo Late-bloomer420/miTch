@@ -18,6 +18,7 @@ import {
   createKeyBindingJWT,
   validateKeyBindingJWT,
   buildCNFClaim,
+  extractDisclosedClaims,
   statusResolver,
   trustListResolver,
   type SDJWTVCPayload,
@@ -408,9 +409,20 @@ export async function validateSDJWTPresentation(
     '_sd_alg',
   ]);
   const disclosedClaims: Record<string, unknown> = {};
+  // 5a: claims carried in the clear in the JWT payload (legacy/demo credentials).
   for (const [k, v] of Object.entries(payload)) {
     if (!METADATA_KEYS.has(k)) {
       disclosedClaims[k] = v;
+    }
+  }
+  // 5b: SD-JWT selective disclosures (real credentials) — decode the presented
+  // disclosure segments and merge only those whose digest is in the issuer-signed
+  // `_sd` (fail-closed; a holder cannot inject unsigned claims).
+  const presentedDisclosures = parts.slice(1, parts.length - 1);
+  if (presentedDisclosures.length > 0) {
+    const fromDisclosures = await extractDisclosedClaims(presentedDisclosures, payload._sd ?? []);
+    for (const [k, v] of Object.entries(fromDisclosures)) {
+      if (!METADATA_KEYS.has(k)) disclosedClaims[k] = v;
     }
   }
 

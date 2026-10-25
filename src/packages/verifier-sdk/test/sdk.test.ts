@@ -121,10 +121,13 @@ describe('VerifierSDK Attack Vectors', () => {
             ciphertext = await badKey.encrypt(JSON.stringify(artifact), aadBytes);
         } else if (overrides.tamperedCiphertext) {
             const validCt = await ephemeralKey.encrypt(JSON.stringify(artifact), aadBytes);
-            // Flip a bit in the ciphertext suffix (keeping IV intact)
+            // Flip a bit in the ciphertext suffix (keeping IV intact).
+            // XOR always changes the byte; overwriting with a fixed char was a no-op
+            // whenever the byte already had that value (~1 in 256 runs).
             const raw = atob(validCt);
-            const sub = raw.substring(0, raw.length - 5) + 'X' + raw.substring(raw.length - 4);
-            ciphertext = btoa(sub);
+            const i = raw.length - 5;
+            const flipped = String.fromCharCode(raw.charCodeAt(i) ^ 0x01);
+            ciphertext = btoa(raw.substring(0, i) + flipped + raw.substring(i + 1));
         } else if (overrides.wrongAadForEncryption) {
             const badAad = new TextEncoder().encode('bad-aad');
             ciphertext = await ephemeralKey.encrypt(JSON.stringify(artifact), badAad);

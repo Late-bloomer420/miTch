@@ -1,3 +1,6 @@
+// TODO(backlog E-45 / V-03): Branded credential card (renders via CredentialRenderer).
+// Implemented but not yet wired into the wallet UI (no live importer). See
+// docs/BACKLOG.md "Phase 5 — Visual & Branding". Do not delete: parked, pending wiring.
 import React from 'react';
 import { CredentialRenderer, RenderMethod } from './CredentialRenderer';
 

@@ -11,6 +11,7 @@
     "dependencies": {
         "@askmi/mdoc": "workspace:*",
         "@askmi/oid4vp": "workspace:*",
+        "@askmi/shared-crypto": "workspace:*",
         "@askmi/shared-types": "workspace:*"
     },
     "devDependencies": {

@@ -1,0 +1,6 @@
+# Keep the committed baseline; ignore ad-hoc evidence runs
+EVIDENCE_*.md
+EVIDENCE_*.json
+!EVIDENCE_2026-07-14T00-04-05-971Z.md
+!EVIDENCE_2026-07-14T00-04-05-971Z.json
+!.gitignore

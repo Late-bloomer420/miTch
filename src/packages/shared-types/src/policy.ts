@@ -340,6 +340,9 @@ export interface DecisionCapsule {
     requires_presence: boolean; // If true, Must trigger Biometric/Passkey
     expires_at: string; // ISO 8601
     wallet_attestation?: string; // Signature or TEE proof
+    wallet_attestation_method?: 'webauthn' | 'software-fallback';
+    wallet_attestation_protection?: 'SOFTWARE_EPHEMERAL' | 'SOFTWARE_PERSISTED' | 'HARDWARE_BOUND';
+    wallet_attestation_encoding?: 'hex' | 'base64';
     presence_proof?: string; // WebAuthn/Passkey signature over decision_id
 
     /** CIR 2024/2982: Persisted erasure endpoint for later use */
@@ -389,9 +392,10 @@ export interface InteractionMetadata {
 
 /**
  * Supported credential encoding formats.
- * 'sd-jwt' = SD-JWT VC (current default), 'mso_mdoc' = ISO 18013-5 mdoc (CBOR/COSE).
+ * 'sd-jwt' = SD-JWT VC (current default), 'mso_mdoc' = ISO 18013-5 mdoc (CBOR/COSE),
+ * 'sd-jwt-vc' = full SD-JWT VC string with holder key (ADOPT-0a).
  */
-export type CredentialFormat = 'sd-jwt' | 'mso_mdoc';
+export type CredentialFormat = 'sd-jwt' | 'mso_mdoc' | 'sd-jwt-vc';
 
 export interface StoredCredentialMetadata {
     id: string;

@@ -3,6 +3,10 @@
  *
  * Handles ISO 18013-5 Proximity Presentation (BLE/NFC).
  * Currently implemented with a Mock Adapter for demonstration.
+ *
+ * TODO(backlog G-110 / E-11 proximity): Implemented but not yet wired into the wallet UI
+ * (only the parked ProximityView imports it). See docs/BACKLOG.md EPIC G-110.
+ * Do not delete: parked, pending wiring.
  */
 
 import { 
@@ -26,9 +30,6 @@ export class ProximityService {
     static async startSession(devicePublicKey: CryptoKey): Promise<ProximitySession> {
         const engagementBytes = await buildDeviceEngagement(devicePublicKey);
         const engagementUri = createEngagementUri(engagementBytes);
-
-        let connectedCallback = () => {};
-        let messageCallback = (_msg: any) => {};
 
         // Mock Transport Logic
         const session: ProximitySession = {

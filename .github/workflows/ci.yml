@@ -30,7 +30,7 @@ jobs:
           cache: 'pnpm'
 
       - name: 📚 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 🔎 Active rebrand guard
         run: pnpm guard:rebrand
@@ -43,6 +43,9 @@ jobs:
 
       - name: 🧪 Run tests
         run: pnpm test
+
+      - name: Public cost-assumption regressions
+        run: node --test site/tests/cost-assumptions.test.mjs
 
       - name: 🔍 Lint
         run: pnpm lint
@@ -62,7 +65,7 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
       - name: 🛡️ Validate Layer Enforcement
@@ -82,8 +85,31 @@ jobs:
           node-version: 22
 
       - name: 📚 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 🔍 Run pnpm audit
         run: pnpm audit --audit-level=high
         continue-on-error: true
+
+  evidence-platforms:
+    name: Evidence (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install evidence dependencies
+        run: pnpm install --filter @askmi/evidence --frozen-lockfile
+      - name: Test shell-free evidence runner
+        run: pnpm --filter @askmi/evidence exec vitest run src/__tests__/runner.test.ts
+      - name: Typecheck evidence package
+        run: pnpm --filter @askmi/evidence typecheck

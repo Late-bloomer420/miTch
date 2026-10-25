@@ -17,7 +17,7 @@
 import { DIDDocument } from '@askmi/shared-types';
 import { importJWK } from 'jose';
 import type { KeyLike, JWK } from 'jose';
-import { resolveDidPeer0 } from './pairwise-did';
+import { resolveDidPeer0 } from './pairwise-did.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

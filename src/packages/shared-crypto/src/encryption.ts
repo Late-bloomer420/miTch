@@ -17,7 +17,7 @@
  * - Context Binding: AAD ties ciphertext to specific context
  */
 
-import { crypto } from './platform';
+import { crypto } from './platform.js';
 
 /**
  * Robust Base64 implementation for binary data.

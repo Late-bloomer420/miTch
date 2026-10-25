@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SDJWTStatusResolver } from './status-resolver';
+import { SDJWTStatusResolver } from './status-resolver.js';
 
 describe('SDJWTStatusResolver', () => {
     it('should correctly map SD-JWT VC status to StatusList2021 entry and check it', async () => {

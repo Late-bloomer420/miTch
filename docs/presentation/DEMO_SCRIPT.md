@@ -15,12 +15,12 @@ Willkommen zur Live-Demonstration von **miTch — The Forgetting Layer**. Wir ze
 **Was im Hintergrund passiert:**
 - Der Verifier (Liquor Store) fordert über die miTch Protection Layer API den Beweis: `Alter >= 18`.
 - Die **Policy Engine** auf dem Smartphone des Nutzers prüft die Anfrage. Da es sich um eine Low-Risk-Transaktion ohne Weitergabe von Rohdaten handelt, greift die "Auto-Allow"-Policy.
-- Der **Proof Builder** generiert einen Zero-Knowledge Proof (ZKP) oder abgeleiteten Claim (nur `true/false`).
+- Der lokale Predicate-Pfad signiert ein berechnetes Ergebnis; dies ist kein nachgewiesener Zero-Knowledge-Ableitungsbeweis. Der separate echte SD-JWT-Pfad legt derzeit numerisches `age` offen.
 - Ephemere (kurzlebige) Schlüssel werden generiert, verwendet und sofort zerstört (Crypto-Shredding).
 
 **Privacy-Aspekt:**
-- Der Verifier erfährt weder das Geburtsdatum noch den Namen. Er erhält nur ein kryptografisch sicheres "Ja, über 18".
-- Die Transaktion ist unverlinkbar. Ein Tracking des Kaufverhaltens über verschiedene Geschäfte hinweg ist ausgeschlossen.
+- Der reale SD-JWT-Demopfad legt im geprüften Happy-Path `age` offen, nicht das Geburtsdatum. Eine reine issuer-authentisierte Age-Boolean-Präsentation ist damit noch nicht belegt.
+- Wechselnde Kennungen mindern einzelne Korrelationswege; vollständige Unlinkability ist nicht belegt. Der echte Single-use-Pfad ist unter #171 offen.
 
 ---
 

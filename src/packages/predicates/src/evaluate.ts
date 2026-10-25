@@ -372,7 +372,8 @@ export async function evaluatePredicates(
     }
 
     // Create decision ID and timestamp
-    const decisionId = `decision_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    // CSPRNG-backed ID (Node 19+ and all supported browsers); no Math.random.
+    const decisionId = `decision_${Date.now()}_${globalThis.crypto.randomUUID()}`;
     const evaluatedAt = request.timestamp || new Date().toISOString();
 
     // Compute request hash

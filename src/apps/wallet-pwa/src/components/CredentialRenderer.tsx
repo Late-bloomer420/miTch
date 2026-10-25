@@ -1,3 +1,7 @@
+// TODO(backlog E-45 / V-01, V-03, V-04): renderMethod support + svg-mustache templating
+// + digestMultibase verification. Implemented but not yet wired into the wallet UI
+// (only CredentialCard imports it, itself unwired). See docs/BACKLOG.md
+// "Phase 5 — Visual & Branding". Do not delete: parked, pending wiring.
 import React from 'react';
 import Mustache from 'mustache';
 import { verifyDigestMultibase } from '@askmi/shared-crypto';

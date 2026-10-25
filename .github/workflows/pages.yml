@@ -28,7 +28,9 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           mkdir -p _site
-          cp src/packages/poc-hardened/src/poc-web/standalone.html _site/index.html
+          # Pages source now lives in the neutral top-level site/ dir (extracted
+          # from poc-hardened so the deploy no longer depends on that package).
+          cp site/index.html _site/index.html
           # Simple 404 redirect to index for SPA-like behaviour
           cp _site/index.html _site/404.html
 

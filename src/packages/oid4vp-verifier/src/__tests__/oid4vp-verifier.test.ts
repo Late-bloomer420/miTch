@@ -70,9 +70,9 @@ describe('encodeAuthorizationRequest', () => {
 });
 
 describe('verifyAuthorizationResponse', () => {
-    it('accepts valid response', () => {
+    it('accepts valid response', async () => {
         const response = buildResponse();
-        const result = verifyAuthorizationResponse({
+        const result = await verifyAuthorizationResponse({
             response,
             expectedNonce: 'nonce-valid-1',
             expectedState: 'state-123',
@@ -83,8 +83,8 @@ describe('verifyAuthorizationResponse', () => {
         expect(result.credentials).toHaveLength(1);
     });
 
-    it('rejects state mismatch', () => {
-        const result = verifyAuthorizationResponse({
+    it('rejects state mismatch', async () => {
+        const result = await verifyAuthorizationResponse({
             response: buildResponse({ state: 'wrong' }),
             expectedNonce: 'n',
             expectedState: 'state-123',
@@ -95,7 +95,7 @@ describe('verifyAuthorizationResponse', () => {
         expect(result.errors.some(e => e.includes('State mismatch'))).toBe(true);
     });
 
-    it('rejects submission with wrong definition_id', () => {
+    it('rejects submission with wrong definition_id', async () => {
         const response = buildResponse({
             presentation_submission: {
                 id: 'sub-2',
@@ -103,7 +103,7 @@ describe('verifyAuthorizationResponse', () => {
                 descriptor_map: [{ id: 'age-descriptor', format: 'sd-jwt', path: '$' }],
             },
         });
-        const result = verifyAuthorizationResponse({
+        const result = await verifyAuthorizationResponse({
             response,
             expectedNonce: 'n2',
             expectedState: undefined,
@@ -114,8 +114,8 @@ describe('verifyAuthorizationResponse', () => {
         expect(result.errors.some(e => e.includes('mismatch'))).toBe(true);
     });
 
-    it('rejects empty vp_token', () => {
-        const result = verifyAuthorizationResponse({
+    it('rejects empty vp_token', async () => {
+        const result = await verifyAuthorizationResponse({
             response: buildResponse({ vp_token: '' }),
             expectedNonce: 'n3',
             definition: DEFINITION,
@@ -163,8 +163,8 @@ describe('satisfiesConstraints', () => {
 });
 
 describe('verifyAuthorizationResponse — nonce replay protection', () => {
-    it('accepts first use of a nonce', () => {
-        const result = verifyAuthorizationResponse({
+    it('accepts first use of a nonce', async () => {
+        const result = await verifyAuthorizationResponse({
             response: buildResponse({ state: 'st-nonce' }),
             expectedNonce: `unique-nonce-${Date.now()}-A`,
             expectedState: 'st-nonce',
@@ -173,7 +173,7 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
         expect(result.valid).toBe(true);
     });
 
-    it('rejects second use of same nonce (replay)', () => {
+    it('rejects second use of same nonce (replay)', async () => {
         const nonce = `replay-nonce-${Date.now()}`;
         const opts = {
             response: buildResponse({ state: 'st-r' }),
@@ -182,22 +182,22 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
             definition: DEFINITION,
         };
 
-        const first = verifyAuthorizationResponse(opts);
+        const first = await verifyAuthorizationResponse(opts);
         expect(first.valid).toBe(true);
 
-        const second = verifyAuthorizationResponse(opts);
+        const second = await verifyAuthorizationResponse(opts);
         expect(second.valid).toBe(false);
         expect(second.errors.some(e => e.includes('replay') || e.includes('Nonce'))).toBe(true);
     });
 
-    it('different nonces both accepted independently', () => {
-        const r1 = verifyAuthorizationResponse({
+    it('different nonces both accepted independently', async () => {
+        const r1 = await verifyAuthorizationResponse({
             response: buildResponse({ state: 's1' }),
             expectedNonce: `nonce-x-${Date.now()}-1`,
             expectedState: 's1',
             definition: DEFINITION,
         });
-        const r2 = verifyAuthorizationResponse({
+        const r2 = await verifyAuthorizationResponse({
             response: buildResponse({ state: 's2' }),
             expectedNonce: `nonce-x-${Date.now()}-2`,
             expectedState: 's2',
@@ -207,8 +207,8 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
         expect(r2.valid).toBe(true);
     });
 
-    it('rejects response with no descriptor map entries', () => {
-        const result = verifyAuthorizationResponse({
+    it('rejects response with no descriptor map entries', async () => {
+        const result = await verifyAuthorizationResponse({
             response: buildResponse({
                 presentation_submission: {
                     id: 'sub-nodesc',
@@ -224,7 +224,7 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
         expect(result.valid).toBe(false);
     });
 
-    it('rejects when credential count < descriptor count', () => {
+    it('rejects when credential count < descriptor count', async () => {
         const multiDef: PresentationDefinition = {
             id: 'multi-pd',
             input_descriptors: [
@@ -233,7 +233,7 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
             ],
         };
         // Only 1 credential in vp_token but 2 descriptors required
-        const result = verifyAuthorizationResponse({
+        const result = await verifyAuthorizationResponse({
             response: {
                 vp_token: 'eyJhbGciOiJFUzI1NiJ9.single.credential',
                 presentation_submission: {
@@ -255,7 +255,7 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
         expect(result.errors.some(e => e.includes('count') || e.includes('mismatch'))).toBe(true);
     });
 
-    it('skipNonceCheck bypasses replay detection', () => {
+    it('skipNonceCheck bypasses replay detection', async () => {
         const nonce = `skip-nonce-${Date.now()}`;
         const opts = {
             response: buildResponse({ state: 'st-skip' }),
@@ -265,8 +265,8 @@ describe('verifyAuthorizationResponse — nonce replay protection', () => {
             skipNonceCheck: true as const,
         };
         // Second call still passes because nonce check is skipped
-        verifyAuthorizationResponse(opts);
-        const second = verifyAuthorizationResponse(opts);
+        await verifyAuthorizationResponse(opts);
+        const second = await verifyAuthorizationResponse(opts);
         expect(second.valid).toBe(true);
     });
 });
