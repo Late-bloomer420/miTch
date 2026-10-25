@@ -8,7 +8,13 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { WalletService } from '../services/WalletService';
 import { ASKMI_STORAGE_KEYS, type PolicyManifest } from '@askmi/shared-types';
-import { KeyProtectionLevel, WebAuthnService, generateHolderBinding } from '@askmi/shared-crypto';
+import {
+  IdentityKeyGuardian,
+  KeyProtectionLevel,
+  WebAuthnService,
+  generateHolderBinding,
+} from '@askmi/shared-crypto';
+import { decodeProofTokenHeader, verifyProofToken } from '../utils/proof-token';
 import { SecureStorage } from '@askmi/secure-storage';
 import type { TrackingPoint } from '../services/PrivacyAuditService';
 import { DataFlowService } from '@askmi/data-flow';
@@ -1084,6 +1090,105 @@ describe('WalletService — GDPR outward actions (fail-closed delivery)', () => 
 
     expect(res.success).toBe(false);
     expect(lastEntry(wallet, 'REPORT_SENT')?.metadata?.status).toBe('FAILED');
+  });
+
+  it('erasure: sends a labelled v2 proof token that verifies with the session identity key', async () => {
+    let sentToken = '';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        sentToken = JSON.parse(init!.body as string).token;
+        return { ok: true, status: 200 } as Response;
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(true);
+    expect(decodeProofTokenHeader(sentToken)).toMatchObject({
+      typ: 'askmi-poe',
+      v: 2,
+      alg: 'ES256',
+      key: 'software-session',
+    });
+    const guardian = (wallet as unknown as { identityKeyGuardian: IdentityKeyGuardian })
+      .identityKeyGuardian;
+    const verified = await verifyProofToken(sentToken, {
+      softwarePublicKey: await guardian.getSoftwarePublicKey(),
+    });
+    expect(verified.valid).toBe(true);
+  });
+
+  it('erasure: stops with a passkey message when WebAuthn is available but no passkey is registered', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/passkey/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+    const entry = lastEntry(wallet, 'ERASURE_REQUESTED');
+    expect(entry?.metadata?.status).toBe('FAILED');
+    expect(entry?.metadata?.delivery_error).toBe('IDENTITY_KEY_REQUIRED');
+    expect(entry?.metadata?.proof_token).toBeUndefined();
+  });
+
+  it('report: stops with a passkey message when WebAuthn is available but no passkey is registered', async () => {
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(false);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await wallet.reportRelyingParty(DECISION, 'over-asking');
+
+    expect(res.success).toBe(false);
+    expect(res.message).toMatch(/passkey/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(lastEntry(wallet, 'REPORT_SENT')?.metadata?.delivery_error).toBe(
+      'IDENTITY_KEY_REQUIRED'
+    );
+  });
+
+  it('erasure: with a registered passkey, signs with the full assertion, not the bare signature', async () => {
+    const assertion = {
+      version: 1 as const,
+      credentialId: 'cred-1',
+      rpId: 'wallet.example',
+      authenticatorData: 'AAAA',
+      clientDataJSON: 'AAAA',
+      signature: 'AAAA',
+    };
+    vi.spyOn(WebAuthnService, 'isAvailable').mockResolvedValue(true);
+    vi.spyOn(WebAuthnService, 'isIdentityRegistered').mockResolvedValue(true);
+    const detailed = vi
+      .spyOn(WebAuthnService, 'signWithIdentityKeyAssertion')
+      .mockResolvedValue(assertion);
+    const bare = vi.spyOn(WebAuthnService, 'signWithIdentityKey');
+    let sentToken = '';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        sentToken = JSON.parse(init!.body as string).token;
+        return { ok: true, status: 200 } as Response;
+      })
+    );
+
+    const res = await wallet.requestDataErasure(DECISION);
+
+    expect(res.success).toBe(true);
+    expect(detailed).toHaveBeenCalledOnce();
+    expect(bare).not.toHaveBeenCalled();
+    expect(decodeProofTokenHeader(sentToken)).toMatchObject({
+      alg: 'webauthn-es256',
+      key: 'hardware-passkey',
+    });
+    const [headerPart, payloadPart, signaturePart] = sentToken.split('.');
+    expect(detailed).toHaveBeenCalledWith(`${headerPart}.${payloadPart}`);
+    const b64 = signaturePart.replace(/-/g, '+').replace(/_/g, '/');
+    expect(JSON.parse(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)))).toEqual(assertion);
   });
 
   it('report: succeeds and records the signed proof once the authority confirms', async () => {
