@@ -121,6 +121,9 @@ importers:
 
   src/apps/verifier-demo/backend:
     dependencies:
+      '@askmi/connect':
+        specifier: workspace:*
+        version: link:../../../packages/connect
       '@askmi/oid4vp':
         specifier: workspace:*
         version: link:../../../packages/oid4vp

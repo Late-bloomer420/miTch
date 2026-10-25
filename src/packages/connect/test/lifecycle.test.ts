@@ -1,3 +1,4 @@
+import { ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
@@ -19,8 +20,11 @@ function deferred<T>() {
 const key = {} as CryptoKey;
 const valid = { ok: true, disclosedClaims: { age: 24 }, errors: [] };
 const body = {
-  vp_token: `header.${btoa(JSON.stringify({ iss: 'did:askmi:issuer' }))}.sig~kb`,
-  presentation_submission: {},
+  vp_token: `header.${btoa(JSON.stringify({ iss: 'did:askmi:issuer', vct: ASKMI_SCENARIO_VCT['liquor-store'] }))}.sig~kb`,
+  presentation_submission: {
+    definition_id: 'askmi-connect',
+    descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+  },
 };
 
 function fixture(
@@ -73,27 +77,43 @@ describe('resolver failure is one terminal attempt', () => {
       },
     });
     const first = await create(f);
-    const failed = await f.connect.completeSession({ sessionId: first.sessionId, body });
+    const failed = await f.connect.completeSession({
+      sessionId: first.sessionId,
+      body: { ...body, state: first.sessionId },
+    });
     expect(failed).toMatchObject({ ok: false, code: 'ISSUER_RESOLUTION_FAILED' });
     expect(JSON.stringify(failed)).not.toContain('private');
     expect(await f.connect.getSession(first.sessionId)).toMatchObject({
       ok: true,
       session: { status: 'failed', errorCode: 'ISSUER_RESOLUTION_FAILED' },
     });
-    expect(await f.connect.completeSession({ sessionId: first.sessionId, body })).toMatchObject({
+    expect(
+      await f.connect.completeSession({
+        sessionId: first.sessionId,
+        body: { ...body, state: first.sessionId },
+      })
+    ).toMatchObject({
       ok: false,
       code: 'SESSION_TERMINAL',
     });
     expect(calls).toBe(1);
     const fresh = await create(f);
     expect(fresh.nonce).not.toBe(first.nonce);
-    expect(await f.connect.completeSession({ sessionId: fresh.sessionId, body })).toMatchObject({
+    expect(
+      await f.connect.completeSession({
+        sessionId: fresh.sessionId,
+        body: { ...body, state: fresh.sessionId },
+      })
+    ).toMatchObject({
       ok: true,
     });
     const untrusted = fixture({ resolver: async () => null });
     const other = await create(untrusted);
     expect(
-      await untrusted.connect.completeSession({ sessionId: other.sessionId, body })
+      await untrusted.connect.completeSession({
+        sessionId: other.sessionId,
+        body: { ...body, state: other.sessionId },
+      })
     ).toMatchObject({
       ok: false,
       code: 'UNTRUSTED_ISSUER',
@@ -109,7 +129,7 @@ describe('resolver failure is one terminal attempt', () => {
     const s = await create(f);
     const res = await request(f.app)
       .post(`/askmi/connect/sessions/${s.sessionId}/presentation`)
-      .send(body);
+      .send({ ...body, state: s.sessionId });
     expect(res.status).toBe(503);
     expect(res.body.error.code).toBe('ISSUER_RESOLUTION_FAILED');
     expect(JSON.stringify(res.body)).not.toContain('secret');
@@ -142,7 +162,10 @@ describe('TTL checked atomically at completion', () => {
           });
           const s = await create(f);
           await f.connect.markWalletOpened(s.sessionId);
-          const completion = f.connect.completeSession({ sessionId: s.sessionId, body });
+          const completion = f.connect.completeSession({
+            sessionId: s.sessionId,
+            body: { ...body, state: s.sessionId },
+          });
           await entered.promise;
           f.expire();
           if (poll)
@@ -172,7 +195,10 @@ describe('TTL checked atomically at completion', () => {
       },
     });
     const s = await create(f);
-    const completion = f.connect.completeSession({ sessionId: s.sessionId, body });
+    const completion = f.connect.completeSession({
+      sessionId: s.sessionId,
+      body: { ...body, state: s.sessionId },
+    });
     await entered.promise;
     f.expire();
     release.reject(new Error('lookup timed out'));
@@ -191,7 +217,10 @@ describe('TTL checked atomically at completion', () => {
       },
     });
     const s = await create(f);
-    const completion = f.connect.completeSession({ sessionId: s.sessionId, body });
+    const completion = f.connect.completeSession({
+      sessionId: s.sessionId,
+      body: { ...body, state: s.sessionId },
+    });
     await entered.promise;
     f.expire();
     expect(await f.store.deleteExpired(new Date(f.now()))).toBe(1);
@@ -211,9 +240,17 @@ describe('TTL checked atomically at completion', () => {
       },
     });
     const s = await create(f);
-    const first = f.connect.completeSession({ sessionId: s.sessionId, body });
+    const first = f.connect.completeSession({
+      sessionId: s.sessionId,
+      body: { ...body, state: s.sessionId },
+    });
     await entered.promise;
-    expect(await f.connect.completeSession({ sessionId: s.sessionId, body })).toMatchObject({
+    expect(
+      await f.connect.completeSession({
+        sessionId: s.sessionId,
+        body: { ...body, state: s.sessionId },
+      })
+    ).toMatchObject({
       ok: false,
       code: 'REPLAY_DETECTED',
     });
@@ -228,7 +265,10 @@ describe('terminal states reject every later transition', () => {
       const f = fixture();
       const s = await create(f);
       if (terminal === 'verified')
-        await f.connect.completeSession({ sessionId: s.sessionId, body });
+        await f.connect.completeSession({
+          sessionId: s.sessionId,
+          body: { ...body, state: s.sessionId },
+        });
       if (terminal === 'failed') await f.connect.failSession(s.sessionId);
       if (terminal === 'expired') f.expire();
       for (const update of [
@@ -281,7 +321,12 @@ describe('unexpected exceptions', () => {
       validator: async () => ({ ok: true, disclosedClaims: claims, errors: [] }),
     });
     const s = await create(f);
-    expect(await f.connect.completeSession({ sessionId: s.sessionId, body })).toMatchObject({
+    expect(
+      await f.connect.completeSession({
+        sessionId: s.sessionId,
+        body: { ...body, state: s.sessionId },
+      })
+    ).toMatchObject({
       ok: false,
       code: 'INTERNAL_ERROR',
     });
@@ -294,7 +339,12 @@ describe('unexpected exceptions', () => {
     f.store.consume = async () => {
       throw new Error('private backend error');
     };
-    expect(await f.connect.completeSession({ sessionId: session.sessionId, body })).toMatchObject({
+    expect(
+      await f.connect.completeSession({
+        sessionId: session.sessionId,
+        body: { ...body, state: session.sessionId },
+      })
+    ).toMatchObject({
       ok: false,
       code: 'INTERNAL_ERROR',
     });
@@ -331,7 +381,9 @@ describe('unexpected exceptions', () => {
       const res =
         route === 'status'
           ? await request(f.app).get(url)
-          : await request(f.app).post(url).send(body);
+          : await request(f.app)
+              .post(url)
+              .send({ ...body, state: s.sessionId });
       expect(res.status).toBe(500);
       expect(res.body.error.code).toBe('INTERNAL_ERROR');
       expect(JSON.stringify(res.body)).not.toContain('private failure');
@@ -350,7 +402,7 @@ describe('unexpected exceptions', () => {
     };
     const res = await request(f.app)
       .post(`/askmi/connect/sessions/${s.sessionId}/presentation`)
-      .send(body);
+      .send({ ...body, state: s.sessionId });
     expect(res.status).toBe(503);
     expect(res.body.status).toBe('unknown');
     expect(res.body.error.code).toBe('INTERNAL_ERROR');
@@ -362,7 +414,7 @@ describe('unexpected exceptions', () => {
     const s = await create(f);
     const res = await request(f.app)
       .post(`/askmi/connect/sessions/${s.sessionId}/presentation`)
-      .send(body);
+      .send({ ...body, state: s.sessionId });
     expect(res.status).toBe(403);
     expect(JSON.stringify(res.body)).not.toContain('private diagnostic');
   });

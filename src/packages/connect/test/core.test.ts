@@ -1,3 +1,4 @@
+import { ASKMI_SCENARIO_VCT } from '@askmi/shared-types';
 import { describe, expect, it } from 'vitest';
 
 import { createAskMIConnect } from '../src/core/verifier';
@@ -22,7 +23,7 @@ function failingValidator(errors: string[]): PresentationValidator {
 
 /** VP token with a decodable issuer segment so the trust gate is exercised. */
 function vpWithIss(iss: string): string {
-  const payload = btoa(JSON.stringify({ iss }))
+  const payload = btoa(JSON.stringify({ iss, vct: ASKMI_SCENARIO_VCT['liquor-store'] }))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -115,7 +116,13 @@ describe('completeSession (negative contract)', () => {
     const connect = makeConnect({ validator: okValidator({ age: 24 }) });
     const r = await connect.completeSession({
       sessionId: 'askmi_sess_missing',
-      body: { vp_token: vpWithIss('did:askmi:issuer'), presentation_submission: {} },
+      body: {
+        vp_token: vpWithIss('did:askmi:issuer'),
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
+      },
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe('UNKNOWN_SESSION');
@@ -128,7 +135,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -156,7 +166,12 @@ describe('completeSession (negative contract)', () => {
     const s = await createPendingSession(connect);
     const missingToken = await connect.completeSession({
       sessionId: s.sessionId,
-      body: { presentation_submission: {} },
+      body: {
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
+      },
     });
     expect(missingToken.ok).toBe(false);
     if (!missingToken.ok) expect(missingToken.code).toBe('MALFORMED_PRESENTATION');
@@ -182,7 +197,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s.sessionId,
       body: {
         vp_token: 'x.eyJpc3MiOiJkaWQ6YXNrbWk6aXNzdWVyIn0.y~kb',
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -197,7 +215,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: 'askmi_sess_other',
       },
     });
@@ -212,7 +233,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -225,7 +249,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s2.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s2.sessionId,
       },
     });
@@ -234,13 +261,16 @@ describe('completeSession (negative contract)', () => {
   });
 
   it('produces INSUFFICIENT_CLAIMS when age is missing after valid verification', async () => {
-    const connect = makeConnect({ validator: okValidator({ name: 'Zoe' }) });
+    const connect = makeConnect({ validator: okValidator({}) });
     const s = await createPendingSession(connect);
     const r = await connect.completeSession({
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -255,7 +285,10 @@ describe('completeSession (negative contract)', () => {
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -268,7 +301,10 @@ describe('completeSession (negative contract)', () => {
     const s = await createPendingSession(connect);
     const body = {
       vp_token: vpWithIss('did:askmi:issuer'),
-      presentation_submission: {},
+      presentation_submission: {
+        definition_id: 'askmi-connect',
+        descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+      },
       state: s.sessionId,
     };
     const first = await connect.completeSession({ sessionId: s.sessionId, body });
@@ -283,7 +319,10 @@ describe('completeSession (negative contract)', () => {
     const s = await createPendingSession(connect);
     const body = {
       vp_token: vpWithIss('did:askmi:issuer'),
-      presentation_submission: {},
+      presentation_submission: {
+        definition_id: 'askmi-connect',
+        descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+      },
       state: s.sessionId,
     };
     const first = await connect.completeSession({ sessionId: s.sessionId, body });
@@ -296,13 +335,16 @@ describe('completeSession (negative contract)', () => {
 
 describe('completeSession (success path)', () => {
   it('verifies with minimal result/verification/provenance and no raw values', async () => {
-    const connect = makeConnect({ validator: okValidator({ age: 24, name: 'Zoe' }) });
+    const connect = makeConnect({ validator: okValidator({ age: 24 }) });
     const s = await createPendingSession(connect);
     const r = await connect.completeSession({
       sessionId: s.sessionId,
       body: {
         vp_token: vpWithIss('did:askmi:issuer'),
-        presentation_submission: {},
+        presentation_submission: {
+          definition_id: 'askmi-connect',
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
         state: s.sessionId,
       },
     });
@@ -338,7 +380,10 @@ describe('markWalletOpened', () => {
     await connect.markWalletOpened(s.sessionId);
     const body = {
       vp_token: vpWithIss('did:askmi:issuer'),
-      presentation_submission: {},
+      presentation_submission: {
+        definition_id: 'askmi-connect',
+        descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+      },
       state: s.sessionId,
     };
     await connect.completeSession({ sessionId: s.sessionId, body });

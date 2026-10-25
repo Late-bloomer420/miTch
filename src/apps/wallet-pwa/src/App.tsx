@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
+import {
+  parseConnectHandoff,
+  loadConnectRequest,
+  presentationAccepted,
+} from './utils/connect-handoff';
 
 import { type EvaluationContext } from '@askmi/policy-engine';
 import type {
@@ -261,8 +266,12 @@ function WalletApp() {
     endpoint: string;
     verifier: string;
     sessionId: string;
+    requestUri?: string;
+    expectedNonce?: string;
   } | null>(() => {
     try {
+      const connectHandoff = parseConnectHandoff(window.location.search);
+      if (connectHandoff) return connectHandoff;
       const p = new URLSearchParams(window.location.search);
       const endpoint = p.get('endpoint');
       const scenario = p.get('scenario');
@@ -1012,12 +1021,15 @@ function WalletApp() {
 
       const result = (await response.json()) as {
         ok: boolean;
+        status?: string;
+        result?: { eligible?: boolean };
         disclosedClaims?: Record<string, unknown>;
         errors?: string[];
-        error?: string;
+        error?: string | { code?: string; message?: string };
       };
 
-      if (result.ok) {
+      const accepted = presentationAccepted(response.ok, result);
+      if (accepted) {
         addLog('✅ Verifier confirmed: Presentation VALID', 'success');
         if (result.disclosedClaims) {
           addLog(`👁️ Verifier sees: ${JSON.stringify(result.disclosedClaims)}`, 'info');
@@ -1026,7 +1038,7 @@ function WalletApp() {
         setTimeout(() => setFlashAllow(false), 900);
       } else {
         addLog(
-          `⚠️ Verifier rejected: ${result.errors?.join(', ') ?? result.error ?? 'unknown'}`,
+          `⚠️ Verifier rejected: ${result.errors?.join(', ') ?? (typeof result.error === 'string' ? result.error : result.error?.message) ?? 'unknown'}`,
           'warning'
         );
       }
@@ -1035,14 +1047,14 @@ function WalletApp() {
       const { consentReceipt, auditEntry } = buildSessionCleanup({
         request: authRequest,
         disclosedClaims,
-        outcome: result.ok ? 'SUCCESS' : 'DENIED',
+        outcome: accepted ? 'SUCCESS' : 'DENIED',
         decisionId,
       });
       setLastConsentReceipt(consentReceipt);
       setConsentReceiptHistory(
         appendConsentReceiptHistory({
           receipt: consentReceipt,
-          outcome: result.ok ? 'SUCCESS' : 'DENIED',
+          outcome: accepted ? 'SUCCESS' : 'DENIED',
           decisionId,
         })
       );
@@ -1068,6 +1080,8 @@ function WalletApp() {
     endpoint: string;
     verifier: string;
     sessionId: string;
+    requestUri?: string;
+    expectedNonce?: string;
   }) => {
     const data = params || incomingOID4VP;
     if (!data) return;
@@ -1075,7 +1089,10 @@ function WalletApp() {
     const sessionHeaders = { 'X-AskMI-Session-Id': sessionId };
 
     // G-110: Notify verifier that we scanned the QR (robust handoff feedback)
-    fetch(`${endpoint}/notify-scan`, { method: 'POST', headers: sessionHeaders }).catch(() => {});
+    const openedEndpoint = data.requestUri
+      ? `${endpoint}/askmi/connect/sessions/${encodeURIComponent(sessionId)}/opened`
+      : `${endpoint}/notify-scan`;
+    fetch(openedEndpoint, { method: 'POST', headers: sessionHeaders }).catch(() => {});
 
     setStatus('EVALUATING');
     setLogs([]);
@@ -1087,14 +1104,23 @@ function WalletApp() {
     try {
       // Step 1: Fetch OID4VP Authorization Request from verifier
       addLog(`🔄 Fetching auth request from ${endpoint}/authorize...`, 'info');
-      const authRes = await fetch(
-        `${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`,
-        {
-          headers: sessionHeaders,
-        }
-      );
-      if (!authRes.ok) throw new Error(`Verifier /authorize returned ${authRes.status}`);
-      const { authRequest } = (await authRes.json()) as { authRequest: AuthorizationRequest };
+      let authRequest: AuthorizationRequest;
+      if (data.requestUri && data.expectedNonce) {
+        authRequest = await loadConnectRequest({
+          ...data,
+          requestUri: data.requestUri,
+          expectedNonce: data.expectedNonce,
+        });
+      } else {
+        const authRes = await fetch(
+          `${endpoint}/authorize?scenario=${encodeURIComponent(scenario)}`,
+          {
+            headers: sessionHeaders,
+          }
+        );
+        if (!authRes.ok) throw new Error(`Verifier /authorize returned ${authRes.status}`);
+        ({ authRequest } = (await authRes.json()) as { authRequest: AuthorizationRequest });
+      }
 
       addLog(
         `📄 Received PD: ${authRequest.presentation_definition.name ?? authRequest.presentation_definition.id}`,
@@ -1103,7 +1129,7 @@ function WalletApp() {
 
       // Step 2: Policy evaluation (convert OID4VP request to VerifierRequest for policy engine)
       const policyRequest: VerifierRequest = {
-        verifierId: verifier,
+        verifierId: authRequest.client_id,
         requestedClaims: authRequest.presentation_definition.input_descriptors.flatMap(
           (d) => d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
         ),

@@ -6,6 +6,8 @@ import { NonceStore } from './nonce-store';
 import { FixedWindowRateLimiter } from './rate-limiter';
 import { getRequesterId } from './requester-id';
 import { acceptsActiveProfile } from './active-profile';
+import { createAskMIConnect, InMemoryAskMIConnectSessionStore } from '@askmi/connect';
+import { askmiConnectExpressRouter } from '@askmi/connect/express';
 import {
   verifyPredicateResult,
   CommonPredicates,
@@ -41,6 +43,7 @@ const ASKMI_TSL_URL =
   process.env[ASKMI_ENV.tslUrl] || process.env[ASKMI_ENV.legacyTslUrl] || ASKMI_DEMO.trustListUrl;
 trustListResolver.setUrl(ASKMI_TSL_URL);
 const ISSUER_BASE_URL = process.env.ISSUER_BASE_URL || ASKMI_DEMO.issuerBaseUrl;
+const CONFIGURED_ISSUER = process.env.ISSUER_DID || ASKMI_DEMO.issuerUri;
 
 const isTestMode =
   process.env[ASKMI_ENV.testMode] === '1' || process.env[ASKMI_ENV.legacyTestMode] === '1';
@@ -427,21 +430,28 @@ app.post('/wallet-present', requireSession, async (req, res) => {
 // list / issuer JWKS — never against a wallet-supplied `issuer_jwk` (which would
 // be circular: the wallet would provide both the signature and the key to check
 // it against). A real issuer (Austria ID / eIDAS) plugs in via the trust list.
+async function resolveTrustedIssuerKey(iss: string): Promise<CryptoKey | null> {
+  // This demo has one configured JWKS authority, not a multi-issuer resolver.
+  if (iss !== CONFIGURED_ISSUER) return null;
+  const trust = await trustListResolver.isIssuerTrusted(iss);
+  if (!trust.isTrusted) return null;
+  const r = await fetch(`${ISSUER_BASE_URL}/.well-known/jwks.json`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!r.ok) throw new Error('Issuer key service unavailable');
+  const jwks = (await r.json()) as { keys?: JsonWebKey[] };
+  if (!jwks.keys?.length) throw new Error('Issuer key response missing keys');
+  return await globalThis.crypto.subtle.importKey(
+    'jwk',
+    jwks.keys[0],
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    true,
+    ['verify']
+  );
+}
 export async function defaultResolveIssuerKey(iss: string): Promise<CryptoKey | null> {
   try {
-    const trust = await trustListResolver.isIssuerTrusted(iss);
-    if (!trust.isTrusted) return null;
-    const r = await fetch(`${ISSUER_BASE_URL}/.well-known/jwks.json`);
-    if (!r.ok) return null;
-    const jwks = (await r.json()) as { keys?: JsonWebKey[] };
-    if (!jwks.keys?.length) return null;
-    return await globalThis.crypto.subtle.importKey(
-      'jwk',
-      jwks.keys[0],
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      true,
-      ['verify']
-    );
+    return await resolveTrustedIssuerKey(iss);
   } catch {
     return null;
   }
@@ -451,6 +461,28 @@ let issuerKeyResolver: (iss: string) => Promise<CryptoKey | null> = defaultResol
 export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | null>): void {
   issuerKeyResolver = fn;
 }
+
+// Dedicated Connect store: legacy demo routes cannot write Connect results.
+const connectStore = new InMemoryAskMIConnectSessionStore();
+const connect = createAskMIConnect({
+  verifierDid: ASKMI_DEMO.verifierDid,
+  audienceBaseUrl: process.env.VERIFIER_BASE_URL || 'http://localhost:3004',
+  walletBaseUrl: process.env.WALLET_BASE_URL || 'http://localhost:5174',
+  store: connectStore,
+  issuerKeyResolver: (iss) =>
+    issuerKeyResolver === defaultResolveIssuerKey
+      ? resolveTrustedIssuerKey(iss)
+      : issuerKeyResolver(iss),
+});
+app.use(
+  '/askmi/connect',
+  rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false })
+);
+app.use(askmiConnectExpressRouter(connect));
+const connectCleanup = setInterval(() => {
+  void connectStore.deleteExpired(new Date());
+}, 60_000);
+connectCleanup.unref();
 
 app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (req, res) => {
   const id = sessionId(req, res);
@@ -541,7 +573,12 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
       verificationState.issuer = ASKMI_DEMO.issuerUri;
       verificationState.disclosedClaims = null;
       verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
-      return res.json({ ok: true, result: { eligible: true }, disclosedClaims: null, consentReceipt });
+      return res.json({
+        ok: true,
+        result: { eligible: true },
+        disclosedClaims: null,
+        consentReceipt,
+      });
     } else {
       verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, errors: validation.errors });
