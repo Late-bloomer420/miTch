@@ -61,6 +61,7 @@
 
 <h1>📋 Data Protection Impact Assessment</h1>
 <p class="subtitle">GDPR Article 35 — AskMI Identity Verification Infrastructure</p>
+<p class="card"><span class="badge badge-yellow">Working draft</span> This page outlines a DPIA. It is not a completed or approved assessment: no controller has been named, risks are not yet rated, and no data protection officer has reviewed it (see <code>docs/BACKLOG.md</code> DP-02 to DP-04).</p>
 
 <div style="margin-bottom:1.5rem">
   <span class="badge badge-green">✅ Art. 25 Privacy by Design</span>
@@ -119,7 +120,7 @@
   <tr><td>Upload photo ID → name, birthdate, address, photo collected</td><td>Prove <code>over_18: true</code> → one boolean, nothing else</td></tr>
   <tr><td>Data stored in verifier's database → breach risk</td><td>Verifier receives only minimized claims → less data exists to breach</td></tr>
   <tr><td>Identity provider tracks every verification</td><td>Issuer doesn't know when/where credentials are used</td></tr>
-  <tr><td>Delete request = hope they actually delete</td><td>Crypto-shredding provably destroys keys held on the AskMI/wallet side; it cannot prove what a verifier does out-of-band</td></tr>
+  <tr><td>Delete request = hope they actually delete</td><td>Crypto-shredding destroys keys held on the AskMI/wallet side; it cannot prove what a verifier does out-of-band</td></tr>
 </table>
 
 <!-- SECTION 3 -->
@@ -182,7 +183,7 @@
 <h3>3.2 Risks to the Organization</h3>
 <table>
   <tr><th>Risk</th><th>Mitigation</th></tr>
-  <tr><td>GDPR non-compliance penalties</td><td>Privacy by design (Art. 25), DPIA (Art. 35), ROPA (Art. 30) — all implemented</td></tr>
+  <tr><td>GDPR non-compliance penalties</td><td>Privacy by design (Art. 25) and ROPA (Art. 30) implemented; DPIA (Art. 35) in preparation</td></tr>
   <tr><td>Data breach notification obligation</td><td>Verifiers receive only minimized claims, which reduces breach exposure; breach-notification duties are assessed per controller</td></tr>
   <tr><td>Right to erasure requests</td><td>AskMI-held keys are destroyed after use and verifiers receive minimized claims; erasure by a relying party must be requested from that party</td></tr>
 </table>
@@ -249,7 +250,7 @@
   <tr><td>Art. 7</td><td>Consent conditions</td><td><span class="badge badge-green">✅</span></td><td>Informed, specific, freely given, withdrawable, demonstrable</td></tr>
   <tr><td>Art. 13/14</td><td>Transparency</td><td><span class="badge badge-green">✅</span></td><td>Transparency report in demo, privacy policy</td></tr>
   <tr><td>Art. 15</td><td>Right of access</td><td><span class="badge badge-green">✅</span></td><td>All data in user's wallet — full visibility</td></tr>
-  <tr><td>Art. 17</td><td>Right to erasure</td><td><span class="badge badge-green">✅✅</span></td><td>Wallet-/AskMI-side key destruction is provable; verifier-side retention is outside AskMI's proof scope</td></tr>
+  <tr><td>Art. 17</td><td>Right to erasure</td><td><span class="badge badge-yellow">Partial</span></td><td>Wallet-side session keys are overwritten after use; erasure of browser memory cannot be guaranteed, and verifier-side retention is outside AskMI's proof scope</td></tr>
   <tr><td>Art. 20</td><td>Data portability</td><td><span class="badge badge-green">✅</span></td><td>Consent receipt export (JSON)</td></tr>
   <tr><td>Art. 25</td><td>Privacy by design</td><td><span class="badge badge-green">✅✅</span></td><td>Core architecture — not an add-on</td></tr>
   <tr><td>Art. 30</td><td>Processing records</td><td><span class="badge badge-green">✅</span></td><td>ROPA with aggregate counts, no PII</td></tr>
@@ -276,20 +277,20 @@
 <!-- SECTION 7 -->
 <h2>7. Conclusion</h2>
 
-<p>This Data Protection Impact Assessment confirms that AskMI's identity verification processing is <strong>compliant with GDPR Articles 5, 6, 7, 13, 15, 17, 20, 25, 30, 32, and 35</strong>.</p>
+<p>This draft maps AskMI's identity verification design to GDPR Articles 5, 6, 7, 13, 15, 17, 20, 25, 30, 32 and 35. It does <strong>not yet confirm compliance</strong>: risks are not rated and no review has taken place.</p>
 
 <p>The processing is <strong>necessary</strong> (legal requirements for identity verification), <strong>proportionate</strong> (only boolean predicates, not raw identity data), and <strong>safeguarded</strong> (crypto-shredding, selective disclosure, tamper-evident audit, metadata minimization).</p>
 
-<p>Residual risks are <strong>low</strong> after mitigation. The architecture provides strong technical guarantees for the right to erasure (Art. 17): crypto-shredding produces cryptographic proof that the decryption key was destroyed on the AskMI side, rendering AskMI-held ciphertext permanently unrecoverable — rather than relying on deletion promises. This attests to wallet-/AskMI-side erasure and to minimization of what a verifier receives; it does not attest to what a relying party does with data disclosed to it out-of-band.</p>
+<p>Residual risks are <strong>not yet assessed</strong>. Crypto-shredding is designed to make AskMI-held ciphertext unrecoverable once its key is destroyed. Whether that counts as erasure under Art. 17 is an open legal question (DP-05), and it does not attest to what a relying party does with data disclosed to it.</p>
 
 <div class="card" style="text-align:center; margin-top:2rem">
   <p style="font-size:1.1rem; font-weight:600">AskMI — The Forgetting Layer</p>
   <p class="dim">User-Sovereign Identity & Authorization Infrastructure</p>
-  <p class="dim" style="margin-top:0.5rem">DPIA Version 1.0 — February 2026</p>
+  <p class="dim" style="margin-top:0.5rem">DPIA working draft — not approved</p>
 </div>
 
 <div class="footer">
-  AskMI Project • GDPR Compliant by Architecture • <a href="/" style="color:var(--accent)">Back to Demo</a>
+  AskMI Project • Privacy by design • <a href="/" style="color:var(--accent)">Back to Demo</a>
 </div>
 
 </div>
