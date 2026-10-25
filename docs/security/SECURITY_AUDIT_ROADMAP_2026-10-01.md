@@ -8,6 +8,17 @@
 Date: 2026-10-01
 Status: active triage plan.
 
+## Scoped audit gate checkpoint — 2026-10-24
+
+#185 owns the minimum critical audit gate and dependency triage, assigned to
+@Late-bloomer420 with a **2026-10-26** review/triage target. A separate patch
+proposes critical=0 enforcement in both audit workflows, with command/registry/
+report errors also denied. High counts remain visible; high enforcement remains
+open work. [Dated local evidence](../qa/SECURITY_AUDIT_GATE_2026-10-24.md)
+records 17 gate regressions and the current live audit (146 total, 52 high,
+1 critical), which the proposed gate rejects. This does not remediate dependencies,
+close #185/EV-05, or establish a merged CI result. #193 lifecycle work stays separate.
+
 ## Purpose
 
 This document turns the current security-audit backlog into small, reviewable

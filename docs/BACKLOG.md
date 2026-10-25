@@ -1,5 +1,11 @@
 # AskMI — Master Backlog
 
+**2026-10-25 — minimum critical audit gate (#194):** PR #206 remediates the
+critical proxy-addr advisory; the shared gate now passes the live report with
+0 critical / 49 high findings and all 17 regression tests. Both audit workflows
+enforce critical findings and unverifiable-report failures. [Scoped evidence](qa/SECURITY_AUDIT_GATE_2026-10-25.md).
+High-severity enforcement/remediation remains OPEN under #185.
+
 ## Current evidence-linked work — 2026-10-14
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.

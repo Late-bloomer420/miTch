@@ -1,5 +1,10 @@
 # STATE.md — Current Operating State
 
+**Scoped update 2026-10-25 — audit gate branch:** PR #206's dependency remediation
+allows the minimum critical gate in #194 to pass a fresh audit (141 total,
+49 high, 0 critical). Gate regressions: 17/17 passed. [Exact revision and limits](docs/qa/SECURITY_AUDIT_GATE_2026-10-25.md).
+High findings and #185 remain open; this does not establish release readiness.
+
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 
