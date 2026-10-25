@@ -36,7 +36,12 @@ a fresh session. Old sessions without the original request fail closed.
 - `pnpm exec turbo run build --filter=verifier-backend... --filter=@askmi/wallet-pwa... --filter=verifier-frontend...`:
   18/18 tasks passed (14 cached); wallet chunk-size warning remains.
 - `pnpm lint`: 13/13 tasks passed (8 cached); seven existing wallet `any` warnings, zero errors.
-- `pnpm run test -- --concurrency=1`: in progress; final outcome is not yet claimed.
+- `pnpm run test -- --concurrency=1`: 49/49 tasks passed (26 cached), 9m54s.
+  Connect: 66 tests / 5 files; backend: 208 executions / 28 files (104 source
+  tests plus compiled copies); wallet: 261 tests / 20 files. This run includes
+  current master passkey/capsule and UI changes as well as the Connect integration.
+- Automated Codex review on PR #224 at `d9a631b`: completed with no findings.
+  Final merge eligibility is determined by the checks on the PR's final head.
 
 The signed HTTP regression matrix is in
 `src/apps/verifier-demo/backend/src/__tests__/connect-route.test.ts` (16 cases):

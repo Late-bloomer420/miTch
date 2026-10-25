@@ -5,7 +5,8 @@ mounts the Connect adapter in verifier-demo and hands its stored request to the
 wallet. Real signed HTTP regressions enforce the exact numeric-age profile,
 issuer/holder binding, one-shot lifecycle and minimized results. The latest
 wallet/passkey changes are retained. [Revision, validation and limits](docs/qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
-Closure is pending reviewed merge checks; no release or pilot gate moves.
+Local full test graph: 49/49 tasks; affected builds: 18/18; lint: 13/13 (seven
+existing warnings). Implementation/merge record: #224; no release or pilot gate moves.
 
 **Scoped update 2026-10-25 — #170 fix branch:** the active numeric-age presentation
 route now reserves attempts once, checks eligibility and exact profile/scope,
