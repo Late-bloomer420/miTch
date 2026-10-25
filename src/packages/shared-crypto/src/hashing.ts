@@ -11,8 +11,8 @@
  * All hash outputs are returned as lowercase hex strings.
  */
 
-import { crypto } from './platform';
-import { decodeBase58btc, unwrapSha256Multihash } from './multibase';
+import { crypto } from './platform.js';
+import { decodeBase58btc, unwrapSha256Multihash } from './multibase.js';
 
 /**
  * SHA-256 hash of a UTF-8 string, returned as hex.
