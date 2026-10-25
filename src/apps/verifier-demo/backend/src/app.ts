@@ -20,9 +20,15 @@ import {
   buildSessionCleanup,
   SCENARIO_VCT,
   SCENARIO_LABELS,
+  type AuthorizationRequest,
 } from '@askmi/oid4vp';
 import { trustListResolver } from '@askmi/shared-crypto';
-import { ASKMI_DEMO, ASKMI_ENV, ASKMI_SCENARIO_VCT, ASKMI_SCENARIO_CLAIMS } from '@askmi/shared-types';
+import {
+  ASKMI_DEMO,
+  ASKMI_ENV,
+  ASKMI_SCENARIO_VCT,
+  ASKMI_SCENARIO_CLAIMS,
+} from '@askmi/shared-types';
 import { SimpleMetrics } from './metrics.js';
 import fs from 'fs';
 import path from 'path';
@@ -89,21 +95,13 @@ type VerificationState = {
   issuer: string | null;
   disclosedClaims: Record<string, unknown> | null;
   consentReceipt: Record<string, unknown> | null;
+  authorization: { request: AuthorizationRequest; expiresAt: number } | null;
 };
 
 const sessions = new Map<string, VerificationState>();
 const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 15 * 60 * 1000;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;
-const SESSION_PATHS = new Set([
-  '/status',
-  '/notify-scan',
-  '/authorize',
-  '/wallet-present',
-  '/oid4vp-present',
-  '/present',
-  '/reset',
-]);
 const DEFAULT_MAX_VERIFIER_SESSIONS = 10000;
 const ABSOLUTE_MAX_VERIFIER_SESSIONS = 100000;
 
@@ -128,9 +126,9 @@ function pruneSessions(now: number): void {
   }
 }
 
-app.use((req, res, next) => {
-  if (!SESSION_PATHS.has(req.path)) return next();
-
+// Register on each route so Express applies the same matching rules to the
+// session guard and handler (including casing and optional trailing slashes).
+const requireSession: express.RequestHandler = (req, res, next) => {
   const headerSessionId = req.get('x-askmi-session-id') || '';
   const queryValue = req.query['sessionId'];
   const querySessionId = typeof queryValue === 'string' ? queryValue : '';
@@ -158,7 +156,7 @@ app.use((req, res, next) => {
   res.locals['askmiSessionId'] = supplied;
   res.setHeader('X-AskMI-Session-Id', supplied);
   return next();
-});
+};
 
 function sessionId(_req: express.Request, res: express.Response): string {
   return res.locals['askmiSessionId'] as string;
@@ -180,6 +178,7 @@ function stateFor(id: string): VerificationState {
       issuer: null,
       disclosedClaims: null,
       consentReceipt: null,
+      authorization: null,
     };
     sessions.set(id, state);
   } else {
@@ -200,7 +199,7 @@ const SCENARIO_CLAIMS: Record<string, Record<string, unknown>> = Object.fromEntr
   Object.entries(ASKMI_SCENARIO_CLAIMS).map(([id, claims]) => {
     const { birthDate, ...rest } = claims as Record<string, unknown>;
     return [id, birthDate !== undefined ? { ...rest, dateOfBirth: birthDate } : rest];
-  }),
+  })
 );
 
 const KEY_FILE = path.join(process.cwd(), 'verifier-key.json');
@@ -274,21 +273,48 @@ async function getVerifierKeys(): Promise<CryptoKeyPair> {
     true,
     ['decrypt', 'unwrapKey', 'encrypt', 'wrapKey']
   );
-  if (persistKeys) { const pubJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey); const privJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey); fs.writeFileSync(KEY_FILE, JSON.stringify({ publicKey: pubJwk, privateKey: privJwk }, null, 2), { mode: 0o600 }); }
+  if (persistKeys) {
+    const pubJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.publicKey);
+    const privJwk = await globalThis.crypto.subtle.exportKey('jwk', verifierKeyPair.privateKey);
+    fs.writeFileSync(
+      KEY_FILE,
+      JSON.stringify({ publicKey: pubJwk, privateKey: privJwk }, null, 2),
+      { mode: 0o600 }
+    );
+  }
   return verifierKeyPair;
 }
 
 // 1. Get current status (for the frontend polling)
-app.get('/status', (req, res) => { const state = stateFor(sessionId(req, res)); if ((state.status === 'WAITING' || state.status === 'SCANNED') && Date.now() - state.timestamp > REQUEST_TIMEOUT_MS) state.status = 'EXPIRED'; res.json({ status: state.status, issuer: state.issuer, verifierDid: ASKMI_DEMO.verifierDid, disclosedClaims: state.disclosedClaims, consentReceipt: state.consentReceipt }); });
-app.post('/notify-scan', (req, res) => { const state = stateFor(sessionId(req, res)); if (state.status === 'WAITING') state.status = 'SCANNED'; res.json({ ok: true }); });
+app.get('/status', requireSession, (req, res) => {
+  const state = stateFor(sessionId(req, res));
+  if (
+    (state.status === 'WAITING' || state.status === 'SCANNED') &&
+    Date.now() - state.timestamp > REQUEST_TIMEOUT_MS
+  )
+    state.status = 'EXPIRED';
+  res.json({
+    status: state.status,
+    issuer: state.issuer,
+    verifierDid: ASKMI_DEMO.verifierDid,
+    disclosedClaims: state.disclosedClaims,
+    consentReceipt: state.consentReceipt,
+  });
+});
+app.post('/notify-scan', requireSession, (req, res) => {
+  const state = stateFor(sessionId(req, res));
+  if (state.status === 'WAITING') state.status = 'SCANNED';
+  res.json({ ok: true });
+});
 
 app.get('/', (req, res) => {
   res.type('text/plain').send('AskMI Verifier Backend OK.');
 });
 
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
-app.get('/authorize', (req, res) => {
-  const correlationId = sessionId(req, res); stateFor(correlationId);
+app.get('/authorize', requireSession, (req, res) => {
+  const correlationId = sessionId(req, res);
+  const state = stateFor(correlationId);
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
@@ -299,6 +325,13 @@ app.get('/authorize', (req, res) => {
       clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
     });
     nonceStore.add(nonce);
+    const now = Date.now();
+    state.authorization = { request, expiresAt: now + REQUEST_TIMEOUT_MS };
+    state.timestamp = now;
+    state.status = state.status === 'SCANNED' ? 'SCANNED' : 'WAITING';
+    state.issuer = null;
+    state.disclosedClaims = null;
+    state.consentReceipt = null;
     res.json({ authRequest: request, nonce, scenarioId, sessionId: correlationId });
   } catch (e: unknown) {
     res.status(400).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
@@ -306,7 +339,7 @@ app.get('/authorize', (req, res) => {
 });
 
 // ─── W-02/W-03/W-04/W-05: Wallet-simulated Presentation Flow ─────────────────
-app.post('/wallet-present', async (req, res) => {
+app.post('/wallet-present', requireSession, async (req, res) => {
   const verificationState = stateFor(sessionId(req, res));
   const scenarioId: string = (req.body as { scenarioId?: string }).scenarioId ?? 'liquor-store';
   try {
@@ -400,8 +433,15 @@ export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | nu
   issuerKeyResolver = fn;
 }
 
-app.post('/oid4vp-present', async (req, res) => {
-  const verificationState = stateFor(sessionId(req, res));
+app.post('/oid4vp-present', requireSession, async (req, res) => {
+  const id = sessionId(req, res);
+  const verificationState = stateFor(id);
+  const authorization = verificationState.authorization;
+  const isCurrentAuthorization = () =>
+    authorization !== null &&
+    sessions.get(id) === verificationState &&
+    verificationState.authorization === authorization &&
+    Date.now() < authorization.expiresAt;
   try {
     const body = req.body as {
       vp_token?: string;
@@ -412,6 +452,9 @@ app.post('/oid4vp-present', async (req, res) => {
     if (!body.vp_token) return res.status(400).json({ ok: false, error: 'Missing vp_token' });
     if (!body.presentation_submission)
       return res.status(400).json({ ok: false, error: 'Missing presentation_submission' });
+    if (!authorization || !isCurrentAuthorization() || body.state !== authorization.request.state) {
+      return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
+    }
     // ADOPT-0b: resolve the issuer key from the credential's `iss` via the trust
     // list / issuer JWKS — the wallet-supplied `issuer_jwk` is ignored.
     const presentedIssuerJwt = body.vp_token.split('~')[0];
@@ -424,43 +467,33 @@ app.post('/oid4vp-present', async (req, res) => {
       iss = '';
     }
     const issuerPublicKey = iss ? await issuerKeyResolver(iss) : null;
+    if (!isCurrentAuthorization()) {
+      return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
+    }
     if (!issuerPublicKey) {
       verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, error: 'untrusted_or_unresolvable_issuer' });
     }
-    const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
-    const reconstructedRequest = {
-      response_type: 'vp_token' as const,
-      client_id: ASKMI_DEMO.verifierDid,
-      redirect_uri: `${baseUrl}/oid4vp-present`,
-      nonce: '',
-      presentation_definition: { id: 'reconstructed', input_descriptors: [] },
-      response_mode: 'direct_post' as const,
-      state: body.state,
-    };
-    const vpParts = body.vp_token.split('~');
-    const kbJwtPart = vpParts[vpParts.length - 1];
-    if (kbJwtPart) {
-      try {
-        const kbPayloadB64 = kbJwtPart.split('.')[1];
-        const kbPayload = JSON.parse(atob(kbPayloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-        reconstructedRequest.nonce = kbPayload.nonce ?? '';
-      } catch {}
-    }
     const validation = await validateSDJWTPresentation({
       vpTokenString: body.vp_token,
       presentationSubmission: body.presentation_submission as any,
-      request: reconstructedRequest,
+      request: authorization.request,
       issuerPublicKey,
       checkRevocation: true,
       checkTrust: true,
     });
+    // Validation awaits external resolvers. Reset, expiry, replacement or a
+    // competing successful submission must invalidate this result before commit.
+    if (!isCurrentAuthorization()) {
+      return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
+    }
     const { consentReceipt } = buildSessionCleanup({
-      request: reconstructedRequest,
+      request: authorization.request,
       disclosedClaims: validation.disclosedClaims ?? {},
       outcome: validation.ok ? 'SUCCESS' : 'DENIED',
     });
     if (validation.ok) {
+      verificationState.authorization = null;
       verificationState.status = 'VERIFIED';
       verificationState.issuer = ASKMI_DEMO.issuerUri;
       verificationState.disclosedClaims = validation.disclosedClaims ?? null;
@@ -471,6 +504,9 @@ app.post('/oid4vp-present', async (req, res) => {
       return res.status(403).json({ ok: false, errors: validation.errors });
     }
   } catch (e: unknown) {
+    if (!isCurrentAuthorization()) {
+      return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
+    }
     verificationState.status = 'FAILED';
     return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) });
   }
@@ -516,14 +552,18 @@ async function resolveDidJwkPublicKey(sub: string | undefined): Promise<CryptoKe
     const jwk = JSON.parse(jwkJson) as JsonWebKey;
     if (jwk.kty !== 'EC' || jwk.crv !== 'P-256') return null;
     return await globalThis.crypto.subtle.importKey(
-      'jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']
+      'jwk',
+      jwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['verify']
     );
   } catch {
     return null;
   }
 }
 
-app.post('/present', presentRouteLimiter, async (req, res) => {
+app.post('/present', requireSession, presentRouteLimiter, async (req, res) => {
   const verificationState = stateFor(sessionId(req, res));
   try {
     const requesterId = getRequesterId(req);
@@ -555,7 +595,13 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
       const holderPublicKey = await resolveDidJwkPublicKey(hb.sub);
       if (!holderPublicKey) {
         verificationState.status = 'FAILED';
-        return res.status(403).json({ ok: false, error: 'KB_JWT_INVALID_HOLDER_KEY', details: 'Cannot resolve did:jwk subject' });
+        return res
+          .status(403)
+          .json({
+            ok: false,
+            error: 'KB_JWT_INVALID_HOLDER_KEY',
+            details: 'Cannot resolve did:jwk subject',
+          });
       }
       const kbResult = await validateKeyBindingJWT(hb.kb_jwt, holderPublicKey, {
         expectedAud: ASKMI_DEMO.verifierDid,
@@ -565,7 +611,9 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
       if (!kbResult.ok) {
         verificationState.status = 'FAILED';
         console.warn('[Verifier] KB-JWT verification failed:', kbResult.errors);
-        return res.status(403).json({ ok: false, error: 'KB_JWT_VERIFICATION_FAILED', details: kbResult.errors });
+        return res
+          .status(403)
+          .json({ ok: false, error: 'KB_JWT_VERIFICATION_FAILED', details: kbResult.errors });
       }
       console.log('[Verifier] ✅ Holder Key-Binding JWT verified (Proof-of-Possession confirmed)');
     }
@@ -623,7 +671,7 @@ app.post('/present', presentRouteLimiter, async (req, res) => {
   }
 });
 
-app.post('/reset', (req, res) => {
+app.post('/reset', requireSession, (req, res) => {
   const id = sessionId(req, res);
   const now = Date.now();
   const state = stateFor(id);
@@ -634,6 +682,7 @@ app.post('/reset', (req, res) => {
     issuer: null,
     disclosedClaims: null,
     consentReceipt: null,
+    authorization: null,
   });
   res.json({ ok: true });
 });

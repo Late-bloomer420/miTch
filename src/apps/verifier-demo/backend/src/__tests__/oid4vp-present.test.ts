@@ -330,6 +330,7 @@ describe('/oid4vp-present endpoint', () => {
     await request(app).post('/oid4vp-present').set('X-AskMI-Session-Id', 'oid4vp-test').send({
       vp_token: vpTokenString,
       presentation_submission: presentationSubmission,
+      state: authRequest.state,
       issuer_jwk: issuerJwk,
     });
 
@@ -340,4 +341,3 @@ describe('/oid4vp-present endpoint', () => {
     expect(updatedStatus.body.consentReceipt).toBeDefined();
   });
 });
-
