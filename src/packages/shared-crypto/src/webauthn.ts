@@ -226,7 +226,10 @@ export class WebAuthnService {
     const createOptions: PublicKeyCredentialCreationOptions = {
       rp: { name: 'AskMI Identity', id: rpId },
       user: { id: userIdBuffer, name: userId, displayName: 'AskMI Identity Key' },
-      pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
+      pubKeyCredParams: [
+        { type: 'public-key', alg: -7 }, // ES256
+        { type: 'public-key', alg: -257 }, // RS256 fallback
+      ],
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
         userVerification: 'required',
