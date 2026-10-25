@@ -96,6 +96,8 @@ Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibl
 
 **Update 2026-10-24 (PR #193 lifecycle correction, branch only):** distinguish resolver infrastructure failure from untrusted issuer; a failed consumed attempt is terminal (new session/nonce to retry). Store updates now atomically enforce TTL and absorbing terminal states; Express rejected handlers persist guarded failure or explicitly report unavailable persistence. Custom stores must adopt the revised update API. [Scoped tests/evidence](qa/CONNECT_LIFECYCLE_CORRECTION_2026-10-24.md); human review + head CI pending. #170 stays open; independent audit gate/critical dependency triage stays under #185.
 
+**Update 2026-10-25 (#218 wallet-side WebAuthn assertion verification):** passkey-signed decision capsules were only label-checked; they are now verified against the device's registered passkey key. Landed via #219 (`faadb28`, verifiable assertions + real public key at registration), #221 (`87c5ab7`, proof tokens on the identity key, replaces #150) and #222 (`4b7e393`, capsule verification, legacy passkeys → unverified + one-time re-register prompt); #218 closed. Wallet-side only, not a server-side WebAuthn verifier; open limits (sign counter, legacy passkeys, `verifyPresence`/presence propagation, `proof_token` in audit → #172) in [`qa/WEBAUTHN_ASSERTION_VERIFICATION_2026-10-25.md`](qa/WEBAUTHN_ASSERTION_VERIFICATION_2026-10-25.md).
+
 **Leitsatz:** *"Alle sind AskMI."*
 
 ---

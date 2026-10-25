@@ -104,3 +104,7 @@ tests 12/12 green; `shared-crypto` lint clean; `shared-types` build clean;
 
 These are tracked here rather than fixed silently, to keep the increment small and the
 security-critical change reviewable.
+
+---
+
+**Later record (2026-10-25):** the residual item "WebAuthn assertion verification" is addressed on the wallet side by #219, #221 and #222 (#218). Scope, evidence and remaining limits are in [WEBAUTHN_ASSERTION_VERIFICATION_2026-10-25.md](WEBAUTHN_ASSERTION_VERIFICATION_2026-10-25.md). This record above is unchanged.
