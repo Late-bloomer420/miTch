@@ -356,3 +356,36 @@ Next gate: ADOPT-1.2 SDK/API Shape.
 
 The first code-bearing slice should start only after ADOPT-1.2 names the package
 layout, exported types, internal adapter boundary and example scope.
+
+## Stored-request handoff extension — 2026-10-25 (#170)
+
+New sessions persist the full server-created authorization request. The handoff
+adds `request_uri` pointing to `GET /askmi/connect/sessions/:sessionId/request`.
+This endpoint returns `{ authRequest }` only for pending or wallet-opened sessions:
+unknown sessions return 404, expired sessions 410, and terminal sessions 409.
+All Connect responses use `Cache-Control: no-store`. The ordinary status response
+does not expose this request, the credential, or numeric age.
+
+The wallet checks the request's state, nonce, response mode and same-origin
+presentation endpoint against the handoff before applying its disclosure policy.
+A presentation must include the exact session state, definition ID and single
+`age-credential` descriptor (`sd-jwt`, path `$`, no nested mapping). Verification
+requires the registered age credential VCT, trusted issuer and holder signatures,
+and exactly the finite numeric `age` application claim with value at least 18.
+Extra disclosed application claims fail closed even if correctly signed.
+
+The session's optional `authorizationRequest` field and validator callback's
+optional full request are additive TypeScript fields. The existing callback
+`request` shape remains compatible; the core independently enforces the profile.
+Persisted legacy sessions missing the full request cannot complete successfully;
+clients must start a fresh session. Custom validators remain trusted crypto
+implementations, not substitutes for issuer/holder verification.
+
+The verifier-demo mounts this adapter with a dedicated single-process in-memory
+store. The verifier UI's `?flow=connect` entry hands the request to the existing
+wallet consent and stored-credential presentation path. This is the accepted
+numeric-age profile: RP-deployed middleware receives age, while application
+results expose eligibility. It does not implement issuer-signed boolean/ZKP
+semantics, official-wallet interoperability or a durable/distributed store.
+
+See [dated integration evidence](../qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).

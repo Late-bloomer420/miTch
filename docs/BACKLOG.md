@@ -1,5 +1,12 @@
 # AskMI — Master Backlog
 
+**2026-10-25 — #170 remaining Connect integration:** implemented on the fix
+branch, with a stored-request wallet handoff, mounted verifier adapter, exact
+numeric-age profile and real signed HTTP negatives. [Evidence and limits](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
+#170 is ready for scoped closure after reviewed merge checks; #97, #171–#173 and
+pilot/release gates remain open. The older active-route entry below describes
+its earlier partial slice.
+
 **2026-10-25 — #170 active-route slice:** server-owned request snapshot, one-shot
 attempt reservation, numeric-age eligibility and exact disclosure/VCT/submission
 checks implemented on the fix branch. Real-signature HTTP negatives and minimized
