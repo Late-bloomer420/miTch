@@ -88,6 +88,35 @@ Rules:
 - Expiry is evaluated on read and before presentation verification.
 - A result never moves from `failed` or `expired` back to success.
 
+## Corrective lifecycle contract — 2026-10-24 (PR #193)
+
+- Resolver returns `null` for an untrusted issuer (`UNTRUSTED_ISSUER`, HTTP 403).
+  Resolver rejection/timeout is `ISSUER_RESOLUTION_FAILED` (HTTP 503). Both
+  consume the attempt and persist `failed`; retry requires a new session/nonce.
+- Store reads, consume and writes use one clock. The default in-memory store
+  receives `config.now` (milliseconds); a custom store must use the same source.
+  `update` checks the **current** state and TTL inside the atomic operation,
+  applies only lifecycle fields, and returns the stored state plus `applied`.
+  A false result discards late verification/failure output. No terminal state
+  changes again, and cleanup cannot be undone by an in-flight completion.
+- The first store is single-process and in-memory. A future DB/Redis adapter
+  must implement the guard transactionally at commit, using one authoritative
+  clock. A read followed by unconditional write is not conforming. Custom store
+  implementers must adopt the revised `update` signature; there is no unsafe
+  compatibility fallback for the original unconditional update API.
+- The transport-neutral `failSession(sessionId)` operation persists guarded
+  `INTERNAL_ERROR` failure after an unexpected exception. Express 4 handlers
+  catch rejected promises and await this operation before sending an error.
+  Existing terminal states remain unchanged. If storage itself is unavailable,
+  HTTP 503 reports `status: unknown`, not a fabricated durable failure. Recovery
+  of a failed store is a deployment concern; this slice does not prove durability.
+- Regression tests: `src/packages/connect/test/lifecycle.test.ts`. Deferred
+  resolver/validator promises and an injected clock deterministically interleave
+  polling and completion without sleeps. This is component/HTTP harness evidence,
+  not verifier-demo integration, official wallet interop or production approval.
+- Human review of the corrective commit, especially the atomic store guard,
+  remains a merge condition; Gemini/Qodo supplied no review coverage.
+
 ## Storage Interface
 
 The implementation must introduce a pluggable session store:
@@ -96,7 +125,9 @@ The implementation must introduce a pluggable session store:
 interface AskMIConnectSessionStore {
   create(session: AskMIConnectSession): Promise<void>;
   get(sessionId: string): Promise<AskMIConnectSession | null>;
-  update(session: AskMIConnectSession): Promise<void>;
+  // Lifecycle-only update; atomically enforce TTL and absorbing terminal states.
+  update(sessionId: string, update: AskMIConnectSessionUpdate):
+    Promise<{ applied: boolean; session: AskMIConnectSession | null }>;
   consume(sessionId: string): Promise<AskMIConnectSession | null>;
   deleteExpired(now: Date): Promise<number>;
 }
@@ -274,7 +305,8 @@ Required first error-code set:
 | `WRONG_AUDIENCE` | presentation audience/verifier/session binding does not match |
 | `WRONG_NONCE` | nonce/state does not match session expectation |
 | `REPLAY_DETECTED` | session or presentation was reused |
-| `UNTRUSTED_ISSUER` | issuer is absent from trust source or cannot be resolved |
+| `UNTRUSTED_ISSUER` | issuer is absent from the configured trust source |
+| `ISSUER_RESOLUTION_FAILED` | issuer key lookup failed; terminal attempt, new session required (503) |
 | `SIGNATURE_INVALID` | issuer/holder/signature verification failed |
 | `INSUFFICIENT_CLAIMS` | required claim missing after valid verification |
 | `POLICY_DENIED` | policy engine denied the request |
