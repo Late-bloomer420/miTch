@@ -14,8 +14,8 @@
  * key is non-extractable (cannot be exfiltrated) yet can still sign the KB-JWT.
  */
 
-import { generateKeyPair } from './keys';
-import { buildCNFClaim, type CNFClaim } from './sd-jwt-vc';
+import { generateKeyPair } from './keys.js';
+import { buildCNFClaim, type CNFClaim } from './sd-jwt-vc.js';
 
 export interface HolderBinding {
   /** Fresh per-member holder key pair (private key is non-extractable). */

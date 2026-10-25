@@ -14,9 +14,9 @@
  * - Auditable key lifecycle
  */
 
-import type { IEphemeralKey } from './interfaces/IEphemeralKey';
-import { wrapKeyForRecipient } from './keys';
-import { encrypt, decrypt } from './encryption';
+import type { IEphemeralKey } from './interfaces/IEphemeralKey.js';
+import { wrapKeyForRecipient } from './keys.js';
+import { encrypt, decrypt } from './encryption.js';
 
 /**
  * EphemeralKey: Core primitive for Crypto-Shredding.
