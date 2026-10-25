@@ -1,5 +1,12 @@
 # STATE.md — Current Operating State
 
+**Scoped update 2026-10-25 — #170 fix branch:** the active numeric-age presentation
+route now reserves attempts once, checks eligibility and exact profile/scope,
+and returns a minimized result. Backend 87 source tests passed; affected apps
+built; wallet 203 tests passed. [Revision, commands and limits](docs/qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
+This supersedes the older active-route observations below only for that tested
+profile. Connect integration and #170 remain open; no release gate changes.
+
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 

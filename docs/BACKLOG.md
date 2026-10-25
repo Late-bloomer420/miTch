@@ -1,5 +1,12 @@
 # AskMI — Master Backlog
 
+**2026-10-25 — #170 active-route slice:** server-owned request snapshot, one-shot
+attempt reservation, numeric-age eligibility and exact disclosure/VCT/submission
+checks implemented on the fix branch. Real-signature HTTP negatives and minimized
+results: [dated evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md).
+#170 remains OPEN for separate Connect profile enforcement and integration;
+no pilot gate moves.
+
 ## Current evidence-linked work — 2026-10-14
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
