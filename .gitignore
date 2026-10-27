@@ -45,6 +45,10 @@ Thumbs.db
 desktop.ini
 *.local
 
+# ── Lokale Tool-Ausgaben (Plugins, Browser-Automation) ─────
+.github/instructions/
+.playwright-mcp/
+
 # ── Logs ────────────────────────────────────────────────────
 *.log
 logs/
