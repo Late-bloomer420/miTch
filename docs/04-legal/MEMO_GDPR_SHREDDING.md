@@ -1,5 +1,7 @@
 # CONFIDENTIAL LEGAL MEMORANDUM
 
+> **Honest-scope note (2026-10-27, issue #235):** this memorandum's provenance and authorship are **unverified within this repository**; it is treated as an internal engineering analysis of the crypto-shredding design, not as legal advice from accredited external counsel. Crypto-shredding as an Art. 17 GDPR erasure mechanism remains an engineering position until reviewed by qualified external counsel (`docs/MATURITY_AND_LIMITATIONS.md`).
+
 **TO:** miTch Founding Team
 **FROM:** Dr. Jur. S. Weber, Tech & Privacy Law Counsel
 **DATE:** 2026-01-26
