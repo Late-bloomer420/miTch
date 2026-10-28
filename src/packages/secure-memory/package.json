@@ -7,6 +7,6 @@
     },
     "devDependencies": {
         "@askmi/shared-crypto": "workspace:*",
-        "vitest": "^4.1.8"
+        "vitest": "^5.0.5"
     }
 }

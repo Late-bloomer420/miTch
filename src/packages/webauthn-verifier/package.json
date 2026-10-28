@@ -12,12 +12,12 @@
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.2.2",
-    "@simplewebauthn/server": "^13.2.3",
+    "@simplewebauthn/server": "^13.3.2",
     "jose": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.33",
     "typescript": "^5.3.3",
-    "vitest": "^4.1.8"
+    "vitest": "^5.0.5"
   }
 }
