@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bofs64cu1</task-id>
+<tool-use-id>toolu_01UZEfy2ASfHRH6T3zyBDi9N</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\bofs64cu1.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for required checks then merge #210" completed (exit code 0)</summary>
+</task-notification>
