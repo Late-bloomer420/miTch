@@ -1,0 +1,32 @@
+<pasted_content id="6bfc">
+and can you tell me if its a good idea after we see who want to log in giving him already insight what we founf out about him, by simply looking ? how do you like this hones idea on what its out there, and we start with the device and what we can see before logging in 
+15:04
+Nachgedacht für 7s
+The three decisions
+
+1. Decision-record format change (PR 3): OK, approved — with one constraint.
+Add the passkey data fields (public key ref, authenticatorData, clientDataJSON/hash, UV flag, signature encoding) as additive, optional fields. Old records without those fields must remain readable and must be treated by the new verify path as unverified, not as errors. That keeps it a backward-compatible change rather than a breaking API change, and it dovetails with decision 2. Also fix the log line in the same PR — "✅ Bound to Hardware Identity Key" must not print unless a signature actually verified. A log line that overstates what was checked is worse than no line, because it's the thing users and auditors will trust.
+
+2. Already-registered devices: mark unverified + one-time re-register prompt. Do not silently accept, and do not hard-block.
+Their recommendation is right. Reasons: silently accepting preserves the exact gap we're fixing (records that claim hardware binding without verifiability); an immediate forced re-registration breaks every existing device for a PoC-era gap and violates "the passkey IS the account" continuity (App.tsx's Model A comment). The one-time prompt mirrors the existing first-run pattern — no surprise biometric ceremony, the user gets framing before navigator.credentials.create() fires. The unverified state must be visible in Trace/Audit, not just internal.
+
+3. Close #150, replace with a signed PR that credits it: yes.
+Consistent with the #167 → #201 precedent, and an unsigned auto-generated Jules commit can't merge anyway. Credit in the PR body, close #150 with a comment pointing at the replacement so the history is traceable.
+
+And yes to the tracking issue — a known verification gap that only lives in a QA document from 2026-07-12 is exactly the kind of thing that gets rediscovered twice. One issue, referencing the QA note, closed by PR 3.
+
+So: go — start PR 1. Its risk profile (new functions only, no behavior change) makes it the right first step regardless of the answers above.
+The "insight before login" idea
+
+The idea itself is good and squarely on-mission — but only in one direction, with guardrails.
+
+Why it's on-mission: miTch's whole premise is that data about people already exists and the value is in making it nachvollziehbar — visible and controllable. The same logic applies to the verifier: before the user presents anything, the wallet should say what it already knows about who's asking. That's not new surveillance; it's surfacing existing knowledge. It also fits the "honest trust badge" work from #210 — you've already started down this road.
+
+The one direction that's fine: show the wallet user what's already known about the verifier — from data miTch already holds locally: origin/redirect URI, whether the verifier is on the trust list, prior request history from Trace (what they asked before, what was actually sent), whether a request deviates from their previous pattern ("this site has never asked for your address before"). Edge-first, local-only, no new collection. This is verifier transparency and it strengthens consent quality.
+
+The direction that's not fine: anything that probes the requesting party to generate that insight — fingerprinting the verifier's device, active lookups keyed on the request, or third-party reputation queries that leak "user X is about to interact with verifier Y" before consent. That would make miTch the thing it exists to prevent. So: passive, already-collected signals only, and label every inference as inference ("based on 3 past requests"), not fact.
+
+"Start with the device": if that means showing the user what their own device reveals pre-login (user agent, origin, session signals) — fine as a transparency display, but it must not be used as an input for silent decisions, and it must not become a fingerprinting surface itself.
+
+Concrete suggestion: keep this out of the current three-PR passkey work entirely — it's a different concern (presentation-layer transparency vs. signature verification). Track it as its own issue/ADR sketch, and design it against the Trace and Requests surfaces you just restructured in #213, since the "In person" card and Trace are the natural places this insight would live. If you want, after PR 1 lands I can outline what a "verifier insight before consent" panel would and wouldn't show, as a design note rather than code.
+</pasted_content id="6bfc">
