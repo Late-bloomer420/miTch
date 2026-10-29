@@ -1,0 +1,30 @@
+Harden ASKMI_G1_INTERVIEW_KIT.md against accidental PII/confidential data commits by adding explicit warnings and safer workflow guidance around the scorecard.
+
+## Description
+**High risk of accidental PII/confidential data landing in a public repo**
+
+- Description: The kit instructs interviewers to keep personal/confidential data out of GitHub, but it also provides a scorecard template with fields that commonly lead to accidental inclusion of identifying details (e.g., participant role + organisation type + country + workflow + “private evidence reference”), which can still be re-identifying when committed.
+- PR Git Diff Pointer:
+```diff
++++ b/docs/05-business/ASKMI_G1_INTERVIEW_KIT.md
+@@
+ ## 2. Evidence and privacy rules
+@@
+ - Keep names, contact details, company-confidential notes, recordings, and contracts outside the public repository.
+@@
+ ## 9. Interview scorecard
+@@
+ | Participant role | |
+ | Organisation type | |
+ | Country/market | |
+ | Concrete workflow | |
+@@
+ | Private evidence reference | |
+```
+- Evidence: The doc explicitly targets a “public repository” and asks to store “only aggregate counts and approved anonymised findings in GitHub,” but the included scorecard is detailed enough that teams may paste filled scorecards into the repo, creating a confidentiality breach despite the warning.
+- How to Fix: Add an explicit, prominent note directly above the scorecard stating “Do not commit completed scorecards to this repo; store privately,” and optionally provide a separate private-only template path (or `.gitignore` guidance) to reduce accidental commits.
+
+## Location
+File: c:\Users\Lenovo\.aaCoding\miTch\docs\05-business\ASKMI_G1_INTERVIEW_KIT.md
+Use following context for that task:
+File: c:\Users\Lenovo\.aaCoding\miTch\docs\05-business\ASKMI_G1_INTERVIEW_KIT.md
