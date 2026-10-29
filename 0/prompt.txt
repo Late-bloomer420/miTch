@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bhx6u0hpw</task-id>
+<tool-use-id>toolu_01C9qgSJArEzV2FCmUMpNZYu</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\bhx6u0hpw.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for required checks on PR 201" completed (exit code 0)</summary>
+</task-notification>
