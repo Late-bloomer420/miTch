@@ -1,0 +1,12 @@
+<pasted_content id="6bfc">
+The --stat above is my sandbox's stale checkout, not the PR — gh pr diff 215 --name-only confirms it touches only src/apps/wallet-pwa/src/App.tsx. Let me verify the diff is whitespace-only with a word-level comparison.
+10 Befehle ausgeführt · 2 Tools verwendet
+
+I independently verified PR #215 before deciding: I cloned the branch and did a byte-level comparison of App.tsx between origin/master and the PR head, with all whitespace stripped. Result: the files are identical apart from whitespace and trailing commas — no code change hides in the 433/420-line diff. That matches your compiled-output check, so both methods agree.
+
+CI on #215: Build & Test, security, CodeQL, Evidence (ubuntu/windows) all green; the only red is the same Gemini review / review quota failure (non-required, known); Layer Protection Validation was still queued when I looked — worth letting it finish before pressing merge, but it's part of the standard pipeline and this PR has no layer impact.
+
+Merge #215 — after the queued check completes. Leaving App.test.tsx and the utility files out was the right call; that keeps this PR provably a no-op. They can be a follow-up formatting PR later if you want, or just be left until Prettier is enforced in CI.
+
+Then finish #153. The Gemini bot burning quota on every push is the more valuable of the two remaining items, and #215 merging won't change that — the bot will fire on #215 itself and every PR after. Order: merge #215 → finish #153.
+</pasted_content id="6bfc">
