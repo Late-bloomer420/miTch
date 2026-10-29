@@ -1,0 +1,21 @@
+<pasted_content id="6bfc">
+Merge #219. The diff is exactly what PR 1 promised:
+
+    +765/−7 across 8 files, all in shared-crypto plus the lockfile — no downstream behavior changes.
+    The only deletions are the placeholder public-key block in webauthn.ts (the empty x/y JWK with the "für diesen PoC" comment) — that's the right thing to remove, and isUsableP256Jwk exists specifically to treat the legacy placeholder as NO_PUBLIC_KEY, so old registrations fail safe rather than passing vacuously.
+    The API surface is clean and additive: assertion type, typed AssertionFailure reasons (NO_PUBLIC_KEY, BAD_SIGNATURE, …), challenge derivation, SPKI→JWK conversion, DER→P1363 for WebCrypto verification, and the full verifier. The result shape { valid: true } | { valid: false, reason } is the fail-closed pattern the project mandates.
+    Checks: everything green including Build & Test, Layer Protection Validation, both Evidence jobs, and the Gemini review correctly skipping. The simulated authenticator test approach (real P-256 key answering navigator.credentials the way a browser passkey does, each forgery tested in isolation) is solid coverage for a crypto change.
+
+On miTch-Transparency-Layer: yes — that's not just related, it's essentially the same idea we were just discussing, already built in a different form. I looked at the repo: a Manifest V3 Chrome extension that surfaces what websites can technically observe — cookies, storage, fingerprinting surfaces (Canvas/WebGL/AudioContext/WebRTC), permission surfaces — with a three-layer report (observed facts / potential access / unknowns) and the honest core principle "we show what is technically observable, we do not claim what happens on remote servers."
+
+That principle is exactly the guardrail from our discussion, and it suggests how the two projects fit together without either losing its point:
+
+    The extension is per-site, on any page. It's the general "what can this site see" awareness tool.
+    The wallet's pre-login insight is per-visit and person-specific ("this is what's out there about you, and we didn't even have to ask"), computed on-device, discarded immediately, never feeding decisions, no server lookups. It's also exactly where miTch's consent flow begins, so it doubles as the demo's opening act.
+
+Rather than building the wallet panel from scratch, the wallet's design note should mine the extension for its taxonomy — the three-layer report format (observed / potential / unknown) is arguably better than my earlier "mark estimates as estimates" phrasing, because it structurally separates fact from inference from unknown. Porting that structure into the wallet's welcome/locked screen would keep the two projects aligned and the language consistent.
+
+Practical suggestion: keep them separate codebases (extension ≠ wallet dependency; the wallet must stay edge-first with zero network lookups), but link them. A short design note in the miTch repo for the pre-login panel, referencing the extension's report structure, tracked as its own issue — and it stays out of the passkey work's way. Then, when PR 2 and PR 3 of the passkey track are done, the panel can be picked up with the taxonomy already settled.
+
+So: #219 merged-when-green ✅, PR 2 next (replacing #150, closing it with credit), and the Transparency-Layer extension becomes the reference design for the pre-login insight panel rather than a dependency.
+</pasted_content id="6bfc">
