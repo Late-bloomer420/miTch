@@ -1,0 +1,16 @@
+<pasted_content id="6bfc">
+Merge #222. All checks green (Build & Test, Layer Protection, both Evidence jobs, security, CodeQL), and the diff delivers everything approved for PR 3 — this is the one that actually closes the security gap.
+
+What I verified in the diff:
+
+    The false "✅" is gone. The deletion of logs.push('✅ Capsule Attestation Bound to Hardware Identity Key (WebAuthn)') (the label-only check) is replaced by ✅ Capsule Attestation Verified (device passkey) — printed only when real verification against the stored public key passed. Exactly the "don't log what you didn't check" fix. ✅
+    Three-state verification, as decided: verified (signature checks against this device's stored key), unverified (pre-#219 legacy passkey, no stored public key → warning, flow continues, never shown as verified), and blocked forgeries (tampered content, wrong site, stripped proof → presentation gated with a security alert). The test names pin each case, including "treats an old capsule without the assertion as unverified on a legacy passkey" — the backward-compat behavior we approved. ✅
+    The shared-types change is properly additive: the schema marks the new assertion field as "Optional… Capsules without it are treated as unverified hardware attestations" — old records stay readable, new encoding label documented. The public API change happened on exactly the approved terms. ✅
+    The re-register prompt matches the agreed UX: one-time banner, "Re-register passkey" CTA, "Not now" remembered (localStorage wrapped so storage-blocked private mode can't crash the app — good defensive touch), prompt disappears after re-registration. Tests cover ask-once, remember-dismiss, and no-prompt-when-fine. ✅
+    Test-first evidence: the 9 initially-failing tests confirmed master's vulnerability (tampered/cross-site/proof-stripped records accepted with a ✅), then 15 tests passing after. The real-browser run with Chrome's virtual passkey (register → age check → verified; legacy downgrade → warning; re-register → verified again) is strong end-to-end evidence — the Playwright pass covers all three states in an actual browser, not just jsdom. ✅
+    Scope: 10 files, +553/−25. The deletions in the old tests (wallet_attestation base64 literals) are the old label-only expectations being replaced, which is the point. Everything downstream builds (29/29). ✅
+
+On the QA doc follow-up: yes — do that docs-only PR after this lands. A July QA doc listing this as an open gap while it's fixed and closed is exactly the kind of stale trust-anchor that misleads the next reader; update it to point at #218 → #222. Small, separate, no code.
+
+With #222 merged, the passkey track is complete: #219 (verifiable assertions) → #221 (proof tokens on the identity key) → #222 (decision records verified, #218 closed). The whole chain closed a real vulnerability — records that looked hardware-attested but were never signature-checked. Remaining queue, unchanged: Vite 6→8 in its own PR, then the pre-login insight panel (#220) as its own design-note-first track, with the Transparency-Layer extension as reference.
+</pasted_content id="6bfc">
