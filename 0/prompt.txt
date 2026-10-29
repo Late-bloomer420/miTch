@@ -1,0 +1,18 @@
+<pasted_content id="6bfc">
+I'll review #230's diff and verify the CI evidence before the merge call.
+3 Befehle ausgeführt · Ein Tool verwendet
+
+Merge #230. Diff and CI both check out:
+
+    The diff is exactly what an upgrade PR should be: 3 files — the two app package.jsons (Vite ^6.4.3 → ^8.3.5, plugin-react ^4.x → ^6.1.2, plugin-basic-ssl ^2.3.0, plus react-qr-code ^2.0.12 → ^2.2.0) and the lockfile. No config edits, no code changes — the −905 lines are lockfile churn from Vite 6 leaving the tree entirely. Clean scope.
+    The react-qr-code fix is the right kind: the diagnostic path was exemplary — blank page + React error #130 → suspect CJS interop → prove it with the legacy.inconsistentCjsInterop switch rendering fine → fix at the dependency level (2.2.0 ships real ESM with both named and default exports) rather than patching imports. And the honest discard of the guard test ("couldn't add real protection" since Vitest's Node resolution can't reproduce browser bundling) is the correct call — a test that passes on both sides of a real bug is worse than no test.
+    The browser evidence covered the actual risk surfaces: production builds on both apps (where Rolldown/Oxc, Lightning CSS, and the CJS change bite), the passkey flow end-to-end with "Capsule Attestation Verified" in Audit, security headers on dev and preview, and styling verified visually for the Lightning CSS change. The "cached Vite 6 build" concern was even checked — CI logs show vite v8.3.5 in both Build & Test and Layer Protection. All checks green.
+
+Your two decisions:
+
+    Browser floor — yes, accept Safari 16.4 / Chrome 111. Both are from early 2023; anything older is 3+ years out of date. For a security-forward wallet, shipping modern-JS builds to evergreen browsers is the safer trade, and both target browsers fully support WebAuthn/passkeys, which is the app's foundation. The one honest caveat: this drops old installed bases (shared iPads, embedded webviews, kiosk browsers stuck on old engines). If a pilot ever targets those, it'll surface immediately — worth one line in the PR/release notes, nothing more.
+
+    Stale Vite overrides — remove them, but in the Dependabot PR, not here. Two reasons: this PR is at +3 files and should stay diff-minimal; and removing security overrides at the same time as the version bump that makes them stale muddies which change did what if a regression appears. The Dependabot triage PR should remove them with a comment in its evidence doc noting the Vite 8 bump made ranges <6.4.2 and 7.x <7.3.2 unreachable. Until then the warnings are harmless — pnpm tells you they match nothing, which is the truth.
+
+So: merge #230, delete branch + worktree, and the queue stands — Dependabot triage (with the 161-vulnerability list and the two stale overrides) before the pre-login panel (#220). The triage is now more valuable than when we queued it: the upgrade just moved a large part of the tree, so a fresh audit run will show what's left, and that residual set is what actually needs human judgment. Then #220's design note, with the Transparency-Layer taxonomy as reference.
+</pasted_content id="6bfc">
