@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bem3g75xp</task-id>
+<tool-use-id>toolu_015cAcmhFGRS1Lk6v7XTu5gV</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\bem3g75xp.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for required checks on PRs 191, 203, 204" completed (exit code 0)</summary>
+</task-notification>
