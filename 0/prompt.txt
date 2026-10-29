@@ -1,0 +1,65 @@
+You previously flagged these candidate vulnerabilities:
+
+[
+  {
+    "filePath": "src/packages/shared-crypto/src/webauthn.ts",
+    "category": "Cryptographic algorithm downgrade / key metadata mismatch",
+    "vulnerableCode": "pubKeyCredParams: [\n        { type: 'public-key', alg: -7 }, // ES256\n        { type: 'public-key', alg: -257 }, // RS256 fallback\n      ],\n...\n        publicKeyJwk = { kty: 'EC', crv: 'P-256', x: '', y: '', alg: 'ES256', ext: true };",
+    "explanation": "The hardware identity key, which the wallet treats as its root of trust ('LoA High'), was limited to ES256. It now also accepts RS256. If the platform authenticator offers only RSA (some Windows Hello / TPM setups), it will create an RSA key. But the saved registration ignores the algorithm that was actually negotiated: it always records a hardcoded EC P-256 / ES256 JWK (with empty x/y). So the stored data claims ES256 while the device holds an RS256 key. The project's own algorithm list (crypto-agility.ts) marks RS256 as 'deprecated' and says to replace it with ES256, so this change lets a deprecated algorithm into the identity root of trust. Any verifier that relies on the stored alg label, or supports only ES256, will either fail or treat an unapproved key type as compliant.",
+    "fix": "Remove alg -257 from registerIdentityKey (keep ES256 only), or explicitly approve RS256 in the algorithm policy. In either case, read the real algorithm with response.getPublicKeyAlgorithm(), convert the SPKI from getPublicKey() into a real JWK instead of hardcoding EC/ES256, and reject at registration any algorithm the policy does not allow.",
+    "severity": "medium",
+    "confidence": 0.4,
+    "_diff_anchor": "in_diff"
+  }
+]
+
+DIFF:
+=== DIFF: src/apps/wallet-pwa/src/services/WalletService.ts ===
+@@ -476,8 +476,8 @@ export class WalletService {
+             this.policyPublicKey = null; // WebAuthn assertion verification is not a local ECDSA verify.
+           } else if (hardwareAvailable) {
+             this.policyPublicKey = null;
+-            console.warn(
+-              '🛑 Hardware identity key required. Register the platform passkey before signing policy decisions.'
++            console.info(
++              'ℹ️ Hardware identity key not yet registered. Register the platform passkey before signing policy decisions.'
+             );
+           } else {
+             console.log('✨ Creating NODE/TEST software Identity Keypair (RAM only)...');
+
+
+=== DIFF: src/packages/shared-crypto/src/webauthn.ts ===
+@@ -226,7 +226,10 @@ export class WebAuthnService {
+     const createOptions: PublicKeyCredentialCreationOptions = {
+       rp: { name: 'AskMI Identity', id: rpId },
+       user: { id: userIdBuffer, name: userId, displayName: 'AskMI Identity Key' },
+-      pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
++      pubKeyCredParams: [
++        { type: 'public-key', alg: -7 }, // ES256
++        { type: 'public-key', alg: -257 }, // RS256 fallback
++      ],
+       authenticatorSelection: {
+         authenticatorAttachment: 'platform',
+         userVerification: 'required',
+
+
+Now adversarially try to DISPROVE each one. For each candidate, FIRST identify the attacker (who controls the input) and the victim (who is harmed). REFUTE if the only victim is the attacker themselves on their own machine. KEEP if the attacker is a legitimate user/tenant but the impact reaches other users/tenants, shared infra, or server-side resources.
+
+DIFF-ANCHOR: candidates are sorted `in_diff` first, then `off_diff`. Process them in order. `in_diff` candidates use the standard KEEP/REFUTE bar above. `off_diff` candidates require STRICTER evidence: you must identify the specific +/- line in the diff that ENABLES the off-diff sink (a removed guard, a new caller, a changed argument feeding it). If you cannot name that enabling diff line, REFUTE the off_diff candidate. Additionally, REFUTE any off_diff candidate whose sink is already covered by a surviving in_diff candidate.
+
+Then Read the cited file and refute with cited file:line evidence if ANY of these holds:
+- PRE-EXISTING: the cited vulnerableCode does NOT appear on any + line in the DIFF block above — it is unchanged context in a touched file. The diff did not introduce it.
+- A sanitizer/validator/authz check prevents the described exploit.
+- The sink is non-dangerous: typed-schema decoder (msgspec/pydantic, not pickle/yaml), hardcoded https://<host>/ URL with non-:path params, autogen client stub, value is statically number/boolean.
+- NO PRIVILEGE BOUNDARY: attacker == victim. The input comes from env var / CLI arg / $HOME dotfile / HKCU / ~/Library prefs / OS-user config — and the process runs at the same privilege as whoever writes that source. Also: the 'allow' decision is advisory self-gating returned to the same caller; or the prefix/suffix check is a secondary filter behind a parent-domain pin.
+  NEVER apply NO-PRIVILEGE-BOUNDARY to: SSRF/outbound-network sinks; LLM-agent capability gates (PreToolUse/PostToolUse hooks, bash allow/denylists, workspace path jails — the model is the attacker, the user is the victim); data-exposure findings (CWE-200/359/532, secrets-in-logs — the question is who READS the sink, not who controls the input); project-working-directory config (.claude/settings, .vscode/, package.json scripts — repo author ≠ repo cloner); cross-process metadata sources (psutil.Process(...), /proc/<pid>/* — different process owner is a different principal).
+- TRUSTED-HEADER NAMESPACE: the flagged header is from a namespace the same handler already trusts for actor identity/authz (e.g. control-plane-injected X-Amzn-*).
+- FRONTEND-ONLY GATE: the loosened check is in frontend code AND the backend handler independently enforces it.
+- DELEGATED VALIDATION: the unvalidated credential is immediately forwarded to an upstream that validates.
+- THROWAWAY-CODE: all touched files live under scripts/, dev/, tools/, examples/, testdata/, fixtures/, or behind a __main__ dev guard.
+- CONTROL MOVED TO LIBRARY: the diff removes a security control AND bumps a dependency that documents providing that control — the control was delegated, not removed.
+- Config/feature-flag gates the path with no per-request user control over the gate value.
+- Protective-control polarity: the change loosens a guard around a PROTECTIVE control (prompt/audit/confirm).
+Do NOT speculate — refute only with cited evidence. Default = SURVIVES.
+
+Return `survived` — the indices of candidates you could NOT refute — and `refuted` — {idx, reason} records for each you did. An empty `survived` means every candidate was refuted.
