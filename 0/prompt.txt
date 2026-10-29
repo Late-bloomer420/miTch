@@ -1,0 +1,25 @@
+<pasted_content id="6bfc">
+I'll verify whether the deleted remote branches had any commits beyond what the PRs merged. Since the branches are gone, I'll compare each PR's recorded headRefOid (GitHub keeps it after branch deletion) against the branch tips I captured before deletion, and against what's actually in master.
+Einen Befehl ausgeführt
+
+The PR-recorded head SHAs match exactly the branch tips I observed before deletion (99e537d, 40950ea, 2344292), so the deleted branches ended precisely at the commits that were merged — no extra commits beyond them. Now let me confirm each PR's changes are actually present in master (that's the real "did we lose code" question with squash merges).
+Einen Befehl ausgeführt
+
+No — nothing unmerged was lost. Three independent checks all agree:
+
+    Branch tips matched the merged heads. The SHAs GitHub recorded as each PR's headRefOid (99e537d for #210, 40950ea for #213, 2344292 for #215, 5f3b903 for #153) are identical to the branch tips I listed from git ls-remote in my previous message before you deleted them. So each branch ended exactly at the commit that went through its PR — no commits existed beyond the merged tip.
+
+    The code is in master. Spot-checks on current origin/master:
+        #213: the 7-tab nav and the btn-in-person card are present (App.tsx:1925), and 'audit' still appears as a tab.
+        #215: the Prettier-formatted import line (import { buildSessionCleanup, type AuthorizationRequest } from '@askmi/oid4vp';) is at App.tsx:30.
+        #210: the updated tests (including the "In person" card test) are in App.test.tsx.
+        #153: GEMINI_REVIEW_ENABLED gate is in .github/workflows/gemini-dispatch.yml:147–153, off unless the repo variable is 'true'.
+
+    Your own file-diff check (branch content == merge-commit content) covers the same ground and passed for all four.
+
+One small correction to the framing, though: your safety test was actually stronger than you gave it credit for. "Reachable from master" is the wrong test for squash-merged branches, true — but with squash merges, the branch commits are never in master's history by design. The right test is "the PR was merged and the branch tip equals the PR head," which is exactly what checks 1 and 2 establish. GitHub's own auto-delete option uses the same logic, so this is the standard-safe deletion.
+
+One caveat for the future: a branch can lag its PR if someone pushed to it after the PR merged and before deletion. That's rare, and here the tips matched the recorded PR heads, so it didn't happen. Worth re-running your check at deletion time whenever a branch sat around for a while post-merge — but for these four, the answer is clean: no uncommitted or unmerged code was deleted.
+</pasted_content id="6bfc">
+
+and
