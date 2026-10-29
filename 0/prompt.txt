@@ -1,0 +1,20 @@
+merge #221 and start PR 3 but first 
+
+<pasted_content id="6bfc">
+I'll review #221's diff before the merge call, with an eye on the token format, the fail-closed paths, and how it links #150/#218.
+4 Befehle ausgeführt
+
+Merge #221. All checks green (Build & Test, both Evidence jobs, Layer Protection, security, CodeQL), and the diff does what PR 2 promised, cleanly:
+
+What I verified in the diff:
+
+    The audit-key hack is gone. The deletions remove exactly the worst part of the old code — the auditLogInternal cast to reach private keys, the TODO: Separate identity signing key from audit key comment, and the "Identity keys not available" fallback. That was a genuine security smell, and #150's review was right to call it out. Credit given in the PR body. ✅
+    proofTokenSigner() is fail-closed in the right order: passkey registered → hardware assertion; WebAuthn available but no passkey → IdentityKeyRequiredError (no silent software downgrade); no WebAuthn at all → software key, clearly labelled software-session. That ordering is the security decision, and it's correct. ✅
+    Labels are inside the signed content: the header's key (hardware-passkey vs software-session) and alg (webauthn-es256 vs ES256) are bound into the signature, so a token can't be relabeled from hardware to software after the fact. The verifier dispatches on both fields and there's a test that the legacy ES256-PoC format is rejected. ✅
+    Scope: 4 files, +622/−60, wallet-pwa only; erasure/report/document-signing callers each keep their existing audit entries (ERASURE_REQUESTED, REPORT_SENT) and log output. Nothing outside the token path changed. ✅
+    #172 correctly deferred: proof tokens staying in the audit log until the export-minimisation decision is the right scope cut. ✅
+
+One honest caveat you already flagged: any external service that parsed the old compact format will need updating. Since no in-repo consumer reads these tokens, the exposure is limited to whatever verifiers' erasure/report endpoints do in the wild — for a system at this stage, format-stabilising before external consumers exist is the right time to do it.
+
+After #221: PR 3 — actually verify hardware decision-record signatures, fix the overstated "✅ Bound to Hardware Identity Key" log line, add the optional passkey fields to the decision record (old records → unverified), and close #218. That's the one that's a shared-types public API change, already approved on the optional-fields terms. Then the passkey track is done, and the queue after it stands: #150's replacement landed ✅, Vite 6→8 in its own PR, and the pre-login insight panel (#220) as its own design-note-first track.
+</pasted_content id="6bfc">
