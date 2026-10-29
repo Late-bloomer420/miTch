@@ -1,0 +1,19 @@
+<pasted_content id="6bfc">
+I checked the plan against the repo (src/apps/wallet-pwa/src/App.tsx on master, and PR #210 feat/wallet-design-polish, open against master). The plan matches reality: WalletPage is exactly the 10 tabs listed (App.tsx:58–67), the nav is one flat array (App.tsx:1309–1319), and Proximity is a thin page whose only content is a button that opens the ProximityView modal (App.tsx:2042–2069). Moving it into a card costs almost nothing — the actual flow lives in ProximityView, not the tab.
+
+My picks:
+
+    Audit: keep it as its own tab. I agree with your reasoning — Trace is the interpreted story, Audit is the raw append-only log. Different audiences (user vs. auditor/debugging), and per the project's own principles the audit trail should stay separately visible, not demoted to a footer under a derived view. Also, App.tsx:1829 already gates ['requests', 'trace', 'audit'] together in one condition — folding Audit into Trace would complicate that grouping for no gain. Result: 7 tabs.
+
+    Proximity: card on Requests. Agreed, it's just another request type (in-person, ISO 18013-5). Keeping it as a top-level tab overstates a mock flow; burying it in Tools would hurt demo visibility. A fifth card on Requests is the right balance.
+
+Additional review notes on the plan itself:
+
+    The tab list is a single array, so the nav cut is trivial. Keep the aria-current="page" pattern intact and make sure the Tools-internal sections (Documents, Renderer) get their own headings/anchors so deep links still land somewhere sensible.
+    showProximityPreview and ProximityView are mounted at App level, not inside the Proximity page — moving the tab should not require touching that modal wiring, only where the launch button lives.
+    Tests: App.test.tsx references page names, so yes, expect breakage there. Your order (new route tests first, then fix the existing ones) is right.
+    One correction to the plan text: nothing is deleted, but "pages aren't bookmarks" — actually removing 3 tabs removes their nav entry points; if any docs or demo scripts (e.g. dev-demo.sh, test_wallet_ui.cjs) reference #proximity-style routes or tab labels, check those too.
+    Scope note: PR #210 is titled "honest trust badge and polish the trusted channel layout". Folding a nav restructure into it makes the PR do two unrelated things — consider a separate stacked PR instead, but that's Jonas's call as stated in the plan.
+
+Net: 7 tabs — Credentials · Requests · Trace · Sovereignty · Audit · Settings · Tools, with Proximity as the "In person (ISO 18013-5)" card on Requests and Documents/Renderer as sections in Tools. Green light from my side.
+</pasted_content id="6bfc">
