@@ -1,0 +1,10 @@
+<pasted_content id="6bfc">
+Merge.
+
+Both notes are sound:
+
+    Leaving the </div> alone is right — a cosmetic reformat doesn't belong in a behavioral PR, and a dedicated Prettier pass on App.tsx after #210/#213 land is the clean way to do it. Do it as a separate PR so the diff is pure formatting.
+    The red review check being non-required means it doesn't block, and #153 (gating the Gemini bot behind GEMINI_REVIEW_ENABLED) is the correct fix for the quota drain — worth finishing soon so it stops burning quota on every push.
+
+So: land #210 first, then #213 once GitHub retargets it onto master and its checks go green again. After both are in, the follow-up Prettier-only PR for App.tsx would be a good next step.
+</pasted_content id="6bfc">
