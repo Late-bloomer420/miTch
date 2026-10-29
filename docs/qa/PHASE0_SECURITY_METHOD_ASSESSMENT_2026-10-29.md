@@ -13,9 +13,22 @@ a code defect).
 
 `chore(phase0-security): delete duplicate root-level .ts files — code lives in
 src/` deleted the 790-line root `ADVANCED_SECURITY_HARDENING.ts`. That file was
-**not** a byte-duplicate of the 171-line `src/` version:
+**not** a byte-duplicate of the 171-line `src/` version. The loss history is
+more tangled than a single delete (all on 2026-03-12, within ~1 hour):
 
-- Recovered into `src/index.ts`: `MemoryHardeningProtection`,
+- `01b94b1` (21:31) deleted the root files (-2082 lines), including
+  `HARDENING_CHECKLIST` and the recommendation matrix.
+- `897b226` (22:27:30, "fix IndexedDB timeout") **re-introduced the root
+  files with identical blob hashes** (+1960 lines) — the content was still
+  fully present at that commit, and also changed test wiring (deleted
+  `test/setup.ts`, `pool: forks`).
+- `81d1672` (22:27:47) reverted `897b226`, deleting the root files again —
+  this is the commit where the loss became final. The revert also carried
+  ~513 lines of unrelated in-flight changes (OID4VP tests in verifier-demo,
+  wallet-pwa `App.tsx`) and permanently restored `test/setup.ts` and
+  `pool: forks`, both of which survive in some form to HEAD.
+
+Recovered into `src/index.ts`: `MemoryHardeningProtection`,
   `NetworkHardeningProtection`, `SupplyChainHardeningProtection`,
   `PhysicalSeizureProtection`, `AIResistanceProtection`.
 - **Lost with no surviving copy:** the exported `HARDENING_CHECKLIST` const
