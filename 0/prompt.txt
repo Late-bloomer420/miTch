@@ -1,0 +1,8 @@
+<pasted_content id="1426">
+PS C:\Users\Lenovo\.aaCoding\miTch> ! gh pr merge 202 --squash --delete-branch
+ParserError: 
+Line |
+   1 |  ! gh pr merge 202 --squash --delete-branch
+     |   ~
+     | Missing expression after unary operator '!'.
+</pasted_content id="1426">
