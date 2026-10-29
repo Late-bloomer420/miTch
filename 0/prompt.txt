@@ -1,0 +1,3 @@
+Base directory for this skill: C:\Users\Lenovo\.claude\skills\synced\01fcb135-b24d-4927-aed2-811a97474bfc_1ebb2e72-9650-493b-b47b-2434bcedcabc\docs
+
+Everything about docs is served by the docs connector — follow its instructions (they say what to call first). If no docs tools are present (they may be listed as pages tools on some accounts), say so.
