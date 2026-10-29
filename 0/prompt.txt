@@ -1,0 +1,24 @@
+<pasted_content id="6bfc">
+I'll trace where the startup audit lines are emitted and check whether the app runs under React StrictMode (double-invoked effects in dev) or the wallet is actually started twice.
+The sandbox checkout has no installed dependencies, so I can't run the runtime probe here. But the static analysis is conclusive on its own. Let me do one final check on the `loadWalletCredentials` path to make sure it isn't also logging on init.
+**Verdict: the doubled startup lines are a dev-mode StrictMode artifact — but the effect is not idempotent, so there's a small real fix worth making.**
+
+**Root cause chain:**
+
+1. `main.tsx:7` mounts `<App />` inside `<React.StrictMode>`. In development builds, StrictMode intentionally mounts components, runs effects, unmounts, and re-runs effects once to surface missing cleanup.
+2. The bootstrap effect at `App.tsx:356–398` has an empty dependency array and **no cleanup function**: it calls `init()` unconditionally at the end (`App.tsx:397`). So in dev the whole sequence — `🔓 Initializing Wallet Service...` → `🔑 Wallet Decrypted & Ready` → passkey status line → credential load — runs twice, and each `addLog` call appends (`App.tsx:256`, `setLogs(prev => [...prev, ...])`). Hence every startup line appears twice.
+3. In a **production build, StrictMode's double-invocation does not occur**, so users never see this. It's dev-only as a *visual* symptom.
+
+**Why it's not entirely benign:**
+
+The effect has real side effects beyond logging: `walletRef.current.initialize('123456')` and the WebAuthn availability/identity checks (`App.tsx:358–387`) run twice in dev. The log doubling is the *visible* evidence that the bootstrap isn't idempotent. On the first (discarded) StrictMode pass, `initialize()` decrypts the vault and the async passkey checks fire — the second pass then re-initializes an already-initialized wallet. If `WalletService.initialize()` isn't safe to call twice, the duplicate could mask or cause state races. That's worth checking in `WalletService.ts` even though the symptom is cosmetic.
+
+**Recommendation:**
+
+- Don't remove StrictMode — it's doing its job by exposing this.
+- Make the bootstrap a proper effect: either return a cancellation guard (a `let cancelled = false` set in the cleanup, checked before each `addLog`/`setStatus`), or guard with a `useRef` "already bootstrapped" flag so the second StrictMode pass is a no-op. The ref-guard is the smaller change and fits the existing `bootstrapRef` pattern at `App.tsx:353`.
+- Keep the explicit-reset path working: `handleResetWallet` re-runs `bootstrapRef.current`, so the guard must be resettable there (e.g. the reset clears the flag before re-invoking bootstrap).
+- Add a regression test asserting the startup sequence appears exactly once per mount — in the test environment, `render(<App />)` from `App.test.tsx` doesn't go through `main.tsx`, so the double-mount doesn't reproduce there today; the test should mount inside StrictMode to actually cover it.
+
+One caveat, honestly stated: I couldn't run the runtime probe in this sandbox (the checkout has no `node_modules` installed), so the StrictMode explanation is static analysis of `main.tsx`, the bootstrap effect, and `addLog` — it fits the symptom exactly (each startup line doubled, nothing else doubled), but the confirming browser/test run should happen in your environment. If you want, I can write the guard + regression test as a PR next.
+</pasted_content id="6bfc">
