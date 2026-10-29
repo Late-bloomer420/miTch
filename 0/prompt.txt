@@ -1,0 +1,38 @@
+Review this change for security vulnerabilities.
+
+Changed files (you may Read these and any other file in the repo):
+  - src/apps/wallet-pwa/src/services/WalletService.ts
+  - src/packages/shared-crypto/src/webauthn.ts
+
+Unified diff (only + lines are new):
+
+=== DIFF: src/apps/wallet-pwa/src/services/WalletService.ts ===
+@@ -476,8 +476,8 @@ export class WalletService {
+             this.policyPublicKey = null; // WebAuthn assertion verification is not a local ECDSA verify.
+           } else if (hardwareAvailable) {
+             this.policyPublicKey = null;
+-            console.warn(
+-              '🛑 Hardware identity key required. Register the platform passkey before signing policy decisions.'
++            console.info(
++              'ℹ️ Hardware identity key not yet registered. Register the platform passkey before signing policy decisions.'
+             );
+           } else {
+             console.log('✨ Creating NODE/TEST software Identity Keypair (RAM only)...');
+
+
+=== DIFF: src/packages/shared-crypto/src/webauthn.ts ===
+@@ -226,7 +226,10 @@ export class WebAuthnService {
+     const createOptions: PublicKeyCredentialCreationOptions = {
+       rp: { name: 'AskMI Identity', id: rpId },
+       user: { id: userIdBuffer, name: userId, displayName: 'AskMI Identity Key' },
+-      pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
++      pubKeyCredParams: [
++        { type: 'public-key', alg: -7 }, // ES256
++        { type: 'public-key', alg: -257 }, // RS256 fallback
++      ],
+       authenticatorSelection: {
+         authenticatorAttachment: 'platform',
+         userVerification: 'required',
+
+
+Investigate per the method in your instructions, then return the findings list.
