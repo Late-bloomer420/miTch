@@ -1,0 +1,3 @@
+PS C:\Users\Lenovo\.aaCoding\miTch>  gh pr merge 202 --squash --delete-branch
+GraphQL: 6 of 6 required status checks are expected. (mergePullRequest)
+PS C:\Users\Lenovo\.aaCoding\miTch>
