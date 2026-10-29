@@ -93,6 +93,23 @@ pnpm format
 
 GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
 
+## Git operations (branch-skew and revert discipline)
+
+Rules learned from the 2026-03-12 phase0-security incident (see
+`docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`):
+
+- Before deleting files described as duplicates, verify per blob hash
+  (`git rev-parse <ref>:<path>`). Same filename does not mean same content; the
+  incident's root and src files were ~75% different.
+- Before committing a revert, check it for scope bleed: the incident's revert
+  bundled ~513 lines of unrelated in-flight work and re-deleted files that had
+  been intentionally cleaned up, because the reverted branch was based on a
+  pre-cleanup tree. Diff the revert against the intended target state, not just
+  the reverted commit.
+- A fix and its revert seconds apart usually means an automation/agent loop
+  reacting to CI from a stale working tree. Stop, rebase on the current base,
+  then re-apply — do not stack another revert.
+
 ## Evidence and update discipline
 
 Use docs/DOCS_CANON.md to locate the affected topic and its evidence before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. Refresh evidence for affected paths/profiles/dependencies; docs-only edits do not require a full repository re-audit. Broader release gates need their own broader checks. No gate moves without its linked evidence. Do not duplicate #170–#173.
