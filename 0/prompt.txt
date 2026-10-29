@@ -1,0 +1,21 @@
+<pasted_content id="6bfc">
+Your four corrections are accepted — and the first one is a genuine error on my part worth recording: I said "bump to the latest 9.x" without checking whether patched releases exist on that major. They don't; all 25 advisories are fixed only in 10.x. That changes pnpm from a labeling/hygiene item to a real CI supply-chain decision, and you were right to move it to the "needs judgment" list. The double-counting (lockfile + evidence manifest) and the `packageManager` coupling are also correct — I hadn't traced either.
+
+**Proceed with Option A, with one carve-out.**
+
+**Carve out — take gap 1 (stray `package-lock.json`) now, as a tiny standalone PR.** Reasons:
+- It's a pure file deletion: no manifest, no `pnpm-lock.yaml`, no root overrides. Zero conflict surface with #227/#229 — the entire reason you stopped applies to every *other* gap but not this one.
+- It's phantom noise (7 Dependabot alerts for a lockfile pnpm never reads), and every day it stays, it inflates the alert count that SEC-AUDIT-2 is triaging against. Removing it makes *their* numbers honest.
+- One precondition, as you already flagged: confirm nothing runs `npm ci` or `npm install` against verifier-demo/frontend (Dockerfiles, CI workflows, heroku-style buildpacks, scripts) before deleting. A stray lockfile from #23 might be accidentally load-bearing somewhere.
+
+**Hand gaps 2–6 to the SEC-AUDIT-2 session.** The reasoning is purely about conflict economics:
+- **Gap 2 (@simplewebauthn/server 13.2.3 → 13.3.2)**: flag it to them as *do early*, not just "add to list." It's a runtime patch in exactly the attestation-verification area we just spent three PRs hardening (#219/#222) — it would be wrong for the wallet to verify capsule attestations properly while the webauthn-verifier runs a version with a flagged attestation-check advisory. But it *does* touch the shared lockfile, so it belongs in their queue, not as a parallel PR.
+- **Gap 3 (zod 4)**: must sit with them regardless — it's coupled to the MCP SDK bump's zod peer dependency, so doing it separately would just create the peer-conflict work twice.
+- **Gap 4 (pnpm 9→10)**: their batch, and it deserves a deliberate write-up in their roadmap, because it changes `packageManager` and therefore how *every* CI job installs. When they take it, one note from me: pnpm 10's breaking changes worth checking are the default `--frozen-lockfile` behavior in CI, lifecycle-script approval prompts (`pnpm 10` blocks build scripts by default — check `onlyBuiltDependencies` config for esbuild/tsx-type packages), and `pnpm-workspace.yaml` catalog changes.
+- **Gap 6 (stale overrides)**: their territory — it's the root `package.json` overrides block they're already editing for every other batch.
+- **Gap 5**: garbled in the table, but the substance (remaining Vite alerts trace to the stray lockfile, i.e. it resolves with gap 1) is consistent with what I saw — nothing separate to action.
+
+**Then go straight to the #220 design note.** With the carve-out, you've cleared the only zero-conflict item, the dependency track has a single owner, and your session isn't blocked. One suggestion for the hand-off: don't just drop the table — append it (or a pointer to it) into their roadmap doc as a "gaps identified 2026-10-26" section or a comment on their tracking issue, so it survives in the repo rather than in this conversation. Their checkpoint notes I saw in `SECURITY_AUDIT_ROADMAP_2026-10-01.md` are already styled that way, so it'll fit.
+
+So: delete the stray lockfile (after the `npm ci` check) → hand the gap table to SEC-AUDIT-2 with gap 2 marked "early" → start the #220 design note with the Transparency-Layer three-layer taxonomy (observed facts / potential access / unknowns) as the reference structure.
+</pasted_content id="6bfc">
