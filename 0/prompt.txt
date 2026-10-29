@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bljm25mgr</task-id>
+<tool-use-id>toolu_01VYeZNoVnwdv9T1zY5KAFD7</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\bljm25mgr.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for required checks then merge #213" completed (exit code 0)</summary>
+</task-notification>
