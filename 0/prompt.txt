@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b4tqmazm0</task-id>
+<tool-use-id>toolu_012n2twp5VZQU1zGuQnFPYUX</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\b4tqmazm0.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for #153 required checks then merge" completed (exit code 0)</summary>
+</task-notification>
