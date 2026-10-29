@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b0dypbm8e</task-id>
+<tool-use-id>toolu_01UDx9SgA3AujNwvErBv35GD</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\b0dypbm8e.output</output-file>
+<status>completed</status>
+<summary>Background command "Update branch, wait for checks, squash-merge #230" completed (exit code 0)</summary>
+</task-notification>
