@@ -71,6 +71,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Repository ecosystem (canonical repo, related repositories, consolidation rule):** `docs/REPOSITORY_ECOSYSTEM.md`
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
+- **Phase-0 threat-model narrative (surviving source for the "lost" hardening content):** `src/packages/phase0-security/EXECUTIVE_SUMMARY.md` — the strategy narrative (platform-vendor bypass, split-key 3-share design, memory/network/supply-chain/seizure/AI defenses with per-strategy pros/cons) lost from the deleted root `ADVANCED_SECURITY_HARDENING.ts` survives here; only the `HARDENING_CHECKLIST` const and `RECOMMENDATION MATRIX` are unrecovered (see `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`).
 
 ## Research And Strategy Inputs
 
