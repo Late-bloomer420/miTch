@@ -1,0 +1,28 @@
+<pasted_content id="6bfc">
+Nice work — let me verify PR #213 on GitHub and give it a quick review before signing off.
+7 Befehle ausgeführt
+
+I reviewed PR #213's diff and CI. Verdict: the PR is good — approve/merge-ready modulo one red check that is not your fault.
+
+Diff review (matches the agreed plan exactly):
+
+    WalletPage union and the nav array drop documents/proximity/renderer; nav order is Credentials · Requests · Trace · Sovereignty · Audit · Settings · Tools. ✅
+    Audit stays a tab, and the ['requests', 'trace', 'audit'] grouping at App.tsx:1829 is untouched — consistent with my earlier reasoning. ✅
+    Proximity: the fifth card (#btn-in-person) on Requests opens the same showProximityPreview → ProximityView mount, which was left at App level exactly as hoped. The old empty-state page is cleanly removed. ✅
+    Documents and Credential Renderer moved verbatim (same onSign handler, same card mapping) into #tools-documents / #tools-renderer sections on Tools, with their original headings and aria-labelledby intact. ✅
+    The resize handler now re-reveals the active tab via a resize listener with proper cleanup in the effect return. ✅
+    CSS: rail centered with gap: 6px, Tools panels widened to --wallet-content-max. ✅
+    Tests: the three new ones assert the 7-tab order, the In-person card → Proximity Presentation flow, and the Tools sections/anchors; the old navigation walk was sensibly trimmed (Documents/Proximity/Renderer steps replaced by an Audit stop). ✅
+
+CI status:
+
+    security, dispatch, fallthrough pass; invoke/triage/debugger skipping (expected paths).
+    ❌ review / review fails — not caused by your change. The Gemini CLI PR-review bot dies with TerminalQuotaError: You have exhausted your daily quota on this model (also fetch failed on attempt 1). That check will stay red until the quota resets, regardless of the diff. If it's a required check, it blocks merging today; otherwise it's safe to ignore or re-run tomorrow.
+
+Two minor nits (non-blocking, your call):
+
+    Around the new In-person button there's a leftover mis-indented closing </div> (visible in the diff context at App.tsx ~1922). Purely cosmetic; a formatter pass would catch it.
+    The Gemini review bot running out of quota daily suggests it's burning quota on every PR push — worth a look at the workflow config separately if it recurs.
+
+Merge order confirmed: #210 first, then #213 (base will retarget to master automatically). No secrets, no unrelated files (3 files, +107/−97, all in wallet-pwa).
+</pasted_content id="6bfc">
