@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b2da83kir</task-id>
+<tool-use-id>toolu_01Xm2RRAfH1fKdH4MhvmbSye</tool-use-id>
+<output-file>C:\Users\Lenovo\AppData\Local\Temp\claude\C--Users-Lenovo--aaCoding-miTch\92e4375f-17ab-4393-b78b-5abed07bc52f\tasks\b2da83kir.output</output-file>
+<status>completed</status>
+<summary>Background command "Sequentially update and merge PRs 191, 203, 204" completed (exit code 0)</summary>
+</task-notification>
