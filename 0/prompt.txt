@@ -1,0 +1,22 @@
+<pasted_content id="6bfc">
+Let me verify the four PRs are merged and check which remote branches correspond to which PRs, so my delete/no-delete call is grounded.
+2 Befehle ausgeführt
+
+Confirmed — all four PRs are merged into master with the commits you listed (#153's head branch was claude/hopeful-hamilton-0bzhkf).
+
+Branches: delete these four merged remote branches.
+
+    feat/wallet-design-polish (#210)
+    feat/wallet-nav-seven-tabs (#213)
+    chore/prettier-wallet-app (#215)
+    claude/hopeful-hamilton-0bzhkf (#153 — though if that's a bot-managed branch, deleting it may break the bot's ability to sync a follow-up; safe either way since it's merged)
+
+Each branch head is fully contained in master via its merge commit, so nothing is lost.
+
+Leave the rest alone. The remote has ~40 other branches. Several are unmerged work from other sessions/tools (jules-*, fix-* with random suffixes, perf-optimize-*, wip/g100.4-*, the weekly docs/eudi-upstream-* series, codex/Testapp, etc.). Deleting any of those without checking whether an open PR or an active session references them risks destroying someone else's work-in-progress — exactly what you flagged for the untouched one. If a later cleanup is wanted, the safe rule is: only delete branches whose head commit is reachable from master AND which have no open PR.
+
+On what's left:
+
+    Wallet polish backlog (dark/light mismatch, Sovereignty box, mixed-language text, duplicated audit lines): the doubled startup lines in the audit log sound like a double-mount in dev (StrictMode runs effects twice) — worth confirming before treating it as a real bug. That's a self-contained next PR.
+    Earlier items (#150 review fixes, D1, Vite 6→8): Vite major upgrades tend to ripple through plugin/config/CSP behavior, and #212 just touched CSP headers — do the Vite bump in its own PR after #150's fixes, not together.
+</pasted_content id="6bfc">
