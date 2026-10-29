@@ -1,0 +1,14 @@
+<pasted_content id="6bfc">
+Merge — once Build & Test finishes green (it was still pending at check time; everything else already passes, including the Gemini review now correctly showing skipping thanks to #153).
+
+The diff is exactly the recommended shape, done well:
+
+    Guard: hasBootstrappedRef set before running init() (so a synchronous double-invoke can't slip through), with void making the fire-and-forget explicit. Minimal, fits the existing bootstrapRef pattern.
+    Reset path preserved: the guard doesn't block handleResetWallet's re-run at App.tsx:424 — and importantly, the second new test pins that behavior (initialize called twice after reset), so a future regression there gets caught.
+    Tests mirror reality: the new test renders inside <StrictMode> exactly as main.tsx does — which was the coverage gap I flagged (plain render(<App />) couldn't reproduce the doubling). It asserts both log lines appear once and initialize was called exactly once, which is stronger than just checking the logs.
+    Scope discipline: 2 files, +37/−1, no unrelated formatting mixed in (Prettier flag on App.test.tsx predates this and was left alone — consistent with the one-file-per-purpose approach from #215).
+
+One honest note: a ref-guard keyed on [] deps means the guard persists for the component's lifetime, so this is "boot once per mount," not "boot once per actual mount" — a genuine React remount (e.g. HMR full reload) still boots again, which is correct and desired. The PR title says exactly that, so the semantics are accurately described.
+
+Land it, then the queue from earlier stands: #150 fixes next, Vite 6→8 in its own PR after that.
+</pasted_content id="6bfc">
