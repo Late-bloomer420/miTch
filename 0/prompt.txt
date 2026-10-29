@@ -1,0 +1,16 @@
+<pasted_content id="6bfc">
+**Hold the merge — `Build & Test` is red on #223.** It's a docs-only PR (+68/−0, 3 markdown files), so a code test failing is almost certainly a pre-existing flake or an unrelated master issue, but let's look at the actual failure before merging.
+**Hold — I looked at the red `Build & Test` before calling it.** Here's the picture:
+
+**The failure is unrelated to #223.** The red check failed on exactly one test: `test/pqc.test.ts > SLH-DSA-SHA2-128s > round-trip sign/verify`, which **timed out at 30000ms**. SLH-DSA/SPHINCS+ signing is computationally heavy by design, so this is a slow-crypto timeout flake on a busy runner — not a code failure, and there is zero plausible connection to a +68/−0 markdown-only diff.
+
+**Proof it's not master's state:** the same `Build & Test` check ran on merge commit `4b7e393` (the #222 merge, i.e. what #223 branches from) and concluded `success`. So master is healthy; this run just drew a slow hand.
+
+**What to do: re-run the failed job on #223, and merge once it's green.** I'm not saying "merge" past a red required check — but the action is "re-run," not "fix." Command: `gh run rerun 40209720030 --failed` (or re-run the job from the PR page).
+
+**Follow-up worth tracking separately:** the PQC test suite's 30s default timeout is marginal for SLH-DSA on a loaded CI runner — this will flake again. The repo already knows this pattern (`verifier-demo/backend/package.json` uses `--testTimeout 30000` for its own slow tests, and shared-crypto runs with an extended timeout too). A tiny separate PR raising the timeout for `pqc.test.ts` (per-test timeout argument or scoped config) would kill the flake class. Don't fold it into #223 — it's a code/test change, #223 is docs-only, and we've kept that discipline all round.
+
+**On #223's content itself:** I read the full diff — it's exactly right. The new QA record follows DOCS_CANON's immutability rule correctly (new dated record, July doc gets only a pointer, explicit "This record above is unchanged"), the capsule-check state table is precise (including the deliberate legacy-proceeds-with-warning decision, attributed to #218), the known-limits section is honest about what's *not* covered (wallet-side only, sign counter, RS256 passkeys, presence propagation, `proof_token` in audit → #172), and the evidence section cites exact SHAs and head commits. The BACKLOG entry matches the existing style and links everything. This is a good document.
+
+So: **re-run → merge on green**, and I'd put the PQC timeout fix at the front of the queue ahead of Vite — it's five minutes and it stops required checks randomly blocking future PRs.
+</pasted_content id="6bfc">
