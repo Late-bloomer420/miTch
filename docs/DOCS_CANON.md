@@ -9,7 +9,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 |---|---|
 | Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) |
-| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
+| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 and planning owners #175–#177 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
@@ -71,6 +71,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Repository ecosystem (canonical repo, related repositories, consolidation rule):** `docs/REPOSITORY_ECOSYSTEM.md`
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
+
+- **Observable trust milestones and assurance/role boundaries:** `docs/security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md` (planning; #175–#177, complements existing component evidence and #170–#173).
 
 ## Research And Strategy Inputs
 
