@@ -10,7 +10,7 @@
  * bitstring (`encodedList`) is left to each caller, so no caller's revocation
  * semantics change: `makeStatusListCredential` takes the already-encoded string.
  */
-import type { StatusListCredential, StatusListEntry } from './types';
+import type { StatusListCredential, StatusListEntry } from './types.js';
 
 /** Default status-list URL used by the existing fixtures. */
 export const TEST_STATUS_LIST_URL = 'https://example.com/status-list/1';

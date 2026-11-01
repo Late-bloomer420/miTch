@@ -80,6 +80,19 @@
         "wallet_attestation": {
             "type": "string",
             "description": "Cryptographic signature or TEE attestation from the wallet."
+        },
+        "wallet_attestation_assertion": {
+            "type": "object",
+            "description": "Optional. Full WebAuthn assertion for a passkey-signed capsule (base64url fields, DER signature). Capsules without it are treated as unverified hardware attestations.",
+            "required": ["version", "credentialId", "rpId", "authenticatorData", "clientDataJSON", "signature"],
+            "properties": {
+                "version": { "const": 1 },
+                "credentialId": { "type": "string" },
+                "rpId": { "type": "string" },
+                "authenticatorData": { "type": "string" },
+                "clientDataJSON": { "type": "string" },
+                "signature": { "type": "string" }
+            }
         }
     }
 }

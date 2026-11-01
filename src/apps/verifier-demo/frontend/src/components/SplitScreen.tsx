@@ -11,10 +11,12 @@ interface SplitScreenProps {
 export function SplitScreen({ backendUrl }: SplitScreenProps) {
     const [selectedId, setSelectedId] = useState<ScenarioId>('liquor-store');
     const [runNonce, setRunNonce] = useState(0);
+    const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
     const scenario = SCENARIOS[selectedId];
 
     const handleScenarioChange = (id: ScenarioId) => {
         setSelectedId(id);
+        setSessionId(crypto.randomUUID());
         setRunNonce((prev) => prev + 1);
     };
 
@@ -63,7 +65,7 @@ export function SplitScreen({ backendUrl }: SplitScreenProps) {
                     }}>
                         📱 WALLET — YOUR DATA
                     </div>
-                    <WalletPanel scenario={scenario} backendUrl={backendUrl} onPresented={handlePresented} />
+                    <WalletPanel scenario={scenario} backendUrl={backendUrl} sessionId={sessionId} onPresented={handlePresented} />
                 </div>
 
                 {/* Right: Verifier */}
@@ -74,7 +76,7 @@ export function SplitScreen({ backendUrl }: SplitScreenProps) {
                     }}>
                         🏪 VERIFIER — WHAT THEY RECEIVE
                     </div>
-                    <VerifierPanel scenario={scenario} backendUrl={backendUrl} runNonce={runNonce} />
+                    <VerifierPanel scenario={scenario} backendUrl={backendUrl} sessionId={sessionId} runNonce={runNonce} />
                 </div>
             </div>
 
