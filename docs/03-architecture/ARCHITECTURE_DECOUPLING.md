@@ -3,7 +3,7 @@
 > **Role:** Canonical architecture-boundary model, coupling audit, and migration gates.
 > **Status:** AUTHORITATIVE
 > **Owner:** Technology & Architecture Authority
-> **Last verified:** 2026-10-23 (static re-check against `master` @ `624cf9a`)
+> **Last verified:** 2026-11-01 (static re-check against `master` @ `002ce5e`)
 
 ## Authority and Baseline
 
@@ -23,7 +23,8 @@ Audit baseline:
 
 | Surface | Revision | Meaning |
 |---|---|---|
-| `master` | [`624cf9af`](https://github.com/Late-bloomer420/miTch/commit/624cf9af919fe58a7cba34a05b316b17e49c7e0f) | Re-check baseline (2026-10-23); findings below re-verified statically |
+| `master` | [`002ce5e6`](https://github.com/Late-bloomer420/miTch/commit/002ce5e65b967e883773392ac455920ab4882643) | Latest re-check baseline (2026-11-01); findings below re-verified statically |
+| `master` | [`624cf9af`](https://github.com/Late-bloomer420/miTch/commit/624cf9af919fe58a7cba34a05b316b17e49c7e0f) | First re-check baseline (2026-10-23) |
 | `master` (original) | [`bb340038`](https://github.com/Late-bloomer420/miTch/commit/bb340038fdd4df98c6d2f2936f2a39ba7c872ac1) | Original audit baseline (2026-08-20) |
 | [PR #130](https://github.com/Late-bloomer420/miTch/pull/130) | merged as `cacbc95` | Credential-pool wiring and dead-code sweep; now part of `master` |
 
@@ -110,7 +111,7 @@ and [`wallet-core/WalletService`](../../src/packages/wallet-core/src/WalletServi
 
 The runtime PWA imports and constructs
 `src/apps/wallet-pwa/src/services/WalletService.ts`, which was 2,317 lines at the
-original baseline and is 2,326 lines at `624cf9a`. `@askmi/wallet-core` also exports an 84-line `WalletService`
+original baseline, 2,326 lines at `624cf9a`, and 2,464 lines at `002ce5e`. `@askmi/wallet-core` also exports an 84-line `WalletService`
 facade and repository/evaluator interfaces, but the PWA imports only
 `ReputationSensor` from that package.
 
@@ -294,10 +295,14 @@ uses the audit signing key for persistent document/identity signing.
 This couples key ownership to an implementation detail, defeats TypeScript
 encapsulation, and conflicts with ADR-013's constitutional key-separation goal.
 
-**Re-check 2026-10-23 (`624cf9a`):** both casts remain (`signData()` reads
-`auditPrivateKey`; a second cast reads `auditPublicKey`). Open PR #150 moves
-`signData()` to `IdentityKeyGuardian.signIdentityPayload()`; it does not
-remove the public-key cast.
+**Re-check 2026-10-23 (`624cf9a`):** both casts remained (`signData()` read
+`auditPrivateKey`; a second cast read `auditPublicKey`).
+
+**Re-check 2026-11-01 (`002ce5e`):** partially resolved. #221 moved
+`signData()` to a proof-token signer backed by the identity key, so the
+private audit-key cast is gone (PR #150 was closed unmerged). Still open:
+`getIdentityPublicKey()` reads `auditPublicKey` through an `as unknown as`
+cast, so the audit key still doubles as the device-engagement identity key.
 
 **Acceptance**
 
@@ -471,3 +476,8 @@ The architecture migration is complete only when all of the following hold:
   residual, cross-referenced EV-09 for ARCH-03, linked open PR #150 for
   ARCH-05, and added the placeholder proximity `DeviceAuth` observation under
   ARCH-02. No tests were run; this is not security PASS evidence.
+- **2026-11-01:** Static re-check against `master` @ `002ce5e`. ARCH-01 to
+  ARCH-04 and ARCH-06 to ARCH-09 unchanged. ARCH-05 is partially resolved by
+  #221 (no private audit-key cast in `signData()`); the public-key cast in
+  `getIdentityPublicKey()` remains. ARCH-02, including the placeholder
+  `DeviceAuth`, is unchanged. No tests were run; not security PASS evidence.
