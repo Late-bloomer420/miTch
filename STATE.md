@@ -8,6 +8,17 @@ wallet/passkey changes are retained. [Revision, validation and limits](docs/qa/C
 Local full test graph: 49/49 tasks; affected builds: 18/18; lint: 13/13 (seven
 existing warnings). Implementation/merge record: #224; no release or pilot gate moves.
 
+**Scoped update 2026-10-25 — SLH-DSA test-timeout flake fixed (branch
+`fix/pqc-slh-dsa-test-timeout`):** the recurring `pqc.test.ts` SLH-DSA-SHA2-128s
+CI timeout (documented 2026-07-12 and twice on 2026-10-25 Actions runs) is fixed
+by sharing one keygen+sign `beforeAll` fixture and giving the fixture and tests
+explicit 120s budgets — no crypto change. Local: 25/25 direct file run (previously
+always 2 fails at the 5s CLI default), full shared-crypto suite 32/32 files,
+312/312 tests. [Dated evidence](docs/qa/PQC_SLH_DSA_TEST_TIMEOUT_2026-10-25.md).
+Remaining SEC-AUDIT-2 dependency work (49 high advisories, of which 12 are the
+`pnpm` CLI devDep in `@askmi/evidence`) stays open under
+[`docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`](docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md).
+
 **Scoped update 2026-10-25 — #170 fix branch:** the active numeric-age presentation
 route now reserves attempts once, checks eligibility and exact profile/scope,
 and returns a minimized result. Backend 87 source tests passed; affected apps
