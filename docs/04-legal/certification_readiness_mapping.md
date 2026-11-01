@@ -1,7 +1,6 @@
 # Certification & Trust‑Readiness Mapping
 
-**Projekt:** miTch  
-**Ziel:** Vorbereitung auf Zertifizierung & behördliche Bewertung
+> **Honest-scope note (2026-10-27, issue #235):** undated, unvalidated draft. The status claims below ("Referenz‑kompatibel / zertifizierbar", "DSGVO‑by‑Design") carry **no external authority or evidence** and must not be quoted as certification or compliance statements (`docs/MATURITY_AND_LIMITATIONS.md` §3). AskMI does not claim EUDI certification; the canonical regulatory-role statement is [`REGULATORY_ROLE_MAP.md`](REGULATORY_ROLE_MAP.md). This file is an engineering analysis, not legal advice.
 
 ---
 
