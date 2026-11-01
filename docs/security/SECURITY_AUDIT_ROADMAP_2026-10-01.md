@@ -33,6 +33,17 @@ evidence](../qa/SECURITY_AUDIT_2_BODY_PARSER_2026-10-25.md). Residual high
 batches (fast-uri via ajv, undici/brace-expansion/js-yaml tooling, pnpm CLI
 devDep in `@askmi/evidence`, MCP SDK runtime bump, zod) remain open.
 
+## SEC-AUDIT-2 batch checkpoint — 2026-10-25 (fast-uri pin)
+
+Second SEC-AUDIT-2 runtime batch: `fast-uri@<3.1.7` → `>=3.1.7 <4` clears all
+**7 high advisories** in ajv's URI resolver (runtime `@askmi/mcp-server` chain
+plus verifier-demo tooling ajv); all instances resolve to 3.1.9. Cumulative
+highs across batches ①+③: **49 → 41, critical 0**. [Dated local
+evidence](../qa/SECURITY_AUDIT_2_FAST_URI_2026-10-25.md). Open batches: the
+`@modelcontextprotocol/sdk >=1.32.0` runtime bump (owns body-parser@2, hono,
+ip-address, zod), the dev/test tooling batch (undici, brace-expansion,
+js-yaml, browserslist, vite), and the `pnpm` CLI devDep in `@askmi/evidence`.
+
 ## Purpose
 
 This document turns the current security-audit backlog into small, reviewable
