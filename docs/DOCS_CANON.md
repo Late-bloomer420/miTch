@@ -38,6 +38,7 @@ This file defines the authoritative document per topic area and serves as naviga
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
+| `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` | Kanonische Layer-Grenzen, Coupling-Findings und Akzeptanz-Gates | Wie muss Code abhängen, was ist offen? |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
 | `docs/qa/` | Datierte QA-/Evidence-Artefakte | Was wurde konkret geprüft? |
 
@@ -52,14 +53,14 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 - **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
 - **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
-- **Architecture decoupling audit (proposed; ARCH-01..09):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
+- **Architecture layering, coupling findings, and migration gates:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **QA evidence archive:** `docs/qa/`
 
 ## Navigation
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
-- **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
+- **Canonical architecture decoupling model:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -115,6 +116,10 @@ neuer Auftrag behandelt werden.
 - If a public claim conflicts with a reproduced finding, qualify the overlapping claim with its specific dated evidence. Preserve other component Evidence Pack results; the finding index is navigation, not a global override.
 - A protocol spec defines intended behavior; dated active-path evidence defines observed implementation. STATE must expose any gap rather than present a normative spec as implementation.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
+- If an older architecture diagram, milestone rollup, or audit conflicts with
+  `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` on dependency direction or
+  current coupling findings, the canonical decoupling document wins. Backlog
+  status remains authoritative in `docs/BACKLOG.md`.
 - If QA evidence conflicts with STATE.md, prefer the newer dated evidence for
   the specific validation it records, then update STATE.md in the next docs
   alignment pass.
