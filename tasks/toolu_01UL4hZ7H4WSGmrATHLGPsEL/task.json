@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01UL4hZ7H4WSGmrATHLGPsEL",
+  "agent_id": "a63611cab75ab355e",
+  "subagent_type": "general-purpose",
+  "task_description": "Review PR #234 design note",
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 88259,
+    "cache_read_tokens": 827439,
+    "output_tokens": 9739,
+    "api_call_count": 12
+  },
+  "started_at": "2026-11-01T16:19:33.5673506+01:00",
+  "completed_at": "2026-11-01T16:22:11.9895913+01:00"
+}

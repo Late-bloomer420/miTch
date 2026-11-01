@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01AbtENHQPxkzobDkWTh9Ht6",
+  "agent_id": "a4c6f00a6cfa9ab55",
+  "subagent_type": "general-purpose",
+  "task_description": "Review EUDI PRs #179 and #228",
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 78435,
+    "cache_read_tokens": 1181686,
+    "output_tokens": 9778,
+    "api_call_count": 15
+  },
+  "started_at": "2026-11-01T16:29:40.500331+01:00",
+  "completed_at": "2026-11-01T16:32:59.7153023+01:00"
+}

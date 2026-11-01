@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01Q92eyBjsKXrLs8wPoy8WDc",
+  "agent_id": "a60bfdf5437400a50",
+  "subagent_type": "general-purpose",
+  "task_description": "Review PR #165 Jules data-flow perf",
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 45342,
+    "cache_read_tokens": 352276,
+    "output_tokens": 3167,
+    "api_call_count": 6
+  },
+  "started_at": "2026-11-01T16:29:40.5094645+01:00",
+  "completed_at": "2026-11-01T16:31:40.6258064+01:00"
+}

@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_0172tygdv32Lp3EJgMs6jgcp",
+  "agent_id": "a21ba98f7b12dff2b",
+  "subagent_type": "general-purpose",
+  "task_description": "Review draft PRs #188 #192 #200",
+  "token_usage": {
+    "input_tokens": 62,
+    "cache_creation_tokens": 96590,
+    "cache_read_tokens": 2843680,
+    "output_tokens": 16531,
+    "api_call_count": 31
+  },
+  "started_at": "2026-11-01T16:29:40.503614+01:00",
+  "completed_at": "2026-11-01T16:34:54.2690379+01:00"
+}

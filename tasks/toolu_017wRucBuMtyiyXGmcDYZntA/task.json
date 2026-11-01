@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_017wRucBuMtyiyXGmcDYZntA",
+  "agent_id": "a57a0907fdff7dbc1",
+  "subagent_type": "general-purpose",
+  "task_description": "Inventory unmerged remote branches",
+  "token_usage": {
+    "input_tokens": 48,
+    "cache_creation_tokens": 116062,
+    "cache_read_tokens": 2090250,
+    "output_tokens": 16647,
+    "api_call_count": 24
+  },
+  "started_at": "2026-11-01T16:19:33.6469813+01:00",
+  "completed_at": "2026-11-01T16:25:56.430836+01:00"
+}
