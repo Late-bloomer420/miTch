@@ -1,5 +1,5 @@
-import { KeyProtectionLevel } from './types/KeyProtectionLevel';
-import type { KeyGuardian, KeyCreationResult, EncryptionKeyCreationResult } from './interfaces/KeyGuardian';
+import { KeyProtectionLevel } from './types/KeyProtectionLevel.js';
+import type { KeyGuardian, KeyCreationResult, EncryptionKeyCreationResult } from './interfaces/KeyGuardian.js';
 
 export class SoftwareKeyGuardian implements KeyGuardian {
   // Signing keys (ECDSA-P256) — G-07: separate from encryption keys

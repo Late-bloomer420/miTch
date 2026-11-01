@@ -8,6 +8,42 @@
 Date: 2026-10-01
 Status: active triage plan.
 
+## Scoped audit gate checkpoint — 2026-10-24
+
+#185 owns the minimum critical audit gate and dependency triage, assigned to
+@Late-bloomer420 with a **2026-10-26** review/triage target. A separate patch
+proposes critical=0 enforcement in both audit workflows, with command/registry/
+report errors also denied. High counts remain visible; high enforcement remains
+open work. [Dated local evidence](../qa/SECURITY_AUDIT_GATE_2026-10-24.md)
+records 17 gate regressions and the current live audit (146 total, 52 high,
+1 critical), which the proposed gate rejects. This does not remediate dependencies,
+close #185/EV-05, or establish a merged CI result. #193 lifecycle work stays separate.
+
+## SEC-AUDIT-2 batch checkpoint — 2026-10-25 (body-parser@1.x pin)
+
+First SEC-AUDIT-2 runtime batch landed as one dependency family: the
+`body-parser <1.20.9` high advisory (DoS via trailing bytes after a number) in
+the **Express 4 runtime chain** of `issuer-mock`, `verifier-backend`,
+`verifier-demo` and `@askmi/connect` is cleared by a `pnpm.overrides` pin
+`body-parser@<1.20.9 >=1.20.9 <2` (upper bound prevents a major jump that would
+break Express 4). The Express 5 `body-parser@2` advisories stay open and are
+owned by the `@modelcontextprotocol/sdk >=1.32.0` bump (batch ②). Live audit:
+**high 49 → 48, critical 0**. [Dated local
+evidence](../qa/SECURITY_AUDIT_2_BODY_PARSER_2026-10-25.md). Residual high
+batches (fast-uri via ajv, undici/brace-expansion/js-yaml tooling, pnpm CLI
+devDep in `@askmi/evidence`, MCP SDK runtime bump, zod) remain open.
+
+## SEC-AUDIT-2 batch checkpoint — 2026-10-25 (fast-uri pin)
+
+Second SEC-AUDIT-2 runtime batch: `fast-uri@<3.1.7` → `>=3.1.7 <4` clears all
+**7 high advisories** in ajv's URI resolver (runtime `@askmi/mcp-server` chain
+plus verifier-demo tooling ajv); all instances resolve to 3.1.9. Cumulative
+highs across batches ①+③: **49 → 41, critical 0**. [Dated local
+evidence](../qa/SECURITY_AUDIT_2_FAST_URI_2026-10-25.md). Open batches: the
+`@modelcontextprotocol/sdk >=1.32.0` runtime bump (owns body-parser@2, hono,
+ip-address, zod), the dev/test tooling batch (undici, brace-expansion,
+js-yaml, browserslist, vite), and the `pnpm` CLI devDep in `@askmi/evidence`.
+
 ## Purpose
 
 This document turns the current security-audit backlog into small, reviewable

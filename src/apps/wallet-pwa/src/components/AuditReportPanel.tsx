@@ -77,64 +77,40 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
         return '🔹';
     };
 
+    const statusTone = status.includes('❌')
+        ? 'error'
+        : (status.includes('⚠️') ? 'warning' : 'success');
+
     return (
-        <div className="compliance-dashboard" style={{
-            padding: '24px',
-            background: '#111827',
-            borderRadius: '24px',
-            border: `1px solid ${isChainValid ? '#374151' : '#7f1d1d'}`,
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            marginTop: '30px',
-            color: '#f9fafb',
-            transition: 'border 0.3s ease'
-        }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>
-                    🛡️ Compliance Center
+        <div className={`compliance-dashboard ${isChainValid ? '' : 'compliance-dashboard--alert'}`}>
+            <header className="compliance-dashboard__header">
+                <h3 className="compliance-dashboard__title">
+                    Local Audit Evidence
                 </h3>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '12px',
-                    color: isChainValid ? '#10b981' : '#f87171',
-                    background: isChainValid ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    padding: '4px 12px',
-                    borderRadius: '100px',
-                    fontWeight: 'bold'
-                }}>
-                    <span className="pulse-dot" style={{ background: isChainValid ? '#10b981' : '#f87171' }}></span>
-                    {isChainValid ? 'CHAIN SECURE' : 'INTEGRITY ALERT'}
+                <div className={`compliance-dashboard__chain-badge ${isChainValid ? '' : 'compliance-dashboard__chain-badge--alert'}`}>
+                    <span className="pulse-dot"></span>
+                    {isChainValid ? 'Local chain verified' : 'Integrity alert'}
                 </div>
             </header>
 
-            <div className="recent-log-list" style={{ marginBottom: '25px' }}>
-                <h4 style={{ fontSize: '12px', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
+            <div className="recent-log-list compliance-dashboard__log-list">
+                <h4 className="compliance-dashboard__section-title">
                     Live Proof Boundary Feed
                 </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {recentLogs.length === 0 && <div style={{ color: '#4b5563', fontStyle: 'italic', fontSize: '13px' }}>No events recorded yet.</div>}
+                <div className="compliance-dashboard__log-stack">
+                    {recentLogs.length === 0 && <div className="compliance-dashboard__empty">No events recorded yet.</div>}
                     {recentLogs.map(entry => (
-                        <div key={entry.id} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            background: '#1f2937',
-                            padding: '10px 14px',
-                            borderRadius: '12px',
-                            fontSize: '13px',
-                            border: '1px solid #374151'
-                        }}>
+                        <div key={entry.id} className="compliance-dashboard__log-entry">
                             <span title={entry.action}>{getActionIcon(entry.action)}</span>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '600' }}>{entry.action.replace(/_/g, ' ')}</div>
-                                <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                            <div className="compliance-dashboard__log-copy">
+                                <div className="compliance-dashboard__log-action">{entry.action.replace(/_/g, ' ')}</div>
+                                <div className="compliance-dashboard__log-meta">
                                     {entry.subjectId ? `Subject: ${entry.subjectId.substring(0, 12)}...` : 'System Operation'}
                                 </div>
                             </div>
                             {entry.signature && (
-                                <div style={{ color: '#10b981', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <span style={{ fontSize: '14px' }}>🛡️</span> SIGNED
+                                <div className="compliance-dashboard__signed">
+                                    <span>🛡️</span> SIGNED
                                 </div>
                             )}
                         </div>
@@ -143,52 +119,31 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
             </div>
 
             {/* T-27: DPA Reality Check (Auditor Summary) */}
-            <div style={{
-                background: 'rgba(99, 102, 241, 0.05)',
-                border: '1px dashed #6366f1',
-                borderRadius: '16px',
-                padding: '16px',
-                marginBottom: '25px'
-            }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '11px', color: '#818cf8', textTransform: 'uppercase' }}>
-                    🔍 DPA Reality Check (Report Preview)
+            <div className="compliance-dashboard__preview">
+                <h4 className="compliance-dashboard__preview-title">
+                    Local Evidence Preview
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>SHREDDING FREQUENCY</div>
-                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>100%</div>
+                <div className="compliance-dashboard__preview-grid">
+                    <div className="compliance-dashboard__preview-stat">
+                        <div className="compliance-dashboard__preview-label">SHREDDING FREQUENCY</div>
+                        <div className="compliance-dashboard__preview-value">100%</div>
                     </div>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>AVG. SHRED LATENCY</div>
-                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#c084fc' }}>~4.2s</div>
+                    <div className="compliance-dashboard__preview-stat">
+                        <div className="compliance-dashboard__preview-label">AVG. SHRED LATENCY</div>
+                        <div className="compliance-dashboard__preview-value compliance-dashboard__preview-value--latency">~4.2s</div>
                     </div>
-                    <div style={{ background: '#000', padding: '10px', borderRadius: '8px', gridColumn: 'span 2' }}>
-                        <div style={{ fontSize: '9px', color: '#4b5563' }}>SOVEREIGNTY STATUS</div>
-                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#10b981' }}>Sovereign (No Central leakage)</div>
+                    <div className="compliance-dashboard__preview-stat compliance-dashboard__preview-stat--wide">
+                        <div className="compliance-dashboard__preview-label">SOVEREIGNTY STATUS</div>
+                        <div className="compliance-dashboard__preview-value compliance-dashboard__preview-value--ok">Sovereign (No Central leakage)</div>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="compliance-dashboard__actions">
                 <button
                     onClick={handleExport}
                     disabled={isExporting}
-                    style={{
-                        width: '100%',
-                        padding: '14px',
-                        borderRadius: '16px',
-                        border: 'none',
-                        background: isChainValid
-                            ? 'linear-gradient(to right, #6366f1, #a855f7)'
-                            : '#4b5563',
-                        color: 'white',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s',
-                        fontSize: '15px'
-                    }}
-                    onMouseEnter={(e) => !isExporting && (e.currentTarget.style.transform = 'scale(1.02)')}
-                    onMouseLeave={(e) => !isExporting && (e.currentTarget.style.transform = 'scale(1)')}
+                    className="compliance-dashboard__primary-button"
                 >
                     {isExporting ? 'Processing Chain...' : 'Download Signed Audit Report'}
                 </button>
@@ -208,57 +163,22 @@ export const ComplianceDashboard: React.FC<ComplianceDashboardProps> = ({ onExpo
                             }
                         }}
                         disabled={isExporting}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            borderRadius: '16px',
-                            border: '1px solid #6366f1',
-                            background: 'transparent',
-                            color: '#818cf8',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: '13px'
-                        }}
+                        className="compliance-dashboard__secondary-button"
                     >
                         Global Proof Sync (L2)
                     </button>
                 )}
 
-                <p style={{ margin: 0, fontSize: '11px', color: '#6b7280', textAlign: 'center', lineHeight: '1.4' }}>
+                <p className="compliance-dashboard__note">
                     Supports GDPR-style data portability and provides cryptographic accountability evidence of data minimization and crypto-shredding compliance.
                 </p>
             </div>
 
             {status && (
-                <div style={{
-                    marginTop: '16px',
-                    padding: '10px',
-                    fontSize: '12px',
-                    fontFamily: 'monospace',
-                    background: '#000',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    border: '1px solid #374151',
-                    color: status.includes('❌') ? '#f87171' : (status.includes('⚠️') ? '#fbbf24' : '#34d399')
-                }}>
+                <div className={`compliance-dashboard__status compliance-dashboard__status--${statusTone}`}>
                     {status}
                 </div>
             )}
-
-            <style>{`
-                .pulse-dot {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-                    animation: pulse 2s infinite;
-                }
-                @keyframes pulse {
-                    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-                    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-                    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-                }
-            `}</style>
         </div>
     );
 };
