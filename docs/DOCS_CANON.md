@@ -52,12 +52,14 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 - **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
 - **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
+- **Architecture decoupling audit (proposed; ARCH-01..09):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **QA evidence archive:** `docs/qa/`
 
 ## Navigation
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
+- **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -103,7 +105,7 @@ neuer Auftrag behandelt werden.
 | Ort | Scope | Index |
 |-----|-------|-------|
 | `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007) | [README](03-architecture/decisions/README.md) |
-| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–012) | [README](03-architecture/mvp/README.md) |
+| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–013) | [README](03-architecture/mvp/README.md) |
 | `docs/compliance/ADR/` | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md) |
 
 **Hinweis:** ADR-001–009 existieren in `mvp/` und `compliance/ADR/` mit unterschiedlichen Themen. Die READMEs in den jeweiligen Ordnern erklären die Abgrenzung. Konkretes Beispiel ADR-009: `mvp/ADR-009_Threat_Model.md` ist das STRIDE Threat Model (Sprint 4: Accepted — pending external review); `compliance/ADR/ADR-009.md` ist die WebAuthn-Native-vs-HMAC-Proxy-Entscheidung. Beide Dateien tragen oben einen wechselseitigen "siehe auch"-Hinweis.
