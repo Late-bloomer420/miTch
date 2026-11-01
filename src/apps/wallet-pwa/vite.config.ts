@@ -5,6 +5,11 @@ import path from 'path';
 
 const useBasicSsl = process.env.ASKMI_DEV_HTTPS !== '0';
 
+const securityHeaders = {
+    'Content-Security-Policy': "frame-ancestors 'none';",
+    'X-Frame-Options': 'DENY',
+};
+
 export default defineConfig({
     plugins: [react(), ...(useBasicSsl ? [basicSsl()] : [])],
 
@@ -47,5 +52,10 @@ export default defineConfig({
         strictPort: false, // Allow fallback if port used
         host: true, // Expose to network
         allowedHosts: true, // Allow ngrok/localtunnel/serveo hosts
+        headers: securityHeaders,
+    },
+
+    preview: {
+        headers: securityHeaders,
     },
 });

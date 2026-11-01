@@ -4,8 +4,8 @@
  */
 
 import { RiskTier } from '@askmi/revocation-statuslist';
-import { verifyData } from './signing';
-import { canonicalStringify } from './hashing';
+import { verifyData } from './signing.js';
+import { canonicalStringify } from './hashing.js';
 
 export interface TrustList {
     id: string;

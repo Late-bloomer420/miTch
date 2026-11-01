@@ -18,7 +18,7 @@ import type {
   StatusListCache,
   RiskTier,
   StatusListResolverOptions,
-} from './types';
+} from './types.js';
 
 // Deny reason codes — inline strings to avoid cross-package dep at runtime.
 // Values match @askmi/policy-engine DenyReasonCode enum.
@@ -316,5 +316,5 @@ export class StatusListRevocationChecker {
   }
 }
 
-export * from './types';
-export * from './multi-source';
+export * from './types.js';
+export * from './multi-source.js';

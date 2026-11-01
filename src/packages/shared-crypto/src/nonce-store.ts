@@ -8,7 +8,7 @@
  * Spec: docs/specs/108_Presentation_Binding_AntiReplay_Spec_v1.md
  */
 
-import { crypto } from './platform';
+import { crypto } from './platform.js';
 
 // ── Deny codes ──────────────────────────────────────────────────────────────
 

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
-import { StatusListRevocationChecker } from '../index';
-import type { StatusListCredential } from '../types';
-import { makeStatusListEntry, makeStatusListCredential } from '../test-helpers';
+import { StatusListRevocationChecker } from '../index.js';
+import type { StatusListCredential } from '../types.js';
+import { makeStatusListEntry, makeStatusListCredential } from '../test-helpers.js';
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────
 

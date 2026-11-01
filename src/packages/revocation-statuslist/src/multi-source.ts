@@ -8,8 +8,8 @@
  * - Fail-closed: all sources fail → DENY
  */
 
-import type { StatusListEntry, RevocationCheckResult, RiskTier } from './types';
-import { StatusListRevocationChecker } from './index';
+import type { StatusListEntry, RevocationCheckResult, RiskTier } from './types.js';
+import { StatusListRevocationChecker } from './index.js';
 
 export interface SourceConfig {
     url: string;
