@@ -164,7 +164,8 @@ Additional observation (same method): the proximity `DeviceAuth` is a
 placeholder (`deviceSignature: 0xdeadbeef`, commented "Mock signature"). The
 proximity response therefore carries no device/holder binding. This is
 consistent with the PoC status but was not recorded elsewhere in `docs/`; it
-needs its own tracked item before any proximity claim is made.
+is tracked as ARCH-02a in [`../BACKLOG.md`](../BACKLOG.md) and must be
+resolved before any proximity claim is made.
 
 **Required contract**
 
@@ -282,7 +283,7 @@ reasons before minimized candidates reach policy evaluation.
 
 ### ARCH-05 — Audit and Identity-Key Boundaries Are Bypassed
 
-**Priority:** P1 · **Status:** OPEN
+**Priority:** P1 · **Status:** OPEN — partially resolved by #221 (see re-check 2026-11-01)
 
 **Evidence:** [PWA-local `WalletService`](../../src/apps/wallet-pwa/src/services/WalletService.ts)
 and [`audit-log/src/index.ts`](../../src/packages/audit-log/src/index.ts).
@@ -427,27 +428,12 @@ a potentially exposed credential to reusable state.
 
 ## Migration Sequence
 
-Each increment is a separate, reviewable change. Broad architecture work must
-not be folded into unrelated security, UX, demo, or PR #130 changes.
+The ordered Phase 6 sequence is maintained only in
+[`../REFACTORING_ROADMAP.md`](../REFACTORING_ROADMAP.md#phase-6-migration-sequence).
+This document defines the findings and gates that the sequence must satisfy.
 
-1. **Characterization gates:** add tests for ARCH-02 through ARCH-05 before
-   moving behavior.
-2. **Authorization plan:** introduce `AuthorizePresentation` and route proximity
-   plus online flows through it.
-3. **Lifecycle authority:** centralize eligibility, status, pool rotation, and
-   consumption semantics; close PR #130's lifecycle regression separately.
-4. **Presentation extraction:** make builders side-effect free; orchestration
-   owns storage, audit, state transitions, and transport.
-5. **Policy purification:** extract rate limiting, clock/IDs, capsule creation,
-   pairwise identity, and signing.
-6. **Composition inversion:** move concrete browser construction out of
-   `wallet-core` and wire all ports in the PWA.
-7. **Contract convergence:** select the canonical DecisionCapsule/policy model
-   and provide compatibility adapters.
-8. **Runtime cutover:** switch `App.tsx` to the modular facade, reduce the local
-   service to a compatibility wrapper, then remove it.
-9. **Mechanical enforcement:** activate import, cycle, deep-import, and boundary
-   checks in CI.
+Each increment is a separate, reviewable change. Broad architecture work must
+not be folded into unrelated security, UX, or demo changes.
 
 ## Global Acceptance Gates
 
@@ -473,11 +459,14 @@ The architecture migration is complete only when all of the following hold:
   registered ARCH-01 through ARCH-09, and defined migration/acceptance gates.
 - **2026-10-23:** Static re-check against `master` @ `624cf9a`. ARCH-01 to
   ARCH-09 are all still open. Recorded that PR #130 is merged with the ARCH-04
-  residual, cross-referenced EV-09 for ARCH-03, linked open PR #150 for
-  ARCH-05, and added the placeholder proximity `DeviceAuth` observation under
+  residual, cross-referenced EV-09 for ARCH-03, linked then-open PR #150 for
+  ARCH-05 (#150 was later closed unmerged; see 2026-11-01), and added the placeholder proximity `DeviceAuth` observation under
   ARCH-02. No tests were run; this is not security PASS evidence.
 - **2026-11-01:** Static re-check against `master` @ `002ce5e`. ARCH-01 to
   ARCH-04 and ARCH-06 to ARCH-09 unchanged. ARCH-05 is partially resolved by
   #221 (no private audit-key cast in `signData()`); the public-key cast in
   `getIdentityPublicKey()` remains. ARCH-02, including the placeholder
   `DeviceAuth`, is unchanged. No tests were run; not security PASS evidence.
+  Same day, after owner review: the migration sequence now lives only in
+  `REFACTORING_ROADMAP.md`, ARCH-05's header reflects the partial fix, and
+  the placeholder `DeviceAuth` is tracked as ARCH-02a.

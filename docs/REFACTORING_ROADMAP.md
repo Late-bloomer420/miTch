@@ -4,7 +4,7 @@
 > This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 
 **Status:** Active Phase 6 architecture migration authority
-**Last updated:** 2026-08-20
+**Last updated:** 2026-11-01
 
 This file tracks larger architecture work that should not be mixed into small
 security, UX, or pilot-readiness fixes. Items here are planned or partially
@@ -36,7 +36,8 @@ working on unrelated policy, UX, or demo-flow tasks.
 The earlier backlog entry `R-02 WalletService Decomposition — ✅` described the
 presence of repository/evaluator/presentation interfaces in `wallet-core`, not
 a completed runtime cutover. At the verified `master` baseline, `App.tsx` still
-constructs the 2,317-line PWA-local `WalletService`; the modular facade is not
+constructs the 2,317-line PWA-local `WalletService` (2,464 lines at `002ce5e`,
+2026-11-01); the modular facade is not
 the runtime authority. R-02 is therefore **partial**, and completion is governed
 by ARCH-01 and ARCH-09 in the canonical decoupling audit.
 
@@ -89,19 +90,30 @@ services while preserving the public wallet API.
 
 ### Phase 6 Migration Sequence
 
-1. Add characterization tests for presentation binding, pairwise-DID failure,
-   lifecycle eligibility, audit sequencing, and key separation.
-2. Introduce a single `AuthorizePresentation` use case for online and proximity
-   flows.
-3. Centralize credential status, expiration, consumption, and pool rotation in
-   one lifecycle authority.
-4. Extract a side-effect-free presentation builder.
-5. Separate pure policy decisions from rate limiting, clocks/IDs, capsule
-   construction, pairwise identity, and signing.
-6. Move browser factories and concrete adapters into the PWA composition root.
-7. Converge DecisionCapsule and policy contracts behind compatibility adapters.
-8. Cut the PWA over to the modular facade, remove the duplicate service, and
-   activate mechanical boundary checks.
+This is the single canonical sequence. The findings and acceptance gates it
+must satisfy (ARCH-01 to ARCH-09) are defined in
+[`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md).
+
+1. **Characterization gates:** add tests for presentation binding, pairwise-DID
+   failure, lifecycle eligibility, audit sequencing, and key separation
+   (ARCH-02 to ARCH-05) before moving behavior.
+2. **Authorization plan:** introduce a single `AuthorizePresentation` use case
+   and route online and proximity flows through it.
+3. **Lifecycle authority:** centralize credential status, expiration,
+   consumption, and pool rotation in one authority, including the ARCH-04
+   residual left after #130.
+4. **Presentation extraction:** make builders side-effect free; orchestration
+   owns storage, audit, state transitions, and transport.
+5. **Policy purification:** separate pure policy decisions from rate limiting,
+   clocks/IDs, capsule construction, pairwise identity, and signing.
+6. **Composition inversion:** move browser factories and concrete adapters out
+   of `wallet-core` into the PWA composition root.
+7. **Contract convergence:** converge DecisionCapsule and policy contracts
+   behind compatibility adapters.
+8. **Runtime cutover:** switch `App.tsx` to the modular facade, reduce the
+   local service to a compatibility wrapper, then remove it.
+9. **Mechanical enforcement:** activate import, cycle, deep-import, and
+   boundary-cast checks in CI.
 
 ## SecureStorage Boundary
 
@@ -130,7 +142,7 @@ Related deferred findings:
 
 **Current concern:** credential selection and verifier matching should stay
 simple, but privacy rotation is now an explicit product requirement through the
-credential-pool work in PR #130. The strategy boundary trigger has therefore
+credential-pool work merged via #130. The strategy boundary trigger has therefore
 been met.
 
 Candidate future seam:
