@@ -12,7 +12,7 @@
  * All keys are generated as non-extractable by default to prevent exposure.
  */
 
-import { crypto } from './platform';
+import { crypto } from './platform.js';
 
 /**
  * Normalizes a BufferSource (Uint8Array or ArrayBuffer) to a pure ArrayBuffer.

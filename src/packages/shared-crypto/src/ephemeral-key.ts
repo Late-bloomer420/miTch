@@ -1,4 +1,4 @@
-import type { IEphemeralKey } from './interfaces/IEphemeralKey';
+import type { IEphemeralKey } from './interfaces/IEphemeralKey.js';
 
 /**
  * EphemeralKey: Crypto-Shredding Primitive (Uint8Array variant)

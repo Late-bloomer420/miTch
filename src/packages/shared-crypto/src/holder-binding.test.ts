@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateHolderBinding } from './holder-binding';
-import { createKeyBindingJWT, validateKeyBindingJWT } from './sd-jwt-vc';
+import { generateHolderBinding } from './holder-binding.js';
+import { createKeyBindingJWT, validateKeyBindingJWT } from './sd-jwt-vc.js';
 
 describe('generateHolderBinding', () => {
   it('produces a well-formed P-256 cnf JWK', async () => {
