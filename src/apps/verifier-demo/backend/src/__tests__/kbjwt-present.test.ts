@@ -30,6 +30,7 @@ function didJwkFromJwk(jwk: JsonWebKey): string {
 
 const VERIFIER_DID = ASKMI_DEMO.verifierDid;
 const SESSION_NONCE = 'test-nonce-c1-xyz';
+const FLOW_SESSION_ID = 'kbjwt-present-test';
 
 function makeVp(holderBinding: { kb_jwt: string; sub: string } | null) {
   return {
@@ -74,7 +75,11 @@ describe('/present — KB-JWT Proof-of-Possession gate (C1)', () => {
     parts[2] = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     stubSdk(makeVp({ kb_jwt: parts.join('.'), sub: holderSub }));
 
-    const res = await request(app).post('/present').send({}).set('x-forwarded-for', '127.0.0.1');
+    const res = await request(app)
+      .post('/present')
+      .set('X-AskMI-Session-Id', FLOW_SESSION_ID)
+      .set('x-forwarded-for', '127.0.0.1')
+      .send({});
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('KB_JWT_VERIFICATION_FAILED');
   });
@@ -86,7 +91,11 @@ describe('/present — KB-JWT Proof-of-Possession gate (C1)', () => {
     );
     stubSdk(makeVp({ kb_jwt, sub: holderSub }));
 
-    const res = await request(app).post('/present').send({}).set('x-forwarded-for', '127.0.0.1');
+    const res = await request(app)
+      .post('/present')
+      .set('X-AskMI-Session-Id', FLOW_SESSION_ID)
+      .set('x-forwarded-for', '127.0.0.1')
+      .send({});
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('KB_JWT_VERIFICATION_FAILED');
   });
@@ -98,14 +107,22 @@ describe('/present — KB-JWT Proof-of-Possession gate (C1)', () => {
     );
     stubSdk(makeVp({ kb_jwt, sub: holderSub }));
 
-    const res = await request(app).post('/present').send({}).set('x-forwarded-for', '127.0.0.1');
+    const res = await request(app)
+      .post('/present')
+      .set('X-AskMI-Session-Id', FLOW_SESSION_ID)
+      .set('x-forwarded-for', '127.0.0.1')
+      .send({});
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('KB_JWT_VERIFICATION_FAILED');
   });
 
   it('does not enforce KB-JWT for non-pool credentials (no holder_binding)', async () => {
     stubSdk(makeVp(null));
-    const res = await request(app).post('/present').send({}).set('x-forwarded-for', '127.0.0.1');
+    const res = await request(app)
+      .post('/present')
+      .set('X-AskMI-Session-Id', FLOW_SESSION_ID)
+      .set('x-forwarded-for', '127.0.0.1')
+      .send({});
     // Without holder_binding the gate is skipped; ZKP stub has no proof so it 403s AGE_NOT_VERIFIED.
     expect(res.body.error).not.toBe('KB_JWT_VERIFICATION_FAILED');
     expect(res.body.error).not.toBe('KB_JWT_INVALID_HOLDER_KEY');

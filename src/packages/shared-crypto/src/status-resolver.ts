@@ -5,7 +5,7 @@
 
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
 import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@askmi/revocation-statuslist';
-import type { StatusClaim } from './sd-jwt-vc';
+import type { StatusClaim } from './sd-jwt-vc.js';
 
 /**
  * High-level resolver for SD-JWT VC status claims.
