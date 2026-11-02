@@ -59,15 +59,15 @@ Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibl
 
 ## Evidence- und Doku-Konsolidierung (2026-11-02)
 
-Ziel: jede Aussage hat genau eine Heimat, alle anderen Stellen verlinken. Verschieben statt kopieren; datierte Protokolle in `docs/qa/` bleiben unverändert (Korrekturen als neuer Eintrag). Jeder Schritt aktualisiert `docs/DOCS_CANON.md` im selben PR. Owner-Entscheidungen vom 2026-11-02: CHANGELOG rückwirkend ab der Evidence-Baseline 2026-10-14; `docs/qa/README.md` wird der einzige Einstieg in die Belege.
+Übersicht und Plan: [#251](https://github.com/Late-bloomer420/miTch/issues/251). Ziel: jede Aussage hat genau eine Heimat, alle anderen Stellen verlinken. Verschieben statt kopieren; datierte Protokolle in `docs/qa/` bleiben unverändert (Korrekturen als neuer Eintrag). Jeder Schritt aktualisiert `docs/DOCS_CANON.md` im selben PR. Owner-Entscheidungen vom 2026-11-02: CHANGELOG rückwirkend ab der Evidence-Baseline 2026-10-14; `docs/qa/README.md` wird der einzige Einstieg in die Belege.
 
 | Task | Priority | Status | Acceptance / owner |
 |---|---|---|---|
-| DOC-01 | 🟢 P2 | 🟡 PR [#249](https://github.com/Late-bloomer420/miTch/pull/249) | `CHANGELOG.md` eingeführt, ab 2026-10-14 nachgetragen (36 PRs, je mit Link zum QA-Protokoll, ohne eigene Testzahlen); Rolle in `DOCS_CANON.md`; PR-Vorlage verlangt eine Zeile pro PR |
-| DOC-02 | 🟢 P2 | ⏳ | Inventar aller Beleg-Orte (`docs/qa/`, `docs/qa/evidence-reports/`, `data/evidence/`, `docs/ops/EVIDENCE_PACK_P0.md`, `docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md`, `docs/AUDIT_2026_03.md`, `docs/pilot/`, Trust-Kit- und Marketing-Indizes) mit Rolle und Entscheidung behalten/verschieben/archivieren/nur verlinken; noch keine Verschiebung |
-| DOC-03 | 🟢 P2 | ⏳ | `docs/qa/README.md` als einziger Index: 12 fehlende Protokolle (Stand 2026-11-02) eintragen; Trust-Kit-, Marketing- und Security-Index verweisen hinein statt Zahlen zu kopieren; `DOCS_CANON.md` angepasst |
-| DOC-04 | 🟢 P2 | ⏳ | `STATE.md` nur noch Momentaufnahme: Abschnitte „Recent additions“ in `CHANGELOG.md` überführen (verschieben, nicht kopieren); `docs/SESSION_HISTORY.md` als abgeschlossen markieren |
-| DOC-05 | 🟢 P3 | ⏳ optional | CI-Check: jedes Protokoll in `docs/qa/` steht im Index, relative Links in `CHANGELOG.md`/`docs/qa/README.md` lösen auf |
+| DOC-01 ([#252](https://github.com/Late-bloomer420/miTch/issues/252)) | 🟢 P2 | 🟡 PR [#249](https://github.com/Late-bloomer420/miTch/pull/249) | `CHANGELOG.md` eingeführt, ab 2026-10-14 nachgetragen (36 PRs, je mit Link zum QA-Protokoll, ohne eigene Testzahlen); Rolle in `DOCS_CANON.md`; PR-Vorlage verlangt eine Zeile pro PR |
+| DOC-02 ([#253](https://github.com/Late-bloomer420/miTch/issues/253)) | 🟢 P2 | ⏳ | Inventar aller Beleg-Orte (`docs/qa/`, `docs/qa/evidence-reports/`, `data/evidence/`, `docs/ops/EVIDENCE_PACK_P0.md`, `docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md`, `docs/AUDIT_2026_03.md`, `docs/pilot/`, Trust-Kit- und Marketing-Indizes) mit Rolle und Entscheidung behalten/verschieben/archivieren/nur verlinken; noch keine Verschiebung |
+| DOC-03 ([#254](https://github.com/Late-bloomer420/miTch/issues/254)) | 🟢 P2 | ⏳ | `docs/qa/README.md` als einziger Index: 12 fehlende Protokolle (Stand 2026-11-02) eintragen; Trust-Kit-, Marketing- und Security-Index verweisen hinein statt Zahlen zu kopieren; `DOCS_CANON.md` angepasst |
+| DOC-04 ([#255](https://github.com/Late-bloomer420/miTch/issues/255)) | 🟢 P2 | ⏳ | `STATE.md` nur noch Momentaufnahme: Abschnitte „Recent additions“ verschieben, nicht kopieren (ab 2026-10-14 in `CHANGELOG.md`, älteres nach `docs/SESSION_HISTORY.md`); `SESSION_HISTORY.md` als abgeschlossen markieren |
+| DOC-05 ([#256](https://github.com/Late-bloomer420/miTch/issues/256)) | 🟢 P3 | ⏳ optional | CI-Check: jedes Protokoll in `docs/qa/` steht im Index, relative Links in `CHANGELOG.md`/`docs/qa/README.md` lösen auf |
 
 ## Existing task/change records
 
