@@ -11,6 +11,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
+| Change history (what merged on master since 2026-10-14) | [../CHANGELOG.md](../CHANGELOG.md); one line per merged PR with links to the PR and its QA record. It holds no test results or status claims; earlier history: [SESSION_HISTORY.md](SESSION_HISTORY.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
 | Dated upstream version registry | [eudi/EUDI_SOURCE_BASELINE.md](eudi/EUDI_SOURCE_BASELINE.md); not implementation/interoperability evidence |
@@ -35,6 +36,7 @@ This file defines the authoritative document per topic area and serves as naviga
 | Dokument | Zweck | Rolle |
 |----------|-------|-------|
 | `STATE.md` | Operativer Health-Snapshot (Tests, Lint, Audit, Demo) | Was läuft? |
+| `CHANGELOG.md` | Was wurde auf `master` gemergt (eine Zeile pro PR, verlinkt PR und QA-Protokoll) | Was hat sich geändert? |
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
