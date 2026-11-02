@@ -4,10 +4,10 @@
 > (`4d4cc604337a88738ec51d9f1ce448d5330e0f56`) onto executable baseline `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 > This imports no #141 security code and closes no technical/market gate. #170–#173 and EV-05 must be dispositioned.
 > [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md) and [dated evidence](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
-> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 26 October section below; they are not a newly run interop matrix.
+> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 2 November section below; they are not a newly run interop matrix.
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-10-26  
+**Baseline date:** 2026-11-02  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -66,9 +66,18 @@ Internal tests establish implementation behavior only. They do not establish leg
 
 The June 2026 CIR matrix is a historical internal engineering checklist. Its "98%" total, LoA High row, hardware-binding row, and FCAF-readiness row are not conformance or certification evidence. Replace it with requirement-level traceability against the locked official baseline. Until then, no percentage may appear in release or marketing claims.
 
+## Source-watch acceptance additions — 2026-11-02
+
+Use [the November 2 source registry](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-11-02): Android core v0.31.1, iOS core v0.57.2, official web issuer v0.10.1. Neither released wallet UI moved from build 43.
+
+- **Wave 1 / #97:** require strict typed DCQL age matching, with format-specific path and coercion negatives.
+- **Wave 2:** pin TS5 v1.6 read-schema fixtures separately from Launchpad testing; validate registration roles, status signatures and JWT/CWT serialization, and use the new test issuer chain with a stale-chain negative.
+- **Wave 3:** record Android registration trust and revocation mode, iOS status policy and the actual UI/core pairing. Reject unauthenticated error-return destinations (#238/#239). Label NFC versus QR evidence only if tested.
+- Preserve the October requirements below. Only overlapping evidence needs rerunning; this source review closes no gate and does not move the pilot date.
+
 ## Source-watch acceptance additions — 2026-10-26
 
-The [26 October source baseline](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-10-26) is the current planning coordinate: iOS core v0.56.6, PID issuer v0.11.2 and web issuer v0.10.0. Released Android/iOS UIs remain build 43; iOS UI build 43 integrates v0.52.1. Older version-specific entries below retain historical requirements and must not be mistaken for the current core lock.
+The [26 October source baseline](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-10-26) was the planning coordinate on that date: iOS core v0.56.6, PID issuer v0.11.2 and web issuer v0.10.0. Released Android/iOS UIs remain build 43; iOS UI build 43 integrates v0.52.1. Older version-specific entries below retain historical requirements and must not be mistaken for the current core lock.
 
 - **Wave 1:** add token-authorized credential identifier/configuration binding, explicit request/response encryption policy and algorithm negatives, and authorization-server metadata cache isolation/reset/failure tests.
 - **Wave 2:** add ambiguous/missing-key and encryption-key SD-JWT negatives; adopt v0.11.2 Type Metadata fixtures without weakening JWT checks. Validate web-issuer `issuer_info` registration certificates (signature/trust/status/validity/issuer/scope); metadata presence alone is not trust.
