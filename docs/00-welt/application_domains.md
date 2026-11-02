@@ -12,7 +12,7 @@
 **miTch:** "Ist über 18" als Ja/Nein-Proof. Kein Name, kein Geburtsdatum, keine Adresse.  
 **Regulierung:** EU Verordnung zur Altersverifikation kommt. UK Online Safety Act. Deutschland: JuSchG.  
 **Machbarkeit:** ⭐⭐⭐⭐⭐ — Bereits implementiert.  
-**Markt:** Milliarden-Markt. Yoti, Veriff, IDnow sind die Incumbents — alle sammeln zu viele Daten.
+**Markt:** Milliarden-Markt. Yoti, Veriff, IDnow sind die Incumbents — alle sammeln zu viele Daten. *(Unbelegte These; Differenzierung, Ersetzen/Ergänzen-Grenzen und Beleg-TODOs: [05-business/COMPETITIVE_POSITIONING.md](../05-business/COMPETITIVE_POSITIONING.md))*
 
 ### 2. Gesundheitswesen / EHDS
 **Problem:** Patienten haben keine Kontrolle über ihre Gesundheitsdaten. Arzt A weiß was Arzt B verschrieben hat. Forschung braucht Daten, aber Patienten wollen nicht gläsern sein.  
