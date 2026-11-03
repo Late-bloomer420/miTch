@@ -91,7 +91,7 @@ jobs:
       - name: Audit gate regression tests
         run: node --test scripts/check-security-audit.test.mjs
 
-      - name: Enforce critical dependency audit gate
+      - name: Enforce high/critical dependency audit gate
         shell: bash
         run: |
           audit_report="${{ runner.temp }}/askmi-dependency-audit.json"
