@@ -1,4 +1,6 @@
-# Can an age-check verifier prove the encounter to someone else?
+# Single-show deniable presentations for ECDSA-signed credentials
+
+Proposed miTch capability, based on Bertram and Lehmann’s designated-verifier construction. The intended guarantee is cryptographic non-transferability of a single presentation transcript.
 
 Research proposal for the miTch SD-JWT reference flow. The repository [README](../../README.md) distinguishes its synthetic browser demo from the reference flow, which discloses numeric age. A venue that learns an age can record it. A separate question is whether it can hand another party cryptographic evidence that the issuer endorsed that age in the credential it saw.
 
