@@ -6,9 +6,25 @@ Research proposal for the miTch SD-JWT reference flow. The repository [README](.
 
 ## What changes at presentation
 
-Bertram and Lehmann keep ordinary ECDSA issuance. In §4.1 the wallet replaces the transferable issuer signature in the presentation with an OR-proof. One witness comes from a valid issuer signature on the message. The other is the designated verifier’s private key. An honest wallet uses the first. The verifier can generate an indistinguishable transcript using the second, even without a credential. Anyone inspecting that transcript later therefore lacks cryptographic grounds to attribute it to the wallet. A verifier evaluating a live session knows whether it generated the proof itself. This argument depends on authenticating the verifier key and establishing possession of its secret.
+Bertram and Lehmann keep ordinary ECDSA issuance. In §4.1 the wallet replaces the transferable issuer signature in the presentation with an OR-proof. One witness comes from a valid issuer signature on the message. The other is the designated verifier’s private key. An honest wallet uses the first. The verifier can generate an indistinguishable transcript using the second, even without a credential. An observer of a single transcript who does not see the underlying issuer signature cannot distinguish its origin in the paper’s model. A verifier evaluating a live session knows whether it generated the proof itself. This argument depends on authenticating the verifier key and establishing possession of its secret.
 
 The result covers a single transcript. Reusing an issuer signature repeats the curve point R across presentations. Fresh challenges do not remove this correlation. The ordinary key-binding JWT also remains publicly verifiable. The paper’s identity-deniability argument assumes a fresh, anonymous holder key for each single-show credential. Logs, cameras, identifying disclosures and independent receipts can still establish who visited. See §§2 and 4.3.
+
+## Cryptographic assumptions for the profile review
+
+The paper separates two claims. Theorem 1 compares the distribution of one wallet transcript with that of a verifier simulation, provided the observer does not see the underlying ECDSA signature. Include any party that already has the original signature in a separate threat scenario. Theorem 2 concerns an outsider forging an accepted proof on a fresh message. Its argument assumes ECDSA unforgeability under chosen-message attack and discrete-log hardness, and models the Fiat–Shamir hash as a random oracle. The verifier itself is an intended simulator.
+
+For the profile review in [#261](https://github.com/Late-bloomer420/miTch/issues/261), document the following distinctions.
+
+| Mechanism | What reviewers should check |
+| --- | --- |
+| ECDSA signature | Identify the exact signed bytes and the trusted issuer key. A valid issuer signature authenticates the signed assertion. Establishing a visit, time or holder presence requires separate evidence. |
+| OR-proof | Write down the public statement and both secret witnesses. Hiding which witness was used leaves the public inputs visible. Any age threshold requires its own authenticated claim or predicate proof. |
+| Nonces | Keep the secret issuer signing scalar, the prover’s secret ephemeral scalars, and the public session nonce distinct. Reusing a signing scalar across distinct message hashes can expose the issuer key. Re-presenting an already signed credential repeats its public point and creates a correlation even with fresh session nonces. |
+| Fiat–Shamir challenge | Specify unambiguous encodings, domain separation and all inputs. Identify how the session and intended verifier are bound and checked. Record any departure from the paper for review. |
+| Evidence | Positive and negative vectors check implementation behavior. Two accepting examples cannot establish indistinguishability of distributions. Review the argument, its assumptions and what the observer can obtain from other paths. |
+
+Foundations: Dan Boneh and Victor Shoup, *A Graduate Course in Applied Cryptography*, v0.6, §§19.3–19.4 (ECDSA and Sigma protocols), §§19.7–19.8 (OR-proofs and witness independence), §20.3 (non-interactive proofs and Fiat–Shamir). [Textbook](https://toc.cryptobook.us/book.pdf)
 
 ## Proposed experiment
 
