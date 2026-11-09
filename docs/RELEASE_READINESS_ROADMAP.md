@@ -4,10 +4,10 @@
 > (`4d4cc604337a88738ec51d9f1ce448d5330e0f56`) onto executable baseline `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 > This imports no #141 security code and closes no technical/market gate. #170–#173 and EV-05 must be dispositioned.
 > [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md) and [dated evidence](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
-> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 2 November section below; they are not a newly run interop matrix.
+> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 9 November section below; they are not a newly run interop matrix.
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-11-02  
+**Baseline date:** 2026-11-09  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -65,6 +65,19 @@ Internal tests establish implementation behavior only. They do not establish leg
 ## Claims correction
 
 The June 2026 CIR matrix is a historical internal engineering checklist. Its "98%" total, LoA High row, hardware-binding row, and FCAF-readiness row are not conformance or certification evidence. Replace it with requirement-level traceability against the locked official baseline. Until then, no percentage may appear in release or marketing claims.
+
+## Source-watch acceptance additions — 2026-11-09
+
+The [November 9 registry](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-11-09) locks Android core v0.32.0, iOS core v0.59.0 and web issuer v0.11.0. Both released UIs remain build 43. These additions supersede earlier version coordinates, not historical test results.
+
+- **Wave 1 — oid4vci / issuer-mock / oid4vp:** adopt per-frontend issuer and AS metadata; prove nonce/offer single-use, exact authorization-response issuer/state, discovery mismatch rejection, scoped proof/identifier requests, deferred encryption/interval, PAR and mTLS metadata handling. Record per-document issuance/key settings; retry failures without duplicating successes.
+- **Waves 1–3 — oid4vp / policy-engine / mdoc:** block affected parity claims pending absent-claims/empty-selection and all-prefix Request Object type tests for open upstream WalletKit #550, transfer #156 and VP #267. VCI #398 remains an upstream issuer-binding risk. A closed upstream issue or new core tag does not prove a fix is in the selected dependency.
+- **Wave 2 — trust/status integration:** test effective key protection and explicit overrides, issuer/LoTE/credential integrity, CRL/OCSP checker presence and fallback, status cache ttl/exp and trust-config reset, critical EKU profile handling, and separate status-signer/reader/registration roles. Use issuer v0.11.0 PID encoding and batch-revocation fixtures. Preserve separate admin/backend credentials and explicit test-only deployment settings.
+- **Wave 3 — adapters / official-device matrix:** re-run transcript key selection and session-bound response/audit cases, including overlapping transports and stale callbacks if proximity is in scope. Require authenticated reader identity; neither warning-mode BLE nor missing authentication is pilot evidence. Test mobile development hardening separately from build 43: offer origin and resolved issuer, locked links, consent-to-response equality, status blocking and terminal outcomes. Keep QES/DC API deferred.
+- **Waves 1/3 — verifier:** add mixed PID/non-PID credential sets and alternative VCT cases; retain request-bound crypto validation independently of a backend decode utility. Test rejected, timed-out and failed submissions without false completion.
+- **Wave 4 / #173:** attach exact UI/core/dependency SHA, profile/policy, test inputs, results and limitations. Preserve valid scoped Connect and internal test evidence. This docs-only review ran no runtime/device tests.
+
+**Immediate decision:** review and land or explicitly rebaseline PR #228 before treating these coordinates as the merged registry. The default branch remains on its October 12 source registry; the November 23 integration start is a planning target with prerequisite evidence still required. No gate, commercial stop rule or target date is changed by this update.
 
 ## Source-watch acceptance additions — 2026-11-02
 
@@ -215,7 +228,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
-Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.31.0 and iOS v0.54.8; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.54.8 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
+Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.32.0 and iOS v0.59.0; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.59.0 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
 - For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
