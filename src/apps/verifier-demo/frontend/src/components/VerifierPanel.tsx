@@ -75,7 +75,7 @@ export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: Ver
 
   if (panelState === 'waiting') {
     const meta = import.meta as ImportMeta & { env?: { VITE_WALLET_URL?: string } };
-    const walletBaseUrl = meta.env?.VITE_WALLET_URL ?? 'http://localhost:5174';
+    const walletBaseUrl = meta.env?.VITE_WALLET_URL ?? 'https://localhost:5174';
     const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=${encodeURIComponent(ASKMI_DEMO.verifierDid)}&sessionId=${encodeURIComponent(sessionId)}`;
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>

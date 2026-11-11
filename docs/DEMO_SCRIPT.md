@@ -27,13 +27,15 @@ pnpm test
 ```
 
 The cross-platform launchers use the canonical browser ports `5174` (wallet) and
-`5175` (optional verifier UI). They export
-`CORS_ALLOWED_ORIGINS=http://localhost:5174,http://localhost:5175` for the verifier
-backend. When launching services manually, export the same value (or an intentionally
-restricted equivalent); other browser origins are rejected with HTTP 403.
+`5175` (optional verifier UI). The wallet dev server serves HTTPS with a self-signed
+certificate by default (`ASKMI_DEV_HTTPS=0` switches it to HTTP), so the launchers export
+`CORS_ALLOWED_ORIGINS=https://localhost:5174,http://localhost:5174,http://localhost:5175`
+for the verifier backend. When launching services manually, export the same value (or an
+intentionally restricted equivalent); other browser origins are rejected with HTTP 403.
 
 **Browser:** Chrome/Firefox, DevTools offen auf Console-Tab.
-**Port-Regel:** Die Wallet-Abnahme läuft auf `http://localhost:5174`. Wenn Vite auf
+**Port-Regel:** Die Wallet-Abnahme läuft auf `https://localhost:5174` (Zertifikatswarnung
+einmal bestätigen; mit `ASKMI_DEV_HTTPS=0` auf `http://localhost:5174`). Wenn Vite auf
 `5175` ausweicht, läuft noch ein alter Dev-Server auf `5174`; für Release-Abnahmen den
 alten Prozess stoppen und die Wallet wieder auf `5174` starten.
 

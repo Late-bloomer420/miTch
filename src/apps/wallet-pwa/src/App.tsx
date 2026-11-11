@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
 import {
+  isWalletDeepLink,
   parseConnectHandoff,
   loadConnectRequest,
   presentationAccepted,
@@ -304,6 +305,29 @@ function WalletApp() {
   const addLog = (msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     const time = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev, `${type.toUpperCase()}|${time} | ${msg}`]);
+  };
+
+  /**
+   * Record that a presentation reached the verifier (it answered the request).
+   * VP_GENERATED only says a presentation was prepared; the Disclosure Trace
+   * reports "sent" from this event. A failed audit write is surfaced but does
+   * not change the outcome of a presentation that was already delivered.
+   */
+  const recordDelivery = async (
+    decisionId: string,
+    context: 'ONLINE_PRESENTATION' | 'OID4VP_PRESENTATION',
+    acknowledged: boolean
+  ) => {
+    try {
+      await walletRef.current.logVpSent(decisionId, {
+        decision_id: decisionId,
+        context,
+        acknowledged,
+      });
+    } catch (e) {
+      console.error('Delivery audit failed:', e);
+      addLog('⚠️ Delivery could not be written to the audit log', 'warning');
+    }
   };
 
   const handleReportReputation = useCallback(() => {
@@ -631,8 +655,9 @@ function WalletApp() {
       await applyJitter(20, 100);
       addLog('🛡️ Applied timing jitter (Side-channel protection)', 'info');
 
+      let response: Response;
       try {
-        const response = await fetch(targetEndpoint, {
+        response = await fetch(targetEndpoint, {
           method: 'POST',
           headers: {
             ...UNIFORM_HEADERS,
@@ -640,18 +665,29 @@ function WalletApp() {
           },
           body: paddedPayload,
         });
-
-        if (response.ok) {
-          addLog('✅ Verifier acknowledged receipt', 'success');
-        } else {
-          const error = await response.json();
-          addLog(`⚠️ Verifier rejected: ${error.details || error.error}`, 'warning');
-        }
       } catch (e) {
+        // No response: the presentation was prepared but nothing shows it reached
+        // the verifier. Do not record or report it as sent.
         console.error('Transmission Error:', e);
         addLog(
           `📡 Network Error: ${(e as Error).message}. Is backend running on ${targetEndpoint}?`,
           'error'
+        );
+        addLog('❌ Presentation not delivered', 'error');
+        setStatus('IDLE');
+        return;
+      }
+
+      // The verifier answered, so the encrypted presentation left this device.
+      await recordDelivery(result.decisionCapsule.decision_id, 'ONLINE_PRESENTATION', response.ok);
+
+      if (response.ok) {
+        addLog('✅ Verifier acknowledged receipt', 'success');
+      } else {
+        const error = await response.json().catch(() => ({}) as Record<string, string>);
+        addLog(
+          `⚠️ Verifier rejected: ${error.details || error.error || `HTTP ${response.status}`}`,
+          'warning'
         );
       }
 
@@ -1029,6 +1065,10 @@ function WalletApp() {
       };
 
       const accepted = presentationAccepted(response.ok, result);
+
+      // The verifier answered, so the presentation left this device: record the delivery.
+      if (decisionId) await recordDelivery(decisionId, 'OID4VP_PRESENTATION', accepted);
+
       if (accepted) {
         addLog('✅ Verifier confirmed: Presentation VALID', 'success');
         if (result.disclosedClaims) {
@@ -2451,7 +2491,9 @@ function WalletApp() {
 export default function App() {
   const showWalletDemo =
     import.meta.env.MODE === 'test' ||
-    new URLSearchParams(window.location.search).get('demo') === 'wallet';
+    new URLSearchParams(window.location.search).get('demo') === 'wallet' ||
+    // Verifier and Connect links address the wallet directly.
+    isWalletDeepLink(window.location.search);
 
   if (showWalletDemo) {
     return <WalletApp />;

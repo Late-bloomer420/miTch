@@ -22,6 +22,7 @@ const walletServiceMockState = vi.hoisted(() => ({
   ]),
   evaluateRequest: vi.fn(),
   generatePresentation: vi.fn(),
+  logVpSent: vi.fn().mockResolvedValue(undefined),
   recordIdentityFirewallEvents: vi.fn().mockResolvedValue([]),
   exportAuditReport: vi.fn().mockResolvedValue({
     version: '1',
@@ -940,6 +941,52 @@ describe('G-03 — Wallet App', () => {
     });
   });
 
+  it('records the delivery once the verifier answers the presentation', async () => {
+    await bootstrapFetchMocks('ALLOW');
+    walletServiceMockState.generatePresentation.mockResolvedValue({
+      encryptedVp: 'encrypted-presentation',
+      auditLog: [],
+    });
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Requests');
+
+    fireEvent.click(document.getElementById('btn-liquor-store')!);
+
+    await waitFor(() => {
+      expect(walletServiceMockState.logVpSent).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ context: 'ONLINE_PRESENTATION', acknowledged: true })
+      );
+    });
+  });
+
+  it('does not report a presentation as sent when the verifier is unreachable', async () => {
+    await bootstrapFetchMocks('ALLOW');
+    walletServiceMockState.generatePresentation.mockResolvedValue({
+      encryptedVp: 'encrypted-presentation',
+      auditLog: [],
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        if (String(input).endsWith('/present')) throw new TypeError('Failed to fetch');
+        return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }) as unknown as typeof fetch
+    );
+    render(<App />);
+    await screen.findByText('Age Credential (GovID)');
+    await openWalletPage('Requests');
+
+    fireEvent.click(document.getElementById('btn-liquor-store')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Audit' }));
+
+    await screen.findByText(/Presentation not delivered/);
+    expect(screen.queryByText(/PROOF COMPLETE/)).toBeNull();
+    expect(screen.queryByText(/📦 Sent/)).toBeNull();
+    expect(walletServiceMockState.logVpSent).not.toHaveBeenCalled();
+  });
+
   it('persists a SUCCESS consent receipt after OID4VP approve', async () => {
     await bootstrapFetchMocks('ALLOW');
     window.history.replaceState(
@@ -958,6 +1005,10 @@ describe('G-03 — Wallet App', () => {
 
     await screen.findByText('SUCCESS', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
+    expect(walletServiceMockState.logVpSent).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ context: 'OID4VP_PRESENTATION', acknowledged: true })
+    );
 
     const flowCalls = vi.mocked(fetch).mock.calls.filter(([input]) =>
       /notify-scan|authorize|direct_post/.test(String(input))

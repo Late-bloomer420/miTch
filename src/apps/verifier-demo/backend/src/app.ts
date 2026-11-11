@@ -467,7 +467,7 @@ const connectStore = new InMemoryAskMIConnectSessionStore();
 const connect = createAskMIConnect({
   verifierDid: ASKMI_DEMO.verifierDid,
   audienceBaseUrl: process.env.VERIFIER_BASE_URL || 'http://localhost:3004',
-  walletBaseUrl: process.env.WALLET_BASE_URL || 'http://localhost:5174',
+  walletBaseUrl: process.env.WALLET_BASE_URL || 'https://localhost:5174',
   store: connectStore,
   issuerKeyResolver: (iss) =>
     issuerKeyResolver === defaultResolveIssuerKey
