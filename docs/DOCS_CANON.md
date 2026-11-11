@@ -71,6 +71,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Repository ecosystem (canonical repo, related repositories, consolidation rule):** `docs/REPOSITORY_ECOSYSTEM.md`
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
+- **Archive inventory (packages and docs folders; proposals pending owner decision, nothing moved):** `docs/ARCHIVE_INVENTORY_2026-11-11.md`
 
 ## Research And Strategy Inputs
 
