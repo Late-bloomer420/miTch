@@ -1055,7 +1055,11 @@ function WalletApp() {
         body: paddedPayload,
       });
 
-      const result = (await response.json()) as {
+      // A verifier can answer without a JSON body (e.g. a rate limiter's plain-text 429).
+      // That is still a delivered, rejected presentation, not a failed transmission.
+      const result = (await response
+        .json()
+        .catch(() => ({ ok: false, error: `HTTP ${response.status}` }))) as {
         ok: boolean;
         status?: string;
         result?: { eligible?: boolean };

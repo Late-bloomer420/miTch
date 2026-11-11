@@ -1073,4 +1073,39 @@ describe('G-03 — Wallet App', () => {
     await screen.findByText('DENIED', { selector: '.consent-manager-panel__history-pill' });
     expect(screen.getAllByText(/consent-/).length).toBeGreaterThan(0);
   });
+
+  it('records a rejected delivery when the verifier answers without a JSON body', async () => {
+    await bootstrapFetchMocks('ALLOW');
+    window.history.replaceState(
+      {},
+      '',
+      '/?endpoint=https://verifier.test&scenario=liquor-store&verifier=did:askmi:verifier-liquor-store&sessionId=flow-session-123'
+    );
+    const jsonFetch = vi.mocked(fetch);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        // e.g. express-rate-limit's default plain-text 429
+        if (String(input).includes('/direct_post')) {
+          return new Response('Too many requests, please try again later.', { status: 429 });
+        }
+        return jsonFetch(input, init);
+      }) as unknown as typeof fetch
+    );
+
+    render(<App />);
+
+    const acceptButton = await screen.findByRole('button', { name: /Accept & Prove/i });
+    await waitFor(() => expect(acceptButton).not.toBeDisabled());
+    fireEvent.click(acceptButton);
+
+    await waitFor(() => {
+      expect(walletServiceMockState.logVpSent).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ context: 'OID4VP_PRESENTATION', acknowledged: false })
+      );
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Audit' }));
+    await screen.findByText(/Verifier rejected: HTTP 429/);
+  });
 });
