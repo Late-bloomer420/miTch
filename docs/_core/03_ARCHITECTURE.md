@@ -10,7 +10,7 @@
 
 **Primary:** SD-JWT VC (Selective Disclosure JWT Verifiable Credentials) + ISO/IEC 18013-5 `mso_mdoc` (`@askmi/mdoc`)  
 **Implementierung (`@askmi/shared-crypto`):** Eigene In-House-Implementierung (`sd-jwt-vc.ts`) auf Basis von `jose` und WebCrypto (`crypto.subtle`); **keine** externen `@sd-jwt/*`-Pakete (`API-06`, korrigiert 2026-11-03; die historische MVP-Notiz nannte irrtümlich `@sd-jwt/core`, `@sd-jwt/decode`, `@sd-jwt/present`, `@sd-jwt/verify`).  
-**Signatur:** ES256 (ECDSA P-256), Brainpool (`brainpool.ts`), ML-DSA (`pqc.ts`)  
+**Signatur:** ES256 (ECDSA P-256) und Brainpool (`brainpool.ts`) aktiv; ML-DSA (FIPS 204, `pqc.ts`) ist implementiert, wird in `crypto-agility.ts` aber als `pqc-candidate` (noch nicht aktiv) geführt — produktive Migration siehe Roadmap unten  
 **Protokoll-Stand & offene Lücken (2026-11-03):** Aktueller Code implementiert einen Pre-Final-Subset von OID4VCI / OID4VP (DIF Presentation Exchange v2, `vc+sd-jwt`, `client_id_scheme`). Die Migration auf OpenID4VP 1.0 Final (DCQL, Client Identifier Prefixes, `response_uri`, `verifier_info`), W3C Digital Credentials API, `dc+sd-jwt` (RFC 9901 §7.1 strikt) und ISO/IEC 18013-5 §9.1.3.6 `DeviceAuthenticationBytes` ist im 4-Stufen-Plan [`docs/tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](../tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) getrackt.  
 
 ⚠️ ECDSA P-256 ist **nicht** post-quantum sicher. ML-DSA Migration auf der Roadmap.

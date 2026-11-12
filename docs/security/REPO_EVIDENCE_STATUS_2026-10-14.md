@@ -38,7 +38,7 @@ Neither a green helper test, a documentation PR, a passing HTTP status nor a has
 | EV-09 | Residual | Pairwise-DID failure continues without it; payload/IP/timing/cookie/issuer correlation not excluded by DID uniqueness | F-20 / SEC-AUDIT-4 / #142 Wave 4: explicit profile downgrade behavior and correlation evidence |
 | EV-10 | Missing external evidence | No published official Android/iOS interop, independent security review or conformance result establishing current profile | GAP-4 / #97 / #142 Waves 2–4; exact-version external artifacts required |
 
-### Scoped protocol & integration findings — 2026-11-03 (`f15cf8d`)
+### Scoped protocol & integration findings — 2026-11-03 (executable baseline `002ce5e`)
 
 Full dated audit and reproduction paths: [`docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](../qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md). Staged remediation plan: [`docs/tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](../tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md). These findings qualify overlapping claims only and do not duplicate or close `#170`–`#173`.
 

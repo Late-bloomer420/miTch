@@ -1,7 +1,7 @@
 # EUDI Wallet — CIR Compliance Matrix
 
 > Mapping baseline: 2026-06-02; targeted qualifications added 2026-10-14 and 2026-11-03
-> Scope: repository component mapping; selected profile conformance and external evaluation are separate. See [`docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](../qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) for the 2026-11-03 upstream protocol & code audit (`f15cf8d`).
+> Scope: repository component mapping; selected profile conformance and external evaluation are separate. See [`docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](../qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) for the 2026-11-03 upstream protocol & code audit (executable baseline `002ce5e`).
 >
 > Legend: ✅ recorded component implementation | 🟡 partial/integration or assurance work | 🔴 missing | ➖ not applicable. Unchanged rows retain their June mapping provenance, not a new October/November validation.
 
