@@ -53,7 +53,10 @@ describe('EUDITrustListResolver trust mode (#240)', () => {
         const resolver = new EUDITrustListResolver({ fetchFn: serving(LIST) });
         resolver.setUrl(HTTPS_URL);
 
-        expect((await resolver.isIssuerTrusted(ISSUER)).decision).toBe('DENY');
+        const result = await resolver.isIssuerTrusted(ISSUER);
+
+        expect(result.decision).toBe('DENY');
+        expect(result.reason).toContain('TSL_ANCHOR_KEY_MISSING');
     });
 
     it('live mode denies an unsigned list even with an anchor key', async () => {
@@ -159,7 +162,10 @@ describe('EUDITrustListResolver trust mode (#240)', () => {
         const resolver = new EUDITrustListResolver({ trustMode: 'dev', fetchFn: serving(LIST) });
         await resolver.setAnchorKey(jwk);
 
-        expect((await resolver.isIssuerTrusted(ISSUER)).decision).toBe('DENY');
+        const result = await resolver.isIssuerTrusted(ISSUER);
+
+        expect(result.decision).toBe('DENY');
+        expect(result.reason).toContain('TSL_SIGNATURE_MISSING');
     });
 
     describe('stale cache when the source is unreachable', () => {
