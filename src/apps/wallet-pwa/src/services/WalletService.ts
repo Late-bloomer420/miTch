@@ -1,6 +1,7 @@
 import { PolicyEngine, type EvaluationContext } from '@askmi/policy-engine';
 import { resolveLayerForData } from '@askmi/layer-resolver';
-import { SecureStorage } from '@askmi/secure-storage';
+import { SecureStorage, BrowserIndexedDBAdapter } from '@askmi/secure-storage';
+import { identityUserHandle, isDemoRuntime, walletDatabaseName } from '../runtime';
 import { AuditLog } from '@askmi/audit-log';
 import {
   PolicyManifest,
@@ -42,6 +43,7 @@ import {
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
 import { DEMO_POLICY } from '../data/DemoPolicy';
+import { ISOLATED_DEMO_POLICY } from '../data/IsolatedDemoPolicy';
 import {
   isSingleUsePresentation,
   needsConsumption,
@@ -73,7 +75,7 @@ const LEGACY_POLICY_STORAGE_KEY = ASKMI_STORAGE_KEYS.walletPolicy;
 const POLICY_STORAGE_ID = ASKMI_STORAGE_KEYS.policyManifestDocument;
 
 // Default Policy for the PoC (Now persistent)
-const DEFAULT_POLICY: PolicyManifest = DEMO_POLICY;
+const DEFAULT_POLICY: PolicyManifest = isDemoRuntime ? ISOLATED_DEMO_POLICY : DEMO_POLICY;
 
 function sanitizeIdentityActorLabel(actor: string | undefined): string {
   const fallback = 'Unknown actor';
@@ -449,7 +451,8 @@ export class WalletService {
 
           // 2. Initialize Encrypted Storage
           step = 'initSecureStorage';
-          this.storage = await SecureStorage.init(masterKey);
+          this.storage = await SecureStorage.init(masterKey,
+            isDemoRuntime ? new BrowserIndexedDBAdapter(walletDatabaseName) : undefined);
 
           // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
           step = 'initAuditKeys';
@@ -1894,7 +1897,7 @@ export class WalletService {
    * Register a hardware-bound identity key (LoA High).
    */
   async registerIdentityKey(): Promise<void> {
-    await WebAuthnService.registerIdentityKey();
+    await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
     console.log('✅ Hardware-bound Identity Key registered.');
     // Re-initialize policy engine to use the new key
     this.initialized = false;
@@ -2316,7 +2319,8 @@ export class WalletService {
    * (WebAuthnService.clearRegistration) so the next start re-enrolls.
    */
   async resetWallet(): Promise<void> {
-    await SecureStorage.reset();
+    if (isDemoRuntime) await new BrowserIndexedDBAdapter(walletDatabaseName).clear();
+    else await SecureStorage.reset();
     this.storage = null;
     this.policyEngine = null;
     this.policyManifest = null;

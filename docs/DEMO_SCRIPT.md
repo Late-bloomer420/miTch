@@ -26,10 +26,18 @@ pnpm test
 
 ```
 
-The cross-platform launchers use the canonical browser ports `5174` (wallet) and
-`5175` (optional verifier UI). They export
-`CORS_ALLOWED_ORIGINS=http://localhost:5174,http://localhost:5175` for the verifier
-backend. When launching services manually, export the same value (or an intentionally
+`pnpm demo` (also reached through `dev-demo.sh` and `dev-demo.ps1`) starts an isolated
+demo on its own ports: verifier backend `3104`, store UI `5185`, demo wallet `5184`,
+mock issuer `3005`. It exports
+`CORS_ALLOWED_ORIGINS=http://localhost:5184,http://localhost:5185` and refuses to start
+if one of those ports is taken. The demo wallet uses its own databases and passkey and
+holds test credentials only. With the demo running, `pnpm demo:smoke` drives the Connect
+flow in headless Chrome.
+
+The scenarios below were written for the manually started services (`pnpm dev:wallet`,
+`pnpm dev:verifier`), which keep the canonical ports `5174` (wallet), `5175` (optional
+verifier UI) and `3004` (backend). For those, export
+`CORS_ALLOWED_ORIGINS=http://localhost:5174,http://localhost:5175` (or an intentionally
 restricted equivalent); other browser origins are rejected with HTTP 403.
 
 **Browser:** Chrome/Firefox, DevTools offen auf Console-Tab.

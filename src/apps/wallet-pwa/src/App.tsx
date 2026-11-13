@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
+import { identityUserHandle, isDemoRuntime, runtimeOriginAllowed, walletRoute } from './runtime';
 import {
   parseConnectHandoff,
   loadConnectRequest,
@@ -261,7 +262,7 @@ function WalletApp() {
   ) => {
     await handleIncomingOID4VP({ scenario, endpoint, verifier, sessionId });
   };
-  const [incomingOID4VP] = useState<{
+  const [incomingOID4VP, setIncomingOID4VP] = useState<{
     scenario: string;
     endpoint: string;
     verifier: string;
@@ -490,7 +491,7 @@ function WalletApp() {
   // Ask once; re-registering stores the key (framed first, no surprise prompt).
   const handleReRegisterPasskey = async () => {
     try {
-      await WebAuthnService.registerIdentityKey();
+      await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
       setShowPasskeyPrompt(false);
       addLog('🔑 Passkey re-registered: its signatures are now verifiable.', 'success');
     } catch (e) {
@@ -508,7 +509,7 @@ function WalletApp() {
     try {
       setStatus('UNLOCKING');
       addLog('📱 Creating your AskMI account on this device…', 'info');
-      await WebAuthnService.registerIdentityKey();
+      await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
       addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
       await loadWalletCredentials();
       addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
@@ -1453,8 +1454,18 @@ function WalletApp() {
           </div>
           <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
             Scenario: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.scenario}</code>
-            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>age ≥ 18</code>
+            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>{isDemoRuntime && incomingOID4VP.requestUri ? 'numeric age (verifier checks ≥18)' : 'age ≥ 18'}</code>
           </div>
+          {isDemoRuntime && (
+            <p>
+              First visit? Get a signed test credential before accepting this request. Sample cards alone cannot complete verification.
+              {' '}
+              <button onClick={handleFetchCredential} disabled={!isWalletReady || credentialStatus === 'fetching'}>
+                {credentialStatus === 'done' ? 'Test credential ready' : credentialStatus === 'fetching' ? 'Getting test credential…' : 'Get demo age credential'}
+              </button>
+              {credentialStatus === 'error' && <span role="alert"> Test issuer unavailable. Retry before accepting.</span>}
+            </p>
+          )}
           <button
             onClick={() => handleIncomingOID4VP()}
             disabled={status === 'EVALUATING' || status === 'PROVING' || !isWalletReady}
@@ -1472,6 +1483,11 @@ function WalletApp() {
           >
             ✅ Accept &amp; Prove
           </button>
+          <button onClick={() => {
+            setIncomingOID4VP(null);
+            window.history.replaceState({}, '', window.location.pathname);
+            addLog('Request declined. No presentation sent; the store session will expire.', 'info');
+          }} disabled={status === 'EVALUATING' || status === 'PROVING'}>Decline request</button>
         </div>
       )}
 
@@ -2449,18 +2465,29 @@ function WalletApp() {
 }
 
 export default function App() {
+  if (!runtimeOriginAllowed(window.location.origin)) {
+    return <main><h1>Demo wallet origin mismatch</h1><p>Open the demo wallet at http://localhost:5184. No wallet was opened.</p></main>;
+  }
+  const route = walletRoute(window.location.search);
+  let invalidHandoff = route === 'invalid';
+  try { parseConnectHandoff(window.location.search); } catch { invalidHandoff = true; }
+  if (invalidHandoff) {
+    return <main><h1>Invalid wallet request</h1><p>Return to the store and start a new age check.</p></main>;
+  }
   const showWalletDemo =
     import.meta.env.MODE === 'test' ||
-    new URLSearchParams(window.location.search).get('demo') === 'wallet';
+    isDemoRuntime || route === 'wallet';
 
   if (showWalletDemo) {
-    return <WalletApp />;
+    return <>{isDemoRuntime && <aside role="note">Demo wallet — test credentials only. Separate from your existing wallet.</aside>}<WalletApp /></>;
   }
 
   return (
     <LandingPage
       onLaunchDemo={() => {
-        window.location.href = `${window.location.pathname}?demo=wallet`;
+        const url = new URL(window.location.href);
+        url.searchParams.set('demo', 'wallet');
+        window.location.href = url.toString();
       }}
     />
   );
