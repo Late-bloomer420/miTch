@@ -12,6 +12,8 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- docs(agents): never change repo settings/rulesets via API/CLI without explicit approval ([#267](https://github.com/Late-bloomer420/miTch/pull/267))
+- docs(architecture): 2026-11-03 API/protocol audit, 4-stage v2 plan, QR/onboarding & HPI/k-TAA unlinkability + enable Entire ([#247](https://github.com/Late-bloomer420/miTch/pull/247)) — evidence: [`API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md)
 
 ## 2026-10
 
