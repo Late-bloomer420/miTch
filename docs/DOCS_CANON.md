@@ -8,7 +8,8 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Topic | Canonical source |
 |---|---|
 | Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
-| Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) |
+| Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) |
+| API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
@@ -56,8 +57,11 @@ This file defines the authoritative document per topic area and serves as naviga
 
 ## Navigation
 
+- **Security review with scoped 2026-11-13 static reconciliation:** [security/SECURITY_REVIEW_2026-10-19.md](security/SECURITY_REVIEW_2026-10-19.md); preserves dated runtime evidence and is not a new security PASS.
+
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
+- **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -71,6 +75,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Repository ecosystem (canonical repo, related repositories, consolidation rule):** `docs/REPOSITORY_ECOSYSTEM.md`
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
+- **Phase-0 threat-model narrative (surviving source for the "lost" hardening content):** `src/packages/phase0-security/EXECUTIVE_SUMMARY.md` — the strategy narrative (platform-vendor bypass, split-key 3-share design, memory/network/supply-chain/seizure/AI defenses with per-strategy pros/cons) lost from the deleted root `ADVANCED_SECURITY_HARDENING.ts` survives here; only the `HARDENING_CHECKLIST` const and `RECOMMENDATION MATRIX` are unrecovered (see `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`).
 
 ## Research And Strategy Inputs
 
@@ -80,6 +85,8 @@ These documents are useful inputs, but they do not override `STATE.md`,
 - `docs/compliance/EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md` — external-style desk assessment of EUDI trust boundaries, product routes and certification limits. It is not an accredited audit, certification, legal opinion or production approval.
 - `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` — broad use-case landscape and sequenced roadmap proposal. It is not customer validation or delivery commitment.
 - `docs/05-business/USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` — earlier GTM brainstorm; superseded for breadth by the landscape document, still useful for the verifier-vs-issuer framing.
+- `docs/context/EXTERNAL_INPUT_RETICULUM_CRYPTO_2026-10-29.md` — external observation on Reticulum's crypto governance patterns (authoritative primitive list, labeled fallback tiers, honest limitation statements). Research input only; explicitly not a miTch analogue and no dependency or architecture decision.
+- `docs/research/FORMAL_VERIFICATION_CREDENTIALS_RESEARCH_2026-10-24.md` — research intake on formal verification and discrete math in credential systems (OIDF formal analysis of OID4VCI/OID4VP, SD-JWT vs ZKP disclosure families, unlinkability definitions, discrete-core limits). Research input only; not QA evidence, not an architecture or dependency decision — implementation is tracked via issues #196–#199.
 
 ## Agent and Memory Surfaces
 
@@ -103,7 +110,7 @@ neuer Auftrag behandelt werden.
 | Ort | Scope | Index |
 |-----|-------|-------|
 | `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007) | [README](03-architecture/decisions/README.md) |
-| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–012) | [README](03-architecture/mvp/README.md) |
+| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–013) | [README](03-architecture/mvp/README.md) |
 | `docs/compliance/ADR/` | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md) |
 
 **Hinweis:** ADR-001–009 existieren in `mvp/` und `compliance/ADR/` mit unterschiedlichen Themen. Die READMEs in den jeweiligen Ordnern erklären die Abgrenzung. Konkretes Beispiel ADR-009: `mvp/ADR-009_Threat_Model.md` ist das STRIDE Threat Model (Sprint 4: Accepted — pending external review); `compliance/ADR/ADR-009.md` ist die WebAuthn-Native-vs-HMAC-Proxy-Entscheidung. Beide Dateien tragen oben einen wechselseitigen "siehe auch"-Hinweis.
