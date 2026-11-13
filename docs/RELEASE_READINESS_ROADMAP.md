@@ -90,7 +90,7 @@ Use [the November 2 source registry](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta
 
 ## Source-watch acceptance additions — 2026-10-26
 
-The [26 October source baseline](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-10-26) was the planning coordinate on that date: iOS core v0.56.6, PID issuer v0.11.2 and web issuer v0.10.0. Released Android/iOS UIs remain build 43; iOS UI build 43 integrates v0.52.1. Older version-specific entries below retain historical requirements and must not be mistaken for the current core lock.
+The [26 October source baseline](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-10-26) was the planning coordinate on that date: iOS core v0.56.6, PID issuer v0.11.2 and web issuer v0.10.0. Released Android/iOS UIs remain build 43; iOS UI build 43 integrates v0.52.1. The entries below remain current requirements; only their version coordinates are historical and must not be mistaken for the current core lock (the 2026-11-09 registry above).
 
 - **Wave 1:** add token-authorized credential identifier/configuration binding, explicit request/response encryption policy and algorithm negatives, and authorization-server metadata cache isolation/reset/failure tests.
 - **Wave 2:** add ambiguous/missing-key and encryption-key SD-JWT negatives; adopt v0.11.2 Type Metadata fixtures without weakening JWT checks. Validate web-issuer `issuer_info` registration certificates (signature/trust/status/validity/issuer/scope); metadata presence alone is not trust.
