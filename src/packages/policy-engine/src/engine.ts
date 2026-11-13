@@ -519,40 +519,46 @@ export class PolicyEngine {
         candidates.sort((a, b) => (b.priority || 0) - (a.priority || 0));
         const rule = candidates[0];
 
-        // Binding Enforcement
-        // If the request has an origin, we enforce that it aligns with the verifierId for security.
-        // If the ID is 'liquor-store-1' and origin is 'https://liquor-store.com', that's fine.
-        // If origin is 'https://hacker.com', we might want to block.
-        // Current Logic: We assume the 'verifierPattern' in the policy implies trust for IDs matching that pattern.
-        // Implementing strict origin check if 'strictBinding' is enabled in global settings.
-
-        if (policy.globalSettings?.strictVerifierBinding && request.origin) {
-            // F-09 Phase 1: Origin-vs-VerifierID check.
-            // Extracts the hostname from request.origin and verifies it is consistent
-            // with the verifierId. Accepts if the hostname appears as a substring of the
-            // verifierId (DID method path) or if the verifierId appears in the hostname.
-            // Phase 2 (planned): DNS-DID binding via .well-known/did-configuration.
-            let originHost: string;
-            try {
-                originHost = new URL(request.origin).hostname;
-            } catch {
-                // Unparseable origin — reject when strict binding is required
-                return null;
-            }
-
-            // Derive a comparable token from the verifierId.
-            // For did:web:example.com → 'example.com'; for opaque IDs → full string.
-            const verifierToken = request.verifierId.startsWith('did:web:')
-                ? request.verifierId.slice('did:web:'.length).split(':').join('/')
-                : request.verifierId;
-
-            const hostMatchesId = verifierToken.includes(originHost) || originHost.includes(verifierToken);
-            if (!hostMatchesId) {
-                return null; // Origin–VerifierID mismatch — fail-closed
-            }
+        // F-09 Phase 1 (#238): under strict binding, a request that carries an origin
+        // must come from the host its verifierId names. Phase 2 (planned): DNS-DID
+        // binding via .well-known/did-configuration.
+        if (
+            policy.globalSettings?.strictVerifierBinding &&
+            request.origin &&
+            !this.originBindsToVerifier(request.verifierId, request.origin)
+        ) {
+            return null; // Origin–VerifierID mismatch — fail-closed
         }
 
         return rule;
+    }
+
+    /**
+     * True only when `origin` is an http(s) origin whose host and port equal the
+     * host and port that a did:web `verifierId` encodes. Other identifier forms
+     * name no host, so they never bind.
+     *
+     * The origin is transport context observed by the wallet. A match does not
+     * authenticate the verifier; signed requests and RP trust are tracked in #183.
+     */
+    private originBindsToVerifier(verifierId: string, origin: string): boolean {
+        const DID_WEB = 'did:web:';
+        if (!verifierId.startsWith(DID_WEB)) return false;
+        let originUrl: URL;
+        let didUrl: URL;
+        try {
+            originUrl = new URL(origin);
+            // did:web puts the host first; a port is written as %3A, later segments are a path.
+            const didHost = decodeURIComponent(verifierId.slice(DID_WEB.length).split(':')[0]);
+            if (!/^[^/?#@\\\s]+$/.test(didHost)) return false;
+            // Parsing through URL applies the same case and IDN normalisation as the origin.
+            didUrl = new URL(`${originUrl.protocol}//${didHost}`);
+        } catch {
+            return false;
+        }
+        if (originUrl.protocol !== 'https:' && originUrl.protocol !== 'http:') return false;
+        const host = (url: URL) => url.hostname.replace(/\.$/, '');
+        return host(originUrl) !== '' && host(originUrl) === host(didUrl) && originUrl.port === didUrl.port;
     }
 
     /**

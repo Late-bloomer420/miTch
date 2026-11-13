@@ -375,6 +375,67 @@ describe('engine.ts — strictVerifierBinding', () => {
         const result = await engine.evaluate(request, ctx(), [makeCredential()], policy);
         expect(result.reasonCodes).not.toContain(ReasonCode.UNKNOWN_VERIFIER);
     });
+
+    // #238: the origin host must equal the did:web host. Substring overlap is not a match.
+    async function strictBindingDenies(verifierId: string, origin: string): Promise<boolean> {
+        const policy = makePolicy({
+            rules: [{
+                id: 'strict-rule',
+                verifierPattern: verifierId,
+                minimumLayer: ProtectionLayer.GRUNDVERSORGUNG,
+                allowedClaims: ['age'],
+                provenClaims: [],
+                requiresTrustedIssuer: true,
+                maxCredentialAgeDays: 365,
+                requiresUserConsent: false,
+                priority: 10,
+            }],
+            globalSettings: { blockUnknownVerifiers: true, strictVerifierBinding: true },
+        });
+        const result = await engine.evaluate(
+            makeRequest({ verifierId, origin }), ctx(), [makeCredential()], policy
+        );
+        return result.verdict === 'DENY' && result.reasonCodes.includes(ReasonCode.UNKNOWN_VERIFIER);
+    }
+
+    it.each([
+        ['did:web:example.com', 'https://example.com.evil.net'],
+        ['did:web:example.com', 'https://notexample.com'],
+        ['did:web:example.com', 'https://com'],
+        ['did:web:example.com', 'https://sub.example.com'],
+        ['did:web:sub.example.com', 'https://example.com'],
+        ['did:web:example.com', 'https://example.com:8443'],
+        ['did:web:example.com%3A8443', 'https://example.com'],
+        ['did:web:example.com%3A8443', 'https://example.com:9443'],
+        ['did:web:example.com', 'https://exämple.com'],
+        ['did:web:example.com', 'https://example.com@evil.net'],
+        ['did:web:example.com', 'ftp://example.com'],
+        ['did:web:evil.net%2Fexample.com', 'https://example.com'],
+        ['did:web:', 'https://example.com'],
+    ])('DENY: %s does not bind to origin %s', async (verifierId, origin) => {
+        expect(await strictBindingDenies(verifierId, origin)).toBe(true);
+    });
+
+    it.each([
+        ['did:web:example.com', 'https://EXAMPLE.com'],
+        ['did:web:EXAMPLE.COM', 'https://example.com'],
+        ['did:web:example.com', 'https://example.com.'],
+        ['did:web:example.com', 'https://example.com:443'],
+        ['did:web:example.com%3A8443', 'https://example.com:8443'],
+        ['did:web:example.com:tenants:shop', 'https://example.com'],
+        ['did:web:xn--exmple-cua.com', 'https://exämple.com'],
+        ['did:web:localhost%3A3004', 'http://localhost:3004'],
+    ])('accepts: %s binds to origin %s', async (verifierId, origin) => {
+        expect(await strictBindingDenies(verifierId, origin)).toBe(false);
+    });
+
+    it.each([
+        ['did:askmi:verifier-liquor-store', 'https://verifier-liquor-store.example'],
+        ['liquor-store.com', 'https://liquor-store.com'],
+        ['did:key:z6MkExample', 'https://example.com'],
+    ])('DENY: non-did:web id %s has no origin binding under strict mode', async (verifierId, origin) => {
+        expect(await strictBindingDenies(verifierId, origin)).toBe(true);
+    });
 });
 
 describe('engine.ts — F-02 verifier pattern matching is ReDoS-safe glob matching', () => {
