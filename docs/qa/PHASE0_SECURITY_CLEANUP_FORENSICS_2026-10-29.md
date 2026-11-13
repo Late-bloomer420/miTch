@@ -119,7 +119,8 @@ Priority order for the clean-up (consolidated with #243):
 4. **Share authentication (MAC) for SSS** if shares are stored in hostile
    locations; remove constant-time claims for `gf256Mul`.
 5. No action needed: EXECUTIVE_SUMMARY threat narrative (already maintained),
-   test wiring (historical passing result in §3; not rerun for this correction).
+   test wiring (historical passing result in §3; not rerun for the 2026-11-13
+   history verification).
 
 ## 5. Process lessons (for AGENTS/CONTRIBUTING, not code)
 
