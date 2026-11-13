@@ -87,7 +87,8 @@ Die drei laut README auf npm veröffentlichten Pakete (`shared-types`, `shared-c
 - Sie misst statische Importe. Ein genutztes Paket kann ungenutzte Module enthalten; das ist
   hier nicht untersucht.
 - Kein automatischer Test startet die Dienste zusammen im Browser. Zwei Fehler im Demo-Start
-  blieben deshalb bei grünem Testlauf unbemerkt (behoben in #265):
+  blieben deshalb bei grünem Testlauf unbemerkt (Behebung liegt in PR #265 vor, der am
+  2026-11-13 noch nicht gemergt ist):
   die HTTPS-Origin der Wallet fehlte in der CORS-Liste des Verifiers, und Verifier-Links
   landeten auf der Landingpage statt in der Wallet.
 
