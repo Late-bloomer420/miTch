@@ -83,6 +83,7 @@ These documents are useful inputs, but they do not override `STATE.md`,
 - `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` — broad use-case landscape and sequenced roadmap proposal. It is not customer validation or delivery commitment.
 - `docs/05-business/USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md` — earlier GTM brainstorm; superseded for breadth by the landscape document, still useful for the verifier-vs-issuer framing.
 - `docs/context/EXTERNAL_INPUT_RETICULUM_CRYPTO_2026-10-29.md` — external observation on Reticulum's crypto governance patterns (authoritative primitive list, labeled fallback tiers, honest limitation statements). Research input only; explicitly not a miTch analogue and no dependency or architecture decision.
+- `docs/research/FORMAL_VERIFICATION_CREDENTIALS_RESEARCH_2026-10-24.md` — research intake on formal verification and discrete math in credential systems (OIDF formal analysis of OID4VCI/OID4VP, SD-JWT vs ZKP disclosure families, unlinkability definitions, discrete-core limits). Research input only; not QA evidence, not an architecture or dependency decision — implementation is tracked via issues #196–#199.
 
 ## Agent and Memory Surfaces
 
