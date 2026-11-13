@@ -2,7 +2,8 @@
 
 **Status:** dated static inventory for [#242](https://github.com/Late-bloomer420/miTch/issues/242). Input for decisions, not a security PASS and not a closure of #242.
 **Baseline:** `master` @ `a688164`. File and line references are for that commit.
-**Labels:** the "Assurance" column uses the vocabulary of [`docs/MATURITY_AND_LIMITATIONS.md`](../MATURITY_AND_LIMITATIONS.md) (Demo-only, Experimental, Planned).
+**Labels:** the "Assurance" column uses the vocabulary of [`docs/MATURITY_AND_LIMITATIONS.md`](../MATURITY_AND_LIMITATIONS.md) (Implemented, Demo-only, Experimental, Planned).
+**Paths:** the "Where" column omits the root. `wallet-pwa/…` and `verifier-demo/…` are under `src/apps/`; every other path is under `src/packages/`.
 
 ## What this covers and how it was made
 
