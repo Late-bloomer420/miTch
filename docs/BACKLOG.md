@@ -1,5 +1,8 @@
 # AskMI — Master Backlog
 
+**2026-11-03 — API & protocol reality audit + 4-stage v2 architecture plan (`chore/enable-entire`, executable baseline `002ce5e`):**
+recorded 7 scoped findings (`API-01`..`API-07`) in [`qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) and the 4-stage architecture & remediation plan (`API-V2-S0`..`S3`) in [`tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md). Qualifies overlapping claims in `EUDI_CIR_MATRIX.md` and `03_ARCHITECTURE.md` (`API-06` closed in docs) without duplicating `#170`–`#173` or `#97`. Code remediation starts in Stage 0 (`API-V2-S0`); no release or pilot gate moves.
+
 **2026-10-25 — #170 remaining Connect integration:** implemented on the fix
 branch, with a stored-request wallet handoff, mounted verifier adapter, exact
 numeric-age profile and real signed HTTP negatives. [Evidence and limits](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
@@ -48,6 +51,26 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 
 These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
 Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
+
+## API & Protocol v2 — 4-Stage Remediation & Architecture Roadmap (2026-11-03)
+
+Quelle: [`qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) und [`tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md). Ergänzt bestehende Issues (`#170`–`#173`, `#97`, `#143`) ohne sie zu duplizieren.
+
+| ID | Stage / Prio | Status | Beschreibung | Akzeptanzkriterium / Owner |
+|---|---|---|---|---|
+| API-01 | Stage 0 / 🔴 P0 | OPEN (extends #170 browser E2E) | 4-Wege-Browser-E2E-Bruch zwischen `@askmi/connect`, `verifier-demo`, `wallet-pwa` und `issuer-mock` beheben & `claim-contract.ts` anbinden | `connect/src/core/profile.ts` nutzt `claim-contract.ts` (`age_over_18`); HTTPS/CORS-Origins, `demo=wallet`-Handoff und `issuer-mock` `iss` konsistent; ungemockter E2E-Test mit echter `DemoPolicy` grün |
+| API-02 | Stage 0 / 🔴 P0 | OPEN | Policy-Bypass in `wallet-pwa/src/App.tsx:959-961` (`presentOID4VP`) schließen | `presentOID4VP` übergibt ausschließlich `decisionCapsule.authorized_requirements`; Negativtest beweist Ausschluss nicht-autorisierter Claims |
+| API-03 | Stage 0 / 🔴 P0 | OPEN | RFC 9901 §7.1 SD-JWT VC Härtung & verpflichtende KB-JWT-Prüfung | `validateSDJWTVC` prüft `typ` (`dc+sd-jwt`/`vc+sd-jwt`) & `algorithms`; `extractDisclosedClaims` wirft Fehler statt `continue`; kein `~~` bei 0 Disclosures; `response-verifier.ts` erzwingt KB-JWT bei `cnf`/`expectedNonce` |
+| API-04 | Stage 0 / 🟡 P1 | OPEN (#97) | ISO/IEC 18013-5 §9.1.3.6 `DeviceAuthenticationBytes` in `@askmi/mdoc` | `mdoc/src/device-auth.ts` nutzt Detached Payload (`payload: null`) über `Tag24(CBOR(["DeviceAuthentication", SessionTranscript, docType, DeviceNameSpacesBytes]))` + `OpenID4VPHandover` |
+| API-05 | Stage 0 / 🟡 P1 | OPEN | Fail-Closed Signaturen in `trust-list-resolver`, `revocation-statuslist` & `webauthn-verifier` | Kein `verified: true` ohne `anchorPublicKey`; keine 4h-Grace bei `riskTier === 'high'`; Status-Listen-Signatur (`statuslist+jwt`) & Server-WebAuthn-Signatur werden kryptografisch geprüft |
+| API-06 | Stage 0 / 🟢 P2 | ✅ Docs (`chore/enable-entire`) | Falsche `@sd-jwt/*`-Bibliotheksangabe in `docs/_core/03_ARCHITECTURE.md:10` korrigieren | Dokumentiert In-House-Implementierung auf `jose` + WebCrypto in `@askmi/shared-crypto` |
+| API-07 | Stage 1–3 / 🟡 P1 | OPEN (#97) | Pre-Final-Protokollbasis (DIF PE v2, `client_id_scheme`, `redirect_uri`, statisches `walletBaseUrl`, draft-13 `/batch_credential`, custom LOTL JSON, custom `askmi-poe`) auf OpenID4VP 1.0 Final / OpenID4VCI 1.0 Final / W3C DC API / ETSI TS 119 602 LoTE / EUDI TS07–TS08 heben | 100 % Standard-Basislinie für Dritt-Wallets & Dritt-Verifier; WRPRC/LoTE statt custom JSON; Volltext-Definition in `docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md` (API-07) |
+| API-V2-S1 | Stage 1 / 🔴 P0 | OPEN (#143 / #97) | G0/G1-Evidenz auswerten & primäres Süd-Credential-Profil festlegen | Zielrolle (RP / Intermediär / Wallet-SDK) aus G0/G1 belegt; Entscheidung zwischen `dc+sd-jwt` (`urn:eudi:pid:1`) und `mso_mdoc` (`eu.europa.ec.av.1`) dokumentiert |
+| API-V2-S2 | Stage 2 / 🟡 P1 | OPEN (#171) | `@askmi/wallet-guard` SDK extrahieren + 3-Wege-RP-Nord-API in `@askmi/connect` | `@askmi/wallet-guard` als eigenständiges Package extrahiert (`wallet-pwa` als Hülle + Produktpfad); `VerificationSessionCore` bedient `/askmi/connect/sessions`, `/v2/verifications` (REST) und OIDC-Provider-Bridge |
+| API-V2-S3 | Stage 3 / 🟡 P1 | OPEN (#97) | OpenID4VP 1.0 Final (DCQL, Client ID Prefixes, `response_uri`, `verifier_info`), W3C DC API, ETSI TS 119 602 LoTE & optionale `askmi_ext` | 100 % Standard-OpenID4VP-1.0 / W3C-DC-API-Basislinie für Dritt-Wallets & Dritt-Verifier + optionale `askmi_ext` Negotiation für AskMI-zu-AskMI Policy-/DecisionCapsule-Bindung |
+| API-V2-ONBOARD | Stage 2–3 / 🟡 P1 | OPEN (#97 / #176) | Zero-Account Ausweis-/ePass- & Photo-ID-Bootstrap (ICAO 9303 ePass NFC ohne PIN inkl. Chip/Active Auth + nPA eID mit PIN + Optisches Photo-ID-Fallback) | ePass MRZ + NFC liest `EF.SOD`/`DG1`/`DG2` ohne 6-stellige eID-PIN + Chip/Active Auth gegen Klonen + lokaler Selfie-Check (beim deutschen nPA ist `DG2` EAC-geschützt → dort eID mit PIN oder Photo-ID-Fallback); „Passkey = Account“ lokal im Tresor, Zero-Retention beim Issuer (nur geblindeter Revocation-Handle); ehrliche LoA-Kennzeichnung (`#174`/`#176`) |
+| API-V2-QR | Stage 2–3 / 🟡 P1 | OPEN (#110 / #174 / #196) | Hybride Online-/Offline-QR-Architektur & ehrlicher Anti-Relay-Phishing-Schutz (Fett/Küsters `#196` + Apple PCC Observable Trust) | (1) Online Universal-QR (`https://` App-Link/PWA-Fallback + `openid4vp://`, auch via EU-DMA-App-Distribution nutzbar) + Offline-Kassen-QR (`ProximityView`/ZKP-QR); (2) rotierende QRs + automatischer BLE/Optik-Nähe-Check; (3) ehrliche UI-Anzeige (🟢 Nähe bestätigt = 1-Tap vs. 🟡 externer Screen = 1-Tap auf Layer 0, 2-stelliges Number-Matching auf Layer 1/2) |
+| API-V2-ZKP | Stage 3 / 🟡 P1 | OPEN (#97 / #182 / #199 / U-10..U-13) | 2-Spur-Unlinkability: EUDI-Standard (`SD-JWT`/`mdoc` Single-Use `#171`) + HPI Multi-Show ZKP (`av-demo.hpi.de` BBS+ mit P-256 Hardware-Binding), Boneh–Boyen (`10.1007/978-3-540-24676-3_4`) & Dynamic $k$-TAA (`10.1007/11832072_8`) | Spur A für Standard-EUDI-Verifier (Single-Use-Pool `#171`); Spur B evaluiert/integriert HPI Commit-and-Prove (BBS+ auf ECDSA P-256 Hardware-Key) für unbegrenzte Multi-Show-Beweise ohne Nachladen + $q$-SDH-basierte Dynamic $k$-TAA Scope-Nullifier (Bot-Schutz / „Login ohne Registrierung“ bei 0 Cross-RP-Korrelation) + ehrliches UI-Badge (`🟢 Multi-Show ZKP` vs. `🟡 Standard-EUDI Einmal-Token`) |
 
 ## discrete-core — Vorlesungs-Kernbibliothek (2026-10-23)
 
