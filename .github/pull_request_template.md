@@ -23,7 +23,7 @@ Closes #
 ### Documentation
 - [ ] README aktualisiert (falls API-Änderung)
 - [ ] ADR erstellt (falls Architecture Decision)
-- [ ] CHANGELOG.md aktualisiert
+- [ ] CHANGELOG.md: eine Zeile unter dem aktuellen Monat (PR-Titel, PR-Link, ggf. Link zum QA-Protokoll; keine Testzahlen)
 
 ## 🧪 Test Coverage
 
