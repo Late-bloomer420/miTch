@@ -14,6 +14,7 @@ import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
 export const app: Express = express();
 const allowedOrigins = new Set([
+    'http://localhost:5184',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
