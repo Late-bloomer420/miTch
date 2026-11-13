@@ -3,6 +3,7 @@ vi.mock('../runtime', () => ({
   isDemoRuntime: true,
   walletDatabaseName: 'askmi_demo_policy_test',
   holderDatabaseName: 'askmi_demo_holder_test',
+  identityUserHandle: 'AskMI-demo-identity-key-v1',
 }));
 import { WalletService } from '../services/WalletService';
 import { DEMO_POLICY } from '../data/DemoPolicy';
@@ -31,12 +32,16 @@ describe('isolated Connect demo policy', () => {
   it('requires consent for numeric age without changing the existing predicate policy', async () => {
     const wallet = new WalletService();
     await wallet.initialize('test-pin', 'demo-policy-test');
-    const evaluate = (verifierId: string, requestedClaims: string[]) =>
+    const evaluate = (
+      verifierId: string,
+      requestedClaims: string[],
+      requestedProvenClaims: string[] = []
+    ) =>
       wallet.evaluateRequest(
         {
           verifierId,
           requestedClaims,
-          requestedProvenClaims: [],
+          requestedProvenClaims,
           origin: 'http://localhost:3104',
           nonce: crypto.randomUUID(),
         },
@@ -47,6 +52,10 @@ describe('isolated Connect demo policy', () => {
       'DENY'
     );
     expect((await evaluate('did:example:unknown', ['age'])).verdict).toBe('DENY');
+    // The built-in age-proof scenario asks for the predicate only; it must still work.
+    expect((await evaluate('did:askmi:verifier-liquor-store', [], ['age >= 18'])).verdict).toBe(
+      'PROMPT'
+    );
     expect(
       DEMO_POLICY.rules.find((rule) => rule.id === 'rule-age-proof-01')?.allowedClaims
     ).toEqual([]);

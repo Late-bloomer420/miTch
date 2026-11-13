@@ -17,7 +17,7 @@
     "dev:issuer": "pnpm --filter @askmi/issuer-mock dev",
     "dev:verifier": "pnpm --filter verifier-backend dev",
     "demo": "node scripts/dev-demo.mjs",
-    "demo:win": "node scripts/dev-demo.mjs",
+    "demo:smoke": "node scripts/demo-wallet-smoke.mjs",
     "dev:wallet:demo": "pnpm --filter @askmi/wallet-pwa dev:demo",
     "lint": "turbo run lint --filter=!@askmi/poc-hardened",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",

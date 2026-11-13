@@ -65,7 +65,8 @@ export default defineConfig(({ mode }) => ({
 
   server: {
     port: mode === 'demo' ? 5184 : 5174,
-    strictPort: true,
+    // The demo must not drift to another port; the regular wallet may fall back.
+    strictPort: mode === 'demo',
     host: mode === 'demo' ? 'localhost' : true,
     allowedHosts: mode === 'demo' ? ['localhost'] : true,
     headers: securityHeaders,

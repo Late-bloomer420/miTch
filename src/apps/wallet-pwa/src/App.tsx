@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './App.css';
 import './wallet.css';
-import { isDemoRuntime, runtimeOriginAllowed, walletRoute } from './runtime';
+import { identityUserHandle, isDemoRuntime, runtimeOriginAllowed, walletRoute } from './runtime';
 import {
   parseConnectHandoff,
   loadConnectRequest,
@@ -491,7 +491,7 @@ function WalletApp() {
   // Ask once; re-registering stores the key (framed first, no surprise prompt).
   const handleReRegisterPasskey = async () => {
     try {
-      await WebAuthnService.registerIdentityKey();
+      await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
       setShowPasskeyPrompt(false);
       addLog('🔑 Passkey re-registered: its signatures are now verifiable.', 'success');
     } catch (e) {
@@ -509,7 +509,7 @@ function WalletApp() {
     try {
       setStatus('UNLOCKING');
       addLog('📱 Creating your AskMI account on this device…', 'info');
-      await WebAuthnService.registerIdentityKey();
+      await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
       addLog('✅ Account created. Device-bound identity passkey registered.', 'success');
       await loadWalletCredentials();
       addLog('🔓 Welcome! Your wallet is ready on this device.', 'success');
@@ -1454,7 +1454,7 @@ function WalletApp() {
           </div>
           <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
             Scenario: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.scenario}</code>
-            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>{incomingOID4VP.requestUri ? 'numeric age (verifier checks ≥18)' : 'age ≥ 18'}</code>
+            {' · '}Requesting: <code style={{ color: '#7dd3fc' }}>{isDemoRuntime && incomingOID4VP.requestUri ? 'numeric age (verifier checks ≥18)' : 'age ≥ 18'}</code>
           </div>
           {isDemoRuntime && (
             <p>

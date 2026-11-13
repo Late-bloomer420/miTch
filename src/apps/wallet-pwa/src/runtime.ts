@@ -6,6 +6,10 @@ export const holderDatabaseName = isDemoRuntime
   ? 'askmi_demo_holder_keys_v1'
   : 'mitch_holder_keys_v1';
 
+// localhost:5184 and localhost:5174 share the WebAuthn RP ID "localhost". A separate
+// user handle keeps demo enrollment from replacing the existing wallet's passkey.
+export const identityUserHandle = isDemoRuntime ? 'AskMI-demo-identity-key-v1' : undefined;
+
 export function runtimeOriginAllowed(origin: string, demo = isDemoRuntime): boolean {
   return !demo || origin === demoWalletOrigin;
 }

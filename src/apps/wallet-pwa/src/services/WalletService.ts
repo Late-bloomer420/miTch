@@ -1,7 +1,7 @@
 import { PolicyEngine, type EvaluationContext } from '@askmi/policy-engine';
 import { resolveLayerForData } from '@askmi/layer-resolver';
 import { SecureStorage, BrowserIndexedDBAdapter } from '@askmi/secure-storage';
-import { isDemoRuntime, walletDatabaseName } from '../runtime';
+import { identityUserHandle, isDemoRuntime, walletDatabaseName } from '../runtime';
 import { AuditLog } from '@askmi/audit-log';
 import {
   PolicyManifest,
@@ -1897,7 +1897,7 @@ export class WalletService {
    * Register a hardware-bound identity key (LoA High).
    */
   async registerIdentityKey(): Promise<void> {
-    await WebAuthnService.registerIdentityKey();
+    await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
     console.log('✅ Hardware-bound Identity Key registered.');
     // Re-initialize policy engine to use the new key
     this.initialized = false;
