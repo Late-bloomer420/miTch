@@ -1,6 +1,8 @@
 # Compliance Gap Report — May 2026
 
-> **Reconciliation update (2026-06-02):** Live TSL integration with signature verification has been implemented. Functional coverage is now **53/53 (100%)** for technical requirements. The final step remains formal external CC certification. Canonical per-requirement status: [`EUDI_CIR_MATRIX.md`](EUDI_CIR_MATRIX.md).
+> **Historical original — not current conformance evidence.** Verbatim copy of the May/June 2026 report, preserved for provenance after the 2026-10-27 honesty correction (issue #235). The claims below — "fully compliant for LoA High", "53/53 (100%)", "technically ready for the EUDI Wallet Pilot Phase" — are superseded and carry no external authority or evidence; do not quote them as certification, compliance, or readiness statements. Corrected version: [`COMPLIANCE_GAP_REPORT_MAY_2026.md`](../COMPLIANCE_GAP_REPORT_MAY_2026.md).
+
+> **Reconciliation update (2026-06-02):** Live TSL integration with signature verification has been implemented. Functional coverage is now **53/53 (100%)** for technical requirements. The final step remains formal external CC certification. Canonical per-requirement status: [`EUDI_CIR_MATRIX.md`](../EUDI_CIR_MATRIX.md).
 
 ## Executive Summary
 This report summarizes the compliance state of miTch against the EUDI Wallet Commission Implementing Regulations (CIR) as of June 2, 2026. miTch has achieved **100% coverage** of technical functional requirements.

@@ -29,7 +29,7 @@ eIDAS 2.0 has **no dedicated legal category** for such a layer. Obligations atta
 
 | Component(s) | Regulatory role touched | Obligations that flow through | Honest posture |
 |---|---|---|---|
-| `@askmi/connect`, `oid4vp-verifier`, `verifier-sdk`, `verifier-demo` | Relying-Party-side components (eIDAS Art. 6b(6)) | Purpose limitation, data minimization, RP identification/registration, verification of wallet authenticity and validity | AskMI's policy engine, selective-disclosure clipping, DENY-on-over-ask and consent receipts are the mechanism that makes these obligations demonstrable. The deploying RP remains the accountable party. |
+| `@askmi/connect`, `oid4vp-verifier`, `verifier-sdk`, `verifier-demo` | Relying-Party-side components (eIDAS Art. 5b) | Purpose limitation, data minimization, RP identification/registration, verification of wallet authenticity and validity | AskMI's policy engine, selective-disclosure clipping, DENY-on-over-ask and consent receipts are the mechanism that makes these obligations demonstrable. The deploying RP remains the accountable party. |
 | `wallet-pwa`, `wallet-core`, `secure-storage`, `webauthn-verifier` | Would fall under EUDI Wallet Solution rules **only if** offered as a wallet product | CIR 2024/2982 + 2024/2981 (certified WSCA/WSCD, notified body, LoA High-grade key protection) | **Reference harness only.** Out of certification scope; do not present as certifiable. |
 | `oid4vci`, `issuer-mock`, `mock-issuer`, `eid-issuer-connector` | Would be PID/QEAA issuer roles if used against real subjects | Qualified status, notification, certification | **Demo-only.** ADOPT-1.0 explicitly excludes this role. |
 | `policy-engine`, `predicates`, `layer-resolver`, `audit-log`, `data-flow`, `evidence` | No dedicated legal category; GDPR processor/controller implications | GDPR Art. 5 (minimization), Art. 17 (erasure — see crypto-shredding memo), Art. 24/25 (accountability, privacy by design) | Lowest exposure: data-minimization tooling. "DSGVO-by-Design" is an engineering analysis, not legal advice. |
@@ -39,7 +39,7 @@ eIDAS 2.0 has **no dedicated legal category** for such a layer. Obligations atta
 
 - **CIR 2024/2981** (certification of WSCA/WSCD) — AskMI is not a wallet solution or secure component.
 - **CIR 2024/2982** (wallet functionalities) — only relevant as correct *interaction with* certified wallets (RP authentication, unlinkability preservation), not as wallet obligations.
-- **eIDAS wallet certification/notification machinery (Arts. 5a–9a wallet provisions)** — no notified body, no Member State notification.
+- **eIDAS wallet certification/notification machinery (Arts. 5a–5f wallet provisions)** — no notified body, no Member State notification.
 
 ## 5. Open and unresolved points (honest list)
 
@@ -53,7 +53,7 @@ eIDAS 2.0 has **no dedicated legal category** for such a layer. Obligations atta
 AskMI's honesty model depends on the **holder's device remaining the point of custody**, without AskMI operating a wallet product:
 
 - credentials and keys stay with the wallet (reference harness or a national EUDI Wallet); AskMI never becomes their custodian;
-- locally, the user's **own data** (audit trail, consent receipts, disclosure history — `audit-log`, `data-flow`, `evidence`) is stored on the user's side and under the user's control;
+- in the **reference-wallet harness** (`wallet-pwa`/`wallet-core`), the user's **own data** (audit trail, consent receipts, disclosure history — `audit-log`, `data-flow`, `evidence`) is stored locally on the user's side and under the user's control. In RP-side deployments (§2) those records sit with the deploying relying party, not on the holder's device, and `audit-log` durable storage still has open findings (see `CLAUDE.md`) — no custody claim is made for them here;
 - "data ownership" here means **control and provenance over disclosures**, not acquiring new regulatory status. Owning a local record of what was shared, with whom, and under which policy is what makes applications built on AskMI truthful: they can show their users exactly what left the device.
 
 This section states a design principle; it does not create a GDPR "controller of everything" role for AskMI. Each deployment must still determine its controller/processor split for the data it actually processes.
