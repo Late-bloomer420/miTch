@@ -6,6 +6,7 @@ import {
   loadConnectRequest,
   presentationAccepted,
 } from './utils/connect-handoff';
+import { parseOpenerOrigins, readOpenerRequest } from './utils/opener-bridge';
 
 import { type EvaluationContext } from '@askmi/policy-engine';
 import type {
@@ -225,29 +226,29 @@ function WalletApp() {
     'DEV tools are local-only and do not send data.'
   );
 
-  // G-120: Listen for Auth Popup messages from opener window
+  // G-120: popup bridge. Off unless opener origins are configured (#239).
   useEffect(() => {
+    const allowedOrigins = parseOpenerOrigins(import.meta.env.VITE_WALLET_OPENER_ORIGINS);
+    if (allowedOrigins.length === 0 || !window.opener) return;
+
     const handleOpenerMessage = (event: MessageEvent) => {
-      // Security: Validate origin in production
-      if (
-        event.data?.type === 'ASKMI_OID4VP_REQUEST' ||
-        event.data?.type === 'MITCH_OID4VP_REQUEST'
-      ) {
-        addLog('📨 Received OID4VP request via Secure Popup Bridge', 'info');
-        // Trigger handleIncomingOID4VP with provided data
-        // For simplicity, we just reload or use the data directly
-        const { scenario, endpoint, verifier, sessionId } = event.data;
-        // This is a specialized path for popups
-        handleIncomingOID4VPFromOpener(scenario, endpoint, verifier, sessionId);
-      }
+      const request = readOpenerRequest(event, window.opener, allowedOrigins);
+      if (!request) return;
+      addLog(`📨 Received OID4VP request from opener ${event.origin}`, 'info');
+      handleIncomingOID4VPFromOpener(
+        request.scenario,
+        request.endpoint,
+        request.verifier,
+        request.sessionId
+      );
     };
 
     window.addEventListener('message', handleOpenerMessage);
 
-    // Check if we ARE a popup and notify opener
-    if (window.opener) {
-      window.opener.postMessage({ type: 'ASKMI_WALLET_READY' }, '*');
-      window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, '*');
+    // The browser delivers each message only if the opener is at that origin.
+    for (const origin of allowedOrigins) {
+      window.opener.postMessage({ type: 'ASKMI_WALLET_READY' }, origin);
+      window.opener.postMessage({ type: 'MITCH_WALLET_READY' }, origin);
     }
 
     return () => window.removeEventListener('message', handleOpenerMessage);
