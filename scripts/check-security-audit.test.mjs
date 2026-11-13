@@ -22,7 +22,8 @@ function run(body, auditStatus) {
 
 for (const [name, body, status, expected] of [
   ['clean audit', report(), 0, 0],
-  ['high only stays visible under the minimum critical policy', report({ high: 51 }), 1, 0],
+  ['moderate and low stay visible but pass', report({ moderate: 17, low: 2 }), 1, 0],
+  ['one high blocks', report({ high: 1 }), 1, 1],
   ['one critical blocks', report({ critical: 1, high: 51 }), 1, 1],
   ['registry error blocks', { error: { code: 'ERR_PNPM_AUDIT_BAD_RESPONSE' } }, 1, 1],
   ['error with fabricated clean metadata blocks', { ...report(), error: {} }, 1, 1],

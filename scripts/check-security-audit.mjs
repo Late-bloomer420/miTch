@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-// Minimum enforced policy: no critical findings. High findings stay visible
-// and tracked in #185; audit transport/format errors must never look clean.
+// Enforced policy: no critical and no high findings. Moderate and lower stay
+// visible in the log; audit transport/format errors must never look clean.
 export function evaluateAudit(text, auditExitCode) {
   const report = JSON.parse(text);
   if (!report || typeof report !== 'object' || report.error) {
@@ -26,9 +26,9 @@ export function evaluateAudit(text, auditExitCode) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const counts = evaluateAudit(readFileSync(process.argv[2], 'utf8'), Number(process.argv[3]));
-    console.log(`Audit: ${counts.total} findings; critical=${counts.critical}, high=${counts.high}. Gate: critical=0 required.`);
-    if (counts.critical > 0) {
-      console.error('Security audit denied: critical advisories require remediation.');
+    console.log(`Audit: ${counts.total} findings; critical=${counts.critical}, high=${counts.high}. Gate: critical=0 and high=0 required.`);
+    if (counts.critical > 0 || counts.high > 0) {
+      console.error('Security audit denied: critical or high advisories require remediation.');
       process.exitCode = 1;
     }
   } catch {
