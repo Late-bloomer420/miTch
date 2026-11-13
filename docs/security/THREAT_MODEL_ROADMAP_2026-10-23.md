@@ -40,8 +40,9 @@ Each T-ID is mapped to the EV-ID in [REPO_EVIDENCE_STATUS_2026-10-14.md](REPO_EV
 - T-08 single-use race (#171) — EV-03 / #171
 - T-09 audit tracking (#184) — EV-04 / #172
 - T-10 key compromise (#186) — EV-07 / GAP-1
-- T-11 fail-open (#181) — EV-05 / #141
+- T-11 runtime fail-open on parser/PDP/trust errors (#181) — EV-01 / #170 (server-side request handling)
 - T-12 consent mismatch (#180/#181) — EV-01 / #170
+- T-13 CI audit gate advisory-only (#185) — EV-05 / #141
 
 ## Governance and limits
 Four-eyes review for wallet PEP, OID4VP, session store, crypto, policy and CI; verify branch protection. A DecisionCapsule signature is defense in depth, not protection against compromised browser process. Pre-disclosure enforcement cannot guarantee post-disclosure erasure by a malicious RP. Preserve evidence per source; never substitute an unscoped repository pointer for test artifacts.
