@@ -9,10 +9,10 @@ avoids re-adding or re-implementing anything, to prevent a second drift.
 building `@askmi/shared-types` (the initial failure was a missing `dist/`, not
 a code defect).
 
-**History correction (2026-11-13, revision `d5ae4ea`):** The duplicated
-history narrative was replaced with the verified summary below. The original
-2026-10-29 method assessment and test observation remain dated evidence;
-this correction does not rerun tests or revalidate every method claim.
+**History verification:** 2026-11-13, repository revision `d5ae4ea`.
+**Assessment scope:** Method assessment and test observation dated 2026-10-29;
+the 2026-11-13 history verification did not rerun tests or revalidate every
+method claim.
 
 ## 1. Cleanup-drift from commit `01b94b1` (confirmed, recorded, not restored)
 

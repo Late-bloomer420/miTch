@@ -10,10 +10,10 @@ that one covers the *code quality verdicts*.
 follow-history, and full diffs between every commit in the sequence. All
 commit times below are from the original +0100 timezone.
 
-**History correction (2026-11-13):** Checked at repository revision
-`d5ae4ea` using Git tree IDs, diffs and file inspection on Windows/PowerShell.
-This corrects the original revert attribution and test-wiring description;
-the dated 2026-10-29 test observation below is retained, not rerun.
+**History and test-wiring verification:** 2026-11-13, repository revision
+`d5ae4ea`, using Git tree IDs, diffs and file inspection on Windows/PowerShell.
+**Test evidence:** Historical 2026-10-29 observation; tests not rerun for the
+2026-11-13 history verification.
 
 ## 1. The exact sequence (2026-03-12, five commits in 57 minutes)
 
