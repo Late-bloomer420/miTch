@@ -12,9 +12,12 @@ Scope: legal carrier structure (Rechtsform/Träger) and revenue model for AskMI.
 - `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` defines commercial
   stop conditions and defers an AskMI-operated attestation network ("defer until demand/acceptance
   proven").
-- Project guideline: the Privacy-Revocation-Authority stays a **separate, auditable role**. The
-  repo contains **no** decision about a non-profit carrier (search for "gemeinnützig": 0 hits) —
-  the carrier question is open.
+- The repo contains **no** decision about a carrier or about non-profit status — the carrier
+  question is open. ("Gemeinnützige" appears only inside Tigewosi's name in
+  `docs/vision/OUTREACH_INNSBRUCK.md`.)
+- Assumption, **not documented in the repo**: a privacy/revocation authority would stay a
+  separate, auditable role. No repo document defines such a role; confirm it with the owner
+  before treating it as a constraint.
 - Repo-internal sources for an Innsbruck ecosystem mention Tilak GmbH (Tiroler
   Landeskrankenanstalten) and Tigewosi (`docs/vision/OUTREACH_INNSBRUCK.md`). A "Cunst&Co
   Innsbruck" is **not documented** in this repo and must be verified externally before relying
@@ -26,9 +29,16 @@ Scope: legal carrier structure (Rechtsform/Träger) and revenue model for AskMI.
 |---|---|---|
 | A | Non-profit carrier (e. V. or gGmbH) holds OSS core, IP, brand + separate commercial GmbH for Enterprise SLA/support | Trust-neutral core + commercial arm; matches the "Open-Source-Core + Commercial API" idea (still open in repo) |
 | B | Non-profit only (grants, donations, no commercial offering) | Maximum trust signal, but funding depends on grants/donations |
-| C | Commercial only (GmbH/UG) | Full profit distribution possible, but no Gemeinnützigkeit status / tax benefits, weaker neutrality signal for the revocation-authority role |
+| C | Commercial only (GmbH/UG) | Full profit distribution possible, but no Gemeinnützigkeit status / tax benefits, weaker neutrality signal |
 
 ## Legal cornerstones (general information, not legal advice)
+
+**Jurisdiction is undecided, and the terms below are German law.** § 52 AO, Finanzamt
+recognition, e. V., gGmbH and UG are German. The ecosystem this repo documents is Austrian
+(Innsbruck outreach, ID Austria). Austrian non-profit and association law is different
+(charitable status falls under the BAO, associations under the Vereinsgesetz; there is no
+"e. V." form). The Austrian specifics were not checked against the statutes here. Until the target jurisdiction is fixed and counsel there has confirmed the rules, the
+option comparison holds only as a general pattern (non-profit carrier vs. commercial entity).
 
 - Gemeinnützigkeit requires Finanzamt recognition (§ 52 AO) and **Zweckbindung**: surpluses may
   be generated, but must be reinvested into the purpose; distribution to shareholders/members is
@@ -78,11 +88,13 @@ a choice, not an obligation.
 
 ## Open points / next steps
 
-1. Decide carrier option A/B/C — requires external legal/tax advice; not decidable from repo
-   content alone.
+1. Fix the target jurisdiction first (Austria vs. Germany), then decide carrier option A/B/C —
+   requires external legal/tax advice in that jurisdiction; not decidable from repo content
+   alone.
 2. Answer "Wer zahlt?" (verifier vs. holder) via the G1 interview kit
    (`docs/05-business/ASKMI_G1_INTERVIEW_KIT.md`).
-3. Keep the Privacy-Revocation-Authority carrier question separate and auditable.
+3. Confirm with the owner whether a separate privacy/revocation-authority role is intended (the
+   repo defines none). If so, decide its carrier separately.
 4. Verify any external supporter (e.g., "Cunst&Co Innsbruck") outside the repo before listing it.
 5. No financial projections are made here; a first numeric model needs real assumptions
    (hourly rates, number of relying parties, license prices) that do not exist in the repo yet.
