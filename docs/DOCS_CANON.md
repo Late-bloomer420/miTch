@@ -56,6 +56,8 @@ This file defines the authoritative document per topic area and serves as naviga
 
 ## Navigation
 
+- **Security review with scoped 2026-11-13 static reconciliation:** [security/SECURITY_REVIEW_2026-10-19.md](security/SECURITY_REVIEW_2026-10-19.md); preserves dated runtime evidence and is not a new security PASS.
+
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
