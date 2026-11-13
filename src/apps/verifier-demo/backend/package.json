@@ -2,13 +2,14 @@
     "name": "verifier-backend",
     "version": "0.0.1",
     "scripts": {
-        "dev": "tsx watch --ignore verifier-key.json --ignore nonce-cache.json src/index.ts",
+        "dev": "tsx watch --ignore verifier-key.json --ignore nonce-cache.json src/dev.ts",
         "start": "node dist/index.js",
         "build": "tsc",
-        "test": "vitest run",
+        "test": "vitest run --testTimeout 30000",
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@askmi/connect": "workspace:*",
         "@askmi/oid4vp": "workspace:*",
         "@askmi/predicates": "workspace:*",
         "@askmi/shared-crypto": "workspace:*",

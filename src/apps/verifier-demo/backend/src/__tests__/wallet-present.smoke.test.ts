@@ -71,6 +71,8 @@ const DISCLOSURE_MATRIX: Record<string, { disclosed: string[]; withheld: string[
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('/wallet-present pilot flow smoke test', () => {
+  const sessionId = 'pilot-smoke-session';
+
   beforeAll(() => {
     // Avoid file I/O for verifier keys (see app.ts getVerifierKeys).
     process.env[ASKMI_ENV.testMode] = '1';
@@ -82,12 +84,15 @@ describe('/wallet-present pilot flow smoke test', () => {
   });
 
   beforeEach(async () => {
-    await request(app).post('/reset');
+    await request(app).post('/reset').set('X-AskMI-Session-Id', sessionId);
   });
 
   for (const [scenario, { disclosed, withheld }] of Object.entries(DISCLOSURE_MATRIX)) {
     it(`accepts "${scenario}" and discloses only the requested claims`, async () => {
-      const res = await request(app).post('/wallet-present').send({ scenarioId: scenario });
+      const res = await request(app)
+        .post('/wallet-present')
+        .set('X-AskMI-Session-Id', sessionId)
+        .send({ scenarioId: scenario });
 
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
@@ -100,6 +105,13 @@ describe('/wallet-present pilot flow smoke test', () => {
       for (const claim of withheld) {
         expect(keys, `expected "${claim}" withheld for ${scenario}`).not.toContain(claim);
       }
+
+      const status = await request(app)
+        .get('/status')
+        .set('X-AskMI-Session-Id', sessionId)
+        .expect(200);
+      expect(status.body.status).toBe('VERIFIED');
+      expect(status.body.disclosedClaims).toEqual(res.body.disclosedClaims);
     });
   }
 
@@ -117,7 +129,10 @@ describe('/wallet-present pilot flow smoke test', () => {
     });
 
     it('denies a revoked credential with 403 REVOKED', async () => {
-      const res = await request(app).post('/wallet-present').send({ scenarioId: 'revoked' });
+      const res = await request(app)
+        .post('/wallet-present')
+        .set('X-AskMI-Session-Id', sessionId)
+        .send({ scenarioId: 'revoked' });
 
       expect(res.status).toBe(403);
       expect(res.body.ok).toBe(false);

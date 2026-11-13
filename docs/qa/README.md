@@ -1,12 +1,13 @@
 # QA Evidence Records — Index
 
+> **New scoped record:** [PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) records open active HTTP, single-use, CI and evidence boundaries. Task status stays in the backlog/issues. The record supplements existing evidence; characterization acceptance does not prove a fix.
+
 > **Rolle:** Dated, point-in-time **evidence records** (Beweis-Snapshots). Each file captures
 > verification done *on its date* — they are **not** authoritative task-tracking and are not kept
 > current. For "what is done / open" see [`../BACKLOG.md`](../BACKLOG.md); for the operational
 > health snapshot see [`../../STATE.md`](../../STATE.md).
 >
-> **Reading rule:** treat every record as true *as of its date* only. A later record or `master`
-> supersedes an earlier one where they differ. Do not cite these as current state.
+> **Reading rule:** treat every record as true *as of its date* only. Later evidence qualifies the same claim/path/profile where it differs; unrelated earlier results remain evidence for their recorded scope. Do not cite these as current state.
 
 ## Records
 
@@ -21,5 +22,6 @@
 | [`CAPSULE_SIG_ROOTCAUSE_2026-06-18.md`](CAPSULE_SIG_ROOTCAUSE_2026-06-18.md) | 2026-06-18 | Root-cause + resolution of the "capsule signature verification failures" (AskMI↔miTch rebrand AAD drift, not a crypto defect). |
 | [`SECURE_1_FINDINGS_REGISTER.md`](SECURE_1_FINDINGS_REGISTER.md) | 2026-07-13 | SECURE-1 sprint: full findings register (22 findings — 6 fix + F-14 real cred-sig verification + 7 documented-residual + 9 not-a-bug) with per-finding rationale and GAP-3 branching taxonomy. |
 | [`SECURE_1_GAP_CLOSURE_2026-07-13.md`](SECURE_1_GAP_CLOSURE_2026-07-13.md) | 2026-07-13 | SECURE-1 gap-closure QA evidence: per-fix commits + tests, GAP-3 guard result + honesty boundary, GAP-2 reconciliation, verified final validation (46/46 turbo tasks, 0 errors/7 pre-existing warnings, guard passed). |
+| [`ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md`](ADOPT_0AB_LIVE_VERIFICATION_2026-07-17.md) | 2026-07-17 | Live ADOPT-0a/0b real credential path verification: issuer-mock issues `vc+sd-jwt`, wallet presents stored credential with selective disclosure, verifier resolves issuer key via trust list/JWKS; records known gaps. |
 
 _Sighting (H-10): index added 2026-06-24; all entries confirmed as dated evidence records, none acting as task-tracking._

@@ -9,10 +9,10 @@
  * Phase 2: HKDF-derived keys from wallet master key (recoverable, deterministic)
  */
 
-import { EphemeralKey } from './ephemeral-key';
-import { crypto } from './platform';
+import { EphemeralKey } from './ephemeral-key.js';
+import { crypto } from './platform.js';
 import type { DIDDocument } from '@askmi/shared-types';
-import { base58Encode, base58Decode } from './multibase';
+import { base58Encode, base58Decode } from './multibase.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 

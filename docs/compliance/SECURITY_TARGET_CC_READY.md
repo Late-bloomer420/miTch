@@ -1,12 +1,12 @@
-# miTch: Security Target (ST) - Certification Readiness Artefact
+# miTch: Security Target (ST) - Security-Target Draft and Evaluation Mapping
 
 **ID:** E-42
 **Version:** 1.0 (2026-05-25)
-**Classification:** Public (Audit Readiness)
+**Classification:** Public (engineering assessment input)
 **Target of Evaluation (TOE):** miTch EUDI Wallet Framework
 
 ## 1. Introduction
-This document serves as the formal **Security Target (ST)** according to Common Criteria (ISO/IEC 15408) for the miTch framework. It maps the technical implementation to the security functional requirements (SFR) defined in the EUDI Protection Profiles.
+This draft retains the intended security objectives and component references for a possible Common Criteria assessment. It is not an accredited/accepted Security Target or an EAL readiness determination. The selected TOE, applicable Protection Profile and clause-level SFR mapping require evaluation work.
 
 ## 2. Security Objectives & Implementation
 
@@ -19,19 +19,19 @@ This document serves as the formal **Security Target (ST)** according to Common 
 | **Unlinkability** | Pairwise Ephemeral DIDs | `@askmi/shared-crypto/pairwise-did.ts` |
 | **Revocation Check** | W3C StatusList2021 | `@askmi/revocation-statuslist` |
 
-## 3. Mapping to CC Assurance Levels (EAL4+ Readiness)
+## 3. Mapping of engineering inputs to CC assurance classes
 
 | CC Class | Requirement | miTch Evidence |
 | :--- | :--- | :--- |
-| **ADV (Development)** | Implementation Representation | Full source code with 100% TS types and Spec documentation. |
-| **ATE (Tests)** | Independent Testing | `pnpm turbo test` (>1660 tests) verifying all SFs. |
+| **ADV (Development)** | Implementation Representation | Versioned source code, TypeScript types and specifications; implementation representation must be evaluated for the selected TOE. |
+| **ATE (Tests)** | Internal Testing Inputs | Repository-controlled tests exercise named cases; they are not independent testing of all security functions. |
 | **AVA (Vulnerability)** | Vulnerability Analysis | STRIDE-based Threat Model (`docs/specs/05_Threat_Model.md`). |
-| **ALC (Lifecycle)** | Configuration Management | Git-based versioning with mandatory lint/test CI gates. |
+| **ALC (Lifecycle)** | Configuration Management | Git versioning and CI workflows; configuration/threshold enforcement requires its own evidence (EV-05). |
 
 ## 4. Operational Hardening
-1. **Crypto-Shredding**: Automatic zeroization of sensitive memory buffers via `SecureBuffer`.
-2. **Identity Firewall**: Policy-enforced claim filtering to prevent over-disclosure.
-3. **Fail-Closed Integration**: Any failed cryptographic check results in an immediate `DENY` decision.
+1. **Crypto-Shredding**: Owned-buffer zeroization via `SecureBuffer`; runtime copies and physical RAM erasure are outside that evidence (GAP-1).
+2. **Identity Firewall**: Policy claim-filtering components; active SD-JWT request/scope integration remains #170.
+3. **Fail-Closed Integration**: Failed cryptographic checks have named rejection paths; structural validation, eligibility and application authorization are separate contracts.
 
 ## 5. Conclusion
-miTch is technically prepared for a formal **EAL4+** evaluation. All security-relevant modules are isolated, documented, and fully tested.
+These mappings are useful engineering inputs. Formal readiness, independence of testing, isolation of the selected TOE, vulnerability assessment and certification are not established by this document. Preserve component evidence while recording #170–#173 and the existing residuals as separate scoped work.

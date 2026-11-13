@@ -2,7 +2,7 @@
 
 This directory is the navigable entry-point for AskMI's security artifacts. It links every artifact required to assess the project's security posture, reproduce the claim evidence, and understand the open residuals.
 
-> **Research / pilot project** — AskMI is not a production service. No real personal data is processed.
+> **Research / pilot project** — AskMI is not a production service. Reference runs use synthetic data; this statement does not cover arbitrary deployments.
 
 ---
 
@@ -20,12 +20,13 @@ This directory is the navigable entry-point for AskMI's security artifacts. It l
 | Latest evidence report | [../qa/evidence-reports/](../qa/evidence-reports/) |
 | SECURE-1 findings register | [../qa/SECURE_1_FINDINGS_REGISTER.md](../qa/SECURE_1_FINDINGS_REGISTER.md) |
 | Open residuals register | [./RESIDUALS.md](./RESIDUALS.md) |
+| Security audit remediation roadmap | [./SECURITY_AUDIT_ROADMAP_2026-10-01.md](./SECURITY_AUDIT_ROADMAP_2026-10-01.md) |
 
 ---
 
 ## Reproduce the Evidence
 
-These commands reproduce every security claim from a clean checkout. Run them on Node 22 + pnpm 9.
+These commands run the repository checks and the claims selected by the harness manifest from a clean checkout. They do not cover every security property of every path. Run them on Node 22 + pnpm 9.
 
 ```bash
 # 1. Install dependencies
@@ -37,7 +38,7 @@ pnpm build
 
 # 3. Run the full test suite
 pnpm test
-# Expected: 47 turbo tasks green, 1820+ individual tests pass, 0 failures
+# Record actual task/test results, revision and runtime; historical totals are not assertions about this checkout
 
 # 4. Run the evidence harness
 pnpm evidence
@@ -67,14 +68,15 @@ const fs = require('fs');
 const json = fs.readFileSync('docs/qa/evidence-reports/EVIDENCE_2026-07-14T00-04-05-971Z.json');
 console.log(crypto.createHash('sha256').update(json).digest('hex'));
 "
-# Must match the hash in the .md report header
+# Legacy reports hash JSON before the final LF written by cli.ts.
+# The exact-file digest can differ; see #173 before treating a mismatch as tampering.
 ```
 
 > **Note:** The filename `EVIDENCE_2026-07-14T00-04-05-971Z.json` is illustrative. Use the filename of your latest report found under `docs/qa/evidence-reports/` (files are named `EVIDENCE_<timestamp>.json`).
 
 ---
 
-## Current Evidence Status (as of 2026-07-14)
+## Recorded Evidence Status (2026-10-01 baseline)
 
 | Metric | Value |
 |--------|-------|
@@ -86,5 +88,12 @@ console.log(crypto.createHash('sha256').update(json).digest('hex'));
 | SECURE-1 not-a-bug (F-07 – F-13, F-17, F-21) | 9 |
 | SECURE-1 documented-residual (F-05, F-06, F-15, F-19, F-20, F-22) | 6 |
 | External security review | Not yet performed (GAP-4) |
+| Active remediation plan | `SECURITY_AUDIT_ROADMAP_2026-10-01.md` |
 
 See [RESIDUALS.md](./RESIDUALS.md) for the full open-items register.
+
+## Scoped additional evidence — 2026-10-14
+
+At `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`, the harness again returned 10 PASS / 2 RESIDUAL / 0 FAIL within its manifest. Separate HTTP and stored-SD-JWT probes reproduced #170/#171; those observations add coverage and do not erase earlier passing component tests. #173 concerns exact-byte hashing and revision/profile provenance. Audit-output integration (#172) begins with an actual-output inventory; no universal logging leak is inferred.
+
+Use the [dated record](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md) and [finding index](REPO_EVIDENCE_STATUS_2026-10-14.md) alongside the artifact map. Update evidence by affected claim/path/dependency; documentation-only edits do not require repeating the full suite.

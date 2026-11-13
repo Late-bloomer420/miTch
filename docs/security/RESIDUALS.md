@@ -1,5 +1,7 @@
 # AskMI Security Residuals Register
 
+> **Additional scoped findings:** [EV-01..10](REPO_EVIDENCE_STATUS_2026-10-14.md) links the HTTP/session, stored single-use, export-integration and evidence/CI observations. Existing residual dispositions retain their scope; missing independent evidence is not itself a component defect.
+
 This register lists every security item that is **intentionally not closed** in the current codebase. Each row states what the item is, why it remains open, and what would be required to close it.
 
 The evidence pack does **not** claim these items are covered. The `pnpm evidence` harness marks them `RESIDUAL` (not `PASS`) and they are counted separately in every report.
@@ -39,7 +41,7 @@ These findings were raised during the SECURE-1 internal review (see [SECURE_1_FI
 | Field | Detail |
 |-------|--------|
 | **What** | `audit-log/src/storage/l2-anchor-client.ts:311-328` — `verifyAnchor()` returns `true` unconditionally for any non-mock, non-pending receipt whose contract address is the zero-address sentinel (every production network before the anchor contract is deployed). Callers receive a `verified: true` response when no on-chain check was actually performed. |
-| **Why not closed** | Deploying the anchor contract to a live L2 network is out of current project scope. The JSDoc on `verifyAnchor()` explicitly states "treat as unverifiable but non-blocking" for the zero-address case. Fixing the false-success requires deploying a real contract and wiring the verification call. |
+| **Why not closed** | Deploying the anchor contract to a live L2 network is out of current project scope. The JSDoc on `verifyAnchor()` explicitly states "treat as unverifiable but non-blocking" for the zero-address case. Returning explicit unverifiable/false status does not require deploying a contract; a real anchor-verification claim additionally requires a deployed contract and verified call. |
 | **What would close it** | Deploy the Merkle anchor contract (tracked in the L2-anchoring roadmap) and replace the zero-address sentinel branch with a real `eth_call` to `MerkleAnchor.verify()`. Update `verifyAnchor()` to return `false` (not `true`) when the contract is not deployed. |
 
 ### F-06 — `submitToL2()` always mocks the blockchain write
@@ -54,7 +56,7 @@ These findings were raised during the SECURE-1 internal review (see [SECURE_1_FI
 
 | Field | Detail |
 |-------|--------|
-| **What** | `policy-engine/src/engine.ts:378-383` — The `allowBreakGlass` path issues an ALLOW verdict when `userAvailable === false`, bypassing normal presence and consent checks. This is an intentional fail-open branch. |
+| **What** | `policy-engine/src/engine.ts:378-383` — The `allowBreakGlass` path issues an ALLOW verdict when `userAvailable === false`, bypassing normal presence and consent checks. This is a documented policy exception/fail-open branch; its deployment/legal necessity is not independently established by this register. |
 | **Why not closed** | Break-glass access is a **required** feature under EHDS Art. 8(5) (emergency access to health data without prior consent). Removing or blocking this branch would break a compliance requirement. The designed safeguard is the mandatory `BREAK_GLASS_ACTIVATED` audit event written on every invocation. |
 | **What would close it** | This cannot be "fixed" without removing the EHDS Art. 8(5) compliance feature. Hardening options: add a signed break-glass token requirement (so the decision is bound to an authenticated emergency context), enforce a time-bounded validity window, and add real-time alerting for every `BREAK_GLASS_ACTIVATED` event. |
 
@@ -72,7 +74,7 @@ These findings were raised during the SECURE-1 internal review (see [SECURE_1_FI
 |-------|--------|
 | **What** | `policy-engine/src/engine.ts:800-803` — A failure in pairwise DID generation inside `result()` is caught and logged with `console.error`, then execution continues without a pairwise DID. The ALLOW/DENY verdict is unaffected, but the unlinkability goal (a verifier cannot correlate requests across sessions) is silently not met. |
 | **Why not closed** | The pairwise-DID subsystem has its own known fragility; making the entire policy verdict fail when DID generation throws would break disclosure flows on benign errors. Fixing properly requires hardening the pairwise-DID generation path itself (a separate task). |
-| **What would close it** | Ensure the pairwise DID generation path never throws (internal try/return-fallback with a deterministic ephemeral ID). If a DID cannot be generated, the `result()` call should still surface an explicit `unlinkabilityWarning` field rather than silently omitting the DID. |
+| **What would close it** | Harden generation and define profile-aware failure behavior; do not substitute a deterministic/reused fallback identifier and silently claim unlinkability. If a DID cannot be generated, the `result()` call should still surface an explicit `unlinkabilityWarning` field rather than silently omitting the DID. |
 
 ### F-22 — L2 batch timer failures are fire-and-forget
 
@@ -96,3 +98,7 @@ These findings were raised during the SECURE-1 internal review (see [SECURE_1_FI
 | F-19 | swallowed-error | Low | Best-effort persistence by design | Production storage backend with retry + dead-letter |
 | F-20 | swallowed-error | Low | Pairwise-DID subsystem fragility | Harden DID generation path; expose `unlinkabilityWarning` |
 | F-22 | swallowed-error | Low | L2 not wired to real chain | Real L2 integration + retry/circuit-breaker |
+
+## Additional active-profile closure rules
+
+EV-01/02 close only via #170; EV-03 via #171; EV-04/F-19 sink disposition via #172; EV-06 via #173. EV-05 stays with #141/SEC-AUDIT-1/2. EV-07 remains GAP-1; EV-09 remains F-20/SEC-AUDIT-4. Do not equate a signed receipt or DID-uniqueness test with all-memory deletion or end-to-end unlinkability.

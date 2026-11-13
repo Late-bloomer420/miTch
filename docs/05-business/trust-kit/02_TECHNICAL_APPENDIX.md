@@ -71,7 +71,7 @@ These are `🟡`/`🔴` items from the CIR matrix that affect integration:
   Token Status List fetch endpoint is not deployed. Plan revocation freshness accordingly.
 - **EUDI Trust List registration is pending** (CIR 2982-15): the verifier set is checked against a
   local `trustedVerifiers` set, not a live eIDAS-node trust list.
-- **LoA High is software-only** (CIR 2981-1): no TEE/Secure Element or Common Criteria evaluation yet.
+- **LoA High is not established** (CIR 2981-1): no TEE/Secure Element or Common Criteria evaluation yet.
   Do not rely on miTch for assurance levels that require certified hardware binding.
 - **Proximity / offline presentation** (ISO 18013-5) is partial: codec and offline verification exist;
   the wallet BLE/NFC/QR presentation path is not complete.
@@ -82,3 +82,7 @@ Against the four CIRs, miTch reports **41/53 (77%) implemented, 10 partial, 3 mi
 2026-03-06. The full per-requirement breakdown — and the production-readiness gap list — is the
 [compliance evidence index](03_COMPLIANCE_EVIDENCE_INDEX.md). Do not infer certification from this
 score; see the [security sign-off](04_SECURITY_SIGNOFF.md).
+
+## Scoped follow-up — 2026-10-14
+
+The dated component references and original review disposition above are retained. On the real SD-JWT demo, numeric age is disclosed; original-request/session/application eligibility integration is #170 and stored single-use/UI lifecycle is #171. These findings qualify those paths, not every component in this appendix. #172 inventories actual external outputs before integration; #173 concerns evidence provenance/serialization. No new independent sign-off or pilot approval is recorded here.

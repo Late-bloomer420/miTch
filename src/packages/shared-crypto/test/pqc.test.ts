@@ -3,7 +3,7 @@
  *
  * Tests for @noble/post-quantum wrappers: ML-DSA, ML-KEM, SLH-DSA, Hybrid.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import {
     mlDSA44, mlDSA65, mlDSA87,
     slhDSASHA2128s,
@@ -82,23 +82,31 @@ describe('ML-DSA-87', () => {
 
 // ─── SLH-DSA ─────────────────────────────────────────────────────────────────
 
-describe('SLH-DSA-SHA2-128s', () => {
+// SLH-DSA-SHA2-128s (the "small" SPHINCS+ set) is slow to sign by design: ~4 s per
+// test locally, but past 30 s on a busy CI runner. Longer limit for this block only.
+// Additionally, share one keygen+sign fixture across the block instead of paying the
+// ~7 s per-operation cost twice (observed: Actions run 40197696547, 2026-10-25;
+// ci.yml 2026-10-25T12:53Z; also 2026-07-12, docs/qa/WEBAUTHN_FAIL_CLOSED_2026-07-12.md).
+describe('SLH-DSA-SHA2-128s', { timeout: 120_000 }, () => {
+    const msg = new TextEncoder().encode('SPHINCS+ hash-based test');
+    let kp: ReturnType<typeof slhDSASHA2128s.keygen>;
+    let sig: Uint8Array;
+
+    beforeAll(() => {
+        kp = slhDSASHA2128s.keygen();
+        sig = slhDSASHA2128s.sign(kp.secretKey, msg);
+    }, 120_000);
+
     it('round-trip sign/verify', () => {
-        const msg = new TextEncoder().encode('SPHINCS+ hash-based test');
-        const kp = slhDSASHA2128s.keygen();
-        const sig = slhDSASHA2128s.sign(kp.secretKey, msg);
         expect(sig.length).toBeGreaterThan(0);
         expect(slhDSASHA2128s.verify(kp.publicKey, msg, sig)).toBe(true);
     });
 
     it('rejects tampered signature', () => {
-        const msg = new TextEncoder().encode('tamper test');
-        const kp = slhDSASHA2128s.keygen();
-        const sig = slhDSASHA2128s.sign(kp.secretKey, msg);
         const bad = new Uint8Array(sig);
         bad[0] ^= 0xFF;
         expect(slhDSASHA2128s.verify(kp.publicKey, msg, bad)).toBe(false);
-    });
+    }, 120_000);
 });
 
 // ─── ML-KEM ───────────────────────────────────────────────────────────────────
