@@ -61,6 +61,7 @@ This file defines the authoritative document per topic area and serves as naviga
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
+- **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -74,6 +75,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Repository ecosystem (canonical repo, related repositories, consolidation rule):** `docs/REPOSITORY_ECOSYSTEM.md`
 - **ADOPT-1.2 SDK/API shape:** `docs/tasks/ADOPT_1_SDK_API_SHAPE.md`
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
+- **STRIDE × LINDDUN threat-model roadmap and issue register (maps T-IDs to EV-01..EV-09):** `docs/security/THREAT_MODEL_ROADMAP_2026-10-23.md`
 - **Phase-0 threat-model narrative (surviving source for the "lost" hardening content):** `src/packages/phase0-security/EXECUTIVE_SUMMARY.md` — the strategy narrative (platform-vendor bypass, split-key 3-share design, memory/network/supply-chain/seizure/AI defenses with per-strategy pros/cons) lost from the deleted root `ADVANCED_SECURITY_HARDENING.ts` survives here; only the `HARDENING_CHECKLIST` const and `RECOMMENDATION MATRIX` are unrecovered (see `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`).
 
 ## Research And Strategy Inputs
@@ -109,7 +111,7 @@ neuer Auftrag behandelt werden.
 | Ort | Scope | Index |
 |-----|-------|-------|
 | `docs/03-architecture/decisions/` | Frühe Phase-0 Decision Notes (DECISION_001–007) | [README](03-architecture/decisions/README.md) |
-| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–012) | [README](03-architecture/mvp/README.md) |
+| `docs/03-architecture/mvp/` | Formale Architektur-Strategie-ADRs (ADR-001–013) | [README](03-architecture/mvp/README.md) |
 | `docs/compliance/ADR/` | Compliance- und implementierungsnahe ADRs (ADR-001–009) | [README](compliance/ADR/README.md) |
 
 **Hinweis:** ADR-001–009 existieren in `mvp/` und `compliance/ADR/` mit unterschiedlichen Themen. Die READMEs in den jeweiligen Ordnern erklären die Abgrenzung. Konkretes Beispiel ADR-009: `mvp/ADR-009_Threat_Model.md` ist das STRIDE Threat Model (Sprint 4: Accepted — pending external review); `compliance/ADR/ADR-009.md` ist die WebAuthn-Native-vs-HMAC-Proxy-Entscheidung. Beide Dateien tragen oben einen wechselseitigen "siehe auch"-Hinweis.
