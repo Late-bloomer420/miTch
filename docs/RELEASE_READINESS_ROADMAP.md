@@ -294,3 +294,18 @@ Production becomes schedulable only after successful pilot exit plus durable gov
 
 Do not move G0/G1 or promote future sprints from this documentation-only reconciliation.
 Numerical `age` is the current accepted Connect profile; a no-raw-age claim needs an explicit profile decision under #97.
+
+## Single-show deniable presentations
+
+Scope the experiment to one synthetic ES256 credential, one anonymous holder key and one authenticated designated verifier per presentation. Keep the existing reference flow as the comparison baseline. Multi-show unlinkability, age-predicate proofs, changes to issuance services, EUDI interoperability certification and production rollout are outside this experiment.
+
+| Order | Deliverable | Exit condition |
+| --- | --- | --- |
+| [1 · Baseline](https://github.com/Late-bloomer420/miTch/issues/260) | Trace one ordinary age check | Reproducible inventory of what an outside party can verify |
+| [2 · Profile](https://github.com/Late-bloomer420/miTch/issues/261) | Specify wire format, key trust and single-use rules | Independent cryptographic review completed and findings resolved |
+| [3 · Fixture](https://github.com/Late-bloomer420/miTch/issues/262) | Implement wallet proof, verifier and simulator in isolation | Reproducible positive and negative vectors |
+| [4 · Evaluation](https://github.com/Late-bloomer420/miTch/issues/263) | Exercise replay, races, restart and evidence leakage | Reviewed comparison with baseline and explicit stop, revise or continue decision |
+
+Each stage depends on the previous stage. Only the baseline is ready to start.
+
+[Design rationale and review gates](security/DENIABLE_ECDSA_PRESENTATIONS.md)
