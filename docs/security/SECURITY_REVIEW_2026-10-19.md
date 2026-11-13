@@ -11,7 +11,7 @@ Abgleich ist kein Security-PASS und ändert keine Release-/Pilot-Gates.
 
 Die [Reproduktionen vom 14.10.2026](../qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
 und der [Finding-Register](REPO_EVIDENCE_STATUS_2026-10-14.md) behalten ihre
-ursprünglichen 2bdd8ac55569ccc5d9d4a2373ba61afe284f08f3s, Profile und Ergebnisse. Damals akzeptierte die aktive
+ursprünglichen SHAs, Profile und Ergebnisse. Damals akzeptierte die aktive
 Route wiederholte Präsentationen und vom Holder gewählte Bindungswerte;
 Connect fehlte an dieser Baseline. Diese Aussagen beschreiben nicht den
 unten geprüften master.
@@ -146,7 +146,7 @@ CVE-Zahl, kein grüner CI-Status und keine organisationsweite Gate-Garantie.
 
 ## Zusammenfassung und nächste Schritte
 
-| ID | Einordnung am geprüften 2bdd8ac55569ccc5d9d4a2373ba61afe284f08f3 | Nächste Arbeit / Evidenzgrenze |
+| ID | Einordnung am geprüften master 2bdd8ac | Nächste Arbeit / Evidenzgrenze |
 |---|---|---|
 | P0-1 | Ursprünglicher Numeric-age-Befund durch #208/#224 bearbeitet; #170 geschlossen | Vollständigen #170-Vertrag und datierte Profil-Evidenz erhalten; keine allgemeine Deployment-Garantie |
 | P0-2 | Connect vorhanden und integriert | RP-Integration und Wallet-PEP getrennt prüfen (#180/#181) |
