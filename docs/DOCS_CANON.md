@@ -58,6 +58,7 @@ This file defines the authoritative document per topic area and serves as naviga
 ## Navigation
 
 - **Security review with scoped 2026-11-13 static reconciliation:** [security/SECURITY_REVIEW_2026-10-19.md](security/SECURITY_REVIEW_2026-10-19.md); preserves dated runtime evidence and is not a new security PASS.
+- **Reduced-assurance modes, static inventory 2026-11-13 (#242):** [security/REDUCED_ASSURANCE_MODES_2026-11-13.md](security/REDUCED_ASSURANCE_MODES_2026-11-13.md); lists dev/mock/fallback paths at `a688164` and whether each needs an explicit opt-in. Read from code, not executed; not a closure of #242.
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
