@@ -21,7 +21,7 @@
 
 ## Reading rule
 
-Compliance documents in this repository are engineering analyses, not legal advice or proof of compliance (§3, `docs/MATURITY_AND_LIMITATIONS.md`). Historical coverage percentages from the original report must not be quoted as readiness scores.
+Compliance documents in this repository are engineering analyses, not legal advice or proof of compliance (Evidence rules, item 3, `docs/MATURITY_AND_LIMITATIONS.md`). Historical coverage percentages from the original report must not be quoted as readiness scores.
 
 ---
 *Original report: 2026-05-25 (archived) · Correction: 2026-10-27, issue #235*
