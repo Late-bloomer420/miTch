@@ -9,29 +9,30 @@ avoids re-adding or re-implementing anything, to prevent a second drift.
 building `@askmi/shared-types` (the initial failure was a missing `dist/`, not
 a code defect).
 
+**History correction (2026-11-13, revision `d5ae4ea`):** The duplicated
+history narrative was replaced with the verified summary below. The original
+2026-10-29 method assessment and test observation remain dated evidence;
+this correction does not rerun tests or revalidate every method claim.
+
 ## 1. Cleanup-drift from commit `01b94b1` (confirmed, recorded, not restored)
 
-`chore(phase0-security): delete duplicate root-level .ts files — code lives in
-src/` deleted the 790-line root `ADVANCED_SECURITY_HARDENING.ts`. That file was
-**not** a byte-duplicate of the 171-line `src/` version. The loss history is
-more tangled than a single delete (all on 2026-03-12, within ~1 hour):
+`01b94b1` intentionally deleted five root files (1957 lines); the full commit
+also changed the lockfile, totaling 49 insertions and 2082 deletions. The
+790-line root `ADVANCED_SECURITY_HARDENING.ts` was not a byte-duplicate of
+its 171-line modular counterpart.
 
-- `01b94b1` (21:31) deleted the root files (-2082 lines), including
-  `HARDENING_CHECKLIST` and the recommendation matrix.
-- `897b226` (22:27:30, "fix IndexedDB timeout") **re-introduced the root
-  files with identical blob hashes** (+1960 lines) — the content was still
-  fully present at that commit, and also changed test wiring (deleted
-  `test/setup.ts`, `pool: forks`).
-- `81d1672` (22:27:47) reverted `897b226`, deleting the root files again —
-  this is the commit where the loss became final. The revert also carried
-  ~513 lines of unrelated in-flight changes (OID4VP tests in verifier-demo,
-  wallet-pwa `App.tsx`) and permanently restored `test/setup.ts` and
-  `pool: forks`, both of which survive in some form to HEAD.
+`897b226` reintroduced the root files and undid recent application work.
+`81d1672` cleanly reverted it: `git diff 897b226^ 81d1672` is empty.
+`38c1ade` then removed the temporarily restored test setup and selected
+threads. The root content remains recoverable from Git history.
 
-Recovered into `src/index.ts`: `MemoryHardeningProtection`,
+The canonical sequence, tree-ID evidence and test-wiring inventory are in
+[the companion forensics record](PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md#1-the-exact-sequence-2026-03-12-five-commits-in-57-minutes).
+
+- **Recovered into `src/index.ts`:** `MemoryHardeningProtection`,
   `NetworkHardeningProtection`, `SupplyChainHardeningProtection`,
   `PhysicalSeizureProtection`, `AIResistanceProtection`.
-- **Lost with no surviving copy:** the exported `HARDENING_CHECKLIST` const
+- **Absent from the assessed checkout, recoverable from Git history:** the exported `HARDENING_CHECKLIST` const
   (✅/⚠️ threat-mapping lists: againstGoogle, againstMemoryDumps,
   againstNetworkSurveillance, againstSupplyChain, againstPhysicalSeizure,
   againstAI) and the `RECOMMENDATION MATRIX` (Consumer→Government phase
@@ -46,7 +47,7 @@ Recovered into `src/index.ts`: `MemoryHardeningProtection`,
 Decision for this record: do **not** restore the lost checklist/matrix as code.
 If the content is still wanted, it belongs in a dated doc (e.g. under
 `docs/context/`) as historical reference, clearly marked as superseded concept
-work — see issue linked at the end.
+work — see [#243](https://github.com/Late-bloomer420/miTch/issues/243).
 
 ## 2. Method assessment
 
@@ -124,7 +125,7 @@ if the code were ever treated as production.
 The literal salt in the `index.ts` version is a genuine weakness (rainbow-table
 friendly); the modular version's caller-supplied salt is correct. Consumers
 importing from `index.ts` get the weaker variants. Consolidation (single
-source, `index.ts` re-exports modules) is the correct fix, tracked in the issue.
+source, `index.ts` re-exports modules) is the correct fix, tracked in [#243](https://github.com/Late-bloomer420/miTch/issues/243).
 
 ## 3. Overall verdict
 
@@ -142,5 +143,6 @@ source, `index.ts` re-exports modules) is the correct fix, tracked in the issue.
 
 ## 4. Follow-up
 
-Tracked in the linked issue (consolidation + demo labeling + historical doc
-decision). This record itself changes no code.
+Tracked in [#243](https://github.com/Late-bloomer420/miTch/issues/243):
+consolidation, demo labeling, and the historical-document decision. This
+record itself changes no code.

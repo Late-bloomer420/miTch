@@ -94,22 +94,17 @@ pnpm format
 
 GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
 
-## Git operations (branch-skew and revert discipline)
+## Git operations (cleanup and revert discipline)
 
-Rules learned from the 2026-03-12 phase0-security incident (see
-`docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`):
-
-- Before deleting files described as duplicates, verify per blob hash
-  (`git rev-parse <ref>:<path>`). Same filename does not mean same content; the
-  incident's root and src files were ~75% different.
-- Before committing a revert, check it for scope bleed: the incident's revert
-  bundled ~513 lines of unrelated in-flight work and re-deleted files that had
-  been intentionally cleaned up, because the reverted branch was based on a
-  pre-cleanup tree. Diff the revert against the intended target state, not just
-  the reverted commit.
-- A fix and its revert seconds apart usually means an automation/agent loop
-  reacting to CI from a stale working tree. Stop, rebase on the current base,
-  then re-apply — do not stack another revert.
+- Before deleting files described as duplicates, compare their blob hashes
+  (`git rev-parse <ref>:<path>`). Same filename does not mean same content.
+- Check that a fix commit preserves other recent work. In the 2026-03-12
+  phase0-security sequence, `897b226` reintroduced deleted root files and
+  removed recent OID4VP/App.tsx work; `81d1672` correctly reverted it.
+- Verify a revert against the intended target tree. Here,
+  `git diff 897b226^ 81d1672` is empty: the revert exactly restored the
+  reverted commit's parent tree. Commit timing alone does not establish the cause.
+- Evidence: `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`.
 
 ## Evidence and update discipline
 

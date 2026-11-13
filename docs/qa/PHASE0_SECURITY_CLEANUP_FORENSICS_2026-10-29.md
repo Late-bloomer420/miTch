@@ -10,31 +10,39 @@ that one covers the *code quality verdicts*.
 follow-history, and full diffs between every commit in the sequence. All
 commit times below are from the original +0100 timezone.
 
+**History correction (2026-11-13):** Checked at repository revision
+`d5ae4ea` using Git tree IDs, diffs and file inspection on Windows/PowerShell.
+This corrects the original revert attribution and test-wiring description;
+the dated 2026-10-29 test observation below is retained, not rerun.
+
 ## 1. The exact sequence (2026-03-12, five commits in 57 minutes)
 
-| Time | Commit | Effect on the 5 root files |
+| Time | Commit | Effect |
 |---|---|---|
-| 21:31 | `01b94b1` chore: delete duplicate root-level .ts files | Deleted all 5 root files (−1957 lines) |
-| 22:05 | `cb9bedd` feat(e2e): OID4VP flow (Block B) | No phase0-security changes |
-| 22:27:30 | `897b226` fix: IndexedDB timeout on CI — inline fake-indexeddb, threads pool | **Re-added all 5 root files with byte-identical content** (blob `4b81021…` = `01b94b1^` blob). Also: deleted `test/setup.ts`, changed vitest pool forks→threads |
-| 22:27:47 | `81d1672` Revert of `897b226` | **Final loss of the root files.** The revert was NOT a clean undo: it bundled ~513 lines of unrelated in-flight work (OID4VP tests, `App.tsx`, scenario-claims, CSP header) and permanently restored `test/setup.ts` + `pool: forks` |
-| 22:28:17 | `38c1ade` fix: IndexedDB timeout — inline polyfill, drop global setup, threads | Re-applied the *other* variant of the CI fix: `setup.ts` removed from vitest config, pool threads; per-file inline `fake-indexeddb` imports |
+| 21:31 | `01b94b1` chore: delete duplicate root-level .ts files | Intentionally deleted all 5 root files (1957 lines). Whole commit: 49 insertions / 2082 deletions, including lockfile changes. The duplicate-content premise was inaccurate for `ADVANCED_SECURITY_HARDENING.ts`. |
+| 22:05 | `cb9bedd` feat(e2e): OID4VP flow (Block B) | Added OID4VP/App.tsx work; no phase0-security changes. |
+| 22:27:30 | `897b226` fix: IndexedDB timeout on CI | Re-added all 5 root files with their pre-cleanup content, removed recent OID4VP/App.tsx work and other changes, deleted `test/setup.ts`, and switched forks to threads. Whole commit: 1978 insertions / 800 deletions. |
+| 22:27:47 | `81d1672` Revert of `897b226` | Clean, exact revert: 800 insertions / 1978 deletions. Restored `cb9bedd`'s tree, including its OID4VP/App.tsx work and intentional absence of the root files. Temporarily restored `test/setup.ts` and forks. |
+| 22:28:17 | `38c1ade` fix: IndexedDB timeout | Removed `test/setup.ts` and its config reference, switched forks to threads, and added inline fake-indexeddb imports to `local-audit-log.test.ts`. |
 
-Key forensic fact: `897b226` and `81d1672` are 17 seconds apart. The
-"fix IndexedDB timeout" work apparently branched off a tree that still
-contained the root files (branched before `01b94b1`), and the revert restored
-*that* old tree state for phase0-security — re-deleting files that had been
-intentionally cleaned up, while also pulling through unrelated work. This is a
-textbook **branch-skew revert**, not a deliberate re-deletion.
+Decisive evidence: `git diff 897b226^ 81d1672` is empty. Both trees have ID
+`34e2629518bfa6060f52487f40bd218e331f96aa`. The revert's line statistics are
+the exact inverse of `897b226`; its restored application changes are not
+unrelated work bundled into the revert.
 
-The content was recoverable at every point until `81d1672`. After it, no
-commit ever re-added the files. The `git log --follow` chain confirms:
-`2b708e3` (import) → `e7f3aeb` (lint) → `d54bd7e`/`78a2bf0` (TODO impl) →
-`01b94b1` (delete) → `897b226` (re-add) → `81d1672` (final delete).
+The skewed change was `897b226`, not its revert. Its diff reintroduced files
+intentionally removed by `01b94b1` and undid recent application work. Git
+establishes these changes, but the 17-second interval does not establish an
+automation loop or the author's working-tree provenance.
+
+The root files remain recoverable from Git history after their deletion.
+Their sequence is `01b94b1` (delete) → `897b226` (re-add) → `81d1672`
+(restore pre-fix absence). Absence from a later checkout is not loss of the
+historical blobs.
 
 ## 2. Item-level inventory: lost vs. survives vs. relevant
 
-### 2.1 Lost with NO surviving copy (the only true content loss)
+### 2.1 Absent from the assessed checkout, recoverable from Git history
 
 From root `ADVANCED_SECURITY_HARDENING.ts` (790 lines, blob `4b81021…`):
 
@@ -80,17 +88,21 @@ stripped, tested, refactored core (`PanicGuard`, modular
 src file was NEVER a duplicate of the root file — "duplicate" in the commit
 message was inaccurate, which is why the cleanup looked harmless but was not.
 
-## 3. Test-wiring residue still live at HEAD (traced to the sequence)
+## 3. Test wiring at the reviewed revision
 
-- `vitest.config.ts`: `pool: 'forks'`, `fileParallelism: false`, 30s timeouts —
-  introduced during this CI-timeout fight; `38c1ade` later settled it.
-- `test/setup.ts`: no longer exists at HEAD — the file's deletion history is
-  `897b226` (deleted) → `81d1672` (restored) → `38c1ade` (deleted, along with
-  the `setupFiles` vitest reference); today's `vitest.config.ts` has no
-  `setupFiles` entry. The surviving pattern is per-file inline `fake-indexeddb`
-  imports in `eidas-compliance-checker.test.ts` and `phase0-security.test.ts`.
-- Current evidence: 149/149 tests pass locally (5 files) after building
-  `@askmi/shared-types` (2026-10-29 run).
+At `d5ae4ea`, inspected on 2026-11-13:
+
+- `vitest.config.ts` uses `pool: 'threads'`, `fileParallelism: false`, and
+  30s hook/test timeouts. `38c1ade` switched forks to threads 30 seconds
+  after the revert.
+- `test/setup.ts` is absent, and there is no `setupFiles` entry. Its sequence
+  is `897b226` (deleted) → `81d1672` (restored) → `38c1ade` (deleted).
+- Inline fake-indexeddb imports exist in `eidas-compliance-checker.test.ts`,
+  `phase0-security.test.ts`, and `local-audit-log.test.ts`; the last is the
+  test file changed by `38c1ade`.
+- Historical observation retained: 149/149 tests passed locally (5 files)
+  after building `@askmi/shared-types` in the 2026-10-29 run. This is not a
+  fresh test result for `d5ae4ea`.
 
 ## 4. What is still relevant for the planned restoration
 
@@ -107,14 +119,14 @@ Priority order for the clean-up (consolidated with #243):
 4. **Share authentication (MAC) for SSS** if shares are stored in hostile
    locations; remove constant-time claims for `gf256Mul`.
 5. No action needed: EXECUTIVE_SUMMARY threat narrative (already maintained),
-   test wiring (stable and green).
+   test wiring (historical passing result in §3; not rerun for this correction).
 
 ## 5. Process lessons (for AGENTS/CONTRIBUTING, not code)
 
-- A revert must be checked for **scope bleed**: `81d1672` bundled unrelated
-  in-flight work; the commit title only mentions the IndexedDB fix.
-- "Duplicate" claims in commit messages should be verified per blob before
-  deletion; here two files with the same name were ~75% different.
-- 17-second fix+revert pairs indicate an automation/agent loop reacting to CI
-  without re-checking the working tree base — the same incident produced both
-  `897b226` and `38c1ade` (two different "fixes" for the same timeout).
+- Verify duplicate-content claims by blob hash before deletion. The root and
+  modular `ADVANCED_SECURITY_HARDENING.ts` were different files in content.
+- Review the complete fix diff for accidental removal of recent work:
+  `897b226` undid application work outside its stated IndexedDB scope.
+- Compare a revert with the intended pre-fix tree. `81d1672` passed that
+  check exactly; its large diff is not evidence of unrelated additions.
+- Commit timing alone does not prove an automation loop or a stale checkout.

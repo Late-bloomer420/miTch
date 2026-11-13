@@ -60,6 +60,9 @@ architecture decisions:
 
 ## Follow-ups
 
-Issues created from this note ask for (a) a canonical crypto/profiles
-reference document and (b) an inventory of reduced-assurance fallbacks — see
-cross-links added to those issues once created.
+Issue pointers verified on 2026-11-13:
+
+- [#241](https://github.com/Late-bloomer420/miTch/issues/241): canonical
+  crypto/profile reference document.
+- [#242](https://github.com/Late-bloomer420/miTch/issues/242): inventory and
+  labeling of reduced-assurance fallbacks.
