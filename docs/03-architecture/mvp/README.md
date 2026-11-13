@@ -33,6 +33,7 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/compliance/ADR/` — do
 | [ADR-010](ADR-010_TEE_Integration_Strategy.md) | TEE Integration Strategy | PROPOSED |
 | [ADR-011](ADR-011_Claim_Level_Encryption_Strategy.md) | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED |
 | [ADR-012](ADR-012_ISO_18013-5_mdoc_Offline_Verification_Strategy.md) | ISO 18013-5 mdoc & Offline Verification | PROPOSED |
+| [ADR-013](ADR-013_WalletService_Monolith_Decomposition_Strategy.md) | WalletService Monolith Decomposition Strategy | PROPOSED |
 
 ## Verwandte Sammlungen
 
