@@ -14,6 +14,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
+| Competitive positioning vs. identity-verification incumbents (draft, claims not yet individually sourced) | [05-business/COMPETITIVE_POSITIONING.md](05-business/COMPETITIVE_POSITIONING.md); competitor statements are public self-descriptions pending verification per its TODO list |
 | Dated upstream version registry | [eudi/EUDI_SOURCE_BASELINE.md](eudi/EUDI_SOURCE_BASELINE.md); not implementation/interoperability evidence |
 
 **Preserve goals when correcting status.** Missing implementation or evidence does not retire or weaken an agreed product goal. Present the goal, the scoped current evidence, and the remaining work/acceptance criteria separately. Fingerprinting prevention, control of every disclosure and complete user-inspectable transaction history remain goals until explicitly changed by a product decision. A threat model defines how progress is tested; it must not silently narrow the goal. Preserve dated evidence and link unresolved work.
