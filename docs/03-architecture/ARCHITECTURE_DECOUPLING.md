@@ -476,8 +476,9 @@ The architecture migration is complete only when all of the following hold:
 
 ## Change Log
 
-- **2026-08-20:** Initial canonical audit. Corrected the prior `R-02` completion
-  claim, recorded master-vs-PR-#130 scope, established the target layer model,
+- **2026-08-20:** Initial audit. Proposed correcting the prior `R-02` completion
+  claim — pending the separate backlog PR (`docs/BACKLOG.md` still marks `R-02`
+  ✅). Recorded master-vs-PR-#130 scope, established the target layer model,
   registered ARCH-01 through ARCH-09, and defined migration/acceptance gates.
 - **2026-10-23:** Static re-check against `master` @ `624cf9a`. ARCH-01 to
   ARCH-09 are all still open. Recorded that PR #130 is merged with the ARCH-04

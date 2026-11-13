@@ -53,7 +53,6 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Failure-mode operations playbooks:** `docs/ops/RUNBOOKS_V1.md`
 - **Accountable audit export schema:** `docs/ops/AUDIT_EXPORT_SCHEMA_V1.md`
 - **MCP server architecture (Epic 5):** `docs/mcp-server-architecture.md`
-- **Architecture decoupling audit (proposed; ARCH-01..09):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **QA evidence archive:** `docs/qa/`
 
 ## Navigation
