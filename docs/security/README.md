@@ -10,6 +10,7 @@ This directory is the navigable entry-point for AskMI's security artifacts. It l
 
 | Artifact | Path |
 |----------|------|
+| Security review / 2026-11-13 static reconciliation (not a new runtime audit) | [SECURITY_REVIEW_2026-10-19.md](SECURITY_REVIEW_2026-10-19.md) |
 | Responsible-disclosure policy | [../../SECURITY.md](../../SECURITY.md) |
 | Security Target (CC-ready) | [../compliance/SECURITY_TARGET_CC_READY.md](../compliance/SECURITY_TARGET_CC_READY.md) |
 | Threat model (ADR-009) | [../03-architecture/mvp/ADR-009_Threat_Model.md](../03-architecture/mvp/ADR-009_Threat_Model.md) |
