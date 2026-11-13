@@ -36,8 +36,15 @@ $jobs = @()
 # The verifier backend denies browser origins unless they are explicitly listed.
 # Child PowerShell processes inherit this canonical demo allowlist.
 if (-not $env:CORS_ALLOWED_ORIGINS) {
-  $env:CORS_ALLOWED_ORIGINS = "http://localhost:5174,http://localhost:5175"
+  $env:CORS_ALLOWED_ORIGINS = "https://localhost:5174,http://localhost:5174,http://localhost:5175"
 }
+
+# The wallet dev server serves HTTPS with a self-signed certificate unless
+# ASKMI_DEV_HTTPS=0. Wallet links built by the verifier UI and the Connect
+# handoff follow the same scheme.
+if ($env:ASKMI_DEV_HTTPS -eq "0") { $walletUrl = "http://localhost:5174" } else { $walletUrl = "https://localhost:5174" }
+if (-not $env:VITE_WALLET_URL) { $env:VITE_WALLET_URL = $walletUrl }
+if (-not $env:WALLET_BASE_URL) { $env:WALLET_BASE_URL = $walletUrl }
 
 Write-Color "▶  Starting Issuer-Mock     (port 3005)..." Cyan
 $jobs += Start-Process powershell -ArgumentList "-NoExit", "-Command", `
@@ -75,7 +82,7 @@ Write-Color "🚀  AskMI Services starting up:" White
 Write-Host ""
 Write-Color "  ●  Issuer-Mock        →  http://localhost:3005" Cyan
 Write-Color "  ●  Verifier-Backend   →  http://localhost:3004" Magenta
-Write-Color "  ●  Wallet PWA         →  http://localhost:5174  ← Start here" Green
+Write-Color "  ●  Wallet PWA         →  $walletUrl  ← Start here" Green
 if (Test-Path "src\apps\verifier-demo\frontend\package.json") {
   Write-Color "  ●  Verifier-Frontend  →  http://localhost:5175" Yellow
 }
@@ -84,10 +91,10 @@ Write-Color "🔄  E2E Flow:" White
 Write-Color "   Wallet (5174) → 'Prove Age' → Issuer (3005) → JWT VC" Gray
 Write-Color "   Wallet → Present → Verifier-Backend (3004/present)" Gray
 Write-Host ""
-Write-Color "💡  WebAuthn works on localhost without HTTPS ✓" Gray
+Write-Color "💡  Wallet HTTPS: self-signed dev certificate — accept the browser warning once (ASKMI_DEV_HTTPS=0 for HTTP)" Gray
 Write-Color "⛔  Close the terminal windows to stop all services." Gray
 Write-Color "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" Blue
 
 # Browser öffnen (optional, nach 3s wenn Services bereit)
 Start-Sleep -Seconds 3
-Start-Process "http://localhost:5174"
+Start-Process $walletUrl

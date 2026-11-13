@@ -82,7 +82,18 @@ fi
 
 # Browser callers are deny-by-default in the verifier backend. Keep this list
 # aligned with the canonical wallet and verifier UI ports used by both launchers.
-export CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS:-http://localhost:5174,http://localhost:5175}"
+#
+# The wallet dev server serves HTTPS with a self-signed certificate unless
+# ASKMI_DEV_HTTPS=0, so its origin is https://localhost:5174 by default.
+if [ "${ASKMI_DEV_HTTPS:-1}" = "0" ]; then
+  WALLET_URL="http://localhost:5174"
+else
+  WALLET_URL="https://localhost:5174"
+fi
+export CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS:-https://localhost:5174,http://localhost:5174,http://localhost:5175}"
+# Wallet links built by the verifier UI and the Connect handoff follow the same scheme.
+export VITE_WALLET_URL="${VITE_WALLET_URL:-$WALLET_URL}"
+export WALLET_BASE_URL="${WALLET_BASE_URL:-$WALLET_URL}"
 
 # ── Services starten ─────────────────────────────────────────
 start_service "Issuer-Mock    " "$COLOR_ISSUER"           "@askmi/issuer-mock"   "3005"
@@ -116,7 +127,8 @@ wait_for_service() {
   local max_attempts=30
   local attempt=0
   while [ $attempt -lt $max_attempts ]; do
-    if curl -sf "$url" > /dev/null 2>&1; then
+    # -k: the wallet dev certificate is self-signed
+    if curl -sfk "$url" > /dev/null 2>&1; then
       echo -e "  ${color}✅${RESET}  ${name} ready"
       return 0
     fi
@@ -129,7 +141,7 @@ wait_for_service() {
 
 wait_for_service "Issuer-Mock"      "http://localhost:3005/health" "$COLOR_ISSUER"
 wait_for_service "Verifier-Backend" "http://localhost:3004/health" "$COLOR_VERIFIER"
-wait_for_service "Wallet-PWA"       "http://localhost:5174/"       "$COLOR_WALLET"
+wait_for_service "Wallet-PWA"       "$WALLET_URL/"                 "$COLOR_WALLET"
 
 # ── Status-Übersicht ─────────────────────────────────────────
 echo ""
@@ -138,7 +150,7 @@ echo -e "${BOLD}🚀  AskMI Services starting up:${RESET}"
 echo ""
 echo -e "  ${COLOR_ISSUER}●${RESET}  Issuer-Mock        →  http://localhost:3005"
 echo -e "  ${COLOR_VERIFIER}●${RESET}  Verifier-Backend   →  http://localhost:3004"
-echo -e "  ${COLOR_WALLET}●${RESET}  Wallet PWA         →  http://localhost:5174  ← Start here"
+echo -e "  ${COLOR_WALLET}●${RESET}  Wallet PWA         →  $WALLET_URL  ← Start here"
 if [ -f "src/apps/verifier-demo/frontend/package.json" ]; then
   echo -e "  ${COLOR_VERIFIER_FRONTEND}●${RESET}  Verifier-Frontend  →  http://localhost:5175"
 fi
@@ -147,7 +159,7 @@ echo -e "${BOLD}🔄  E2E Flow:${RESET}"
 echo -e "   Wallet (5174) → 'Prove Age' → Issuer (3005) → JWT VC"
 echo -e "   Wallet → Present → Verifier-Backend (3004/present)"
 echo ""
-echo -e "${BOLD}💡  WebAuthn:${RESET} Works on localhost without HTTPS ✓"
+echo -e "${BOLD}💡  Wallet HTTPS:${RESET} self-signed dev certificate — accept the browser warning once (ASKMI_DEV_HTTPS=0 for HTTP)"
 echo -e "${BOLD}⛔  Stop all:${RESET} Ctrl+C"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
