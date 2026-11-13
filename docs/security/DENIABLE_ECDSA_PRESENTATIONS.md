@@ -1,8 +1,6 @@
 # Single-show deniable presentations for ECDSA-signed credentials
 
-Proposed miTch capability, based on Bertram and Lehmann’s designated-verifier construction. The intended guarantee is cryptographic non-transferability of a single presentation transcript.
-
-Research proposal for the miTch SD-JWT reference flow. The repository [README](../../README.md) distinguishes its synthetic browser demo from the reference flow, which discloses numeric age. A venue that learns an age can record it. A separate question is whether it can hand another party cryptographic evidence that the issuer endorsed that age in the credential it saw.
+Research proposal for the miTch SD-JWT reference flow, based on Bertram and Lehmann’s designated-verifier construction. The intended guarantee is cryptographic non-transferability of a single presentation transcript. The repository [README](../../README.md) distinguishes its synthetic browser demo from the reference flow, which discloses numeric age. A venue that learns an age can record it. A separate question is whether it can hand another party cryptographic evidence that the issuer endorsed that age in the credential it saw.
 
 ## What changes at presentation
 
@@ -20,7 +18,7 @@ For the profile review in [#261](https://github.com/Late-bloomer420/miTch/issues
 | --- | --- |
 | ECDSA signature | Identify the exact signed bytes and the trusted issuer key. A valid issuer signature authenticates the signed assertion. Establishing a visit, time or holder presence requires separate evidence. |
 | OR-proof | Write down the public statement and both secret witnesses. Hiding which witness was used leaves the public inputs visible. Any age threshold requires its own authenticated claim or predicate proof. |
-| Nonces | Keep the secret issuer signing scalar, the prover’s secret ephemeral scalars, and the public session nonce distinct. Reusing a signing scalar across distinct message hashes can expose the issuer key. Re-presenting an already signed credential repeats its public point and creates a correlation even with fresh session nonces. |
+| Nonces | Keep the secret issuer signing scalar, the prover’s secret ephemeral scalars, and the public session nonce distinct. Reusing a signing scalar across distinct message hashes can expose the issuer key. The correlation from re-presenting an already signed credential is described under “What changes at presentation”. |
 | Fiat–Shamir challenge | Specify unambiguous encodings, domain separation and all inputs. Identify how the session and intended verifier are bound and checked. Record any departure from the paper for review. |
 | Evidence | Positive and negative vectors check implementation behavior. Two accepting examples cannot establish indistinguishability of distributions. Review the argument, its assumptions and what the observer can obtain from other paths. |
 
