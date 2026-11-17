@@ -13,6 +13,7 @@ import {
   createSDJWTDisclosures,
   buildCNFClaim,
   buildSdJwtPresentation,
+  createKeyBindingJWT,
 } from '@askmi/shared-crypto';
 import { validateSDJWTPresentation } from '../demo-flow';
 import type { AuthorizationRequest } from '../types';
@@ -49,6 +50,22 @@ async function issueLikeIssuerMock(issuer: CryptoKeyPair, holderPub: CryptoKey):
 }
 
 describe('ADOPT-0b real presentation e2e', () => {
+  it('rejects an unreferenced disclosure even when a holder binds the full presentation', async () => {
+    const issuer = await ecKey();
+    const holder = await ecKey();
+    const stored = await issueLikeIssuerMock(issuer, holder.publicKey);
+    const { disclosures } = await createSDJWTDisclosures({ injected: 'untrusted' });
+    const presented = `${stored.split('~')[0]}~${disclosures[0]}~`;
+    const kb = await createKeyBindingJWT({ aud: 'did:askmi:verifier', nonce: 'nonce-bad', sdJwtWithDisclosures: presented }, holder.privateKey);
+    const result = await validateSDJWTPresentation({
+      vpTokenString: `${presented}${kb}`,
+      request: makeRequest('nonce-bad'),
+      issuerPublicKey: issuer.publicKey,
+      checkRevocation: false,
+      checkTrust: false,
+    });
+    expect(result).toEqual({ ok: false, errors: ['Invalid SD-JWT disclosure'] });
+  });
   it('discloses only the requested claim (age) and verifies against the real issuer key', async () => {
     const issuer = await ecKey();
     const holder = await ecKey();
