@@ -10,6 +10,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) |
 | API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
+| Slim age-verifier template: scope, open-PR mapping, profile decision (planning, not evidence) | [tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md](tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
