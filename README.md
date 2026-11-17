@@ -13,9 +13,9 @@
 
 ## What is AskMI?
 
-AskMI sits between identity wallets and verifiers. When a website asks "Are you 18+?", AskMI evaluates what may be requested and disclosed. A boolean age proof is the target recipe; the real SD-JWT reference flow currently discloses numeric `age`.
+AskMI develops policy and verifier integration components for identity transactions. The accepted Connect design places the verifier at the relying party; the wallet retains custody and the original issuer remains authoritative. The real SD-JWT reference flow disclosed numeric `age` to the verifier in the [25 October 2026 test](docs/qa/ACTIVE_AGE_PROFILE_2026-10-25.md); returning an eligibility result to the application does not mean the verifier received only a boolean. An issuer-authenticated boolean or zero-knowledge age proof and official-wallet interoperability remain open work ([#97](https://github.com/Late-bloomer420/miTch/issues/97)).
 
-- **Not a wallet** — works *with* EUDI wallets, not instead of them
+- **Not a wallet product** — the reference wallet is a test harness; national EUDI wallet interoperability remains to be demonstrated
 - **Not a blockchain** — ephemeral keys, crypto-shredding, no on-chain PII
 - **Not an identity provider** — the wallet-edge product direction avoids central identity custody; reference wallet storage and verifier data flows have separate boundaries
 
@@ -70,8 +70,8 @@ rename scope and verification notes.
 ```
 Issuer (eID/gov)  →  Wallet (Edge)  →  AskMI Policy Engine  →  Verifier (shop/hospital)
                                             ↓
-                                     Minimal Proof Only
-                                     (profile-defined claims or proofs)
+                                     Profile-selected data
+                                     (numeric age in the tested reference flow)
 ```
 
 1. **Issuance** — Issuer issues credential (SD-JWT VC via OID4VCI; the reference service is a mock issuer)
