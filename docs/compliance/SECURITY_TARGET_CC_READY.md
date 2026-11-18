@@ -1,5 +1,7 @@
 # miTch: Security Target (ST) - Security-Target Draft and Evaluation Mapping
 
+> **Honest-scope note (2026-10-27, issue #235):** "CC-READY" in the filename and any certification-readiness wording in this draft are **not backed by an actual Common Criteria evaluation or an accredited CAB**. This is an internal draft engineering assessment (`docs/MATURITY_AND_LIMITATIONS.md`). No certification is claimed. See the [Regulatory Role Map](../04-legal/REGULATORY_ROLE_MAP.md).
+
 **ID:** E-42
 **Version:** 1.0 (2026-05-25)
 **Classification:** Public (engineering assessment input)

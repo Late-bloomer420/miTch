@@ -81,6 +81,7 @@ pnpm format
 - **policy-engine index.ts** has many exports — check for naming conflicts when adding new modules.
 - **npm scope reality:** AskMI is the active project/package brand. All workspace packages use the `@askmi/*` scope; new packages must stay on that scope.
 - **Repo truth sources:** Read `docs/DOCS_CANON.md` before updating status, backlog, QA evidence, session history, or agent-facing instructions.
+- **Never change GitHub repository settings, branch protection, or rulesets via API/CLI on your own.** If a merge or push is blocked by an unexpected rule, stop immediately, list the affected rule(s), and wait for the repo owner's explicit approval before changing anything.
 
 ## Testing Notes
 
@@ -93,6 +94,23 @@ pnpm format
 
 GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
 
+## Git operations (cleanup and revert discipline)
+
+- Before deleting files described as duplicates, compare their blob hashes
+  (`git rev-parse <ref>:<path>`). Same filename does not mean same content.
+- Check that a fix commit preserves other recent work. In the 2026-03-12
+  phase0-security sequence, `897b226` reintroduced deleted root files and
+  removed recent OID4VP/App.tsx work; `81d1672` correctly reverted it.
+- Verify a revert against the intended target tree. Here,
+  `git diff 897b226^ 81d1672` is empty: the revert exactly restored the
+  reverted commit's parent tree. Commit timing alone does not establish the cause.
+- Evidence: `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`.
+
 ## Evidence and update discipline
 
 Use docs/DOCS_CANON.md to locate the affected topic and its evidence before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. Refresh evidence for affected paths/profiles/dependencies; docs-only edits do not require a full repository re-audit. Broader release gates need their own broader checks. No gate moves without its linked evidence. Do not duplicate #170–#173.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
