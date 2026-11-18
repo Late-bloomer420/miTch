@@ -14,9 +14,13 @@ import { L2AnchorReceipt } from '@askmi/shared-types';
  *
  * What is mocked:
  * - `submitToL2()` — does NOT send a real on-chain transaction. Currently calls
- *   `mockAnchor()` which returns a synthetic receipt. Integration with a real
- *   EVM provider (ethers.js / viem) is required before production use.
- * - `verifyAnchor()` — stub; checks for zero-address sentinel, always resolves confirmed.
+ *   `mockAnchor()` which returns a synthetic receipt with `status: 'mocked'`
+ *   (never `'confirmed'`). Integration with a real EVM provider (ethers.js / viem)
+ *   is required before production use. (F-06)
+ * - `verifyAnchor()` — no on-chain query exists yet, so it never reports a real
+ *   anchor as verified: undeployed contract or unwired query → `false`
+ *   (`verifyAnchorDetailed()` explains why). Only the explicit `mock` network
+ *   yields `true`. (F-05)
  *
  * To enable real anchoring:
  * 1. Add `viem` or `ethers` as a dependency
@@ -49,6 +53,20 @@ export interface PendingAnchor {
     stateRoot: string;
     queuedAt: string;
     retryCount: number;
+}
+
+/**
+ * Outcome of checking an anchor receipt.
+ * - 'verified':     confirmed by an on-chain query (not reachable until F-05 is closed for real)
+ * - 'mock':         receipt from the explicit `mock` network (development opt-in)
+ * - 'pending':      queued, nothing is anchored yet
+ * - 'unverifiable': no on-chain check could be performed; do NOT treat as verified
+ */
+export type AnchorVerificationStatus = 'verified' | 'mock' | 'pending' | 'unverifiable';
+
+export interface AnchorVerification {
+    status: AnchorVerificationStatus;
+    reason: string;
 }
 
 /**
@@ -169,9 +187,17 @@ export class L2AnchorClient {
             // Submit batch root to L2
             const receipt = await this.submitToL2(batchRoot, this.config);
 
-            console.info(`[L2AnchorClient] Batch anchored: ${receipt.l2TransactionId}`);
+            if (receipt.status === 'confirmed') {
+                console.info(`[L2AnchorClient] Batch anchored: ${receipt.l2TransactionId}`);
+            } else {
+                // F-06: a mocked receipt is not an on-chain write — do not report success.
+                console.warn(
+                    `[L2AnchorClient] Batch NOT anchored on-chain (status: ${receipt.status}); ` +
+                    `no transaction was sent. Dropping batch of ${this.pendingBatch.length} root(s).`
+                );
+            }
 
-            // Clear batch
+            // Clear batch (a mocked batch is dropped, not retried: retrying cannot succeed without a provider)
             this.pendingBatch = [];
         } catch (error) {
             console.error('[L2AnchorClient] Batch anchoring failed:', error);
@@ -262,7 +288,7 @@ export class L2AnchorClient {
             blockHeight: 12000000 + Math.floor(Math.random() * 100000),
             timestamp: new Date().toISOString(),
             network,
-            status: 'confirmed'
+            status: 'mocked'
         };
     }
 
@@ -298,38 +324,64 @@ export class L2AnchorClient {
     }
 
     /**
-     * Verify an anchor on-chain.
+     * Check an anchor receipt and say what was (not) checked. (F-05)
      *
      * Production path (not yet wired): call the deployed anchor contract's
      * `getAnchor(bytes32 stateRoot)` view function via JSON-RPC and confirm
-     * the returned blockHeight matches the receipt.
-     *
-     * Until contracts are deployed (non-zero contractAddress), this returns
-     * true for mainnet receipts to avoid blocking audit reads while the
-     * contract deployment is pending.
+     * the returned blockHeight matches the receipt. Until then no real anchor
+     * can reach 'verified': callers get 'unverifiable' instead of a false positive.
      */
-    async verifyAnchor(receipt: L2AnchorReceipt): Promise<boolean> {
-        if (receipt.network === 'mock' || receipt.status === 'pending') {
-            return true;
+    async verifyAnchorDetailed(receipt: L2AnchorReceipt): Promise<AnchorVerification> {
+        if (receipt.network === 'mock') {
+            return { status: 'mock', reason: 'Receipt from the explicit mock network (development only)' };
+        }
+
+        if (receipt.status === 'pending') {
+            return { status: 'pending', reason: 'Receipt is still queued; nothing is anchored yet' };
+        }
+
+        if (receipt.status === 'mocked') {
+            return {
+                status: 'unverifiable',
+                reason: `Synthetic receipt on ${receipt.network}: no on-chain transaction exists`,
+            };
         }
 
         const contractAddress = this.getDefaultContractAddress(receipt.network as L2Network);
-        if (!contractAddress || contractAddress === '0x0000000000000000000000000000000000000000') {
-            // Contract not yet deployed — treat as unverifiable but non-blocking
-            console.warn(`[L2AnchorClient] verifyAnchor: contract not deployed for ${receipt.network}, skipping on-chain check`);
-            return true;
+        if (!contractAddress || contractAddress === ZERO_ADDRESS) {
+            console.warn(`[L2AnchorClient] verifyAnchor: contract not deployed for ${receipt.network}, no on-chain check performed`);
+            return {
+                status: 'unverifiable',
+                reason: `Anchor contract not deployed for ${receipt.network}; no on-chain check performed`,
+            };
         }
 
-        // Stub: on-chain query would go here once ethers/viem is added
+        // On-chain query would go here once ethers/viem is added
         // e.g.: const contract = new ethers.Contract(contractAddress, ANCHOR_ABI, provider);
         //       const anchored = await contract.getAnchor(receipt.stateRoot);
         //       return anchored.blockHeight.toString() === receipt.blockHeight.toString();
-        console.warn(`[L2AnchorClient] verifyAnchor: on-chain query stub for ${receipt.network} tx=${receipt.l2TransactionId}`);
-        return true;
+        console.warn(`[L2AnchorClient] verifyAnchor: on-chain query not wired for ${receipt.network} tx=${receipt.l2TransactionId}`);
+        return {
+            status: 'unverifiable',
+            reason: `On-chain query not wired for ${receipt.network}; no on-chain check performed`,
+        };
+    }
+
+    /**
+     * Boolean convenience over {@link verifyAnchorDetailed}.
+     *
+     * `true` only when the receipt was verified on-chain or comes from the explicit
+     * `mock` network. Pending and unverifiable receipts return `false`.
+     */
+    async verifyAnchor(receipt: L2AnchorReceipt): Promise<boolean> {
+        const { status } = await this.verifyAnchorDetailed(receipt);
+        return status === 'verified' || status === 'mock';
     }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 function uint8ToHex(buf: Uint8Array): string {
     return Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
