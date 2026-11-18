@@ -110,6 +110,19 @@ Datenfluss dieser Komponente — nicht geprüft.
 5. **Erst dann** Interop-Test gegen eine offizielle Referenz-Wallet, mit Artefakt (Version, Commit,
    Request, Response, Ergebnis) als datierter `docs/qa/`-Eintrag.
 
+## 6a. Stand 2026-11-18 (Nachtrag; §1–§6 bleiben unverändert)
+
+| Schritt | Entscheidung / Stand | Nachweis |
+|---|---|---|
+| 2 | Owner wählt **Profil C** als nicht-offiziellen Zwischenschritt; A oder B bleibt Ziel (#97 offen). | Owner-Entscheidung im Chat, 2026-11-18 |
+| 3 | Umgesetzt in #291: `{ eligible, profile }` an die Anwendung, 18 Negativtests mit echten Signaturen. **Kein `decision_id`** — der Verifier hat noch keinen Entscheidungsdatensatz. | [qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md](../qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md) (Branch von #291) |
+| 4a | `kid`-Auswahl umgesetzt in #292. | [qa/ISSUER_KID_SELECTION_2026-11-18.md](../qa/ISSUER_KID_SELECTION_2026-11-18.md) (Branch von #292) |
+| 4b | **Neuer Befund:** Ohne `status`-Claim wird Widerruf gar nicht geprüft (`oid4vp/src/demo-flow.ts:366`), und issuer-mock stellt keinen aus. Die Status-Liste ist zudem unsigniert (`API-05`). Owner-Entscheidung: **vorerst nur dokumentieren**; Optionen und Abnahmekriterien in #293. | #293 |
+
+Folge für die Negativtests aus Schritt 3: „abgelaufen" und „widerrufen" sowie „unsignierte
+Status-Liste" sind für Profil C **nicht** abgedeckt, solange #293 offen ist. Ein grüner
+Profil-C-Test sagt nichts über Widerruf aus.
+
 ## 7. Was ausdrücklich nicht behauptet wird
 
 - Keine Unverknüpfbarkeit: Auch ein Boolean ist über Credential-Signatur, Holder-Key (`cnf`),
