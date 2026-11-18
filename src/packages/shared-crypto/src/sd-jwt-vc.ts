@@ -502,7 +502,7 @@ export async function buildSdJwtPresentation(
             disclosedClaims[name] = value;
         }
     }
-    const presented = `${issuerJwt}~${selected.join('~')}~`;
+    const presented = selected.length > 0 ? `${issuerJwt}~${selected.join('~')}~` : `${issuerJwt}~`;
     const kbJwt = await createKeyBindingJWT(
         { aud: opts.aud, nonce: opts.nonce, sdJwtWithDisclosures: presented },
         holderPrivateKey

@@ -50,6 +50,59 @@ async function issueLikeIssuerMock(issuer: CryptoKeyPair, holderPub: CryptoKey):
 }
 
 describe('ADOPT-0b real presentation e2e', () => {
+  it('round-trips a signed clear age with no selected disclosures and rejects a wrong nonce', async () => {
+    const issuer = await ecKey();
+    const holder = await ecKey();
+    const issuerJwt = await issueSDJWTVC(
+      {
+        iss: 'https://issuer.example',
+        vct: 'https://askmi.demo/vct/age-credential',
+        cnf: await buildCNFClaim(holder.publicKey),
+        age: 24,
+        iat: Math.floor(Date.now() / 1000),
+      },
+      issuer.privateKey
+    );
+    const { vpToken, disclosedClaims } = await buildSdJwtPresentation(
+      `${issuerJwt}~`, ['age'], holder.privateKey,
+      { aud: 'did:askmi:verifier', nonce: 'nonce-clear' }
+    );
+
+    expect(vpToken.split('~')).toHaveLength(2);
+    expect(vpToken.split('~')[0]).toBe(issuerJwt);
+    expect(disclosedClaims).toEqual({});
+    const verify = (nonce: string, issuerPublicKey: CryptoKey) => validateSDJWTPresentation({
+      vpTokenString: vpToken,
+      request: makeRequest(nonce),
+      issuerPublicKey,
+      checkRevocation: false,
+      checkTrust: false,
+    });
+    expect(await verify('nonce-clear', issuer.publicKey)).toEqual({
+      ok: true, disclosedClaims: { age: 24 }, errors: [],
+    });
+    expect((await verify('wrong-nonce', issuer.publicKey)).ok).toBe(false);
+    expect((await verify('nonce-clear', (await ecKey()).publicKey)).ok).toBe(false);
+  });
+
+  it('rejects an actually supplied empty disclosure even with valid holder binding', async () => {
+    const issuer = await ecKey();
+    const holder = await ecKey();
+    const stored = await issueLikeIssuerMock(issuer, holder.publicKey);
+    const presented = `${stored.split('~')[0]}~~`;
+    const kb = await createKeyBindingJWT({
+      aud: 'did:askmi:verifier', nonce: 'nonce-empty', sdJwtWithDisclosures: presented,
+    }, holder.privateKey);
+    const result = await validateSDJWTPresentation({
+      vpTokenString: `${presented}${kb}`,
+      request: makeRequest('nonce-empty'),
+      issuerPublicKey: issuer.publicKey,
+      checkRevocation: false,
+      checkTrust: false,
+    });
+    expect(result).toEqual({ ok: false, errors: ['Invalid SD-JWT disclosure'] });
+  });
+
   it('rejects an unreferenced disclosure even when a holder binds the full presentation', async () => {
     const issuer = await ecKey();
     const holder = await ecKey();
