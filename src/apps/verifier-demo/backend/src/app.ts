@@ -29,6 +29,7 @@ import {
   SCENARIO_VCT,
   SCENARIO_LABELS,
   type AuthorizationRequest,
+  type PresentationDefinition,
 } from '@askmi/oid4vp';
 import { trustListResolver } from '@askmi/shared-crypto';
 import {
@@ -335,6 +336,13 @@ app.get('/', (req, res) => {
 });
 
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
+/** Scenarios whose Presentation Definition is owned by this verifier, not the package. */
+const VERIFIER_SCENARIOS: Record<string, { label: string; definition: PresentationDefinition }> = {
+  [AGE_OVER_18_EXPLORATION.scenarioId]: {
+    label: 'Age over 18 (AskMI exploration, not EUDI)',
+    definition: AGE_OVER_18_EXPLORATION_DEFINITION,
+  },
+};
 app.get('/authorize', requireSession, (req, res) => {
   const correlationId = sessionId(req, res);
   // A new state object isolates any already-running legacy demo request.
@@ -342,18 +350,15 @@ app.get('/authorize', requireSession, (req, res) => {
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
-    // Profile C (non-official exploration): reuse the request builder's nonce/state
-    // generation, then substitute the verifier-owned definition.
-    const exploration = scenarioId === AGE_OVER_18_EXPLORATION.scenarioId;
+    // Verifier-owned profiles (Profile C, non-official) pass their own definition.
+    const local = VERIFIER_SCENARIOS[scenarioId];
     const { request, nonce } = buildOID4VPRequest({
       verifierClientId: ASKMI_DEMO.verifierDid,
       redirectUri: `${baseUrl}/oid4vp-present`,
-      scenarioId: exploration ? 'liquor-store' : scenarioId,
-      clientName: exploration
-        ? 'Age over 18 (AskMI exploration, not EUDI)'
-        : (SCENARIO_LABELS[scenarioId] ?? scenarioId),
+      scenarioId,
+      clientName: local?.label ?? SCENARIO_LABELS[scenarioId] ?? scenarioId,
+      presentationDefinition: local?.definition,
     });
-    if (exploration) request.presentation_definition = AGE_OVER_18_EXPLORATION_DEFINITION;
     nonceStore.add(nonce);
     const now = Date.now();
     state.authorization = {

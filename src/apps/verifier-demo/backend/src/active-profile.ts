@@ -113,15 +113,3 @@ export function matchActiveProfile(
   if (keys.length !== 1 || keys[0] !== spec.claim) return null;
   return spec.accepts(claims[spec.claim]) ? spec.id : null;
 }
-
-/** Bounded numeric-age profile, kept for compatibility with existing callers. */
-export function acceptsActiveProfile(
-  request: AuthorizationRequest,
-  submission: unknown,
-  verifiedIssuerJwt: string,
-  claims: Record<string, unknown>
-): boolean {
-  return (
-    matchActiveProfile(request, submission, verifiedIssuerJwt, claims) === 'askmi-numeric-age-v0'
-  );
-}
