@@ -18,7 +18,7 @@
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod/v3';
+import { z } from 'zod';
 import { PolicyEngine } from '@askmi/policy-engine';
 import type {
   VerifierRequest,

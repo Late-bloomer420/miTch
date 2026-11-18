@@ -1,7 +1,9 @@
 # EUDI Wallet — CIR Compliance Matrix
 
-> Mapping baseline: 2026-06-02; targeted qualifications added 2026-10-14 and 2026-11-03
+> Mapping baseline: 2026-06-02; targeted qualifications added 2026-10-14 and 2026-11-03; honest-scope header added 2026-10-27 (#235)
 > Scope: repository component mapping; selected profile conformance and external evaluation are separate. See [`docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](../qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) for the 2026-11-03 upstream protocol & code audit (executable baseline `002ce5e`).
+>
+> **Honest scope (issue #235):** matrix rows record **repository component implementations**, not conformance decisions, certification, LoA claims, or readiness scores. Mock issuance is not national PID issuance; no certified WSCA/WSCD or TEE is used (`docs/_core/10_KEY_PROTECTION_REALITY.md`); no external authority has validated any row (`docs/MATURITY_AND_LIMITATIONS.md`). AskMI is not an EUDI Wallet Solution and does not claim EUDI certification — see the [Regulatory Role Map](../04-legal/REGULATORY_ROLE_MAP.md). This matrix is an engineering analysis, not legal advice.
 >
 > Legend: ✅ recorded component implementation | 🟡 partial/integration or assurance work | 🔴 missing | ➖ not applicable. Unchanged rows retain their June mapping provenance, not a new October/November validation.
 
