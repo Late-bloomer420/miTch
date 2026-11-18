@@ -41,6 +41,6 @@ would import whatever the first JWKS entry was, including private or non-signing
 
 - Trust list without anchor key (#240/#276) and status-list signature (`API-05`) unchanged.
 - Credentials without a `status` claim skip revocation entirely
-  (`oid4vp/src/demo-flow.ts:372`); issuer-mock issues none. Tracked as a decision in the
+  (`oid4vp/src/demo-flow.ts:366`); issuer-mock issues none. Tracked as a decision in the
   template scope, not changed here.
 - No issuer JWKS caching, rotation policy or `x5c`/certificate chain handling.
