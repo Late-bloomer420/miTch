@@ -99,3 +99,6 @@ miTch guards.
 - Identity/SameValueZero element comparison — use primitives or stable references.
 - Pure logic: no crypto, no storage, no network. Compose it into wallet/
   verifier code; it never bypasses the policy engine.
+- No symbolic or protocol verification in the Dolev-Yao sense: the guards
+  check finite, concrete instances and do not prove protocol-level security
+  properties.

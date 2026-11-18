@@ -97,3 +97,8 @@ GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 
 ## Evidence and update discipline
 
 Use docs/DOCS_CANON.md to locate the affected topic and its evidence before declaring implementation or closure. Specs/design acceptance are not working code. Keep dated observations with exact SHA/runtime/profile. Characterization acceptance tests reproduce findings; they are not security PASS. Refresh evidence for affected paths/profiles/dependencies; docs-only edits do not require a full repository re-audit. Broader release gates need their own broader checks. No gate moves without its linked evidence. Do not duplicate #170–#173.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
