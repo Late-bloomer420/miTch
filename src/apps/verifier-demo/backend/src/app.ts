@@ -5,7 +5,12 @@ import { VerifierSDK } from '@askmi/verifier-sdk';
 import { NonceStore } from './nonce-store';
 import { FixedWindowRateLimiter } from './rate-limiter';
 import { getRequesterId } from './requester-id';
-import { acceptsActiveProfile } from './active-profile';
+import {
+  AGE_OVER_18_EXPLORATION,
+  AGE_OVER_18_EXPLORATION_DEFINITION,
+  matchActiveProfile,
+  type ActiveProfileId,
+} from './active-profile';
 import { createAskMIConnect, InMemoryAskMIConnectSessionStore } from '@askmi/connect';
 import { askmiConnectExpressRouter } from '@askmi/connect/express';
 import {
@@ -100,6 +105,8 @@ type VerificationState = {
   disclosedClaims: Record<string, unknown> | null;
   consentReceipt: Record<string, unknown> | null;
   authorization: { request: AuthorizationRequest; expiresAt: number; attempted: boolean } | null;
+  /** Verified profile id; the application result carries this, never the claim value. */
+  profile?: ActiveProfileId | null;
 };
 
 const sessions = new Map<string, VerificationState>();
@@ -309,7 +316,10 @@ app.get('/status', requireSession, (req, res) => {
     status: state.status,
     issuer: state.issuer,
     verifierDid: ASKMI_DEMO.verifierDid,
-    result: state.authorization && state.status === 'VERIFIED' ? { eligible: true } : null,
+    result:
+      state.authorization && state.status === 'VERIFIED' && state.profile
+        ? { eligible: true, profile: state.profile }
+        : null,
     disclosedClaims: state.disclosedClaims,
     consentReceipt: state.consentReceipt,
   });
@@ -332,12 +342,18 @@ app.get('/authorize', requireSession, (req, res) => {
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
+    // Profile C (non-official exploration): reuse the request builder's nonce/state
+    // generation, then substitute the verifier-owned definition.
+    const exploration = scenarioId === AGE_OVER_18_EXPLORATION.scenarioId;
     const { request, nonce } = buildOID4VPRequest({
       verifierClientId: ASKMI_DEMO.verifierDid,
       redirectUri: `${baseUrl}/oid4vp-present`,
-      scenarioId,
-      clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
+      scenarioId: exploration ? 'liquor-store' : scenarioId,
+      clientName: exploration
+        ? 'Age over 18 (AskMI exploration, not EUDI)'
+        : (SCENARIO_LABELS[scenarioId] ?? scenarioId),
     });
+    if (exploration) request.presentation_definition = AGE_OVER_18_EXPLORATION_DEFINITION;
     nonceStore.add(nonce);
     const now = Date.now();
     state.authorization = {
@@ -350,6 +366,7 @@ app.get('/authorize', requireSession, (req, res) => {
     state.issuer = null;
     state.disclosedClaims = null;
     state.consentReceipt = null;
+    state.profile = null;
     sessions.set(correlationId, state);
     res.json({ authRequest: request, nonce, scenarioId, sessionId: correlationId });
   } catch (e: unknown) {
@@ -551,15 +568,15 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
-    if (
-      validation.ok &&
-      !acceptsActiveProfile(
-        authorization.request,
-        body.presentation_submission,
-        presentedIssuerJwt,
-        validation.disclosedClaims ?? {}
-      )
-    ) {
+    const profile = validation.ok
+      ? matchActiveProfile(
+          authorization.request,
+          body.presentation_submission,
+          presentedIssuerJwt,
+          validation.disclosedClaims ?? {}
+        )
+      : null;
+    if (validation.ok && !profile) {
       verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, error: 'PROFILE_OR_POLICY_DENIED' });
     }
@@ -572,10 +589,11 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
       verificationState.status = 'VERIFIED';
       verificationState.issuer = ASKMI_DEMO.issuerUri;
       verificationState.disclosedClaims = null;
+      verificationState.profile = profile;
       verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
       return res.json({
         ok: true,
-        result: { eligible: true },
+        result: { eligible: true, profile },
         disclosedClaims: null,
         consentReceipt,
       });
