@@ -68,6 +68,8 @@ describe('age_over_18 exploration profile (Profile C)', () => {
     nonce?: string;
     definitionId?: string;
     descriptorId?: string;
+    /** Issuer-signed `exp` (seconds since epoch); omitted when undefined. */
+    exp?: number;
   }
 
   async function presentation(authRequest: Record<string, any>, opts: Opts = {}) {
@@ -79,6 +81,7 @@ describe('age_over_18 exploration profile (Profile C)', () => {
         vct: opts.vct ?? AGE_OVER_18_EXPLORATION.vct,
         cnf: await buildCNFClaim(holder.publicKey),
         iat: Math.floor(Date.now() / 1000),
+        ...(opts.exp !== undefined ? { exp: opts.exp } : {}),
         _sd: sdDigests,
         _sd_alg: 'sha-256',
       },
@@ -193,6 +196,30 @@ describe('age_over_18 exploration profile (Profile C)', () => {
   it('rejects a holder binding over another nonce', async () => {
     const authRequest = await authorize();
     await submit(await presentation(authRequest, { nonce: 'not-the-request-nonce' })).expect(403);
+  });
+
+  it('rejects an expired credential and consumes the attempt', async () => {
+    const authRequest = await authorize();
+    const now = Math.floor(Date.now() / 1000);
+    const response = await submit(await presentation(authRequest, { exp: now - 60 })).expect(403);
+    expect(JSON.stringify(response.body)).not.toContain('age_over_18":true');
+    expect((await status()).body.status).toBe('FAILED');
+    expect((await status()).body.result).toBeNull();
+    await submit(await presentation(authRequest, { exp: now + 3600 })).expect(403);
+  });
+
+  it('accepts a credential whose exp is still in the future', async () => {
+    const authRequest = await authorize();
+    const exp = Math.floor(Date.now() / 1000) + 3600;
+    const response = await submit(await presentation(authRequest, { exp })).expect(200);
+    expect(response.body.result).toEqual({ eligible: true, profile: PROFILE });
+  });
+
+  // Characterization, not a security PASS: `exp` is optional in validateSDJWTVC, so a
+  // credential without it never expires. Kept visible until a lifetime rule exists (#293).
+  it('currently accepts a credential without exp (documented gap)', async () => {
+    const authRequest = await authorize();
+    await submit(await presentation(authRequest)).expect(200);
   });
 
   it('rejects replay of an accepted presentation', async () => {

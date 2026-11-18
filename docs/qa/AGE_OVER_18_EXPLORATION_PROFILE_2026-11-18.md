@@ -47,3 +47,19 @@ The VCT `https://askmi.demo/vct/age-over-18-exploration` is repository-owned.
 - No issuer-mock issuance or wallet-pwa support for this profile; no browser E2E.
 - No `decision_id` in the application result: the verifier has no decision record yet.
 - Full `pnpm test` / `pnpm lint` across the monorepo not run; CI covers those.
+
+## Addendum 2026-11-18 — expiry negatives (separate PR, base `d7f0e77`)
+
+The sections above are unchanged. Linux, Node `v22.23.5`, pnpm `9.15.9`.
+
+- `age-over-18-profile.test.ts` now has three more cases:
+  - an expired credential (`exp` 60 s ago) is rejected with 403, and the attempt is
+    terminal (a valid presentation afterwards is also rejected);
+  - a credential whose `exp` is still in the future is accepted;
+  - a credential **without** `exp` is accepted. This is a characterization of the
+    documented gap (`exp` is optional), not a security PASS; see #293.
+- Mutation check: disabling the `payload.exp < now` branch in `validateSDJWTVC`
+  made exactly the expired-credential case fail; restored.
+- `npx vitest run src --testTimeout=30000` in `src/apps/verifier-demo/backend`:
+  15 files, 125 tests passed. `tsc --noEmit` clean; ESLint 0 errors.
+- Still open: no maximum credential lifetime, revocation (#293).
