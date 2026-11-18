@@ -119,9 +119,12 @@ Datenfluss dieser Komponente — nicht geprüft.
 | 4a | `kid`-Auswahl umgesetzt in #292. | [qa/ISSUER_KID_SELECTION_2026-11-18.md](../qa/ISSUER_KID_SELECTION_2026-11-18.md) (Branch von #292) |
 | 4b | **Neuer Befund:** Ohne `status`-Claim wird Widerruf gar nicht geprüft (`oid4vp/src/demo-flow.ts:366`), und issuer-mock stellt keinen aus. Die Status-Liste ist zudem unsigniert (`API-05`). Owner-Entscheidung: **vorerst nur dokumentieren**; Optionen und Abnahmekriterien in #293. | #293 |
 
-Folge für die Negativtests aus Schritt 3: „abgelaufen" und „widerrufen" sowie „unsignierte
-Status-Liste" sind für Profil C **nicht** abgedeckt, solange #293 offen ist. Ein grüner
-Profil-C-Test sagt nichts über Widerruf aus.
+Folge für die Negativtests aus Schritt 3: „widerrufen" und „unsignierte Status-Liste" sind
+für Profil C **nicht** abgedeckt, solange #293 offen ist; ein grüner Profil-C-Test sagt nichts
+über Widerruf aus. „Abgelaufen" ist davon getrennt: `validateSDJWTVC` lehnt ein vorhandenes,
+überschrittenes `exp` unabhängig vom `status`-Claim ab (`shared-crypto/src/sd-jwt-vc.ts:182-186`).
+Offen ist dort nur, dass `exp` optional ist (ohne `exp` läuft ein Credential nie ab) und dass
+die Profil-C-Suite keinen eigenen Test für ein abgelaufenes Credential enthält.
 
 ## 7. Was ausdrücklich nicht behauptet wird
 
