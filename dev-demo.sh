@@ -85,6 +85,7 @@ fi
 #
 # The wallet dev server serves HTTPS with a self-signed certificate unless
 # ASKMI_DEV_HTTPS=0, so its origin is https://localhost:5174 by default.
+# Shell mirror of askmiDevWalletUrl() in src/packages/shared-types/src/askmi.ts.
 if [ "${ASKMI_DEV_HTTPS:-1}" = "0" ]; then
   WALLET_URL="http://localhost:5174"
 else

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import QRCode from 'react-qr-code';
-import { ASKMI_DEMO } from '@askmi/shared-types';
+import { ASKMI_DEMO, askmiDevWalletUrl } from '@askmi/shared-types';
 import type { ScenarioDefinition } from '../data/scenarios';
 
 // Set by vite.config.ts; absent under vitest, which does not load that config.
@@ -82,7 +82,7 @@ export function VerifierPanel({ scenario, backendUrl, sessionId, runNonce }: Ver
       meta.env?.VITE_WALLET_URL ??
       (typeof __ASKMI_DEV_WALLET_URL__ === 'string'
         ? __ASKMI_DEV_WALLET_URL__
-        : 'https://localhost:5174');
+        : askmiDevWalletUrl(undefined));
     const walletDeepLink = `${walletBaseUrl}/?scenario=${scenario.id}&endpoint=${encodeURIComponent(backendUrl)}&verifier=${encodeURIComponent(ASKMI_DEMO.verifierDid)}&sessionId=${encodeURIComponent(sessionId)}`;
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>

@@ -14,6 +14,21 @@ export const ASKMI_DEMO = {
   walletAudience: 'askmi-wallet-pwa',
 } as const;
 
+/**
+ * Single source for the local wallet dev origin. wallet-pwa serves HTTPS
+ * (self-signed) unless `ASKMI_DEV_HTTPS=0`. Used by the wallet's own Vite
+ * config, the verifier backend and the verifier frontend; `dev-demo.sh` and
+ * `dev-demo.ps1` cannot import it and mirror the same rule in shell.
+ * An explicit `WALLET_BASE_URL` / `VITE_WALLET_URL` always takes precedence.
+ */
+export function askmiDevWalletUsesHttps(askmiDevHttps: string | undefined): boolean {
+  return askmiDevHttps !== '0';
+}
+
+export function askmiDevWalletUrl(askmiDevHttps: string | undefined): string {
+  return `${askmiDevWalletUsesHttps(askmiDevHttps) ? 'https' : 'http'}://localhost:5174`;
+}
+
 export const ASKMI_ENV = {
   testMode: 'ASKMI_TEST_MODE',
   legacyTestMode: 'MITCH_TEST_MODE',

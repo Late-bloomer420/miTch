@@ -2,8 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
+import { askmiDevWalletUsesHttps } from '@askmi/shared-types';
 
-const useBasicSsl = process.env.ASKMI_DEV_HTTPS !== '0';
+const useBasicSsl = askmiDevWalletUsesHttps(process.env.ASKMI_DEV_HTTPS);
 
 const securityHeaders = {
     'Content-Security-Policy': "frame-ancestors 'none';",

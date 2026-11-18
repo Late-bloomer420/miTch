@@ -41,7 +41,8 @@ if (-not $env:CORS_ALLOWED_ORIGINS) {
 
 # The wallet dev server serves HTTPS with a self-signed certificate unless
 # ASKMI_DEV_HTTPS=0. Wallet links built by the verifier UI and the Connect
-# handoff follow the same scheme.
+# handoff follow the same scheme. Shell mirror of askmiDevWalletUrl() in
+# src/packages/shared-types/src/askmi.ts.
 if ($env:ASKMI_DEV_HTTPS -eq "0") { $walletUrl = "http://localhost:5174" } else { $walletUrl = "https://localhost:5174" }
 if (-not $env:VITE_WALLET_URL) { $env:VITE_WALLET_URL = $walletUrl }
 if (-not $env:WALLET_BASE_URL) { $env:WALLET_BASE_URL = $walletUrl }
