@@ -119,6 +119,54 @@ describe('ADOPT-0b real presentation e2e', () => {
     });
     expect(result).toEqual({ ok: false, errors: ['Invalid SD-JWT disclosure'] });
   });
+  /**
+   * Issue a credential whose signed `_sd` references a disclosure for `{ [name]: value }`,
+   * with `clearPayload` claims in the clear, then present exactly that one disclosure
+   * with a valid KB-JWT. Everything is issuer-signed and holder-bound, so the only reason
+   * for rejection is the verifier's name-collision rule.
+   */
+  async function presentCollidingDisclosure(
+    name: string, value: unknown, clearPayload: Record<string, unknown>, nonce: string,
+  ) {
+    const issuer = await ecKey();
+    const holder = await ecKey();
+    const { _sd, disclosures } = await createSDJWTDisclosures({ [name]: value });
+    const issuerJwt = await issueSDJWTVC(
+      {
+        iss: 'https://issuer.example',
+        vct: 'https://askmi.demo/vct/age-credential',
+        cnf: await buildCNFClaim(holder.publicKey),
+        iat: Math.floor(Date.now() / 1000),
+        ...clearPayload,
+        _sd,
+      },
+      issuer.privateKey
+    );
+    const presented = `${issuerJwt}~${disclosures[0]}~`;
+    const kb = await createKeyBindingJWT(
+      { aud: 'did:askmi:verifier', nonce, sdJwtWithDisclosures: presented }, holder.privateKey
+    );
+    return validateSDJWTPresentation({
+      vpTokenString: `${presented}${kb}`,
+      request: makeRequest(nonce),
+      issuerPublicKey: issuer.publicKey,
+      checkRevocation: false,
+      checkTrust: false,
+    });
+  }
+
+  it('rejects an issuer-referenced disclosure that collides with a clear-text claim', async () => {
+    // Signed payload carries age: 24 in the clear AND an _sd entry that would reveal age: 99.
+    const result = await presentCollidingDisclosure('age', 99, { age: 24 }, 'nonce-collide-clear');
+    expect(result).toEqual({ ok: false, errors: ['Invalid SD-JWT disclosure'] });
+  });
+
+  it('rejects an issuer-referenced disclosure named like a metadata key', async () => {
+    // `nbf` is a metadata key and absent from the clear payload, so only the metadata rule can reject it.
+    const result = await presentCollidingDisclosure('nbf', 1, {}, 'nonce-collide-meta');
+    expect(result).toEqual({ ok: false, errors: ['Invalid SD-JWT disclosure'] });
+  });
+
   it('discloses only the requested claim (age) and verifies against the real issuer key', async () => {
     const issuer = await ecKey();
     const holder = await ecKey();
