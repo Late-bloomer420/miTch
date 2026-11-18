@@ -134,11 +134,11 @@ describe('active numeric-age profile', () => {
   });
   it('returns eligibility without returning or retaining the numeric age', async () => {
     const response = await submit(await body({ age: 24 })).expect(200);
-    expect(response.body.result).toEqual({ eligible: true });
+    expect(response.body.result).toEqual({ eligible: true, profile: 'askmi-numeric-age-v0' });
     expect(response.body.disclosedClaims).toBeNull();
     const status = await request(app).get('/status').set('X-AskMI-Session-Id', 'profile');
     expect(status.body.disclosedClaims).toBeNull();
-    expect(status.body.result).toEqual({ eligible: true });
+    expect(status.body.result).toEqual({ eligible: true, profile: 'askmi-numeric-age-v0' });
   });
   it.each(['/wallet-present', '/present'])(
     'does not allow %s to satisfy an active authorization',
