@@ -126,6 +126,8 @@ describe('age_over_18 exploration profile (Profile C)', () => {
     expect(paths).toEqual(['$.age_over_18']);
   });
 
+  // The credential here has no `exp`. Acceptance documents a gap, not a security PASS:
+  // `exp` is optional in validateSDJWTVC, so such a credential never expires (#293).
   it('returns only eligibility and the profile id to the application', async () => {
     const authRequest = await authorize();
     const response = await submit(await presentation(authRequest)).expect(200);
@@ -202,7 +204,9 @@ describe('age_over_18 exploration profile (Profile C)', () => {
     const authRequest = await authorize();
     const now = Math.floor(Date.now() / 1000);
     const response = await submit(await presentation(authRequest, { exp: now - 60 })).expect(403);
-    expect(JSON.stringify(response.body)).not.toContain('age_over_18":true');
+    // Tied to the exp branch of validateSDJWTVC, not just to any 403.
+    expect(response.body.errors).toEqual([expect.stringMatching(/^Credential expired at /)]);
+    expect(response.body.result).toBeUndefined();
     expect((await status()).body.status).toBe('FAILED');
     expect((await status()).body.result).toBeNull();
     await submit(await presentation(authRequest, { exp: now + 3600 })).expect(403);
@@ -213,13 +217,6 @@ describe('age_over_18 exploration profile (Profile C)', () => {
     const exp = Math.floor(Date.now() / 1000) + 3600;
     const response = await submit(await presentation(authRequest, { exp })).expect(200);
     expect(response.body.result).toEqual({ eligible: true, profile: PROFILE });
-  });
-
-  // Characterization, not a security PASS: `exp` is optional in validateSDJWTVC, so a
-  // credential without it never expires. Kept visible until a lifetime rule exists (#293).
-  it('currently accepts a credential without exp (documented gap)', async () => {
-    const authRequest = await authorize();
-    await submit(await presentation(authRequest)).expect(200);
   });
 
   it('rejects replay of an accepted presentation', async () => {
