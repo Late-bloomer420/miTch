@@ -12,6 +12,20 @@ describe('buildOID4VPRequest', () => {
     scenarioId: 'liquor-store',
   };
 
+  it('uses a caller-owned presentation definition instead of the scenario lookup', () => {
+    const own = {
+      id: 'pd-caller-owned',
+      input_descriptors: [{ id: 'd', constraints: { fields: [{ path: ['$.age_over_18'] }] } }],
+    };
+    const result = buildOID4VPRequest({
+      ...defaultOpts,
+      scenarioId: 'not-a-package-scenario',
+      presentationDefinition: own,
+    });
+    expect(result.request.presentation_definition).toBe(own);
+    expect(SCENARIO_PRESENTATION_DEFINITIONS['not-a-package-scenario']).toBeUndefined();
+  });
+
   it('successfully builds a request for a valid scenario', () => {
     const result = buildOID4VPRequest(defaultOpts);
 
