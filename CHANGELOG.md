@@ -12,6 +12,7 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- feat(verifier-demo): add non-official age_over_18 exploration profile ([#291](https://github.com/Late-bloomer420/miTch/pull/291)) — evidence: [`AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md`](docs/qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md)
 - docs(security): STRIDE × LINDDUN threat model roadmap and issue mapping ([#187](https://github.com/Late-bloomer420/miTch/pull/187))
 - docs(architecture): decoupling audit ARCH-01..09, re-verified against 624cf9a ([#188](https://github.com/Late-bloomer420/miTch/pull/188))
 - docs(security): Security- und Privacy-Review 2026-10-19 ([#192](https://github.com/Late-bloomer420/miTch/pull/192))
