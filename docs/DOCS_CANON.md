@@ -59,6 +59,8 @@ This file defines the authoritative document per topic area and serves as naviga
 
 - **Security review with scoped 2026-11-13 static reconciliation:** [security/SECURITY_REVIEW_2026-10-19.md](security/SECURITY_REVIEW_2026-10-19.md); preserves dated runtime evidence and is not a new security PASS.
 
+- **Audit-log L2 anchor honest status (SECURE-1 F-05/F-06 mitigation, tasks L2A-01..04):** [qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md); supplements the unchanged SECURE-1 records. Real anchoring remains open (#294, #295, #296).
+
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
