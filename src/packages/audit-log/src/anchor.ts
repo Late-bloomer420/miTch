@@ -3,8 +3,8 @@ import { L2AnchorReceipt } from '@askmi/shared-types';
 /**
  * StateAnchorClient (T-28 Mock)
  * 
- * Simulates a "Blind Provider" L2 client that only accepts hashes
- * and returns immutable transaction evidence.
+ * Simulates a "Blind Provider" L2 client. Receipts are synthetic and do not
+ * establish an on-chain transaction or external timestamp.
  */
 export class StateAnchorClient {
     private static networkToken = 'ETH-L2-ANCHOR-0X';
@@ -21,7 +21,8 @@ export class StateAnchorClient {
             l2TransactionId: `0x${crypto.randomUUID().replace(/-/g, '')}`,
             blockHeight: 12000000 + Math.floor(Math.random() * 100000),
             timestamp: new Date().toISOString(),
-            network: 'mitch-mainnet-l2'
+            network: 'mock',
+            status: 'mocked'
         };
 
         return receipt;
