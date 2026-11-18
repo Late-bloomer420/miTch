@@ -389,36 +389,11 @@ export async function createSDJWTDisclosures(
 
 /**
  * Verifier-side complement of `createSDJWTDisclosures`: decode presented
- * disclosure strings and return the claims they reveal — but ONLY for
- * disclosures whose SHA-256 digest is present in the issuer-signed `_sd`
- * array. Invalid entries are skipped rather than causing the presentation to
- * fail. For verifier boundaries requiring rejection, use the strict variant.
- */
-export async function extractDisclosedClaims(
-    disclosures: string[],
-    sdDigests: string[]
-): Promise<Record<string, unknown>> {
-    const allowed = new Set(sdDigests);
-    const out: Record<string, unknown> = {};
-    for (const d of disclosures) {
-        if (!d || d.includes('.')) continue; // skip empty segments and any JWT (e.g. KB-JWT)
-        const digest = await sha256Base64url(d);
-        if (!allowed.has(digest)) continue; // fail-closed: only issuer-signed disclosures
-        try {
-            const decoded = JSON.parse(
-                new TextDecoder().decode(
-                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
-                )
-            ) as [string, string, unknown];
-            out[decoded[1]] = decoded[2];
-        } catch {
-            // malformed disclosure — skip (fail-closed)
-        }
-    }
-    return out;
-}
-
-/** Strict flat-object disclosure validation for presentation verifiers.
+ * disclosure strings and return the claims they reveal, ONLY for disclosures
+ * whose SHA-256 digest is present in the issuer-signed `_sd` array. Any
+ * malformed, unmatched or duplicate disclosure rejects the whole set
+ * (RFC 9901 §7.1), so a holder cannot inject or smuggle claims.
+ *
  * Delimiters and the KB-JWT must already have been removed by the caller.
  * This deliberately supports only the flat three-element disclosure form.
  */
