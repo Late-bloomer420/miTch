@@ -157,9 +157,12 @@ describe('vitestExecutor (integration, real spawn)', () => {
     const payload = `fixture ${separator} node -e "require('node:fs').writeFileSync('${markerName}', 'injected')"`;
     try {
       const r = await vitestExecutor(claim({ testNamePattern: payload }));
-      // A nonmatching pattern may skip the fixture; this is a security assertion,
-      // never evidence that a claim's test ran. The matching test above proves that.
-      expect(r.status).toBe('PASS');
+      // Security assertion: the payload must never execute (no marker file), regardless
+      // of verdict. A nonmatching pattern may skip the fixture (PASS); with pnpm >= 10
+      // on Windows, `pnpm exec` routes through cmd and a quote-containing payload breaks
+      // cmd parsing, so the run exits nonzero (FAIL — fail-closed). Either verdict is fine;
+      // execution of the payload is not.
+      expect(['PASS', 'FAIL']).toContain(r.status);
       expect(existsSync(marker)).toBe(false);
     } finally {
       rmSync(marker, { force: true });
