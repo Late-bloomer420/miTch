@@ -43,6 +43,12 @@ the pnpm 10 switch; that count is dated registry output and has no QA record und
 yet. #185 stays open for its remaining scope (evidence provenance, SBOM/signed provenance,
 conformance, independent validation). No release gate changes.
 
+**2026-11-18 — time-boxed exception (PR #257):** GHSA-fc5q-39xc-vjpf (picomatch ≤ 4.0.7,
+high, ReDoS) has no patched release and reaches only dev tooling. It is excepted in
+`scripts/security-audit-exceptions.json` until 2026-12-18, and only while the
+production-only audit (`pnpm audit --prod`) stays clean. Critical findings are never
+excepted; entries expire after at most 90 days. Dated registry output, no `docs/qa/` record.
+
 > **Rolle:** Operativer Health-Snapshot — was läuft, was ist deployed, was ist der aktuelle technische Zustand.
 > Für Task-Tracking (was ist erledigt, was ist offen) siehe [`docs/BACKLOG.md`](docs/BACKLOG.md).
 

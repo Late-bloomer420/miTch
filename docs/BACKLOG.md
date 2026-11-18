@@ -28,6 +28,12 @@ High-severity enforcement/remediation remains OPEN under #185.
 0 critical / 0 high (dated registry output; no `docs/qa/` record yet). #185 remains OPEN for
 evidence provenance, SBOM/signed provenance, conformance and independent validation.
 
+**2026-11-18 — time-boxed exception (PR #257):** GHSA-fc5q-39xc-vjpf (picomatch ≤ 4.0.7,
+high, ReDoS) has no patched release and reaches only dev tooling. It is excepted in
+`scripts/security-audit-exceptions.json` until 2026-12-18, and only while the
+production-only audit (`pnpm audit --prod`) stays clean. Critical findings are never
+excepted; entries expire after at most 90 days. Dated registry output, no `docs/qa/` record.
+
 ## Current evidence-linked work — 2026-10-14
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
