@@ -12,8 +12,6 @@ function makeClient(network: 'mock' | 'optimism-sepolia' = 'mock') {
     return new L2AnchorClient({ network, batchingEnabled: false });
 }
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
 afterEach(() => {
     vi.restoreAllMocks();
 });
@@ -146,7 +144,6 @@ describe('L2AnchorClient — env-var contract addresses', () => {
         const detailed = await client.verifyAnchorDetailed(receipt);
         expect(detailed.status).toBe('unverifiable');
         expect(detailed.reason).toMatch(/not deployed/i);
-        expect(ZERO_ADDRESS).toBe('0x0000000000000000000000000000000000000000');
     });
 
     it('F-05: a synthetic (mocked) receipt on a real network is never verified', async () => {

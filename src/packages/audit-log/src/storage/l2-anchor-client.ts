@@ -69,6 +69,9 @@ export interface AnchorVerification {
     reason: string;
 }
 
+/** Sentinel for "anchor contract not deployed". The only definition in this module. */
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 /**
  * Production-Grade L2 Anchor Client
  * 
@@ -314,10 +317,10 @@ export class L2AnchorClient {
      */
     private getDefaultContractAddress(network: L2Network): string {
         const envMap: Record<L2Network, string> = {
-            'optimism-mainnet': process.env['L2_CONTRACT_OPTIMISM_MAINNET'] ?? '0x0000000000000000000000000000000000000000',
-            'optimism-sepolia': process.env['L2_CONTRACT_OPTIMISM_SEPOLIA'] ?? '0x0000000000000000000000000000000000000000',
-            'arbitrum-one':     process.env['L2_CONTRACT_ARBITRUM_ONE']     ?? '0x0000000000000000000000000000000000000000',
-            'arbitrum-sepolia': process.env['L2_CONTRACT_ARBITRUM_SEPOLIA'] ?? '0x0000000000000000000000000000000000000000',
+            'optimism-mainnet': process.env['L2_CONTRACT_OPTIMISM_MAINNET'] ?? ZERO_ADDRESS,
+            'optimism-sepolia': process.env['L2_CONTRACT_OPTIMISM_SEPOLIA'] ?? ZERO_ADDRESS,
+            'arbitrum-one':     process.env['L2_CONTRACT_ARBITRUM_ONE']     ?? ZERO_ADDRESS,
+            'arbitrum-sepolia': process.env['L2_CONTRACT_ARBITRUM_SEPOLIA'] ?? ZERO_ADDRESS,
             'mock': '',
         };
         return envMap[network] ?? '';
@@ -380,8 +383,6 @@ export class L2AnchorClient {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 function uint8ToHex(buf: Uint8Array): string {
     return Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
