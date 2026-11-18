@@ -12,6 +12,18 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- docs(security): STRIDE × LINDDUN threat model roadmap and issue mapping ([#187](https://github.com/Late-bloomer420/miTch/pull/187))
+- docs(architecture): decoupling audit ARCH-01..09, re-verified against 624cf9a ([#188](https://github.com/Late-bloomer420/miTch/pull/188))
+- docs(security): Security- und Privacy-Review 2026-10-19 ([#192](https://github.com/Late-bloomer420/miTch/pull/192))
+- docs: research intake — formal verification & discrete math in credential systems (#196–#199) ([#200](https://github.com/Late-bloomer420/miTch/pull/200))
+- docs(eudi): reconcile upstream requirements through November 9 ([#228](https://github.com/Late-bloomer420/miTch/pull/228))
+- docs(design): pre-login "what websites can already see" panel (#220) ([#234](https://github.com/Late-bloomer420/miTch/pull/234))
+- chore(verifier-demo): remove stray npm package-lock.json (13 phantom Dependabot alerts) ([#231](https://github.com/Late-bloomer420/miTch/pull/231))
+- docs(session): record Session 22 — trail #16 merge, ruleset repair, Dependabot cleanup ([#274](https://github.com/Late-bloomer420/miTch/pull/274))
+- docs: phase0-security forensics, method assessment, Reticulum research input ([#244](https://github.com/Late-bloomer420/miTch/pull/244)) — evidence: [`PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`](docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md), [`PHASE0_SECURITY_METHOD_ASSESSMENT_2026-10-29.md`](docs/qa/PHASE0_SECURITY_METHOD_ASSESSMENT_2026-10-29.md)
+- docs(compliance): honesty pass — regulatory role map, corrected gap report, honest-scope headers ([#236](https://github.com/Late-bloomer420/miTch/pull/236))
+- fix(deps): wave 2 — clear remaining 93 Dependabot alerts via pnpm overrides (audit now 0) ([#272](https://github.com/Late-bloomer420/miTch/pull/272))
+- fix(deps): clear all 153 Dependabot alerts (stray lockfile, zod 4, pnpm 10, override waves) ([#269](https://github.com/Late-bloomer420/miTch/pull/269))
 - docs(agents): never change repo settings/rulesets via API/CLI without explicit approval ([#267](https://github.com/Late-bloomer420/miTch/pull/267))
 - docs(architecture): 2026-11-03 API/protocol audit, 4-stage v2 plan, QR/onboarding & HPI/k-TAA unlinkability + enable Entire ([#247](https://github.com/Late-bloomer420/miTch/pull/247)) — evidence: [`API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md)
 
