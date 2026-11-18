@@ -33,12 +33,15 @@ would import whatever the first JWKS entry was, including private or non-signing
   `kid`; mismatched `kid`; unknown `kid`; no `kid` with ambiguous JWKS), plus 3 Connect
   route cases for the same rule (follow-up `kid` finding on #292). Removing the `kid`
   forwarding on the Connect path made the Connect second-key case fail; restored.
-  After merging master: verifier-backend 16 files / 141 tests; connect 5 / 66.
+  A UTF-8 `kid` (`clé-1`) is covered on both routes (Connect decodes the header as strict
+  UTF-8; follow-up finding on #292).
 - Mutation check: reverting to `jwks.keys[0]` made 3 of the HTTP cases fail, including
   acceptance under an unknown `kid`; restored.
-- Suites: verifier-backend 15 files / 120 tests; shared-crypto 32 / 312; oid4vp 8 / 94;
-  issuer-mock 2 / 9 (after building `@askmi/mdoc`, whose missing build output had failed
-  the suite identically on the unchanged base). `tsc --noEmit` clean in all four.
+- Suites at the current head (master merged in, including #291): verifier-backend
+  16 files / 143 tests; connect 5 / 66. On the pre-merge base `58d0af9`: shared-crypto
+  32 / 312; oid4vp 8 / 94; issuer-mock 2 / 9 (after building `@askmi/mdoc`, whose missing
+  build output had failed the suite identically on the unchanged base). `tsc --noEmit`
+  clean in all packages.
 - ESLint on changed files: 0 errors.
 
 ## Not covered / open

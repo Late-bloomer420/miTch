@@ -212,4 +212,17 @@ describe('active route resolves the issuer key by kid', () => {
   it('Connect: denies a credential without kid when the JWKS is ambiguous', async () => {
     expect((await presentViaConnect(keyA, undefined)).status).toBe(403);
   });
+
+  it.each([
+    ['/oid4vp-present', (k: CryptoKeyPair, kid: string) => present(k, kid)],
+    ['Connect', (k: CryptoKeyPair, kid: string) => presentViaConnect(k, kid)],
+  ] as const)('%s: matches a non-ASCII (UTF-8) kid exactly', async (_route, send) => {
+    const previous = jwks;
+    jwks = [await publicJwk(keyA, { kid: 'key-a' }), await publicJwk(keyB, { kid: 'clé-1' })];
+    try {
+      expect((await send(keyB, 'clé-1')).status).toBe(200);
+    } finally {
+      jwks = previous;
+    }
+  });
 });
