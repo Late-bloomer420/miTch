@@ -32,12 +32,12 @@ Aktiver Pfad: `verifier-demo/backend` `POST /oid4vp-present`
 | Session/One-shot | `app.ts:503-508` | Synchrone Reservierung; jeder Versuch terminal. In-Memory, ein Prozess (dokumentiert in [qa/ACTIVE_AGE_PROFILE_2026-10-25.md](../qa/ACTIVE_AGE_PROFILE_2026-10-25.md)). |
 | Aussteller-Schlüssel | `app.ts:522-537` | Aus `iss` über `issuerKeyResolver`; vom Wallet gesendeter `issuer_jwk` wird ignoriert. |
 | Signatur, Trust, Status, KB-JWT | `oid4vp/src/demo-flow.ts:326-432` via `validateSDJWTPresentation(checkTrust: true, checkRevocation: true)` | KB-JWT mit `aud`, `nonce`, `sd_hash`, 600 s. **Trust-Liste ohne Anker-Schlüssel ungeprüft akzeptiert** (`API-05`, #240). **Status-Liste ohne Signaturprüfung** (`API-05`). |
-| Disclosures | `demo-flow.ts:423` | Auf `master` permissiv (`continue`, #264). PR #288 stellt auf strikt um — **und trifft damit genau diesen aktiven Pfad**. |
+| Disclosures | Aufruf `demo-flow.ts:423` → `shared-crypto/src/sd-jwt-vc.ts:405-407` | Auf `master` permissiv: `extractDisclosedClaims` überspringt Disclosures mit unbekanntem Digest per `continue` (#264). PR #288 stellt auf strikt um — **und trifft damit genau diesen aktiven Pfad**. |
 | Profil/Eligibility | `backend/src/active-profile.ts` | Akzeptiert nur genau einen Claim `age`, **numerisch**, `>= 18`. |
 | Antwort an Anwendung | `app.ts:567-574` | `{ eligible: true }`, `disclosedClaims: null`. |
 
 **Konsequenz (Fakt):** Die Anwendung bekommt ein Boolean, **der Verifier bekommt das genaue Alter**.
-Das ist Punkt 1 der offenen Fragen und gilt unverändert.
+Damit ist die Frage „Was kommt tatsächlich beim Verifier an?“ beantwortet: das numerische Alter, nicht nur ein Boolean (siehe auch #97, „Current evidence boundary“).
 
 ## 3. Befunde aus den letzten PRs, bezogen auf die Vorlage
 
@@ -90,7 +90,7 @@ was #97 ausdrücklich ausschließt.
 - **B** hat die breiteste Wallet-Verfügbarkeit, aber das Credential ist ein PID — mehr Daten im
   Umlauf, auch wenn nur ein Boolean offengelegt wird.
 
-**Build-vs-Reuse (Punkt 5):** Vor A oder B sollte geprüft werden, ob die offizielle Verifier-Komponente
+**Build-vs-Reuse (kann ein kleiner Kreis eigene Protokoll- und Kryptografie-Implementierungen dauerhaft warten?):** Vor A oder B sollte geprüft werden, ob die offizielle Verifier-Komponente
 (EUDI Web Verifier / Verifier-Endpoint) die Protokollschicht übernehmen kann und miTch nur den dünnen
 Adapter „Verifier-Ergebnis → begrenztes Anwendungsergebnis" plus Policy liefert. Das würde
 `API-03`, `API-04`, `API-07` aus der eigenen Wartungslast nehmen. *Offen:* Lizenz, Betriebsmodell,
