@@ -71,6 +71,19 @@ function presentationEndpoint(audienceBaseUrl: string, sessionId: string): strin
 }
 
 /** Extract the `iss` of an SD-JWT VP token without verifying it (trust-gated afterwards). */
+/** Issuer JWT protected-header `kid`; undefined when absent, non-string or unparseable. */
+function extractKid(vpTokenString: string): string | undefined {
+  try {
+    const headerSegment = vpTokenString.split('~')[0].split('.')[0] ?? '';
+    const normalized = headerSegment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const parsed = JSON.parse(atob(padded)) as { kid?: unknown };
+    return typeof parsed.kid === 'string' ? parsed.kid : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function extractIss(vpTokenString: string): string {
   try {
     const issuerJwt = vpTokenString.split('~')[0];
@@ -139,7 +152,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
   const ttlMs = config.sessionTtlMs ?? DEFAULT_SESSION_TTL_MS;
   const now = config.now ?? (() => Date.now());
   const store = config.store ?? new InMemoryAskMIConnectSessionStore(now);
-  const resolveIssuerKey: (iss: string) => Promise<CryptoKey | null> =
+  const resolveIssuerKey: (iss: string, kid?: string) => Promise<CryptoKey | null> =
     config.issuerKeyResolver ?? (async () => null);
   const validate: PresentationValidator =
     config.presentationValidator ??
@@ -300,7 +313,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         }
         let issuerPublicKey: CryptoKey | null;
         try {
-          issuerPublicKey = await resolveIssuerKey(iss);
+          issuerPublicKey = await resolveIssuerKey(iss, extractKid(body.vp_token));
         } catch {
           return await fail(
             session.sessionId,

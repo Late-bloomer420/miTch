@@ -499,10 +499,10 @@ const connect = createAskMIConnect({
   audienceBaseUrl: process.env.VERIFIER_BASE_URL || 'http://localhost:3004',
   walletBaseUrl: process.env.WALLET_BASE_URL || 'http://localhost:5174',
   store: connectStore,
-  issuerKeyResolver: (iss) =>
+  issuerKeyResolver: (iss, kid) =>
     issuerKeyResolver === defaultResolveIssuerKey
-      ? resolveTrustedIssuerKey(iss)
-      : issuerKeyResolver(iss),
+      ? resolveTrustedIssuerKey(iss, kid)
+      : issuerKeyResolver(iss, kid),
 });
 app.use(
   '/askmi/connect',

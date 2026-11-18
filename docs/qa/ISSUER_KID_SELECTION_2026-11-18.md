@@ -20,8 +20,9 @@ would import whatever the first JWKS entry was, including private or non-signing
   keys with `x`,`y`, `use` absent or `sig`, `alg` absent or `ES256`; any `d` is rejected.
   With a header `kid`, exactly one candidate must match. Without one, exactly one
   candidate must exist. Otherwise `null` → `untrusted_or_unresolvable_issuer` (403).
-- `/oid4vp-present` passes the credential's protected-header `kid` to the resolver.
-  The Connect route still passes only `iss` and therefore gets the single-key rule.
+- `/oid4vp-present` and the Connect route (`/askmi/connect/.../presentation`) both pass the
+  credential's protected-header `kid` to the resolver. `@askmi/connect`'s
+  `issuerKeyResolver` gains an optional second parameter `kid` (additive).
 - `issueSDJWTVC(payload, key, options?)`: new optional `{ kid }`; existing callers unchanged.
   issuer-mock sets `kid: 'key-1'` on issued SD-JWT VCs.
 
@@ -29,7 +30,10 @@ would import whatever the first JWKS entry was, including private or non-signing
 
 - New `issuer-kid-selection.test.ts`: 12 unit cases for `selectIssuerJwk` /
   `protectedHeaderKid` and 4 HTTP cases with two real JWKS keys (second key selected by
-  `kid`; mismatched `kid`; unknown `kid`; no `kid` with ambiguous JWKS).
+  `kid`; mismatched `kid`; unknown `kid`; no `kid` with ambiguous JWKS), plus 3 Connect
+  route cases for the same rule (follow-up `kid` finding on #292). Removing the `kid`
+  forwarding on the Connect path made the Connect second-key case fail; restored.
+  After merging master: verifier-backend 16 files / 141 tests; connect 5 / 66.
 - Mutation check: reverting to `jwks.keys[0]` made 3 of the HTTP cases fail, including
   acceptance under an unknown `kid`; restored.
 - Suites: verifier-backend 15 files / 120 tests; shared-crypto 32 / 312; oid4vp 8 / 94;

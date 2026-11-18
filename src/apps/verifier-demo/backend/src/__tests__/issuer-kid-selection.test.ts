@@ -161,4 +161,55 @@ describe('active route resolves the issuer key by kid', () => {
   it('denies a credential without kid when the JWKS is ambiguous', async () => {
     expect((await present(keyA, undefined)).status).toBe(403);
   });
+
+  // The Connect route must apply the same kid rule as /oid4vp-present.
+  async function presentViaConnect(signWith: CryptoKeyPair, kid: string | undefined) {
+    const created = await request(app)
+      .post('/askmi/connect/sessions')
+      .send({ policyId: 'age-liquor-store-v1' })
+      .expect(201);
+    const id = created.body.sessionId as string;
+    const requestUri = new URL(new URL(created.body.handoff.url).searchParams.get('request_uri')!);
+    const auth = (await request(app).get(requestUri.pathname).expect(200)).body.authRequest;
+    const jwt = await issueSDJWTVC(
+      {
+        iss: ASKMI_DEMO.issuerUri,
+        vct: ASKMI_SCENARIO_VCT['liquor-store'],
+        cnf: await buildCNFClaim(holder.publicKey),
+        iat: Math.floor(Date.now() / 1000),
+        age: 24,
+      },
+      signWith.privateKey,
+      kid ? { kid } : undefined
+    );
+    const kb = await createKeyBindingJWT(
+      { aud: auth.client_id, nonce: auth.nonce, sdJwtWithDisclosures: `${jwt}~` },
+      holder.privateKey
+    );
+    return request(app)
+      .post(`/askmi/connect/sessions/${id}/presentation`)
+      .send({
+        vp_token: `${jwt}~${kb}`,
+        state: auth.state,
+        presentation_submission: {
+          id: 'presentation',
+          definition_id: auth.presentation_definition.id,
+          descriptor_map: [{ id: 'age-credential', format: 'sd-jwt', path: '$' }],
+        },
+      });
+  }
+
+  it('Connect: accepts the second JWKS key when the credential kid names it', async () => {
+    const response = await presentViaConnect(keyB, 'key-b');
+    expect(response.status).toBe(200);
+    expect(response.body.result).toEqual({ eligible: true });
+  });
+
+  it('Connect: denies a kid that names a different key than the signer', async () => {
+    expect((await presentViaConnect(keyB, 'key-a')).status).toBe(403);
+  });
+
+  it('Connect: denies a credential without kid when the JWKS is ambiguous', async () => {
+    expect((await presentViaConnect(keyA, undefined)).status).toBe(403);
+  });
 });
