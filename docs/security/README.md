@@ -22,6 +22,7 @@ This directory is the navigable entry-point for AskMI's security artifacts. It l
 | SECURE-1 findings register | [../qa/SECURE_1_FINDINGS_REGISTER.md](../qa/SECURE_1_FINDINGS_REGISTER.md) |
 | Open residuals register | [./RESIDUALS.md](./RESIDUALS.md) |
 | Security audit remediation roadmap | [./SECURITY_AUDIT_ROADMAP_2026-10-01.md](./SECURITY_AUDIT_ROADMAP_2026-10-01.md) |
+| STRIDE × LINDDUN threat-model roadmap + register (T-IDs mapped to EV-01..EV-09) | [./THREAT_MODEL_ROADMAP_2026-10-23.md](./THREAT_MODEL_ROADMAP_2026-10-23.md) |
 
 ---
 
