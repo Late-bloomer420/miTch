@@ -48,8 +48,7 @@ export class SecureStorage {
     /**
      * Reset the default storage.
      */
-    static async reset(): Promise<void> {
-        const adapter = new BrowserIndexedDBAdapter();
+    static async reset(adapter: IStorageAdapter = new BrowserIndexedDBAdapter()): Promise<void> {
         await adapter.clear();
     }
 

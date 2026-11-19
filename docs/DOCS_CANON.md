@@ -10,6 +10,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md), reviewed at `d7f0e77` in [qa/API_AUDIT_REVIEW_2026-11-18.md](qa/API_AUDIT_REVIEW_2026-11-18.md) |
 | API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
+| Slim age-verifier template: scope, open-PR mapping, profile decision (planning, not evidence) | [tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md](tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
@@ -58,6 +59,9 @@ This file defines the authoritative document per topic area and serves as naviga
 ## Navigation
 
 - **Security review with scoped 2026-11-13 static reconciliation:** [security/SECURITY_REVIEW_2026-10-19.md](security/SECURITY_REVIEW_2026-10-19.md); preserves dated runtime evidence and is not a new security PASS.
+- **Reduced-assurance modes, static inventory 2026-11-13 (#242):** [security/REDUCED_ASSURANCE_MODES_2026-11-13.md](security/REDUCED_ASSURANCE_MODES_2026-11-13.md); lists dev/mock/fallback paths at `a688164` and whether each needs an explicit opt-in. Read from code, not executed; not a closure of #242.
+
+- **Audit-log L2 anchor honest status (SECURE-1 F-05/F-06 mitigation, tasks L2A-01..04):** [qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md); supplements the unchanged SECURE-1 records. Real anchoring remains open (#294, #295, #296).
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`

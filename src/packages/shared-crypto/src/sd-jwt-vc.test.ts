@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSdJwtPresentation, createSDJWTDisclosures, extractDisclosedClaims } from './sd-jwt-vc.js';
+import { buildSdJwtPresentation, createSDJWTDisclosures, extractDisclosedClaimsStrict } from './sd-jwt-vc.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 
 function b64url(bytes: Uint8Array): string {
@@ -53,17 +53,19 @@ describe('buildSdJwtPresentation', () => {
   });
 });
 
-describe('extractDisclosedClaims (verifier-side)', () => {
-  it('returns claims only for disclosures whose digest is in the issuer-signed _sd', async () => {
+describe('strict flat disclosure validation', () => {
+  it('accepts valid issuer-referenced disclosures and rejects an unmatched or duplicate disclosure', async () => {
     const { _sd, disclosures } = await createSDJWTDisclosures({ age: 24, dateOfBirth: '2000-01-01' });
-    expect(await extractDisclosedClaims(disclosures, _sd)).toEqual({ age: 24, dateOfBirth: '2000-01-01' });
+    expect({ ...await extractDisclosedClaimsStrict(disclosures, _sd) }).toEqual({ age: 24, dateOfBirth: '2000-01-01' });
+    await expect(extractDisclosedClaimsStrict(disclosures, [])).rejects.toThrow('Invalid SD-JWT disclosure');
+    await expect(extractDisclosedClaimsStrict([...disclosures, ...disclosures], _sd)).rejects.toThrow('Invalid SD-JWT disclosure');
   });
-  it('fail-closed: rejects a disclosure whose digest is NOT in _sd', async () => {
-    const { disclosures } = await createSDJWTDisclosures({ age: 24 });
-    expect(await extractDisclosedClaims(disclosures, [])).toEqual({});
-  });
-  it('ignores KB-JWT-shaped segments and empty strings', async () => {
-    const { _sd, disclosures } = await createSDJWTDisclosures({ age: 24 });
-    expect(await extractDisclosedClaims([...disclosures, '', 'header.payload.sig'], _sd)).toEqual({ age: 24 });
+
+  it('rejects malformed base64url, invalid UTF-8 and invalid disclosure shapes even when referenced', async () => {
+    const samples = ['!', b64url(Uint8Array.from([0xff])), b64url(new TextEncoder().encode('["salt","name"]'))];
+    for (const disclosure of samples) {
+      const digest = b64url(sha256(new TextEncoder().encode(disclosure)));
+      await expect(extractDisclosedClaimsStrict([disclosure], [digest])).rejects.toThrow('Invalid SD-JWT disclosure');
+    }
   });
 });
