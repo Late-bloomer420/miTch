@@ -219,15 +219,19 @@ export class WebAuthnService {
   /**
    * Registriert den primären Identity-Key für das Wallet.
    * Dieser Key ist hardware-gebunden und dient als Root-of-Trust.
+   *
+   * An authenticator keeps one resident credential per RP ID and user handle, and
+   * the RP ID is a hostname without port. Two wallets on the same host must pass
+   * different `userId` values, or registering one replaces the other's credential.
    */
   static async registerIdentityKey(
-    rpId: string = typeof location !== 'undefined' ? location.hostname : 'localhost'
+    rpId: string = typeof location !== 'undefined' ? location.hostname : 'localhost',
+    userId: string = 'AskMI-identity-key-v1'
   ): Promise<PasskeyRegistration> {
     if (!isWebAuthnAvailable()) {
       return this.registerPasskey('AskMI-identity-key', rpId);
     }
 
-    const userId = 'AskMI-identity-key-v1';
     const userIdBuffer = new TextEncoder().encode(userId).buffer;
 
     const createOptions: PublicKeyCredentialCreationOptions = {
