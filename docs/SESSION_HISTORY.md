@@ -169,3 +169,21 @@ The separate Connect API and integration remain outstanding under #170.
 - [Exact code revision, commands, results and boundaries](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
   This is numeric-age middleware with minimized application results, not ZKP or
   official-wallet interoperability evidence. No pilot/release gate changes.
+
+# 2026-11-19 — Build/Test-Laufzeit-Baselinemessung
+
+- Question: why does `pnpm build`/`pnpm test` feel long? No documented baseline
+  existed (no runtime entries in BACKLOG/STATE/SESSION_HISTORY).
+- Method: timed warm/cold runs plus per-suite vitest breakdown on the local
+  Windows machine (Node 24, 12 cores, `551a09d`). Exact commands, numbers and
+  limits: [dated QA report](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md).
+- Measured results: warm build 5.7 s / warm tests 4.0 s (Turbo cache); cold test
+  graph 3 m 59 s. jsdom boot dominates wallet-pwa (68 s of 120 s suite); the
+  evidence suite is contention-amplified (87 s parallel vs 22 s isolated) with
+  real `spawnSync` subprocess tests by design; PQC/shared-crypto is real work but
+  only rank 7. `turbo.json` has no `inputs`; CI runs cold caches plus a duplicate
+  `pnpm build` in the layer-validation job.
+- Outcome: docs-only evidence on branch `docs/qa-perf-baseline-2026-11-19`;
+  follow-up proposals recorded in the BACKLOG entry (turbo `inputs`, CI cache,
+  jsdom boot, evidence real-spawn tier, demo environment hosting decision).
+  No code changed, no pilot/release gate moves.

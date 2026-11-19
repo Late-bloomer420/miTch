@@ -1,5 +1,8 @@
 # AskMI — Master Backlog
 
+**2026-11-19 — Build/Test performance baseline (branch `docs/qa-perf-baseline-2026-11-19`, base `70c7aef`):**
+first measured runtime baseline for `pnpm build`/`pnpm test` (Windows, Node 24, 12 cores, `551a09d` working tree): warm build 5.7 s and warm tests 4.0 s via Turbo cache; cold test graph (`turbo run test --force`) 3 m 59 s. Top contributors measured: wallet-pwa (120 s, of which 68 s jsdom environment boot) and evidence (87 s under full parallel load vs 22 s isolated — contention-amplified real subprocess tests, see addendum). Causes recorded: `turbo.json` without `inputs`, CI runs with cold Turbo cache plus a second full build in the layer-validation job. [Dated evidence, commands and limits](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md). Follow-ups proposed, NOT implemented: turbo `inputs`, CI Turbo cache, wallet-pwa jsdom boot cost, evidence real-spawn tier, demo/pilot environment hosting (owner decision). Docs-only; no code changed, no release or pilot gate moves.
+
 **2026-11-18 — audit-log L2 anchor honest status (`fix/audit-log-l2-anchor-honest-status`, base `58d0af9`, change `a7ed22d`):**
 PR #297 stops the L2 anchor client from reporting mocked submissions as `confirmed` and unchecked verifications as verified (SECURE-1 F-05/F-06, tasks `L2A-01`..`L2A-04`). This is a mitigation: no real anchoring exists. [Scoped evidence and limits](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). The SECURE-1 records stay unchanged; real anchoring remains OPEN under #294, backend decision under #295, `StateAnchorClient` labeling under #296. No release or pilot gate moves.
 
