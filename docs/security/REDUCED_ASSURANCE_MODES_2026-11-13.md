@@ -35,7 +35,7 @@ These are the rows #242 is about. Nobody has to opt in; the reduced path is the 
 | A9 | `verifier-sdk/src/ad-verifier.ts:232-242` | Scope binding uses a "structural placeholder" | Per the code comment; the call path was not traced here | Experimental | none found |
 | A10 | `phase0-security` (several classes) | Checks that always succeed, for example `VerifierDirectClient.verifyResponse()` | Always, per #243. Not re-read for this inventory | Demo-only | #243 |
 
-A7 is labelled in the data it produces: decision capsules carry `wallet_attestation_method: 'software-fallback'` (`WalletService.ts:523`). The person using the wallet sees only a log line.
+A7 is labelled in the data it produces: decision capsules carry `wallet_attestation_method: 'software-fallback'` (`wallet-pwa/src/services/WalletService.ts:523`). The person using the wallet sees only a log line.
 
 ## B. Active only by explicit choice
 
