@@ -53,6 +53,16 @@ Warum wirken `pnpm build` / `pnpm test` lang? Es existierte keine dokumentierte 
 - Ursache der hohen evidence-Testdauer (Testinhalt) nicht im Detail analysiert.
 - Build-Ausgabe enthielt eine Pfadreferenz auf einen `wt-fix238`-Worktree in shared-crypto-Platform-Warnung (Vite externalize-Hinweis) — unbeachtet, nicht geklärt.
 
+## Nachtrag (gleicher Tag, spätere Einzelmessung): @askmi/evidence isoliert
+
+`npx vitest run --reporter=verbose` direkt im Package (keine Parallel-Konkurrenz, gleiche Maschine/Revision):
+Duration **22.31 s** (transform 0.74 s, import 1.29 s, Tests 21.23 s), 24 passed, 1 skipped.
+
+Korrektur/Präzisierung zur Kaltlauf-Tabelle oben:
+1. **Die 87 s sind keine intrinsische Suiten-Dauer, sondern Konkurrenz-verstärkt** (12 Kerne voll durch parallele Package-Läufe; Faktor ~4x im Einzelsuiten-Vergleich). Aussage "evidence ist Nr. 2" gilt für den Volllast-Szenario, nicht für die isolierte Suite.
+2. **Die Testarbeit ist echt und by design:** `runner.test.ts` (226 LOC) testet den Evidence-Runner mit **realen `spawnSync`-Kindprozessen** (echte pnpm-/vitest-Aufrufe). Einzeln dauern diese Integrationstests 0,5–5,5 s (z. B. "invalid npm_execpath (untrusted.cjs)" 5,4 s, "falls back to the pinned pnpm dependency" 3,6 s). Das ist der Zweck des Packages (shell-free Evidence-Execution), kein Verschwendungs-Befund.
+3. Mögliche Behandlungsoptionen (Vorschlag, nicht umgesetzt): die `vitestExecutor (integration, real spawn)`-Gruppe als eigene Stufe auslagern ( separates CI-Job oder `vitest -t` Filter), sodass Unit-Anteil im schnellen Feed zurückbleibt und die Real-Spawn-Tests gezielt/nicht bei jedem lokalen Run laufen.
+
 ## Abgeleitete Follow-ups (Vorschläge, NICHT umgesetzt)
 
 1. turbo `inputs` je Task definieren (Cache-Invalidierung einschränken).
