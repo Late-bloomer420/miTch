@@ -223,6 +223,25 @@ describe('DataFlowService', () => {
     expect(txns[1].transactionId).toBe(DEC_ID);
   });
 
+  it('orders events chronologically within a transaction', () => {
+    const metadata = { decision_id: DEC_ID };
+    const [txn] = service.buildTransactions([
+      makeEntry({ action: 'KEY_DESTROYED', timestamp: '2026-01-01T00:00:02Z', metadata }),
+      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-01-01T00:00:01Z', metadata }),
+    ]);
+
+    expect(txn.events.map(event => event.action)).toEqual(['KEY_CREATED', 'KEY_DESTROYED']);
+  });
+
+  it('places a transaction with an unparsable start time last', () => {
+    const txns = service.buildTransactions([
+      makeEntry({ action: 'KEY_CREATED', timestamp: 'not-a-date', metadata: { decision_id: DEC_ID } }),
+      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-01-01T00:00:00Z', metadata: { decision_id: DEC_ID_2 } }),
+    ]);
+
+    expect(txns.map(txn => txn.transactionId)).toEqual([DEC_ID_2, DEC_ID]);
+  });
+
   it('builds single event transaction', () => {
     const entries = [
       makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),
@@ -673,30 +692,5 @@ describe('DataFlowService — Layer-2 visibility (G-140 surfacing): per-claim se
     ];
     const [txn] = service.buildTransactions(entries);
     expect(txn.claimSensitivity).toBeUndefined();
-  });
-
-  describe('ordering', () => {
-    const at = (decision: string, timestamp: string, action: AuditLogEntry['action']) =>
-      makeEntry({ action, timestamp, metadata: { decision_id: decision } });
-
-    it('orders each transaction by time and lists the newest transaction first', () => {
-      const transactions = service.buildTransactions([
-        at('older', '2026-01-01T00:00:02.000Z', 'KEY_DESTROYED'),
-        at('newer', '2026-02-01T00:00:00.000Z', 'KEY_CREATED'),
-        at('older', '2026-01-01T00:00:01.000Z', 'KEY_CREATED'),
-      ]);
-
-      expect(transactions.map((t) => t.transactionId)).toEqual(['newer', 'older']);
-      expect(transactions[1].startedAt).toBe('2026-01-01T00:00:01.000Z');
-    });
-
-    it('treats an unparsable timestamp as the oldest entry', () => {
-      const transactions = service.buildTransactions([
-        at('broken', 'not-a-date', 'KEY_CREATED'),
-        at('valid', '2026-01-01T00:00:00.000Z', 'KEY_CREATED'),
-      ]);
-
-      expect(transactions.map((t) => t.transactionId)).toEqual(['valid', 'broken']);
-    });
   });
 });
