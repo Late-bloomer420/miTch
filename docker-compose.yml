@@ -1,5 +1,4 @@
-# AskMI Sovereign Deployment Orchestration
-# 100% EUDI Compliance & Data Sovereignty
+# AskMI demo deployment orchestration. Not a compliance or conformance statement.
 
 services:
   # 1. Verifier Backend (The RP Entry Point)
@@ -9,6 +8,8 @@ services:
       dockerfile: src/apps/verifier-demo/backend/Dockerfile
     environment:
       - PORT=3000
+      # live: the trust list must be HTTPS and signed by ASKMI_TSL_ANCHOR_JWK (P-256 public
+      # JWK). Without that key every issuer is denied. Use dev only with local mock services.
       - ASKMI_TRUST_MODE=live
       - ASKMI_TSL_URL=https://trust.askmi.demo/v1/eudi-lotl.json
       - VERIFIER_BASE_URL=https://verifier.askmi.demo
