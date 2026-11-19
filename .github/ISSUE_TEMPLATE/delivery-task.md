@@ -12,7 +12,7 @@ Who needs this and what should they be able to do or decide?
 
 ## Ownership and roadmap
 
-Link the parent issue or gate. Select the lead group label. Set the assignee when someone takes the task. List any dependency and the decision or input needed from it.
+Link the parent issue or gate. Apply one lead group label (`group: product`, `group: engineering` or `group: assurance`). Set the assignee when someone takes the task. List any dependency and the decision or input needed from it.
 
 ## Work
 

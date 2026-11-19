@@ -18,7 +18,13 @@ Start with the [first delivery milestone](https://github.com/Late-bloomer420/miT
 
 ### Running the work
 
-Use three working groups. **Product** owns the buyer, offer and priority decisions. **Engineering** owns a working integration and its reproducible handoff. **Assurance** owns review of the privacy and security evidence and records residual findings. One person can cover several roles. When the author also reviews a result, record it as a self-review. The existing independent review gate still applies.
+Use the GitHub label for the group leading the task.
+
+- `group: product` owns buyer, offer and priority decisions.
+- `group: engineering` owns the working integration and its reproducible handoff.
+- `group: assurance` reviews privacy and security evidence and records residual findings.
+
+One person can cover several roles. When the author also reviews a result, record it as a self-review. The existing independent review gate still applies.
 
 - **Intake.** Search for the outcome first. Add a checklist to the existing issue when the same person can deliver it. Open a linked delivery task for a separate owner or separately verifiable result. Select one `group:` label for the lead. Keep existing component, security and decision labels where applicable.
 - **Weekly selection.** At a 20-minute weekly review, open the milestone, read the evidence on the last item and choose one next action per available owner. An assignee is the person who has taken the work. Unassigned items are available. Record blockers on the issue with the decision needed and who can make it. Work outside the milestone stays in the backlog.
