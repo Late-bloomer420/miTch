@@ -47,7 +47,7 @@ excepted; entries expire after at most 90 days. Dated registry output, no `docs/
 | #176 role separation and provider dependency/exit | P2 design; before independence claims | OPEN design | Selected RP profile; actual interoperability stays #97 |
 | #177 agent advice versus authenticated action consent | P2 design; before live agent actions | OPEN contract investigation | Evaluation Boolean is not an approval token; runtime enforcement before a live action connector |
 
-Product goals stay as listed in [Goals retained](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md#goals-retained-implementation-gaps-remain-visible). [Five outcome milestones](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) fit inside #142's existing waves. No dates or gates change. First runtime priority remains #170 with relevant #141 reconciliation, followed by #171 and applicable #172/#173 work. Do not duplicate those issues.
+Product goals stay as listed in [Goals retained](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md#goals-retained-implementation-gaps-remain-visible). [Five outcome milestones](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) fit inside #142's existing waves. No dates or gates change. #170's active-route slice is implemented and merged (#208/#224, closed 2026-10-25; [scoped evidence](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md), limits per [dated evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md)); remaining runtime work stays #171 and applicable #172/#173, plus the wallet-side final gate #180/#181. Do not duplicate those issues.
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
