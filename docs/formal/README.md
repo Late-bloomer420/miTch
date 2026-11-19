@@ -10,9 +10,9 @@ The intended mapping is the in-memory `consume` in `src/packages/connect/src/cor
 
 ## Property and proof obligations
 
-Let `used` indicate whether the one session has been consumed and `count` the number of accepted attempts. The invariant is `count >= 0 ∧ count <= (if used then 1 else 0)`. Initially `used = false` and `count = 0`. One abstract step sets `used = true`, and increases `count` exactly when the prior session was unused and all checks were true. Z3 checks that neither the base case nor any invariant-preserving transition can violate the invariant. By induction over the modeled transitions, no modeled execution can accept more than once. It also checks that an accepted attempt has all abstract checks true and that a consumed session cannot accept again.
+Let `used` indicate whether the one session has been consumed and `count` the number of accepted attempts. The invariant is `count >= 0 ∧ count <= (if used then 1 else 0)`. Initially `used = false` and `count = 0`. One abstract step sets `used = true`, and increases `count` exactly when the prior session was unused and all checks were true. Z3 checks the invariant on the initial state and across one transition from any state that satisfies it. By induction over the modeled transitions, no modeled execution can accept more than once. Two further checks state that acceptance requires all abstract checks and an unused session. For the honest model these follow directly from the definition of acceptance; they are not independent evidence and only pin that definition.
 
-The model additionally requires a reachable honest acceptance and counterexamples for two mutations: failure to consume and omission of the binding check. This helps expose vacuous assertions; it does not prove that the mutations correspond to actual implementation defects. Solver `unsat` is conditional on the model and solver correctness, not a security certificate.
+The model additionally requires a reachable honest acceptance. Four mutants change the model: no consumption, no binding check, acceptance of a consumed session, and an invariant that excludes the initial state. The same property formulas are evaluated for each mutant and must yield a counterexample, which shows that those checks can fail. It does not prove that the mutations correspond to actual implementation defects. Solver `unsat` is conditional on the model and solver correctness, not a security certificate.
 
 ## Reproduce
 
@@ -23,7 +23,7 @@ python -m pip install z3-solver==4.15.4.0
 python docs/formal/session_one_shot.py
 ```
 
-Expected: four `unsat` violation checks, two `sat` mutant witnesses, and a `sat` reachability witness. Nonmatching outcomes or solver errors cause a nonzero exit. Review the script and models before relying on the result.
+Expected: four `unsat` honest-model checks, four `sat` mutant counterexamples, and a `sat` reachability witness. Nonmatching outcomes or solver errors cause a nonzero exit. Review the script and models before relying on the result.
 
 ## Further work
 
