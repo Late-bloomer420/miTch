@@ -73,6 +73,30 @@ describe('DIDResolver', () => {
         });
     });
 
+    describe('did:askmi document location', () => {
+        const askmiDoc = { ...validDoc, id: 'did:askmi:verifier-liquor-store' };
+
+        it('fetches from the configured verifier', async () => {
+            mockFetch.mockResolvedValue({ ok: true, json: async () => askmiDoc });
+            const configured = new DIDResolver({
+                fetchFn: mockFetch as any,
+                didAskmiDocumentUrl: 'http://localhost:3104/did.json',
+            });
+
+            await configured.resolve('did:askmi:verifier-liquor-store');
+
+            expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:3104/did.json');
+        });
+
+        it('keeps the existing demo backend when none is configured', async () => {
+            mockFetch.mockResolvedValue({ ok: true, json: async () => askmiDoc });
+
+            await resolver.resolve('did:askmi:verifier-liquor-store');
+
+            expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:3004/did.json');
+        });
+    });
+
     it('resolves did:web successfully', async () => {
         mockFetch.mockResolvedValue({
             ok: true,
