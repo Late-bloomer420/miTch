@@ -33,13 +33,18 @@ function makeRequest(nonce: string): AuthorizationRequest {
   } as unknown as AuthorizationRequest;
 }
 
-/** Issue a credential the way issuer-mock (ADOPT-0a) does. */
-async function issueLikeIssuerMock(issuer: CryptoKeyPair, holderPub: CryptoKey): Promise<string> {
-  const { _sd, disclosures } = await createSDJWTDisclosures({ age: 24, dateOfBirth: '2000-01-01' });
+/** Issue a credential the way issuer-mock (ADOPT-0a) does; claims/vct default to its age credential. */
+async function issueLikeIssuerMock(
+  issuer: CryptoKeyPair,
+  holderPub: CryptoKey,
+  claims: Record<string, unknown> = { age: 24, dateOfBirth: '2000-01-01' },
+  vct = 'https://askmi.demo/vct/age-credential'
+): Promise<string> {
+  const { _sd, disclosures } = await createSDJWTDisclosures(claims);
   const issuerJwt = await issueSDJWTVC(
     {
       iss: 'did:web:localhost%3A3005',
-      vct: 'https://askmi.demo/vct/age-credential',
+      vct,
       cnf: await buildCNFClaim(holderPub),
       _sd,
       iat: Math.floor(Date.now() / 1000),
@@ -210,5 +215,41 @@ describe('ADOPT-0b real presentation e2e', () => {
     });
 
     expect(result.ok).toBe(false);
+  });
+});
+
+/** Synthetic exploration for #97: not an EUDI profile or a ZK proof. */
+describe('synthetic issuer-attested age boolean', () => {
+  it('verifies the issuer-attested boolean while withholding age and date of birth', async () => {
+    const issuer = await ecKey();
+    const holder = await ecKey();
+    const stored = await issueLikeIssuerMock(
+      issuer,
+      holder.publicKey,
+      { age_over_18: true, age: 24, birthdate: '2000-01-01' },
+      'https://example.org/synthetic-age-boolean'
+    );
+    const [issuerJwt, , withheldAge, withheldBirthdate] = stored.split('~');
+    const { vpToken } = await buildSdJwtPresentation(stored, ['age_over_18'], holder.privateKey, {
+      aud: 'did:askmi:verifier',
+      nonce: 'nonce-3',
+    });
+    const verify = (issuerPublicKey: CryptoKey, nonce = 'nonce-3') =>
+      validateSDJWTPresentation({
+        vpTokenString: vpToken,
+        request: makeRequest(nonce),
+        issuerPublicKey,
+        checkRevocation: false,
+        checkTrust: false,
+      });
+
+    expect(vpToken.split('~')[0]).toBe(issuerJwt);
+    expect(vpToken).not.toContain(withheldAge);
+    expect(vpToken).not.toContain(withheldBirthdate);
+    const result = await verify(issuer.publicKey);
+    expect(result.ok).toBe(true);
+    expect(result.disclosedClaims).toEqual({ age_over_18: true });
+    expect((await verify((await ecKey()).publicKey)).ok).toBe(false);
+    expect((await verify(issuer.publicKey, 'wrong-nonce')).ok).toBe(false);
   });
 });
