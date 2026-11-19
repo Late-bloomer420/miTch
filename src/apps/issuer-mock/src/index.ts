@@ -14,6 +14,7 @@ import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
 export const app: Express = express();
 const allowedOrigins = new Set([
+    'http://localhost:5184',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
@@ -94,6 +95,9 @@ app.get('/.well-known/openid-credential-issuer', (req, res) => {
     });
 });
 
+/** Key id published in the JWKS and set in every issued SD-JWT VC header. */
+const ISSUER_KID = 'key-1';
+
 // JWKS Endpoint (for Verifier to fetch public key)
 app.get('/.well-known/jwks.json', async (req, res) => {
     if (!issuerKeys) return res.status(503).json({ error: 'keys_not_ready' });
@@ -105,7 +109,7 @@ app.get('/.well-known/jwks.json', async (req, res) => {
         keys: [
             {
                 ...jwk,
-                kid: 'key-1', // Key ID matches 'verificationMethod' in VC
+                kid: ISSUER_KID, // Key ID matches 'verificationMethod' in VC
                 use: 'sig',
                 alg: 'ES256'
             }
@@ -247,6 +251,7 @@ app.post('/credential', async (req, res) => {
                 _sd,
             },
             issuerKeys.privateKey,
+            { kid: ISSUER_KID },
         );
         const credential = `${issuerJwt}~${disclosures.join('~')}~`;
 

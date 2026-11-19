@@ -52,6 +52,17 @@ Full dated audit and reproduction paths: [`docs/qa/API_PROTOCOL_REALITY_AUDIT_20
 | API-06 | P2 (docs truth) | `docs/_core/03_ARCHITECTURE.md:10` cited `@sd-jwt/core`..`@sd-jwt/verify`, which are absent from the repository | Closed in docs on `chore/enable-entire` (`2026-11-03`) |
 | API-07 | P1 (2026 EUDI protocol alignment) | Pre-final OID4VP (DIF PE v2, `client_id_scheme`, `redirect_uri`, static `walletBaseUrl`), draft-13 `/batch_credential`, custom LOTL JSON, and custom `askmi-poe` erasure/reporting differ from OpenID4VP 1.0 Final (DCQL, Client ID Prefixes, `response_uri`, `verifier_info` WRPRC), W3C DC API, OpenID4VCI 1.0 Final, ETSI TS 119 602 LoTE, and EUDI TS07/TS08 | Stages 1–3 (`API-V2-S1`..`S3` / `#97`) in `docs/tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md` |
 
+### Scoped audit-log findings — 2026-11-18 (base `58d0af9`, change `a7ed22d`)
+
+Dated record and limits: [`docs/qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md`](../qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). Source findings are SECURE-1 F-05/F-06 (register unchanged). These rows do not duplicate or close `#170`–`#173`.
+
+| ID | Priority | Evidence / exact boundary | Owner / close condition |
+|---|---|---|---|
+| L2A-01 (F-05/F-06) | P1 (proposed) | Reproduced defect (false success): mocked receipts were `confirmed`, `verifyAnchor()` returned `true` without an on-chain check. Mitigated on the audit-log client path only; no on-chain behavior exists | PR #297: scoped mitigation, owner approval for the public API behavior change. Does not close F-05/F-06 |
+| L2A-02 | P2 (proposed) | Planned function: no provider, contract or on-chain verification exists | #294: real submit and verify with integration negatives and dated evidence |
+| L2A-03 | P2 (proposed) | Design decision open: backend choice and privacy constraints (no per-user anchors, salted leaves) | #295: accepted ADR, `AnchorBackend` port, reconciliation with `@askmi/anchor-service` |
+| L2A-04 | P1 (proposed) | `StateAnchorClient` fallback of `AuditLog.syncToL2()` emits receipts without status into the exportable log; read from source, not yet reproduced at runtime | #296: label as `mocked` and add an export test |
+
 ### Important implemented pieces to preserve
 
 Issuer signatures, digest-verified disclosures and KB-JWT primitives exist; #132/#135/#137 fixed real problems.
