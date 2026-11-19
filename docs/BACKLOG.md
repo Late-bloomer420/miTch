@@ -1,5 +1,30 @@
 # AskMI — Master Backlog
 
+## What to work on first
+
+Start with the [first delivery milestone](https://github.com/Late-bloomer420/miTch/milestone/1). It brings together two questions. Can a buyer describe a costly problem in approving a hotel check-in request? Can a reviewer establish exactly what information survives one synthetic age check? DACH hospitality is the commercial hypothesis. The age check is a technical reference. Product owns any decision to change the first market.
+
+| Order | Who leads | First action | What counts as done |
+|---|---|---|---|
+| Now | Product owner | Reconcile the private interview tally for the **22 November 2026** offer review. Use the [interview kit](05-business/ASKMI_G1_INTERVIEW_KIT.md). | The founder records the G1 and G2 decisions, anonymised counts or explicit unknowns, and the next action in the [commercial tracker](https://github.com/Late-bloomer420/miTch/issues/143). [Review task #305](https://github.com/Late-bloomer420/miTch/issues/305) |
+| In parallel | Assurance lead, with an engineer to run the fixture | Follow one synthetic age check from issuer to application. Record which claims and artifacts each recipient can see or retain. | A reviewer can repeat the run from its revision and command. The table covers disclosures, receipts, logs and exports and identifies surfaces the reviewer could not inspect. [Evidence task #260](https://github.com/Late-bloomer420/miTch/issues/260) |
+| At the decision | Product owner | Compare one buyer's workflow with its incumbent approach, using the discovery results. Choose a measurable difference such as staff minutes spent approving a change to a claim request. Record how the baseline was measured. | The owner names the buyer role, country, workflow and alternative, then records a reason to pursue, narrow, partner or park. [Buyer decision #284](https://github.com/Late-bloomer420/miTch/issues/284) |
+
+### From discovery to a success story
+
+1. **Buyer evidence.** G1 calls for 20 interviews, at least eight problem confirmations and three interviews with a budget owner, procurement trigger or deadline. G2 calls for two design partners and at least one paid Readiness Sprint with signed scope and success criteria. If evidence falls short, keep the expansion hold and record the next discovery question. [Market roadmap](GTM_SPRINT_ROADMAP.md)
+2. **A repeatable handoff.** Once a partner agrees to a readiness exercise, write down the starting workflow, one metric and the success threshold together. Have someone outside the implementation team repeat the synthetic exercise. Record the observed value, revision, profile and limitations. Official-wallet interoperability and the live-credential pilot have separate acceptance criteria in the [technical roadmap](RELEASE_READINESS_ROADMAP.md) and [release tracker](https://github.com/Late-bloomer420/miTch/issues/142).
+3. **A story the partner can verify.** Write one paragraph with the original problem, the before and after measurements, the workflow tested, what failed or remains unknown, and the partner's next decision. Get the partner's approval for any public wording. Keep raw scorecards and contracts private.
+
+### Running the work
+
+Use three working groups. **Product** owns the buyer, offer and priority decisions. **Engineering** owns a working integration and its reproducible handoff. **Assurance** owns review of the privacy and security evidence and records residual findings. One person can cover several roles. When the author also reviews a result, record it as a self-review. The existing independent review gate still applies.
+
+- **Intake.** Search for the outcome first. Add a checklist to the existing issue when the same person can deliver it. Open a linked delivery task for a separate owner or separately verifiable result. Select one `group:` label for the lead. Keep existing component, security and decision labels where applicable.
+- **Weekly selection.** At a 20-minute weekly review, open the milestone, read the evidence on the last item and choose one next action per available owner. An assignee is the person who has taken the work. Unassigned items are available. Record blockers on the issue with the decision needed and who can make it. Work outside the milestone stays in the backlog.
+- **Handoff.** Engineering gives Assurance the revision, profile, command and expected result. Assurance records what was observed and what remains unknown. Product uses that record when discussing a capability with a buyer. Close the issue when its acceptance evidence is linked. The roadmap owner records any gate change on the relevant tracker.
+- **When to form a department.** At each monthly review, look for a group with recurring work, a named lead with time to own it, and decisions or handoffs that repeatedly stall. If those conditions hold, give that lead a written mandate, capacity and a measure they own. Until then, manage the work through the group label and issue assignee.
+
 **2026-11-18 — audit-log L2 anchor honest status (`fix/audit-log-l2-anchor-honest-status`, base `58d0af9`, change `a7ed22d`):**
 PR #297 stops the L2 anchor client from reporting mocked submissions as `confirmed` and unchecked verifications as verified (SECURE-1 F-05/F-06, tasks `L2A-01`..`L2A-04`). This is a mitigation: no real anchoring exists. [Scoped evidence and limits](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). The SECURE-1 records stay unchanged; real anchoring remains OPEN under #294, backend decision under #295, `StateAnchorClient` labeling under #296. No release or pilot gate moves.
 
