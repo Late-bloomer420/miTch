@@ -12,6 +12,12 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- fix: clarify age claims and test issuer-attested disclosure ([#287](https://github.com/Late-bloomer420/miTch/pull/287))
+- docs(tasks): scope slim age-verifier template and map open PRs ([#290](https://github.com/Late-bloomer420/miTch/pull/290))
+- fix(shared-crypto): trust list fails closed outside explicit dev mode (#240) ([#276](https://github.com/Late-bloomer420/miTch/pull/276))
+- fix(verifier-demo): select issuer JWKS key by kid, fail closed when ambiguous ([#292](https://github.com/Late-bloomer420/miTch/pull/292)) — evidence: [`ISSUER_KID_SELECTION_2026-11-18.md`](docs/qa/ISSUER_KID_SELECTION_2026-11-18.md)
+- docs(security): static inventory of reduced-assurance modes (#242) ([#279](https://github.com/Late-bloomer420/miTch/pull/279))
+- chore(ci): remove Gemini bot workflows and slash commands (no API quota) ([#303](https://github.com/Late-bloomer420/miTch/pull/303))
 - feat(verifier-demo): add non-official age_over_18 exploration profile ([#291](https://github.com/Late-bloomer420/miTch/pull/291)) — evidence: [`AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md`](docs/qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md)
 - docs(security): STRIDE × LINDDUN threat model roadmap and issue mapping ([#187](https://github.com/Late-bloomer420/miTch/pull/187))
 - docs(architecture): decoupling audit ARCH-01..09, re-verified against 624cf9a ([#188](https://github.com/Late-bloomer420/miTch/pull/188))
