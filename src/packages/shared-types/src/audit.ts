@@ -244,8 +244,9 @@ export interface L2AnchorReceipt {
      * - 'pending': Queued for batching
      * - 'confirmed': Successfully anchored on L2
      * - 'failed': Anchoring failed
+     * - 'mocked': Synthetic receipt — NO on-chain transaction was sent (F-06)
      */
-    status?: 'pending' | 'confirmed' | 'failed';
+    status?: 'pending' | 'confirmed' | 'failed' | 'mocked';
 }
 
 
