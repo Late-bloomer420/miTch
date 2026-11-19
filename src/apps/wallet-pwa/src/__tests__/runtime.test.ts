@@ -4,7 +4,9 @@ import { runtimeOriginAllowed, walletRoute } from '../runtime';
 describe('wallet entry and isolation boundary', () => {
   it('opens incoming sessions directly without a demo query flag', () => {
     expect(
-      walletRoute('?state=askmi_sess_123&nonce=abc&request_uri=https%3A%2F%2Frp.example')
+      walletRoute(
+        '?state=askmi_sess_123&nonce=abc&request_uri=http%3A%2F%2Flocalhost%3A3104%2Faskmi%2Fconnect%2Fsessions%2Faskmi_sess_123%2Frequest'
+      )
     ).toBe('wallet');
     expect(walletRoute('?endpoint=http://localhost:3004&scenario=liquor-store&sessionId=123')).toBe(
       'wallet'
@@ -14,6 +16,13 @@ describe('wallet entry and isolation boundary', () => {
     expect(walletRoute('?state=askmi_sess_')).toBe('invalid');
     expect(walletRoute('?request_uri=')).toBe('invalid');
     expect(walletRoute('')).toBe('landing');
+  });
+  it('rejects a complete session link whose request endpoint is not that session', () => {
+    expect(
+      walletRoute(
+        '?state=askmi_sess_123&nonce=abc&request_uri=http%3A%2F%2Flocalhost%3A3104%2Fother'
+      )
+    ).toBe('invalid');
   });
   it('refuses to initialize a demo build on an existing wallet origin', () => {
     expect(runtimeOriginAllowed('http://localhost:5184', true)).toBe(true);

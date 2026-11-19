@@ -1,3 +1,5 @@
+import { parseConnectHandoff } from './utils/connect-handoff';
+
 // Build-time selection: query parameters cannot switch storage environments.
 export const isDemoRuntime = import.meta.env?.MODE === 'demo';
 export const demoWalletOrigin = 'http://localhost:5184';
@@ -19,6 +21,11 @@ export function walletRoute(search: string): 'wallet' | 'landing' | 'invalid' {
   if (['state', 'nonce', 'request_uri'].some((key) => params.has(key))) {
     if (!params.get('state') || !params.get('nonce') || !params.get('request_uri'))
       return 'invalid';
+    try {
+      parseConnectHandoff(search);
+    } catch {
+      return 'invalid';
+    }
     return 'wallet';
   }
   if (

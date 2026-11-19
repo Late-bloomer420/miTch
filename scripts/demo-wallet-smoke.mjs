@@ -56,6 +56,9 @@ try {
   await link.waitFor();
   const declined = await link.getAttribute('href');
   await wallet.goto(declined);
+  // The passkey enrolled above makes this a returning wallet, which stays locked
+  // behind an overlay until the user unlocks it.
+  await wallet.getByRole('button', { name: 'Unlock with Biometrics', exact: true }).click();
   const decline = wallet.getByRole('button', { name: 'Decline request', exact: true });
   await decline.click();
   await decline.waitFor({ state: 'hidden' });
@@ -68,10 +71,31 @@ try {
   const session = await (await fetch(`http://localhost:3104/askmi/connect/sessions/${id}`)).json();
   assert.equal(session.status, 'pending');
   assert.equal(session.result, undefined);
+
+  // The built-in age check encrypts to the verifier key, so it must find this
+  // demo's verifier on port 3104.
+  await wallet.goto('http://localhost:5184/?demo=wallet');
+  await wallet.getByRole('button', { name: 'Unlock with Biometrics', exact: true }).click();
+  await wallet.getByRole('button', { name: 'Requests', exact: true }).click();
+  const responseFrom = (url, method) =>
+    wallet.waitForResponse(
+      (response) =>
+        response.url() === url && response.request().method() === method && response.ok(),
+      { timeout: 15000 }
+    );
+  await Promise.all([
+    responseFrom('http://localhost:3104/did.json', 'GET'),
+    responseFrom('http://localhost:3104/present', 'POST'),
+    (async () => {
+      await wallet.locator('#btn-liquor-store').click();
+      await wallet.getByRole('button', { name: 'Approve Disclosure', exact: false }).click();
+    })(),
+  ]);
+
   await wallet.goto('http://localhost:5184/?state=askmi_sess_');
   await wallet.getByRole('heading', { name: 'Invalid wallet request' }).waitFor();
   console.log(
-    'PASS: store handoff, virtual-passkey enrollment, mock issuance, consent-before-presentation, verified eligibility, demo database, decline and malformed link.'
+    'PASS: store handoff, virtual-passkey enrollment, mock issuance, consent-before-presentation, verified eligibility, demo database, decline, built-in age check and malformed link.'
   );
 } catch (error) {
   await wallet

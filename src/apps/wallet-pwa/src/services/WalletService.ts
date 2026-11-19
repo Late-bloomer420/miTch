@@ -31,7 +31,7 @@ import {
   KeyProtectionLevel,
   signData,
   sha256,
-  resolveDID,
+  DIDResolver,
   detectKeyAlgorithm,
   generateHolderBinding,
   createKeyBindingJWT,
@@ -42,6 +42,7 @@ import {
 } from '@askmi/shared-crypto';
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
+import { CONFIG } from '../config';
 import { DEMO_POLICY } from '../data/DemoPolicy';
 import { ISOLATED_DEMO_POLICY } from '../data/IsolatedDemoPolicy';
 import {
@@ -281,6 +282,12 @@ const MDOC_MDL_CREDENTIAL = {
 const keyCache = new Map<string, { key: CryptoKey; expires: number }>();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 
+// did:askmi documents come from the verifier this build is configured to use.
+const verifierDidResolver = new DIDResolver({
+  didAskmiDocumentUrl: new URL('/did.json', CONFIG.VERIFIER_ENDPOINT).href,
+  fetchFn: (...args) => fetch(...args),
+});
+
 // Node-safe localStorage shim for non-browser environments (validation script)
 const localStoreShim: Storage = (() => {
   try {
@@ -342,7 +349,7 @@ async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
 
   // 2. Resolve (Real Resolver from shared-crypto)
   // Supports did:web (HTTPS) and did:askmi (Demo)
-  const didDocument = await resolveDID(did);
+  const didDocument = await verifierDidResolver.resolve(did);
 
   // 3. Extract Key (First Verification Method)
   const vm = didDocument.verificationMethod?.[0];

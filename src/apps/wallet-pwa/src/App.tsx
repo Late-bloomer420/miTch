@@ -2469,9 +2469,7 @@ export default function App() {
     return <main><h1>Demo wallet origin mismatch</h1><p>Open the demo wallet at http://localhost:5184. No wallet was opened.</p></main>;
   }
   const route = walletRoute(window.location.search);
-  let invalidHandoff = route === 'invalid';
-  try { parseConnectHandoff(window.location.search); } catch { invalidHandoff = true; }
-  if (invalidHandoff) {
+  if (route === 'invalid') {
     return <main><h1>Invalid wallet request</h1><p>Return to the store and start a new age check.</p></main>;
   }
   const showWalletDemo =
