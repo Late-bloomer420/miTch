@@ -18,7 +18,7 @@ import {
   createKeyBindingJWT,
   validateKeyBindingJWT,
   buildCNFClaim,
-  extractDisclosedClaims,
+  extractDisclosedClaimsStrict,
   statusResolver,
   trustListResolver,
   type SDJWTVCPayload,
@@ -426,9 +426,16 @@ export async function validateSDJWTPresentation(
   // `_sd` (fail-closed; a holder cannot inject unsigned claims).
   const presentedDisclosures = parts.slice(1, parts.length - 1);
   if (presentedDisclosures.length > 0) {
-    const fromDisclosures = await extractDisclosedClaims(presentedDisclosures, payload._sd ?? []);
-    for (const [k, v] of Object.entries(fromDisclosures)) {
-      if (!METADATA_KEYS.has(k)) disclosedClaims[k] = v;
+    try {
+      const fromDisclosures = await extractDisclosedClaimsStrict(presentedDisclosures, payload._sd ?? []);
+      for (const [k, v] of Object.entries(fromDisclosures)) {
+        if (METADATA_KEYS.has(k) || Object.prototype.hasOwnProperty.call(payload, k)) {
+          return { ok: false, errors: ['Invalid SD-JWT disclosure'] };
+        }
+        disclosedClaims[k] = v;
+      }
+    } catch {
+      return { ok: false, errors: ['Invalid SD-JWT disclosure'] };
     }
   }
 

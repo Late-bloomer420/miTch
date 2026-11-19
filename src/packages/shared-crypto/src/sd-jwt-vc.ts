@@ -394,34 +394,49 @@ export async function createSDJWTDisclosures(
 
 /**
  * Verifier-side complement of `createSDJWTDisclosures`: decode presented
- * disclosure strings and return the claims they reveal — but ONLY for
- * disclosures whose SHA-256 digest is present in the issuer-signed `_sd`
- * array. A disclosure whose digest is not in `_sd` (i.e. not covered by the
- * issuer's signature) is rejected (fail-closed) so a holder cannot inject
- * arbitrary claims.
+ * disclosure strings and return the claims they reveal, ONLY for disclosures
+ * whose SHA-256 digest is present in the issuer-signed `_sd` array. Any
+ * malformed, unmatched or duplicate disclosure rejects the whole set
+ * (RFC 9901 §7.1), so a holder cannot inject or smuggle claims.
+ *
+ * Delimiters and the KB-JWT must already have been removed by the caller.
+ * This deliberately supports only the flat three-element disclosure form.
  */
-export async function extractDisclosedClaims(
+export async function extractDisclosedClaimsStrict(
     disclosures: string[],
     sdDigests: string[]
 ): Promise<Record<string, unknown>> {
     const allowed = new Set(sdDigests);
-    const out: Record<string, unknown> = {};
-    for (const d of disclosures) {
-        if (!d || d.includes('.')) continue; // skip empty segments and any JWT (e.g. KB-JWT)
-        const digest = await sha256Base64url(d);
-        if (!allowed.has(digest)) continue; // fail-closed: only issuer-signed disclosures
+    const seenDigests = new Set<string>();
+    const claims: Record<string, unknown> = Object.create(null);
+    for (const disclosure of disclosures) {
+        if (!/^[A-Za-z0-9_-]+$/.test(disclosure) || disclosure.length % 4 === 1) {
+            throw new Error('Invalid SD-JWT disclosure');
+        }
+        const digest = await sha256Base64url(disclosure);
+        if (!allowed.has(digest) || seenDigests.has(digest)) {
+            throw new Error('Invalid SD-JWT disclosure');
+        }
+        seenDigests.add(digest);
         try {
-            const decoded = JSON.parse(
-                new TextDecoder().decode(
-                    Uint8Array.from(atob(d.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
-                )
-            ) as [string, string, unknown];
-            out[decoded[1]] = decoded[2];
+            const bytes = Uint8Array.from(
+                atob(disclosure.replace(/-/g, '+').replace(/_/g, '/')),
+                (character) => character.charCodeAt(0)
+            );
+            if (base64urlEncode(bytes) !== disclosure) throw new Error('non-canonical');
+            const value: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+            if (!Array.isArray(value) || value.length !== 3 ||
+                typeof value[0] !== 'string' || typeof value[1] !== 'string' ||
+                ['_sd', '...', '__proto__', 'constructor', 'prototype'].includes(value[1]) ||
+                Object.prototype.hasOwnProperty.call(claims, value[1])) {
+                throw new Error('invalid shape');
+            }
+            claims[value[1]] = value[2];
         } catch {
-            // malformed disclosure — skip (fail-closed)
+            throw new Error('Invalid SD-JWT disclosure');
         }
     }
-    return out;
+    return claims;
 }
 
 // ─── SD-JWT VC Presentation (holder, no issuer key) ──────────────────────────
@@ -467,7 +482,7 @@ export async function buildSdJwtPresentation(
             disclosedClaims[name] = value;
         }
     }
-    const presented = `${issuerJwt}~${selected.join('~')}~`;
+    const presented = selected.length > 0 ? `${issuerJwt}~${selected.join('~')}~` : `${issuerJwt}~`;
     const kbJwt = await createKeyBindingJWT(
         { aud: opts.aud, nonce: opts.nonce, sdJwtWithDisclosures: presented },
         holderPrivateKey
