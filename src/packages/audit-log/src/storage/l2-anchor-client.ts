@@ -69,7 +69,7 @@ export interface AnchorVerification {
     reason: string;
 }
 
-/** Sentinel for "anchor contract not deployed". The only definition in this module. */
+/** Sentinel for "anchor contract not deployed". */
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 /**

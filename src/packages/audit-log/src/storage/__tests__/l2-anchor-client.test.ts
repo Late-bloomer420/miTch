@@ -75,7 +75,6 @@ describe('L2AnchorClient — batching path (non-mock network)', () => {
         const receipt = await client.anchorRoot('abcd');
         // submitToL2 has no provider wired, so the receipt is synthetic.
         expect(receipt.status).toBe('mocked');
-        expect(receipt.status).not.toBe('confirmed');
         expect(receipt.stateRoot).toBe('abcd');
     });
 
