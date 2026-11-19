@@ -82,7 +82,9 @@ any, is more plausible via grants and a small number of Enterprise/SLA contracts
 
 ## Reinvestment logic (qualitative)
 
-Under option A/B, reinvestment is legally required and typically goes to: independent audits and
+For the non-profit carrier in options A and B, reinvestment is legally required. The commercial
+GmbH in option A may distribute profit, which reaches the carrier only if the carrier holds its
+shares. Reinvested funds typically go to: independent audits and
 certification, core team, legal/governance, and enterprise sales. Under option C, reinvestment is
 a choice, not an obligation.
 
