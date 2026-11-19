@@ -1,21 +1,19 @@
 # AskMI Architectural Decoupling
 
-> **Role:** Architecture-boundary model, coupling audit, and migration gates.
-> **Status:** PROPOSED — canon status, backlog entries and roadmap placement are decided in a separate PR
+> **Role:** Canonical architecture-boundary model, coupling audit, and migration gates.
+> **Status:** AUTHORITATIVE
 > **Owner:** Technology & Architecture Authority
 > **Last verified:** 2026-11-01 (static re-check against `master` @ `002ce5e`)
 
 ## Authority and Baseline
 
-This document proposes AskMI's intended dependency direction, records the
-currently verified coupling findings, and defines acceptance gates for Phase 6
-architecture work. Whether it becomes canonical, and the matching BACKLOG and
-roadmap changes, are decided separately.
+This document is the single source of truth for AskMI's intended dependency
+direction, the currently verified coupling findings, and the acceptance gates
+for Phase 6 architecture work.
 
 - Task status remains authoritative in [`../BACKLOG.md`](../BACKLOG.md).
-- Deferred architecture work remains tracked in
-  [`../REFACTORING_ROADMAP.md`](../REFACTORING_ROADMAP.md); the proposed
-  migration sequence below is not yet part of it.
+- Migration sequencing remains authoritative in
+  [`../REFACTORING_ROADMAP.md`](../REFACTORING_ROADMAP.md).
 - Security invariants remain authoritative in
   [`../specs/112_Component_Isolation_Model.md`](../specs/112_Component_Isolation_Model.md).
 - The WalletService decomposition decision is proposed in
@@ -166,8 +164,8 @@ Additional observation (same method): the proximity `DeviceAuth` is a
 placeholder (`deviceSignature: 0xdeadbeef`, commented "Mock signature"). The
 proximity response therefore carries no device/holder binding. This is
 consistent with the PoC status but was not recorded elsewhere in `docs/`; it
-is proposed as BACKLOG item ARCH-02a in the separate canon/backlog PR and
-must be resolved before any proximity claim is made.
+is tracked as ARCH-02a in [`../BACKLOG.md`](../BACKLOG.md) and must be
+resolved before any proximity claim is made.
 
 **Required contract**
 
@@ -430,32 +428,12 @@ a potentially exposed credential to reusable state.
 
 ## Migration Sequence
 
-Proposed sequence. Moving it into
-[`../REFACTORING_ROADMAP.md`](../REFACTORING_ROADMAP.md) as the single
-canonical sequence is part of the separate canon/backlog follow-up PR; until
-then it lives only here.
+The ordered Phase 6 sequence is maintained only in
+[`../REFACTORING_ROADMAP.md`](../REFACTORING_ROADMAP.md#phase-6-migration-sequence).
+This document defines the findings and gates that the sequence must satisfy.
 
 Each increment is a separate, reviewable change. Broad architecture work must
 not be folded into unrelated security, UX, or demo changes.
-
-1. **Characterization gates:** add tests for ARCH-02 through ARCH-05 before
-   moving behavior.
-2. **Authorization plan:** introduce `AuthorizePresentation` and route proximity
-   plus online flows through it.
-3. **Lifecycle authority:** centralize eligibility, status, pool rotation, and
-   consumption semantics, including the ARCH-04 residual left after #130.
-4. **Presentation extraction:** make builders side-effect free; orchestration
-   owns storage, audit, state transitions, and transport.
-5. **Policy purification:** extract rate limiting, clock/IDs, capsule creation,
-   pairwise identity, and signing.
-6. **Composition inversion:** move concrete browser construction out of
-   `wallet-core` and wire all ports in the PWA.
-7. **Contract convergence:** select the canonical DecisionCapsule/policy model
-   and provide compatibility adapters.
-8. **Runtime cutover:** switch `App.tsx` to the modular facade, reduce the local
-   service to a compatibility wrapper, then remove it.
-9. **Mechanical enforcement:** activate import, cycle, deep-import, and boundary
-   checks in CI.
 
 ## Global Acceptance Gates
 
@@ -490,7 +468,10 @@ The architecture migration is complete only when all of the following hold:
   #221 (no private audit-key cast in `signData()`); the public-key cast in
   `getIdentityPublicKey()` remains. ARCH-02, including the placeholder
   `DeviceAuth`, is unchanged. No tests were run; not security PASS evidence.
-  Same day, after owner review: canon, BACKLOG and roadmap changes were split
-  into a separate PR, so this document is now PROPOSED and keeps the only copy
-  of the migration sequence until that PR moves it. ARCH-05's header reflects
-  the partial fix; the placeholder `DeviceAuth` is proposed as ARCH-02a.
+  Same day, after owner review on #188: the audit landed as PROPOSED first;
+  this follow-up makes it canonical, moves the migration sequence into
+  `REFACTORING_ROADMAP.md` as its only copy, applies the BACKLOG status
+  changes (Phase 2, R-02, ARCH-01..09) and tracks the placeholder
+  `DeviceAuth` as ARCH-02a. ARCH-05's header reflects the partial fix.
+  This follow-up also applies the `R-02` correction proposed in the 2026-08-20
+  entry (`docs/BACKLOG.md`: R-02 ✅ -> partial).
