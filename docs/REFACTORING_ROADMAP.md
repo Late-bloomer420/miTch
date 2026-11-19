@@ -35,10 +35,9 @@ working on unrelated policy, UX, or demo-flow tasks.
 
 The earlier backlog entry `R-02 WalletService Decomposition — ✅` described the
 presence of repository/evaluator/presentation interfaces in `wallet-core`, not
-a completed runtime cutover. At the verified `master` baseline, `App.tsx` still
-constructs the 2,317-line PWA-local `WalletService` (2,464 lines at `002ce5e`,
-2026-11-01); the modular facade is not
-the runtime authority. R-02 is therefore **partial**, and completion is governed
+a completed runtime cutover. At `d7f0e77` (2026-11-18), `App.tsx` still constructs
+the 2,464-line PWA-local `WalletService`; the modular facade is not the runtime
+authority. R-02 is therefore **partial**, and completion is governed
 by ARCH-01 and ARCH-09 in the canonical decoupling audit.
 
 Before service extraction, the security-sensitive preconditions ARCH-02 through
@@ -68,8 +67,8 @@ services while preserving the public wallet API.
 ### Migration Rules
 
 - Extract one seam at a time.
-- Keep `WalletService` public method signatures stable unless a dedicated
-  migration task says otherwise.
+- Keep `WalletService` public method signatures stable until the runtime cutover
+  (step 8 below) or a dedicated migration task says otherwise.
 - Add tests at the seam before moving behavior.
 - Do not change disclosure, policy verdict, or audit semantics as a side effect
   of moving code.
@@ -79,14 +78,14 @@ services while preserving the public wallet API.
 
 | Gate | Measurement |
 |---|---|
-| API stability | Existing wallet-pwa tests pass with no caller rewrites |
+| API stability | Before the runtime cutover, existing wallet-pwa tests pass with no caller rewrites; afterwards the canonical Behavior stability gate applies |
 | Behavior stability | Scenario disclosure outputs and audit event sequences unchanged |
 | Extraction proof | Each extracted service has focused tests |
 | Facade reduction | `WalletService` becomes mostly orchestration, not domain logic |
-| Runtime authority | `App.tsx` constructs the modular facade from one PWA composition root |
-| Authorization binding | Presentation builders accept only a policy-bound `AuthorizedPresentationPlan` |
-| Metadata-first isolation | Raw credentials are loaded only after an ALLOW decision |
-| Boundary enforcement | CI rejects forbidden imports, cycles, deep imports, and cross-package private-state casts |
+
+The architecture-wide gates, including runtime authority, authorization binding,
+metadata-first isolation and dependency direction, are defined only in
+[`Global Acceptance Gates`](03-architecture/ARCHITECTURE_DECOUPLING.md#global-acceptance-gates).
 
 ### Phase 6 Migration Sequence
 
