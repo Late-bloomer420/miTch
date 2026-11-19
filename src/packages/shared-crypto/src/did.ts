@@ -32,6 +32,8 @@ export interface DIDResolverOptions {
     allowMockFallback?: boolean;
     /** Allow insecure did:web localhost/http resolution (default: false — DENY) */
     allowInsecureLocalhostDidWeb?: boolean;
+    /** Where did:askmi documents are fetched from (default: the demo backend on port 3004) */
+    didAskmiDocumentUrl?: string;
 }
 
 export interface CachedDIDDocument {
@@ -73,6 +75,7 @@ export class DIDResolver {
     private readonly fetchFn: typeof fetch;
     private readonly allowMockFallback: boolean;
     private readonly allowInsecureLocalhostDidWeb: boolean;
+    private readonly didAskmiDocumentUrl: string;
 
     constructor(options: DIDResolverOptions = {}) {
         this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
@@ -80,6 +83,7 @@ export class DIDResolver {
         this.fetchFn = options.fetchFn ?? globalThis.fetch.bind(globalThis);
         this.allowMockFallback = options.allowMockFallback ?? false;
         this.allowInsecureLocalhostDidWeb = options.allowInsecureLocalhostDidWeb ?? false;
+        this.didAskmiDocumentUrl = options.didAskmiDocumentUrl ?? 'http://localhost:3004/did.json';
     }
 
     /**
@@ -240,7 +244,7 @@ export class DIDResolver {
     }
 
     private async resolveDidMitch(did: string): Promise<DIDDocument> {
-        const backendUrl = 'http://localhost:3004/did.json';
+        const backendUrl = this.didAskmiDocumentUrl;
         try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), this.fetchTimeoutMs);

@@ -155,8 +155,10 @@ export interface AskMIConnectConfig {
    * retry requires a fresh session/nonce.
    * Fail-closed default: resolve nothing (every presentation fails as
    * UNTRUSTED_ISSUER) until a real trust-list/JWKS resolver is injected.
+   * `kid` is the issuer JWT's protected-header key id when present, so the
+   * resolver can select among several issuer keys.
    */
-  issuerKeyResolver?: (iss: string) => Promise<CryptoKey | null>;
+  issuerKeyResolver?: (iss: string, kid?: string) => Promise<CryptoKey | null>;
   /**
    * Test seam: override the SD-JWT presentation validation. Production use
    * relies on the real @askmi/oid4vp `validateSDJWTPresentation` path.

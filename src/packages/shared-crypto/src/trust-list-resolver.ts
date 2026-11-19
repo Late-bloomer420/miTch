@@ -24,6 +24,12 @@ export interface TrustCheckResult {
     fromCache: boolean;
 }
 
+/**
+ * `live` requires an anchor key, a signed list and an HTTPS source. `dev` accepts
+ * an unsigned list from any URL and exists for local mock services and tests.
+ */
+export type TrustMode = 'live' | 'dev';
+
 interface TrustCache {
     tsl: TrustList;
     expiresAt: number;
@@ -36,30 +42,36 @@ export class EUDITrustListResolver {
     private readonly gracePeriodMsLowRisk: number;
     private tslUrl: string;
     private anchorPublicKey: CryptoKey | null = null;
+    private readonly trustMode: TrustMode;
 
     constructor(options?: { 
         fetchFn?: typeof fetch;
         cacheTtlMs?: number;
         gracePeriodMsLowRisk?: number;
+        /** Defaults to ASKMI_TRUST_MODE; anything other than `dev` means `live`. */
+        trustMode?: TrustMode;
     }) {
+        this.trustMode =
+            options?.trustMode ?? (this.readEnv('ASKMI_TRUST_MODE') === 'dev' ? 'dev' : 'live');
         this.fetchFn = options?.fetchFn ?? globalThis.fetch?.bind(globalThis);
         this.cacheTtlMs = options?.cacheTtlMs ?? 24 * 60 * 60 * 1000; // 24 hours
         this.gracePeriodMsLowRisk = options?.gracePeriodMsLowRisk ?? 4 * 60 * 60 * 1000; // 4 hours
-        const envUrl = this.readEnvTslUrl();
+        const envUrl = this.readEnv('ASKMI_TSL_URL', 'MITCH_TSL_URL');
         this.tslUrl = envUrl || 'https://trust.askmi.demo/v1/eudi-lotl.json';
     }
 
-    private readEnvTslUrl(): string | undefined {
+    /** First non-empty value among `names`, from Vite's env and then from Node's. */
+    private readEnv(...names: string[]): string | undefined {
         // Vite/browser-safe env access
         const importMetaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
-        const viaImportMeta = importMetaEnv?.ASKMI_TSL_URL ?? importMetaEnv?.MITCH_TSL_URL;
-        if (viaImportMeta && viaImportMeta.trim()) return viaImportMeta.trim();
-
         // Node-safe fallback (without crashing browser where `process` is undefined)
         const maybeProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
-        const viaProcess = maybeProcess?.env?.ASKMI_TSL_URL ?? maybeProcess?.env?.MITCH_TSL_URL;
-        if (viaProcess && viaProcess.trim()) return viaProcess.trim();
-
+        for (const env of [importMetaEnv, maybeProcess?.env]) {
+            for (const name of names) {
+                const value = env?.[name]?.trim();
+                if (value) return value;
+            }
+        }
         return undefined;
     }
 
@@ -118,7 +130,8 @@ export class EUDITrustListResolver {
                 tsl = await this.getTSL();
             } catch (e) {
                 // Fetch failed — handle based on risk tier and cache availability
-                if (this.cache && (riskTier === 'low' || now < this.cache.expiresAt + this.gracePeriodMsLowRisk)) {
+                // Only low-risk checks may fall back to a stale list, and only inside the grace window.
+                if (this.cache && riskTier === 'low' && now < this.cache.expiresAt + this.gracePeriodMsLowRisk) {
                     tsl = this.cache.tsl;
                     fromCache = true;
                 } else {
@@ -157,7 +170,20 @@ export class EUDITrustListResolver {
 
     private async verifyTslSignature(tsl: TrustList): Promise<void> {
         if (!this.anchorPublicKey) {
-            console.warn('[TrustList] ⚠️ No anchor key configured. Skipping signature check (PoC Mode).');
+            const envJwk = this.readEnv('ASKMI_TSL_ANCHOR_JWK');
+            if (envJwk) {
+                try {
+                    await this.setAnchorKey(JSON.parse(envJwk) as JsonWebKey);
+                } catch {
+                    throw new Error('TSL_ANCHOR_KEY_INVALID: ASKMI_TSL_ANCHOR_JWK is not a usable P-256 public JWK.');
+                }
+            }
+        }
+        if (!this.anchorPublicKey) {
+            if (this.trustMode !== 'dev') {
+                throw new Error('TSL_ANCHOR_KEY_MISSING: no anchor key is configured to verify the trust list.');
+            }
+            console.warn('[TrustList] ⚠️ Dev trust mode: no anchor key, trust list signature is NOT verified.');
             return;
         }
 
@@ -183,6 +209,9 @@ export class EUDITrustListResolver {
         }
 
         const url = this.tslUrl;
+        if (this.trustMode !== 'dev' && !/^https:\/\//i.test(url)) {
+            throw new Error('TSL_URL_INSECURE: the trust list must be fetched over HTTPS.');
+        }
         const response = await this.fetchFn(url);
         
         if (!response.ok) {
