@@ -123,6 +123,36 @@ test('exception does not apply when the advisory reaches production dependencies
   assert.match(res.stderr, /Security audit denied/);
 });
 
+for (const [name, prod] of [
+  [
+    'an unrelated critical advisory',
+    withAdvisories([advisory('GHSA-2222-3333-4444', 'undici', 'critical', 1)]),
+  ],
+  ['a high count without an advisory list', report({ high: 1 })],
+  ['a high advisory without an id', withAdvisories([advisory(undefined, 'undici', 'high', 1)])],
+]) {
+  test(`exception does not apply when the production report shows ${name}`, () => {
+    const res = runGate({
+      full: withAdvisories([picomatchHigh]),
+      prod,
+      prodStatus: 1,
+      exceptions: [exception()],
+    });
+    assert.equal(res.status, 1, res.stdout + res.stderr);
+    assert.match(res.stderr, /Security audit denied/);
+  });
+}
+
+test('a moderate production finding does not cancel the exception', () => {
+  const res = runGate({
+    full: withAdvisories([picomatchHigh]),
+    prod: report({ moderate: 1 }),
+    prodStatus: 1,
+    exceptions: [exception()],
+  });
+  assert.equal(res.status, 0, res.stdout + res.stderr);
+});
+
 test('exception without a production-only report denies', () => {
   const res = runGate({ full: withAdvisories([picomatchHigh]), exceptions: [exception()] });
   assert.equal(res.status, 1);

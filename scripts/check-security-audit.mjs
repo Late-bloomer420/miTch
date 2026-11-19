@@ -6,8 +6,8 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 //
 // The only relief is a narrow, expiring exception for a single HIGH advisory
 // (scripts/security-audit-exceptions.json). It applies only when a separate
-// production-only audit report shows the advisory does not reach runtime
-// dependencies. Critical findings are never excused. Anything that cannot be
+// production-only audit report has no high or critical findings and does not
+// list the advisory. Critical findings are never excused. Anything that cannot be
 // verified (missing/invalid prod report, malformed exception file, counts that
 // do not add up) denies.
 
@@ -116,7 +116,9 @@ export function evaluateGate({ fullText, fullStatus, prodText, prodStatus, excep
     if (prodText === undefined) throw new Error('Exceptions need a production-only audit report.');
     const prod = evaluateAudit(prodText, prodStatus);
     const prodIds = new Set(advisoryList(prod.report).map((a) => a.github_advisory_id));
-    for (const advisory of highAdvisories) {
+    // The counts decide: an advisory list can be missing, incomplete or unlabelled.
+    const prodClean = prod.high === 0 && prod.critical === 0;
+    for (const advisory of prodClean ? highAdvisories : []) {
       const match = active.find(
         (e) => e.id === advisory.github_advisory_id && e.module === advisory.module_name
       );
