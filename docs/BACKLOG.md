@@ -535,7 +535,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
 | ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 komplett: Offline-Verifikation + COSE_Mac0 (169 tests) + Wallet (73/73) + Verifier (52/52) + Hybrid Issuance (builder + issuer-mock) |
-| ADR-013 | WalletService Monolith Decomposition Strategy | PROPOSED | kanonischer Boundary-Audit + aktive Sequenz in `03-architecture/ARCHITECTURE_DECOUPLING.md` und `REFACTORING_ROADMAP.md` |
+| ADR-013 | WalletService Monolith Decomposition Strategy | PROPOSED | kanonischer Boundary-Audit + Akzeptanz-Gates in `03-architecture/ARCHITECTURE_DECOUPLING.md`; aktive Sequenz nur in `REFACTORING_ROADMAP.md` (Phase 6 Migration Sequence) |
 
 ---
 
