@@ -5,7 +5,13 @@ import { VerifierSDK } from '@askmi/verifier-sdk';
 import { NonceStore } from './nonce-store';
 import { FixedWindowRateLimiter } from './rate-limiter';
 import { getRequesterId } from './requester-id';
-import { acceptsActiveProfile } from './active-profile';
+import {
+  AGE_OVER_18_EXPLORATION,
+  AGE_OVER_18_EXPLORATION_DEFINITION,
+  matchActiveProfile,
+  type ActiveProfileId,
+} from './active-profile';
+import { protectedHeaderKid, selectIssuerJwk } from './issuer-jwks';
 import { createAskMIConnect, InMemoryAskMIConnectSessionStore } from '@askmi/connect';
 import { askmiConnectExpressRouter } from '@askmi/connect/express';
 import {
@@ -24,6 +30,7 @@ import {
   SCENARIO_VCT,
   SCENARIO_LABELS,
   type AuthorizationRequest,
+  type PresentationDefinition,
 } from '@askmi/oid4vp';
 import { trustListResolver } from '@askmi/shared-crypto';
 import {
@@ -100,6 +107,8 @@ type VerificationState = {
   disclosedClaims: Record<string, unknown> | null;
   consentReceipt: Record<string, unknown> | null;
   authorization: { request: AuthorizationRequest; expiresAt: number; attempted: boolean } | null;
+  /** Verified profile id; the application result carries this, never the claim value. */
+  profile?: ActiveProfileId | null;
 };
 
 const sessions = new Map<string, VerificationState>();
@@ -309,7 +318,10 @@ app.get('/status', requireSession, (req, res) => {
     status: state.status,
     issuer: state.issuer,
     verifierDid: ASKMI_DEMO.verifierDid,
-    result: state.authorization && state.status === 'VERIFIED' ? { eligible: true } : null,
+    result:
+      state.authorization && state.status === 'VERIFIED' && state.profile
+        ? { eligible: true, profile: state.profile }
+        : null,
     disclosedClaims: state.disclosedClaims,
     consentReceipt: state.consentReceipt,
   });
@@ -325,6 +337,13 @@ app.get('/', (req, res) => {
 });
 
 // ─── W-01: Generate OID4VP Authorization Request ─────────────────────────────
+/** Scenarios whose Presentation Definition is owned by this verifier, not the package. */
+const VERIFIER_SCENARIOS: Record<string, { label: string; definition: PresentationDefinition }> = {
+  [AGE_OVER_18_EXPLORATION.scenarioId]: {
+    label: 'Age over 18 (AskMI exploration, not EUDI)',
+    definition: AGE_OVER_18_EXPLORATION_DEFINITION,
+  },
+};
 app.get('/authorize', requireSession, (req, res) => {
   const correlationId = sessionId(req, res);
   // A new state object isolates any already-running legacy demo request.
@@ -332,11 +351,14 @@ app.get('/authorize', requireSession, (req, res) => {
   const scenarioId = (req.query['scenario'] as string) || 'liquor-store';
   const baseUrl = process.env['VERIFIER_BASE_URL'] || `${req.protocol}://${req.get('host')}`;
   try {
+    // Verifier-owned profiles (Profile C, non-official) pass their own definition.
+    const local = VERIFIER_SCENARIOS[scenarioId];
     const { request, nonce } = buildOID4VPRequest({
       verifierClientId: ASKMI_DEMO.verifierDid,
       redirectUri: `${baseUrl}/oid4vp-present`,
       scenarioId,
-      clientName: SCENARIO_LABELS[scenarioId] ?? scenarioId,
+      clientName: local?.label ?? SCENARIO_LABELS[scenarioId] ?? scenarioId,
+      presentationDefinition: local?.definition,
     });
     nonceStore.add(nonce);
     const now = Date.now();
@@ -350,6 +372,7 @@ app.get('/authorize', requireSession, (req, res) => {
     state.issuer = null;
     state.disclosedClaims = null;
     state.consentReceipt = null;
+    state.profile = null;
     sessions.set(correlationId, state);
     res.json({ authRequest: request, nonce, scenarioId, sessionId: correlationId });
   } catch (e: unknown) {
@@ -430,7 +453,7 @@ app.post('/wallet-present', requireSession, async (req, res) => {
 // list / issuer JWKS — never against a wallet-supplied `issuer_jwk` (which would
 // be circular: the wallet would provide both the signature and the key to check
 // it against). A real issuer (Austria ID / eIDAS) plugs in via the trust list.
-async function resolveTrustedIssuerKey(iss: string): Promise<CryptoKey | null> {
+async function resolveTrustedIssuerKey(iss: string, kid?: string): Promise<CryptoKey | null> {
   // This demo has one configured JWKS authority, not a multi-issuer resolver.
   if (iss !== CONFIGURED_ISSUER) return null;
   const trust = await trustListResolver.isIssuerTrusted(iss);
@@ -441,24 +464,31 @@ async function resolveTrustedIssuerKey(iss: string): Promise<CryptoKey | null> {
   if (!r.ok) throw new Error('Issuer key service unavailable');
   const jwks = (await r.json()) as { keys?: JsonWebKey[] };
   if (!jwks.keys?.length) throw new Error('Issuer key response missing keys');
+  // Select by the credential's protected-header `kid`; ambiguous or unknown → deny.
+  const jwk = selectIssuerJwk(jwks.keys, kid);
+  if (!jwk) return null;
   return await globalThis.crypto.subtle.importKey(
     'jwk',
-    jwks.keys[0],
+    jwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['verify']
   );
 }
-export async function defaultResolveIssuerKey(iss: string): Promise<CryptoKey | null> {
+export async function defaultResolveIssuerKey(
+  iss: string,
+  kid?: string
+): Promise<CryptoKey | null> {
   try {
-    return await resolveTrustedIssuerKey(iss);
+    return await resolveTrustedIssuerKey(iss, kid);
   } catch {
     return null;
   }
 }
-let issuerKeyResolver: (iss: string) => Promise<CryptoKey | null> = defaultResolveIssuerKey;
+type IssuerKeyResolver = (iss: string, kid?: string) => Promise<CryptoKey | null>;
+let issuerKeyResolver: IssuerKeyResolver = defaultResolveIssuerKey;
 /** Test seam: override how the verifier resolves the issuer key. */
-export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | null>): void {
+export function setIssuerKeyResolver(fn: IssuerKeyResolver): void {
   issuerKeyResolver = fn;
 }
 
@@ -469,10 +499,10 @@ const connect = createAskMIConnect({
   audienceBaseUrl: process.env.VERIFIER_BASE_URL || 'http://localhost:3004',
   walletBaseUrl: process.env.WALLET_BASE_URL || 'http://localhost:5174',
   store: connectStore,
-  issuerKeyResolver: (iss) =>
+  issuerKeyResolver: (iss, kid) =>
     issuerKeyResolver === defaultResolveIssuerKey
-      ? resolveTrustedIssuerKey(iss)
-      : issuerKeyResolver(iss),
+      ? resolveTrustedIssuerKey(iss, kid)
+      : issuerKeyResolver(iss, kid),
 });
 app.use(
   '/askmi/connect',
@@ -530,7 +560,9 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     } catch {
       iss = '';
     }
-    const issuerPublicKey = iss ? await issuerKeyResolver(iss) : null;
+    const issuerPublicKey = iss
+      ? await issuerKeyResolver(iss, protectedHeaderKid(presentedIssuerJwt))
+      : null;
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
@@ -551,15 +583,15 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }
-    if (
-      validation.ok &&
-      !acceptsActiveProfile(
-        authorization.request,
-        body.presentation_submission,
-        presentedIssuerJwt,
-        validation.disclosedClaims ?? {}
-      )
-    ) {
+    const profile = validation.ok
+      ? matchActiveProfile(
+          authorization.request,
+          body.presentation_submission,
+          presentedIssuerJwt,
+          validation.disclosedClaims ?? {}
+        )
+      : null;
+    if (validation.ok && !profile) {
       verificationState.status = 'FAILED';
       return res.status(403).json({ ok: false, error: 'PROFILE_OR_POLICY_DENIED' });
     }
@@ -572,10 +604,11 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
       verificationState.status = 'VERIFIED';
       verificationState.issuer = ASKMI_DEMO.issuerUri;
       verificationState.disclosedClaims = null;
+      verificationState.profile = profile;
       verificationState.consentReceipt = consentReceipt as unknown as Record<string, unknown>;
       return res.json({
         ok: true,
-        result: { eligible: true },
+        result: { eligible: true, profile },
         disclosedClaims: null,
         consentReceipt,
       });

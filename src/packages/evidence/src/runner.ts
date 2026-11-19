@@ -37,7 +37,7 @@ export async function runEvidence(
 }
 
 const require = createRequire(import.meta.url);
-const PNPM_VERSION = '9.15.9';
+const PNPM_VERSION = '10.34.9';
 
 // npm_execpath is a hint, not an arbitrary executable override. Accept only the
 // real JS bin declared by the pinned pnpm package (including symlinked installs).

@@ -50,7 +50,7 @@ The reference deployment combines mock issuer, wallet and verifier for evaluatio
 
 For each role, #176 must record who can read values or metadata; approve, deny or revoke access; update policy, trust lists or software; and remove a competing integration. Where one organisation holds several roles, specify least privilege, data/audit separation, independent credential trust and reviewable changes.
 
-VeriCred is a separate integration candidate in this conversation. This repository's evidence does not validate VeriCred's implementation or confer readiness across repositories. A real cross-repo integration requires its own source/profile/test evidence.
+This repository's evidence does not validate any external implementation or confer readiness across repositories. A real cross-repo integration requires its own source/profile/test evidence.
 
 ## Platform dependency and provider exit
 
@@ -90,7 +90,7 @@ Independent review and market demand remain separate gates. Interviews can test 
 
 ## Next implementation slice
 
-Publication prerequisite satisfied: #174 was merged into `master` on 2026-10-15 as `624cf9af919fe58a7cba34a05b316b17e49c7e0f`, and that baseline is included in this branch. This completed documentation/demo correction does not implement the open runtime controls. The remaining runtime sequence is:
+Publication prerequisite satisfied: #174 was merged into `master` on 2026-10-15 as `624cf9af919fe58a7cba34a05b316b17e49c7e0f`. This completed documentation/demo correction does not implement the open runtime controls. The remaining runtime sequence is:
 
 1. Reconcile the relevant #141 security work against current master; preserve later issuer/digest/runner fixes. First code slice is #170's original-request binding and explicit result semantics, with focused HTTP/session regressions. Do not merge stale #141 wholesale.
 2. Integrate #171 where the selected profile requires single-use; connect accurate outcomes to #175's user-facing assurances.
@@ -102,4 +102,4 @@ Publication prerequisite satisfied: #174 was merged into `master` on 2026-10-15 
 - [Apple: expanding PCC](https://security.apple.com/blog/expanding-pcc/) describes layered hardening, verifiable software and independent roots of trust for critical components. Application: report provenance and explicit assumptions; #173 does not implement hardware runtime attestation.
 - [Apple: Verify with Wallet](https://developer.apple.com/wallet/get-started-with-verify-with-wallet/) exposes third-party verification through controlled access. Application: inspect actual role/API dependencies in #176 rather than assuming either universal access or blanket exclusion.
 
-The supplied panel transcript is a learning input, not evidence that miTch implements Apple's guarantees. Applicable EU role/interoperability obligations need current primary-source and deployment-specific review; this document makes no legal-compliance finding.
+External material about Apple's design is a learning input, not evidence that miTch implements Apple's guarantees. Applicable EU role/interoperability obligations need current primary-source and deployment-specific review; this document makes no legal-compliance finding.

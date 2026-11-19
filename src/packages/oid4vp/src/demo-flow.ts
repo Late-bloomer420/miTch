@@ -18,7 +18,7 @@ import {
   createKeyBindingJWT,
   validateKeyBindingJWT,
   buildCNFClaim,
-  extractDisclosedClaims,
+  extractDisclosedClaimsStrict,
   statusResolver,
   trustListResolver,
   type SDJWTVCPayload,
@@ -150,6 +150,12 @@ export interface BuildRequestOpts {
   redirectUri: string;
   scenarioId: string;
   clientName?: string;
+  /**
+   * Optional caller-owned Presentation Definition. When set, it is used instead
+   * of the `SCENARIO_PRESENTATION_DEFINITIONS` lookup, so a verifier can define
+   * its own profile without being handed another scenario's definition.
+   */
+  presentationDefinition?: PresentationDefinition;
 }
 
 export interface BuildRequestResult {
@@ -162,7 +168,7 @@ export interface BuildRequestResult {
  * Returns the request and the nonce (which the verifier must store for replay detection).
  */
 export function buildOID4VPRequest(opts: BuildRequestOpts): BuildRequestResult {
-  const pd = SCENARIO_PRESENTATION_DEFINITIONS[opts.scenarioId];
+  const pd = opts.presentationDefinition ?? SCENARIO_PRESENTATION_DEFINITIONS[opts.scenarioId];
   if (!pd) throw new Error(`Unknown scenario: ${opts.scenarioId}`);
 
   const nonce = randomHex(16);
@@ -420,9 +426,16 @@ export async function validateSDJWTPresentation(
   // `_sd` (fail-closed; a holder cannot inject unsigned claims).
   const presentedDisclosures = parts.slice(1, parts.length - 1);
   if (presentedDisclosures.length > 0) {
-    const fromDisclosures = await extractDisclosedClaims(presentedDisclosures, payload._sd ?? []);
-    for (const [k, v] of Object.entries(fromDisclosures)) {
-      if (!METADATA_KEYS.has(k)) disclosedClaims[k] = v;
+    try {
+      const fromDisclosures = await extractDisclosedClaimsStrict(presentedDisclosures, payload._sd ?? []);
+      for (const [k, v] of Object.entries(fromDisclosures)) {
+        if (METADATA_KEYS.has(k) || Object.prototype.hasOwnProperty.call(payload, k)) {
+          return { ok: false, errors: ['Invalid SD-JWT disclosure'] };
+        }
+        disclosedClaims[k] = v;
+      }
+    } catch {
+      return { ok: false, errors: ['Invalid SD-JWT disclosure'] };
     }
   }
 
