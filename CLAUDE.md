@@ -82,6 +82,7 @@ pnpm format
 - **policy-engine index.ts** has many exports — check for naming conflicts when adding new modules.
 - **npm scope reality:** AskMI is the active project/package brand. All workspace packages use the `@askmi/*` scope; new packages must stay on that scope.
 - **Repo truth sources:** Read `docs/DOCS_CANON.md` before updating status, backlog, QA evidence, session history, or agent-facing instructions.
+- **Never change GitHub repository settings, branch protection, or rulesets via API/CLI on your own.** If a merge or push is blocked by an unexpected rule, stop immediately, list the affected rule(s), and wait for the repo owner's explicit approval before changing anything.
 
 ## Testing Notes
 
@@ -92,7 +93,7 @@ pnpm format
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
+GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 10. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
 
 ## Evidence and update discipline
 
