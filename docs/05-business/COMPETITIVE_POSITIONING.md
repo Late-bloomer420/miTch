@@ -124,7 +124,7 @@ Damit kein überzogener Vergleich entsteht — alles bereits im Repo dokumentier
       einzeln belegen; je Anbieter 3–5 Kernaussagen mit URL und Stand.
 - [ ] Klarstellen, in welchen regulatorischen Verfahren (JuSchG, GwG, eIDAS) ein
       minimaler Proof heute bereits *anerkannt* ist — Rechtslage prüfen lassen.
-- [ ] Nach #170/#171-Behebung: Evidenz-Zeile „realer SD-JWT-Flow prüft nur
+- [ ] Nach Behebung von API-02, #170 und #171: Evidenz-Zeile „realer SD-JWT-Flow prüft nur
       policy-selektierte Claims" ergänzen.
 - [ ] Die Incumbent-These in `application_domains.md:15` belegen oder streichen (der Verweis
       auf dieses Dokument steht dort bereits).
