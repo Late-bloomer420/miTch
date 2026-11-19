@@ -29,4 +29,13 @@ describe('issuer-mock /credential issues vc+sd-jwt', () => {
     const cnf = await extractCNFPublicKey(v.payload!);
     expect(cnf).not.toBeNull();
   });
+  it('names its JWKS signing key in the credential header kid', async () => {
+    await ready;
+    const { pub } = await holderJwk();
+    const res = await request(app).post('/credential').send({ proof: { jwk: pub }, credential_definition: { type: ['AgeCredential'] } });
+    const header = JSON.parse(Buffer.from(res.body.credential.split('.')[0], 'base64url').toString());
+    const jwks = await request(app).get('/.well-known/jwks.json');
+    expect(header.kid).toBe('key-1');
+    expect(jwks.body.keys.map((k: { kid: string }) => k.kid)).toEqual([header.kid]);
+  });
 });
