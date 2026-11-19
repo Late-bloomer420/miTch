@@ -4,7 +4,7 @@
 > This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 
 **Status:** Active Phase 6 architecture migration authority
-**Last updated:** 2026-11-01
+**Last updated:** 2026-11-19
 
 This file tracks larger architecture work that should not be mixed into small
 security, UX, or pilot-readiness fixes. Items here are planned or partially
@@ -166,10 +166,32 @@ Rules:
 - Do not introduce reputation scoring into verifier-facing enforcement without a
   separate design decision; AskMI remains deny-biased and scope-bound.
 
+## Audit Anchor Boundary
+
+**Current concern:** `src/packages/audit-log/src/storage/l2-anchor-client.ts`,
+`src/packages/audit-log/src/anchor.ts` and `src/packages/anchor-service`.
+
+The anchor client reports honestly what it did (L2A-01, PR #297, evidence in
+[`qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md`](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md)). Real anchoring is
+deferred until a backend is chosen.
+
+| Planned seam | Responsibility |
+|---|---|
+| `AnchorBackend` | `submit` and `verify` per backend; statuses `verified`, `mock`, `pending`, `unverifiable` |
+
+Rules:
+
+- No own chain. Evaluate a timestamp authority (RFC 3161), OpenTimestamps and an L2 contract as adapters (#295).
+- Never report a mocked or unchecked anchor as confirmed or verified.
+- Privacy constraints hold for every backend: salted leaves, no identifiers in leaves, no per-user anchors, fixed batch intervals.
+- Reconcile with `@askmi/anchor-service` before adding a second implementation.
+- Real submit and verify, with integration negatives, are tracked in #294; the `StateAnchorClient` fallback in #296.
+
 ## Deferred Crypto / Platform Items
 
 | Item | Status |
 |---|---|
+| L2 anchor backend (F-05/F-06 residual) | Deferred; honest status delivered (PR #297). Backend choice #295, real submit/verify #294 |
 | F-04 EphemeralKey unification | Mostly delivered via shared interface and conforming implementations |
 | F-05 TEE migration | Deferred; WebAuthn identity binding is delivered, session-key TEE wrapping remains platform-dependent |
 | F-07 claim-level encryption | Deferred until credential schema is stable |
