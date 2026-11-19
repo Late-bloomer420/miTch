@@ -1,6 +1,12 @@
+import { isDemoRuntime } from './runtime';
+
+const DEFAULT_VERIFIER_ENDPOINT = isDemoRuntime
+    ? 'http://localhost:3104/present'
+    : 'http://localhost:3004/present';
+
 export const CONFIG = {
     // T-36: Application Configuration
-    VERIFIER_ENDPOINT: import.meta.env?.VITE_VERIFIER_URL || 'http://localhost:3004/present',
+    VERIFIER_ENDPOINT: import.meta.env?.VITE_VERIFIER_URL || DEFAULT_VERIFIER_ENDPOINT,
     ISSUER_ENDPOINT: import.meta.env?.VITE_ISSUER_URL || 'http://localhost:3005', // Updated to match issuer-mock port
     TSL_URL: import.meta.env?.VITE_TSL_URL || 'http://localhost:3005/v1/eudi-lotl.json',
     DEMO_MODE: import.meta.env?.REACT_APP_DEMO_MODE !== 'false', // Default to true for PoC
