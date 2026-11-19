@@ -458,8 +458,10 @@ export class WalletService {
 
           // 2. Initialize Encrypted Storage
           step = 'initSecureStorage';
-          this.storage = await SecureStorage.init(masterKey,
-            isDemoRuntime ? new BrowserIndexedDBAdapter(walletDatabaseName) : undefined);
+          this.storage = await SecureStorage.init(
+            masterKey,
+            new BrowserIndexedDBAdapter(walletDatabaseName)
+          );
 
           // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
           step = 'initAuditKeys';
@@ -2326,8 +2328,7 @@ export class WalletService {
    * (WebAuthnService.clearRegistration) so the next start re-enrolls.
    */
   async resetWallet(): Promise<void> {
-    if (isDemoRuntime) await new BrowserIndexedDBAdapter(walletDatabaseName).clear();
-    else await SecureStorage.reset();
+    await SecureStorage.reset(new BrowserIndexedDBAdapter(walletDatabaseName));
     this.storage = null;
     this.policyEngine = null;
     this.policyManifest = null;

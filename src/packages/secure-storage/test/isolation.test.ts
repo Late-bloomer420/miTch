@@ -22,3 +22,22 @@ it('demo issuance and reset leave the default wallet intact, even on the same or
   );
   expect(await freshDemo.load('isolation-sentinel')).toBeNull();
 });
+
+it('resets only the storage it is given', async () => {
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
+  const metadata = { issuer: 'test', type: ['Test'], claims: ['value'], issuedAt: '2026-11-13' };
+  const regular = await SecureStorage.init(key);
+  const named = new BrowserIndexedDBAdapter('reset_scope_wallet');
+  const scoped = await SecureStorage.init(key, named);
+  await regular.save('reset-sentinel', { value: 'regular' }, metadata);
+  await scoped.save('reset-sentinel', { value: 'scoped' }, metadata);
+
+  await SecureStorage.reset(named);
+
+  expect(await regular.load('reset-sentinel')).toEqual({ value: 'regular' });
+  const fresh = await SecureStorage.init(key, new BrowserIndexedDBAdapter('reset_scope_wallet'));
+  expect(await fresh.load('reset-sentinel')).toBeNull();
+});
