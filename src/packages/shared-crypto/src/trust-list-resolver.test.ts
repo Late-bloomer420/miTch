@@ -12,7 +12,8 @@ describe('EUDITrustListResolver', () => {
     };
 
     beforeEach(() => {
-        resolver = new EUDITrustListResolver();
+        // Unsigned mock lists: dev trust mode. Live-mode behaviour is covered in trust-list-mode.test.ts.
+        resolver = new EUDITrustListResolver({ trustMode: 'dev' });
     });
 
     it('should resolve a trusted issuer from the TSL', async () => {

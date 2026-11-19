@@ -93,7 +93,7 @@ pnpm format
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 9. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
+GitHub Actions (`.github/workflows/ci.yml`): build → test → lint on Node 22 + pnpm 10. Separate security audit job runs `pnpm audit`. Layer validation job tests policy-engine E2E scenario.
 
 ## Evidence and update discipline
 
