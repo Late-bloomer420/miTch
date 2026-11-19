@@ -70,19 +70,37 @@ function presentationEndpoint(audienceBaseUrl: string, sessionId: string): strin
   return `${base}/askmi/connect/sessions/${encodeURIComponent(sessionId)}/presentation`;
 }
 
+/**
+ * Decode one JSON segment (0 = protected header, 1 = payload) of the issuer JWT in an
+ * SD-JWT VP token, without verifying it. Bytes are decoded as strict UTF-8, so non-ASCII
+ * values such as a `kid` of `clé-1` survive intact. Returns null when unparseable.
+ */
+function decodeIssuerJwtSegment(
+  vpTokenString: string,
+  index: 0 | 1
+): Record<string, unknown> | null {
+  try {
+    const segment = vpTokenString.split('~')[0].split('.')[index] ?? '';
+    const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+    const parsed: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Extract the `iss` of an SD-JWT VP token without verifying it (trust-gated afterwards). */
 function extractIss(vpTokenString: string): string {
-  try {
-    const issuerJwt = vpTokenString.split('~')[0];
-    const payloadSegment = issuerJwt.split('.')[1] ?? '';
-    const normalized = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
-    const json = atob(padded);
-    const parsed = JSON.parse(json) as { iss?: unknown };
-    return typeof parsed.iss === 'string' ? parsed.iss : '';
-  } catch {
-    return '';
-  }
+  const iss = decodeIssuerJwtSegment(vpTokenString, 1)?.iss;
+  return typeof iss === 'string' ? iss : '';
+}
+
+/** Issuer JWT protected-header `kid`; undefined when absent, non-string or unparseable. */
+function extractKid(vpTokenString: string): string | undefined {
+  const kid = decodeIssuerJwtSegment(vpTokenString, 0)?.kid;
+  return typeof kid === 'string' ? kid : undefined;
 }
 
 /**
@@ -139,7 +157,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
   const ttlMs = config.sessionTtlMs ?? DEFAULT_SESSION_TTL_MS;
   const now = config.now ?? (() => Date.now());
   const store = config.store ?? new InMemoryAskMIConnectSessionStore(now);
-  const resolveIssuerKey: (iss: string) => Promise<CryptoKey | null> =
+  const resolveIssuerKey: (iss: string, kid?: string) => Promise<CryptoKey | null> =
     config.issuerKeyResolver ?? (async () => null);
   const validate: PresentationValidator =
     config.presentationValidator ??
@@ -300,7 +318,7 @@ export function createAskMIConnect(config: AskMIConnectConfig): AskMIConnect {
         }
         let issuerPublicKey: CryptoKey | null;
         try {
-          issuerPublicKey = await resolveIssuerKey(iss);
+          issuerPublicKey = await resolveIssuerKey(iss, extractKid(body.vp_token));
         } catch {
           return await fail(
             session.sessionId,
