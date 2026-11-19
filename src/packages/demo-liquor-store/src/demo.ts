@@ -3,10 +3,10 @@
  * @description Interactive Liquor Store Demo for Investor Presentations
  *
  * Demonstrates:
- * - Government issuer creates age credential
- * - Zero-knowledge proof (isOver18 without birthdate)
- * - Layer-based policy evaluation
- * - Automated layer violation detection
+ * - Mock issuer creates a synthetic age credential
+ * - Local age calculation (not an issuer-authenticated zero-knowledge proof)
+ * - Illustrative layer comparison (not an integrated policy enforcement path)
+ * - Illustrative layer violation scenario
  */
 
 import { MockGovernmentIssuer, computeAgeProof } from '@askmi/mock-issuer';
@@ -43,13 +43,13 @@ async function spinner(message: string, duration: number, success: boolean = tru
 async function runDemo() {
   console.clear();
   log('\n🎉 AskMI Liquor Store Demo\n', 'header');
-  log('Layer-based Privacy & Consent Management\n');
+  log('Synthetic age and layer comparison demo; no real verifier or consent flow\n');
 
   // Step 1: Issuer Setup
-  await spinner('Setting up Government Issuer', 800);
+  await spinner('Setting up mock issuer', 800);
   const issuer = new MockGovernmentIssuer();
   await issuer.initialize();
-  log('Government Issuer initialized', 'success');
+  log('Mock issuer initialized', 'success');
 
   // Step 2: Credential Issuance
   log('\n📝 Issuing Age Credential...', 'info');
@@ -60,13 +60,13 @@ async function runDemo() {
   await sleep(1000);
   log('✅ Age Credential issued (JWT signed)', 'success');
   log(`   User: ${userDID}`, 'info');
-  log(`   Birthdate: ${birthdate.toDateString()} (HIDDEN in proof)\n`, 'info');
+  log(`   Synthetic birthdate: ${birthdate.toDateString()}\n`, 'info');
 
-  // Step 3: ZK Proof Generation
-  await spinner('Computing Zero-Knowledge Proof (isOver18)', 1200);
+  // Step 3: Local age calculation (no cryptographic proof)
+  await spinner('Computing local age result (isOver18)', 1200);
   const isOver18 = computeAgeProof(birthdate, 18);
-  log(`✅ ZK Proof: isOver18 = ${isOver18}`, 'success');
-  log('   ✨ Exact birthdate NOT revealed!\n', 'warn');
+  log(`✅ Local result: isOver18 = ${isOver18}`, 'success');
+  log('   No verifier presentation is performed in this demo.\n', 'warn');
 
   // Step 4: Liquor Store Request (Layer 1 - ALLOWED)
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'header');
@@ -95,7 +95,7 @@ async function runDemo() {
   if (allowed) {
     log('✅ ALLOW - User may purchase alcohol', 'success');
     log('   Reason: Layer 1 can access age data', 'success');
-    log('   Proof: isOver18 = true\n', 'success');
+    log('   Local result: isOver18 = true\n', 'success');
   }
 
   // Step 5: Malicious Request (Layer 2 - DENIED)
@@ -123,7 +123,7 @@ async function runDemo() {
   if (denied) {
     log('❌ DENY - LAYER_VIOLATION', 'error');
     log('   Reason: Layer 1 cannot access Layer 2 data', 'error');
-    log('   Action: Request blocked automatically\n', 'error');
+    log('   Simulated outcome: DENY\n', 'error');
   }
 
   // Summary
@@ -131,15 +131,14 @@ async function runDemo() {
   log('📊 Demo Summary', 'header');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'header');
 
-  log('✅ Privacy Preserved: Birthdate never disclosed', 'success');
-  log('✅ Zero-Knowledge: Age proof computed locally', 'success');
-  log('✅ Layer Protection: Automated enforcement', 'success');
-  log('✅ Fail-Closed: Deny-by-default policy\n', 'success');
+  log('Local calculation only; no issuer-authenticated zero-knowledge proof.', 'warn');
+  log('Layer outcomes are illustrative comparisons, not an integrated enforcement test.', 'warn');
+  log('Synthetic birthdate is printed locally; no verifier presentation is performed.\n', 'warn');
 
-  log('💡 AskMI - Where Privacy Meets Compliance\n');
+  log('💡 AskMI - Development and evaluation software\n');
 
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'header');
-  log('Demo complete! Ready for investor presentation. 🎊\n', 'success');
+  log('Synthetic demonstration complete.\n', 'success');
 }
 
 // Run demo if executed directly

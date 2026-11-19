@@ -1,5 +1,8 @@
 # AskMI — Master Backlog
 
+**2026-11-18 — audit-log L2 anchor honest status (`fix/audit-log-l2-anchor-honest-status`, base `58d0af9`, change `a7ed22d`):**
+PR #297 stops the L2 anchor client from reporting mocked submissions as `confirmed` and unchecked verifications as verified (SECURE-1 F-05/F-06, tasks `L2A-01`..`L2A-04`). This is a mitigation: no real anchoring exists. [Scoped evidence and limits](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). The SECURE-1 records stay unchanged; real anchoring remains OPEN under #294, backend decision under #295, `StateAnchorClient` labeling under #296. No release or pilot gate moves.
+
 **2026-11-03 — API & protocol reality audit + 4-stage v2 architecture plan (`chore/enable-entire`, executable baseline `002ce5e`):**
 recorded 7 scoped findings (`API-01`..`API-07`) in [`qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) and the 4-stage architecture & remediation plan (`API-V2-S0`..`S3`) in [`tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md). Qualifies overlapping claims in `EUDI_CIR_MATRIX.md` and `03_ARCHITECTURE.md` (`API-06` closed in docs) without duplicating `#170`–`#173` or `#97`. Code remediation starts in Stage 0 (`API-V2-S0`); no release or pilot gate moves.
 
@@ -54,6 +57,10 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 | G-100.5 / #97 | Profile | OPEN | Exact current official age/mdoc/ZKP semantics plus interoperability evidence |
 | G0/G1 | Gate | OPEN, elapsed targets | No broad expansion until reviewed; public 20/8/3 tally missing, not private-activity inference |
 | GAP-1/GAP-4/F-19/F-20 | Residual | OPEN | Runtime erasure/external review/durable audit/explicit unlinkability downgrade |
+| L2A-01 (F-05/F-06 honest status) | P1 (proposed) | Implemented, scoped; PR #297 open | Mocked receipts are `mocked`, unchecked verification is `unverifiable`; [evidence](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). Public API behavior change needs owner approval; does not close F-05/F-06 |
+| L2A-02 real anchoring | P2 (proposed) | OPEN #294 | Real submit and verify, integration negatives, dated evidence; depends on L2A-03 |
+| L2A-03 anchor backend ADR + port | P2 (proposed) | OPEN #295 | ADR (TSA / OpenTimestamps / L2 contract; no own chain), `AnchorBackend` port, reconcile with `@askmi/anchor-service`, privacy constraints |
+| L2A-04 `StateAnchorClient` labeling | P1 (proposed) | OPEN #296 | Dev-fallback receipts labeled `mocked`; export test |
 
 These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
 Earlier component checkmarks and evidence remain valid for their recorded scopes. New findings qualify only overlapping paths/claims.
