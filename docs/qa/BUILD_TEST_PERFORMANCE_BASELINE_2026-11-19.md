@@ -1,72 +1,67 @@
-# Build/Test-Laufzeit — Baselinemessung
+# Build/Test Runtime Baseline
 
-**Datum:** 2026-11-19
-**Revision:** `551a09d` (Branch `chore/session-22-history`; Working Tree nicht clean — u. a. `package.json`, `src/apps/verifier-demo/frontend/src/App.tsx`, `src/apps/issuer-mock/src/index.ts` lokal verändert, nicht Teil dieser Messergebnisse)
-**Umgebung:** Windows 11, 12 Kerne, Node v24.16.0, pnpm 9.15.9, Turbo lokal mit Warm-Cache (`node_modules/.cache/turbo`)
-**Bewertungsstatus:** Beobachtung, kein Sicherheits-/Performance-PASS. Alle Messungen lokal unter Windows; CI läuft auf ubuntu-latest (Node 22) und ist hier NICHT gemessen.
+**Date:** 2026-11-19
+**Revision:** `70c7aef` (merge-base of branch `docs/qa-perf-baseline-2026-11-19` with master), verified clean checkout in a separate worktree
+**Environment:** Windows 11, 12 logical cores, Node v24.16.0, pnpm 9.15.9, Turbo local cache
+**Status:** Observation with exact commands and numbers. Not a security or performance PASS. All runs succeeded (exit 0). CI (= ubuntu-latest, Node 22) is NOT measured here; see Limits.
 
-## Fragestellung
+## Question
 
-Warum wirken `pnpm build` / `pnpm test` lang? Es existierte keine dokumentierte Grundmessung (BACKLOG/STATE/SESSION_HISTORY ohne Treffer zu Laufzeiten).
+Why do `pnpm build` / `pnpm test` feel long? No documented runtime baseline existed.
 
-## Messprotokoll (alle Runs: exit 0, Tests bestanden)
+## Method
 
-| Run | Turbo-Zeit | real (time) | Aufgaben | aus Cache |
-|---|---|---|---|---|
-| `pnpm build` (warm) | 5.73 s | 7.08 s | 31 | 30 cached |
-| `pnpm test` (warm) | 3.975 s | 5.33 s | 49 | 48 cached |
-| `pnpm exec turbo run test --force` (kalt, inkl. `^build`) | 3m 57.3 s | 3m 58.6 s | 50 | 0 cached |
+All measurement runs were performed on a clean checkout of `70c7aef` (verified `git status --porcelain` empty before the runs) after `pnpm install --frozen-lockfile`. Commands and exact durations below.
 
-**Kernaussage:** Im Warm-Zustand sind Build und Tests in Sekunden fertig. Die erlebte Dauer entsteht im Kalt-/Invalidierungszustand: lokal nach Änderungen an tief im Graph liegenden Packages, in CI bei jedem Run (kein Turbo-Cache dort, nur pnpm-Store-Caching).
+## Measurements
 
-## Suiten-Dauern aus dem Kalt-Run (Wall-Clock pro Package, Top 12; Worker parallel, Summe ~505 s bei 3m58s Wall-Clock)
+| Run | Turbo task time | Wall clock (`time`) | Tasks / cache state |
+|---|---|---|---|
+| `pnpm exec turbo run test --force` (full cold: all test tasks AND their `^build` dependencies executed) | 3 m 7.506 s | **3 m 11.115 s** | 50 tasks, 0 cached |
+| `pnpm test` (immediately after, warm test cache) | 1.653 s | 3.275 s | 49 tasks, 49 cached ("FULL TURBO") |
+| `pnpm build` (immediately after the forced test run; mixed cache state) | 28.632 s | 30.284 s | 31 tasks, 19 cached |
 
-| Paket | Dauer | Aufschlüsselung (vitest, parallel aggregiert) |
+Per-suite wall-clock durations inside the full cold run (30 packages report duration numbers; suites ran under full parallel load, so per-suite wall clocks are inflated by CPU contention):
+
+| Package | Wall clock | Top warnings |
 |---|---|---|
-| @askmi/wallet-pwa | 120.5 s | environment 67.9 s (jsdom), setup 13.6 s, import 11.3 s, transform 3.3 s, Tests 17.1 s |
-| @askmi/evidence | 87.0 s | Tests 83.7 s (echte Testarbeit, Node-Env) |
-| @askmi/consent-ui | 29.1 s | import 179.3 s, Tests 64.4 s, transform 20.3 s (aggregiert über Worker) |
-| @askmi/policy-engine | 27.1 s | import 73.9 s, transform 35.3 s, Tests 10.0 s |
-| @askmi/phase0-security | 23.3 s | — |
-| @askmi/issuer-mock | 19.8 s | — |
-| @askmi/shared-crypto | 18.5 s | Tests 57.9 s, import 21.9 s, transform 8.7 s (PQC-Krypto-Arbeit real, aber nicht dominierend) |
-| @askmi/verifier-sdk | 13.9 s | — |
-| @askmi/mcp-server | 13.6 s | — |
-| @askmi/connect | 12.9 s | — |
-| @askmi/integration-tests | 12.7 s | — |
-| @askmi/audit-log | 12.4 s | — |
+| @askmi/evidence | 83.3 s | 78.1 s aggregated test time; real `spawnSync` subprocess tests |
+| @askmi/wallet-pwa | 78.2 s | aggregated import time 62.3 s across workers; environment startup 6 ms |
+| @askmi/phase0-security | 22.6 s | — |
+| @askmi/shared-crypto | 19.4 s | aggregated test time 61.2 s (PQC keygen/signing is real work) |
+| @askmi/policy-engine | 18.5 s | aggregated import 73.9 s equivalent patterns; transform 35.3 s |
+| @askmi/issuer-mock | 14.6 s | — |
+| @askmi/shared-types | 13.1 s | — |
+| @askmi/consent-ui | 12.4 s | — |
 
-## Ursachenanalyse (belegt)
+Isolated control run for the top suite: `npx vitest run` in `src/packages/evidence` alone (no parallel package load): **13.58 s** wall clock (tests 12.58 s), 24 passed / 1 skipped — the same suite takes 83.3 s inside the cold full run (~6x), so most of its cold-run cost is CPU contention, not intrinsic work.
 
-1. **wallet-pwa/jsdom bestätigt als Einzeltreiber Nr. 1:** 120 s Suite-Dauer, davon 68 s allein Environment-Aufbau (jsdom-Boots), nur 17 s echte Testausführung. Vitest-Config: `environment: 'jsdom'` mit Default-Isolation, Aliasse auf `src/` von 9 Workspace-Packages — jede Änderung an shared-crypto/policy-engine/mdoc/etc. invalidiert diese Suite mit.
-2. **evidence bestätigt als Einzeltreiber Nr. 2, aber andere Ursache:** 87 s, davon 84 s echte Tests — reale Testarbeit, kein Boot-Overhead. Optimierungshebel hier wäre Testinhalt/Parallelität, nicht Environment.
-3. **PQC/Shared-Crypto-Hypothese partially bestätigt:** 58 s echte Krypto-Testarbeit, aber nur Rang 7 der Einzeldauern — nicht die Hauptursache der empfundenen Dauer.
-4. **Import-/Transform-Overhead bei policy-engine/consent-ui:** aggregierte Importzeiten (74 s bzw. 179 s über parallele Worker) deutlich über der reinen Testzeit — Modulgraph-Analyse wäre ein eigener Befund, hier nicht untersucht.
-5. **Cache-Invalidierung:** `turbo.json` definiert keine `inputs` — jede Dateiänderung in einem Package (inkl. README) invalidiert dessen Build+Test-Cache und alle Downstream-Einträge.
-6. **CI-Kaltlauf:** `ci.yml` cached nur den pnpm-Store; Turbo-Start pro Run kalt, `build`→`test`→`lint` sequenziell, und der `layer-validation`-Job baut erneut komplett (`pnpm build`).
+**Note on vitest sub-metrics:** per-suite "Duration" is wall clock, but the breakdown fields (transform/setup/import/tests) are summed across parallel workers and can exceed wall clock. They must not be compared with wall-clock rankings. The table above labels them explicitly as aggregated.
 
-## Grenzen dieser Messung (was sie NICHT aussagt)
+## Retracted preliminary measurement (provenance)
 
-- Keine Messwerte von GitHub-Actions-Läufen (CI-Dauer unbekannt; ubuntu-Messung fehlt).
-- Kalt-Run lokal einmalig; Varianz zwischen Runs nicht bestimmt.
-- lokaler Node 24 vs. CI Node 22 — versionsbedingte Differenzen nicht gemessen.
-- Ursache der hohen evidence-Testdauer (Testinhalt) nicht im Detail analysiert.
-- Build-Ausgabe enthielt eine Pfadreferenz auf einen `wt-fix238`-Worktree in shared-crypto-Platform-Warnung (Vite externalize-Hinweis) — unbeachtet, nicht geklärt.
+An earlier preliminary timing was taken in the main working tree at locally-unpushed revision `551a09d` **plus uncommitted local modifications** (among others `package.json` and `src/apps/wallet-pwa/package.json` were locally modified). It cannot be reproduced or checked out by anyone else. Its numbers (cold graph 3 m 58.6 s; wallet-pwa 120.5 s with 67.9 s jsdom environment startup) did NOT reproduce at the committed revision (wallet-pwa environment startup measured 6 ms). That preliminary measurement is therefore **retracted and superseded** by the `70c7aef` numbers in this report. Lesson recorded: a baseline intended for later comparison must be measured at a committed revision on a clean tree — which is what this report does.
 
-## Nachtrag (gleicher Tag, spätere Einzelmessung): @askmi/evidence isoliert
+## Analysis (committed revision `70c7aef`)
 
-`npx vitest run --reporter=verbose` direkt im Package (keine Parallel-Konkurrenz, gleiche Maschine/Revision):
-Duration **22.31 s** (transform 0.74 s, import 1.29 s, Tests 21.23 s), 24 passed, 1 skipped.
+1. **Warm state is fast (seconds); the felt cost is the cold/invalidated state.** `pnpm test` warm: 1.7 s turbo / 3.3 s wall. Full cold graph: ~3 m 11 s wall locally.
+2. **evidence is the top suite under full load, by design, and mostly contention.** Isolated it takes 13.6 s; under full parallel load 83.3 s (~6x). Its tests deliberately spawn real pnpm/vitest subprocesses (`runner.test.ts`, "vitestExecutor (integration, real spawn)", 0.5–5.5 s per test) — this is the purpose of the package. No change recommended.
+3. **wallet-pwa is the second suite (78.2 s); the driver is module resolution, not jsdom startup at this revision.** The aggregated import time across workers is 62.3 s while environment startup measured 6 ms. (The preliminary dirty-tree observation of 68 s jsdom boot does not reproduce and is retracted.) A module-graph/import-cost investigation is the plausible follow-up, evidence pending.
+4. **shared-crypto is real work but not a top driver by wall clock.** 19.4 s wall; the 61.2 s figure is the worker-aggregated test time (PQC keygen/signing), not wall clock.
+5. **Cache invalidate is broad:** `turbo.json` defines no `inputs` for any task, so any file change in a package (including `README.md`) invalidates that package's build+test cache and everything downstream of it.
+6. **CI is always cold for Turbo:** `.github/workflows/ci.yml` caches only the pnpm store; every CI run pays the cold graph, `build → test → lint` run sequentially, and the `layer-validation` job executes a second full `pnpm build`.
 
-Korrektur/Präzisierung zur Kaltlauf-Tabelle oben:
-1. **Die 87 s sind keine intrinsische Suiten-Dauer, sondern Konkurrenz-verstärkt** (12 Kerne voll durch parallele Package-Läufe; Faktor ~4x im Einzelsuiten-Vergleich). Aussage "evidence ist Nr. 2" gilt für den Volllast-Szenario, nicht für die isolierte Suite.
-2. **Die Testarbeit ist echt und by design:** `runner.test.ts` (226 LOC) testet den Evidence-Runner mit **realen `spawnSync`-Kindprozessen** (echte pnpm-/vitest-Aufrufe). Einzeln dauern diese Integrationstests 0,5–5,5 s (z. B. "invalid npm_execpath (untrusted.cjs)" 5,4 s, "falls back to the pinned pnpm dependency" 3,6 s). Das ist der Zweck des Packages (shell-free Evidence-Execution), kein Verschwendungs-Befund.
-3. Mögliche Behandlungsoptionen (Vorschlag, nicht umgesetzt): die `vitestExecutor (integration, real spawn)`-Gruppe als eigene Stufe auslagern ( separates CI-Job oder `vitest -t` Filter), sodass Unit-Anteil im schnellen Feed zurückbleibt und die Real-Spawn-Tests gezielt/nicht bei jedem lokalen Run laufen.
+## Limits (what this report does NOT establish)
 
-## Abgeleitete Follow-ups (Vorschläge, NICHT umgesetzt)
+- CI (ubuntu-latest, Node 22) durations are not measured; local Node v24 vs CI Node 22 differences are not quantified.
+- Run-to-run variance was not determined (single cold run, single warm run, one isolated control run).
+- Install time (`pnpm install --frozen-lockfile`) was not timed.
+- The wallet-pwa import-cost attribution is a hypothesis from aggregated vitest metrics; no module-graph analysis was done.
 
-1. turbo `inputs` je Task definieren (Cache-Invalidierung einschränken).
-2. CI: Turbo-Cache (actions/cache für `.turbo`) oder Remote-Cache (benötigt Owner-Entscheidung + Secrets).
-3. wallet-pwa jsdom-Boot-Kosten senken (z. B. `isolate: false` / weniger eigene Environments), evidenzbasiert gegen diese Baseline messen.
-4. evidence-Tests auf Teilbarkeit/Parallelität prüfen.
-5. Dev-Workflow: `turbo test --filter=...[origin/master]` als Standard für lokale Iteration.
+## Proposed follow-ups (NOT implemented)
+
+1. Define turbo `inputs` per task to narrow cache invalidation.
+2. CI: Turbo cache (`actions/cache` for the Turbo cache directory) or Turborepo remote cache (needs repo-owner decision: account + secrets).
+3. Investigate wallet-pwa module-resolution/import cost (NOT jsdom: that hypothesis did not reproduce).
+4. Evidence suite: leave as is; do not add parallelism work for its own sake.
+5. Demo/pilot environment hosting: separate owner decision; would not change test runtime.
