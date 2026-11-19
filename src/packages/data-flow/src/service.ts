@@ -15,6 +15,12 @@ function extractVerifierLabel(did: string | null): string {
     .join(' ');
 }
 
+/** Unparsable timestamps sort as the epoch, so the order stays deterministic. */
+function sortTime(timestamp: string): number {
+  const time = Date.parse(timestamp);
+  return Number.isNaN(time) ? 0 : time;
+}
+
 export class DataFlowService {
   buildTransactions(entries: AuditLogEntry[]): DataFlowTransaction[] {
     // Group by decision_id
@@ -35,18 +41,8 @@ export class DataFlowService {
     const transactions: DataFlowTransaction[] = [];
 
     for (const [decisionId, group] of groups) {
-      // Sort by timestamp ascending using Schwartzian transform for performance
-      const sortedGroup = group
-        .map(entry => {
-          const time = Date.parse(entry.timestamp);
-          return { entry, time: Number.isNaN(time) ? 0 : time };
-        })
-        .sort((a, b) => a.time - b.time)
-        .map(item => item.entry);
-
-      // Re-assign the sorted entries to the group array (to maintain the variable reference)
-      group.length = 0;
-      group.push(...sortedGroup);
+      const entryTimes = new Map(group.map((entry) => [entry, sortTime(entry.timestamp)]));
+      group.sort((a, b) => entryTimes.get(a)! - entryTimes.get(b)!);
 
       // Find VP_GENERATED event for claim data
       const vpEvent = group.find(e => e.action === 'VP_GENERATED');
@@ -171,15 +167,10 @@ export class DataFlowService {
       });
     }
 
-    // Sort newest first using Schwartzian transform for performance
-    const sortedTransactions = transactions
-      .map(tx => {
-        const time = Date.parse(tx.startedAt);
-        return { tx, time: Number.isNaN(time) ? 0 : time };
-      })
-      .sort((a, b) => b.time - a.time)
-      .map(item => item.tx);
+    // Newest first
+    const startTimes = new Map(transactions.map((tx) => [tx, sortTime(tx.startedAt)]));
+    transactions.sort((a, b) => startTimes.get(b)! - startTimes.get(a)!);
 
-    return sortedTransactions;
+    return transactions;
   }
 }

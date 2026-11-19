@@ -674,4 +674,29 @@ describe('DataFlowService — Layer-2 visibility (G-140 surfacing): per-claim se
     const [txn] = service.buildTransactions(entries);
     expect(txn.claimSensitivity).toBeUndefined();
   });
+
+  describe('ordering', () => {
+    const at = (decision: string, timestamp: string, action: AuditLogEntry['action']) =>
+      makeEntry({ action, timestamp, metadata: { decision_id: decision } });
+
+    it('orders each transaction by time and lists the newest transaction first', () => {
+      const transactions = service.buildTransactions([
+        at('older', '2026-01-01T00:00:02.000Z', 'KEY_DESTROYED'),
+        at('newer', '2026-02-01T00:00:00.000Z', 'KEY_CREATED'),
+        at('older', '2026-01-01T00:00:01.000Z', 'KEY_CREATED'),
+      ]);
+
+      expect(transactions.map((t) => t.transactionId)).toEqual(['newer', 'older']);
+      expect(transactions[1].startedAt).toBe('2026-01-01T00:00:01.000Z');
+    });
+
+    it('treats an unparsable timestamp as the oldest entry', () => {
+      const transactions = service.buildTransactions([
+        at('broken', 'not-a-date', 'KEY_CREATED'),
+        at('valid', '2026-01-01T00:00:00.000Z', 'KEY_CREATED'),
+      ]);
+
+      expect(transactions.map((t) => t.transactionId)).toEqual(['valid', 'broken']);
+    });
+  });
 });
