@@ -34,16 +34,17 @@ im Geschäftsmodell:
 
 | | Klassische Identity Verification (IDnow, Veriff, Yoti, Jumio, Onfido) | AskMI / miTch |
 |---|---|---|
-| Frage, die beantwortet wird | „Wer bist du?" (Vollidentifizierung) | „Reicht dir nicht auch ein minimaler Proof?" (z. B. „über 18: Ja/Nein") |
+| Frage, die beantwortet wird | „Wer bist du?" (Vollidentifizierung) | Zielbild: „Reicht dir nicht auch ein minimaler Proof?" (z. B. „über 18: Ja/Nein"); im Wallet-Pfad noch nicht durchgesetzt (API-02) |
 | Rolle im System | Verifizierer/Vertrauensdienst, der personenbezogene Daten verarbeitet | Policy-Vermittlungsschicht zwischen Wallet und Verifier; keine Identitätsverwahrung |
 | Wo die Daten liegen | Zentral beim Anbieter/Verifier (Dokumentkopien, Biometrie-Match in der Cloud) | Am Gerät (Edge), AES-256-GCM-verschlüsselt; Crypto-Shredding flüchtiger Materialien |
-| Biometrie | Remote Biometric Match (Cloud-Dienst, kostenpflichtig) | Geräte-lokal (WebAuthn / Face ID); biometrische Daten verlassen das Gerät nicht |
-| Standardisierung | Proprietäre Prozesse plus eIDAS-/Gesetzes-Konformanz (VideoIdent, eID) | Offene Standards: OID4VCI, OID4VP, SD-JWT, ISO 18013-5 (mdoc), StatusList2021 |
-| Fehlerverhalten | Je Prozessimplementierung | Fail-closed, deny-biased (31+ deny codes, `@askmi/policy-engine`) |
+| Biometrie | Remote Biometric Match (Cloud-Dienst, kostenpflichtig) | Geräte-lokal (WebAuthn / Face ID); biometrische Daten verlassen das Gerät nicht. Die serverseitige WebAuthn-Signaturprüfung fehlt noch (API-05) |
+| Standardisierung | Proprietäre Prozesse plus eIDAS-/Gesetzes-Konformanz (VideoIdent, eID) | Zielbild: offene Standards (OID4VCI, OID4VP, SD-JWT, ISO 18013-5 mdoc, StatusList2021). Derzeit Teilimplementierungen ohne Konformitätsnachweis (API-03, API-04, API-05) |
+| Fehlerverhalten | Je Prozessimplementierung | Ziel: fail-closed, deny-biased. Umgesetzt in Komponenten wie `@askmi/policy-engine` (31+ deny codes), Ende-zu-Ende nicht belegt (API-02, API-03, API-05) |
 
 **Wichtig (gemäß `07-messaging-rules.md`):** Keine Aussage wie „wir blocken alles Tracking"
-oder „vollständige Anonymität". Die belegbaren Eigenschaften sind: fail-closed,
-PII-minimal, auditable, unlinkability-orientiert.
+oder „vollständige Anonymität". Fail-closed, PII-minimal, auditable und
+unlinkability-orientiert sind Designziele. Belegbar sind sie nur für die Komponente und den
+Pfad, für die `06-claim-evidence-map.md` Evidenz verlinkt, nicht als Ende-zu-Ende-Eigenschaft.
 
 ---
 
@@ -85,6 +86,14 @@ Damit kein überzogener Vergleich entsteht — alles bereits im Repo dokumentier
 2. **Offene Integrationslücken:** #170 (Request-Binding/Replay auf `/oid4vp-present`),
    #171 (Single-Use/ gespeicherte SD-JWT), #172, #173 — siehe README
    „Integration findings" und `docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md`.
+   Dazu die offenen Protokoll-Findings aus `docs/BACKLOG.md` und
+   `docs/qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md`:
+   - **API-02:** `presentOID4VP` legt alle angefragten Claims offen, statt sich auf
+     `authorized_requirements` zu beschränken.
+   - **API-03:** Fehlt das KB-JWT, wird die Holder-Bindung nicht geprüft.
+   - **API-04:** mdoc-DeviceAuth entspricht nicht der Struktur aus ISO 18013-5.
+   - **API-05:** Trust-Liste ohne Anchor-Key wird nicht signaturgeprüft, Status-Listen sind
+     unsigniert, und der WebAuthn-Verifier prüft die Signatur nicht.
 3. **Kostenvergleich ist ein Annahmenmodell:** CL-02 in `docs/BACKLOG.md` — belegt sind
    nur Veriff-Beispielpreis, AWS-CloudHSM- und CloudFront-Listenpreise; alles andere ist
    als Annahme gekennzeichnet. Keine unabhängige Verifikation.
