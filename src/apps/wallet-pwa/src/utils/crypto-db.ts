@@ -14,7 +14,8 @@
  * unavailable (the in-memory cache in WalletService remains the session path).
  */
 
-const DB_NAME = 'mitch_holder_keys_v1';
+import { holderDatabaseName } from '../runtime';
+const DB_NAME = holderDatabaseName;
 const STORE_NAME = 'holder_keys';
 
 /** A durably-stored holder key for one batch-issued single-use credential. */

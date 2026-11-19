@@ -1,6 +1,7 @@
 import { PolicyEngine, type EvaluationContext } from '@askmi/policy-engine';
 import { resolveLayerForData } from '@askmi/layer-resolver';
-import { SecureStorage } from '@askmi/secure-storage';
+import { SecureStorage, BrowserIndexedDBAdapter } from '@askmi/secure-storage';
+import { identityUserHandle, isDemoRuntime, walletDatabaseName } from '../runtime';
 import { AuditLog } from '@askmi/audit-log';
 import {
   PolicyManifest,
@@ -30,7 +31,7 @@ import {
   KeyProtectionLevel,
   signData,
   sha256,
-  resolveDID,
+  DIDResolver,
   detectKeyAlgorithm,
   generateHolderBinding,
   createKeyBindingJWT,
@@ -41,7 +42,9 @@ import {
 } from '@askmi/shared-crypto';
 
 import { decodeMdoc as mdocDecodeMdoc, encode as mdocEncode } from '@askmi/mdoc';
+import { CONFIG } from '../config';
 import { DEMO_POLICY } from '../data/DemoPolicy';
+import { ISOLATED_DEMO_POLICY } from '../data/IsolatedDemoPolicy';
 import {
   isSingleUsePresentation,
   needsConsumption,
@@ -73,7 +76,7 @@ const LEGACY_POLICY_STORAGE_KEY = ASKMI_STORAGE_KEYS.walletPolicy;
 const POLICY_STORAGE_ID = ASKMI_STORAGE_KEYS.policyManifestDocument;
 
 // Default Policy for the PoC (Now persistent)
-const DEFAULT_POLICY: PolicyManifest = DEMO_POLICY;
+const DEFAULT_POLICY: PolicyManifest = isDemoRuntime ? ISOLATED_DEMO_POLICY : DEMO_POLICY;
 
 function sanitizeIdentityActorLabel(actor: string | undefined): string {
   const fallback = 'Unknown actor';
@@ -279,6 +282,12 @@ const MDOC_MDL_CREDENTIAL = {
 const keyCache = new Map<string, { key: CryptoKey; expires: number }>();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 Minutes
 
+// did:askmi documents come from the verifier this build is configured to use.
+const verifierDidResolver = new DIDResolver({
+  didAskmiDocumentUrl: new URL('/did.json', CONFIG.VERIFIER_ENDPOINT).href,
+  fetchFn: (...args) => fetch(...args),
+});
+
 // Node-safe localStorage shim for non-browser environments (validation script)
 const localStoreShim: Storage = (() => {
   try {
@@ -340,7 +349,7 @@ async function fetchVerifierPublicKey(did: string): Promise<CryptoKey> {
 
   // 2. Resolve (Real Resolver from shared-crypto)
   // Supports did:web (HTTPS) and did:askmi (Demo)
-  const didDocument = await resolveDID(did);
+  const didDocument = await verifierDidResolver.resolve(did);
 
   // 3. Extract Key (First Verification Method)
   const vm = didDocument.verificationMethod?.[0];
@@ -449,7 +458,10 @@ export class WalletService {
 
           // 2. Initialize Encrypted Storage
           step = 'initSecureStorage';
-          this.storage = await SecureStorage.init(masterKey);
+          this.storage = await SecureStorage.init(
+            masterKey,
+            new BrowserIndexedDBAdapter(walletDatabaseName)
+          );
 
           // Initialize Audit Keys (Truth Anchor) — persisted via SecureStorage
           step = 'initAuditKeys';
@@ -1894,7 +1906,7 @@ export class WalletService {
    * Register a hardware-bound identity key (LoA High).
    */
   async registerIdentityKey(): Promise<void> {
-    await WebAuthnService.registerIdentityKey();
+    await WebAuthnService.registerIdentityKey(undefined, identityUserHandle);
     console.log('✅ Hardware-bound Identity Key registered.');
     // Re-initialize policy engine to use the new key
     this.initialized = false;
@@ -2316,7 +2328,7 @@ export class WalletService {
    * (WebAuthnService.clearRegistration) so the next start re-enrolls.
    */
   async resetWallet(): Promise<void> {
-    await SecureStorage.reset();
+    await SecureStorage.reset(new BrowserIndexedDBAdapter(walletDatabaseName));
     this.storage = null;
     this.policyEngine = null;
     this.policyManifest = null;

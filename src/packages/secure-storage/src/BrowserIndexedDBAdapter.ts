@@ -10,14 +10,14 @@ const STORE_NAME = 'credentials';
 export class BrowserIndexedDBAdapter implements IStorageAdapter {
     private dbPromise: Promise<IDBDatabase>;
 
-    constructor() {
+    constructor(private readonly databaseName: string = DB_NAME) {
         this.dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
             if (typeof indexedDB === 'undefined') {
                 reject(new Error('IndexedDB is not available in this environment.'));
                 return;
             }
 
-            const request = indexedDB.open(DB_NAME, 1);
+            const request = indexedDB.open(this.databaseName, 1);
 
             request.onupgradeneeded = (event) => {
                 const db = (event.target as IDBOpenDBRequest).result;
@@ -112,7 +112,7 @@ export class BrowserIndexedDBAdapter implements IStorageAdapter {
 
     async clear(): Promise<void> {
         await new Promise<void>((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(DB_NAME);
+            const request = indexedDB.deleteDatabase(this.databaseName);
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
             request.onblocked = () => reject(new Error('IndexedDB delete blocked.'));

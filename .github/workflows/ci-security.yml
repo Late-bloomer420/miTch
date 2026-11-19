@@ -21,7 +21,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: 10.34.9
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -35,7 +35,7 @@ jobs:
       - name: Audit gate regression tests
         run: node --test scripts/check-security-audit.test.mjs
 
-      - name: Enforce critical dependency audit gate
+      - name: Enforce high/critical dependency audit gate
         shell: bash
         run: |
           audit_report="${{ runner.temp }}/askmi-dependency-audit.json"
@@ -44,4 +44,13 @@ jobs:
           else
             audit_status=$?
           fi
-          node scripts/check-security-audit.mjs "$audit_report" "$audit_status"
+          # Production-only report: a time-boxed exception in
+          # scripts/security-audit-exceptions.json applies only if the advisory
+          # does not reach runtime dependencies.
+          prod_report="${{ runner.temp }}/askmi-dependency-audit-prod.json"
+          if pnpm audit --prod --json > "$prod_report"; then
+            prod_status=0
+          else
+            prod_status=$?
+          fi
+          node scripts/check-security-audit.mjs "$audit_report" "$audit_status" "$prod_report" "$prod_status"
