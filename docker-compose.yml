@@ -33,6 +33,8 @@ services:
     build:
       context: .
       dockerfile: src/apps/wallet-pwa/Dockerfile
+      args:
+        VITE_WALLET_OPENER_ORIGINS: ${VITE_WALLET_OPENER_ORIGINS:-}
     networks:
       - mitch-network
     restart: always
