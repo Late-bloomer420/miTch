@@ -17,6 +17,8 @@ COPY src/apps/wallet-pwa ./src/apps/wallet-pwa
 
 # Prune and Build
 RUN pnpm install --frozen-lockfile
+ARG VITE_WALLET_OPENER_ORIGINS=
+ENV VITE_WALLET_OPENER_ORIGINS=$VITE_WALLET_OPENER_ORIGINS
 RUN pnpm --filter "@askmi/wallet-pwa" build
 
 # Production Image: Serve static files via Nginx for high performance/sovereignty
