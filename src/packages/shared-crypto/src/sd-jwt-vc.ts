@@ -106,7 +106,8 @@ export interface KeyBindingValidationResult {
  */
 export async function issueSDJWTVC(
     payload: Omit<SDJWTVCPayload, '_sd_alg'> & { vct: string; iss: string },
-    issuerPrivateKey: CryptoKey
+    issuerPrivateKey: CryptoKey,
+    options?: { kid?: string }
 ): Promise<string> {
     validateIssuerClaims(payload);
 
@@ -116,7 +117,11 @@ export async function issueSDJWTVC(
     } as SDJWTVCPayload;
 
     return new SignJWT(fullPayload as unknown as Record<string, unknown>)
-        .setProtectedHeader({ alg: 'ES256', typ: 'vc+sd-jwt' })
+        .setProtectedHeader({
+            alg: 'ES256',
+            typ: 'vc+sd-jwt',
+            ...(options?.kid ? { kid: options.kid } : {}),
+        })
         .sign(issuerPrivateKey);
 }
 
