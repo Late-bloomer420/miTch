@@ -31,11 +31,11 @@ F-16 is not a one-line fix. Treat it as an architecture extraction sequence with
 API stability gates. Do not refactor `WalletService` opportunistically while
 working on unrelated policy, UX, or demo-flow tasks.
 
-### Runtime Truth Correction — 2026-08-20
+### Runtime Truth Correction — 2026-11-01
 
 The earlier backlog entry `R-02 WalletService Decomposition — ✅` described the
 presence of repository/evaluator/presentation interfaces in `wallet-core`, not
-a completed runtime cutover. At `d7f0e77` (2026-11-18), `App.tsx` still constructs
+a completed runtime cutover. At `002ce5e` (2026-11-01), `App.tsx` still constructs
 the 2,464-line PWA-local `WalletService`; the modular facade is not the runtime
 authority. R-02 is therefore **partial**, and completion is governed
 by ARCH-01 and ARCH-09 in the canonical decoupling audit.
