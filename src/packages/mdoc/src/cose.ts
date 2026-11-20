@@ -93,6 +93,8 @@ export interface Sign1CreateOptions {
     unprotectedHeaders?: Map<number, unknown>;
     /** External additional authenticated data (default: empty) */
     externalAad?: Uint8Array;
+    /** Detached content: sign `payload` but transmit `null` in the payload slot (RFC 9052 §2) */
+    detachedPayload?: boolean;
 }
 
 /** Result of COSE_Sign1 verification */
@@ -175,7 +177,7 @@ export async function createSign1(opts: Sign1CreateOptions): Promise<Uint8Array>
     const coseArray = [
         protectedHeaderBytes,
         unprotected,
-        payload,
+        opts.detachedPayload ? null : payload,
         signature,
     ];
 
@@ -204,9 +206,19 @@ export async function verifySign1(
     coseSign1Bytes: Uint8Array,
     publicKey: CryptoKey,
     externalAad: Uint8Array = new Uint8Array(0),
+    detachedPayload?: Uint8Array,
 ): Promise<Sign1VerifyResult> {
     // Parse the COSE_Sign1 structure
     const parsed = decodeCoseSign1(coseSign1Bytes);
+
+    // Detached content (RFC 9052 §2): the transmitted payload MUST be nil, and the
+    // caller supplies the content. An embedded payload is never silently substituted.
+    if (detachedPayload !== undefined) {
+        if (parsed.payload !== null) {
+            return { valid: false, payload: null, protectedHeaders: parsed.decodedProtectedHeaders };
+        }
+        parsed.payload = detachedPayload;
+    }
 
     // Verify algorithm is ES256
     const alg = parsed.decodedProtectedHeaders.get(COSE_HEADER.ALG);
@@ -275,10 +287,11 @@ export function decodeCoseSign1(coseSign1Bytes: Uint8Array): CoseSign1Structure 
         ? unprotectedRaw
         : new Map<number, unknown>();
 
-    // Payload: bstr or null
-    const payload = payloadRaw instanceof Uint8Array ? payloadRaw
-        : payloadRaw === null ? null
-        : null;
+    // Payload: bstr or nil (detached); anything else is malformed
+    if (!(payloadRaw instanceof Uint8Array) && payloadRaw !== null) {
+        throw new Error('Invalid COSE_Sign1: payload must be a byte string or nil');
+    }
+    const payload = payloadRaw;
 
     return {
         protectedHeaders: protectedHeaderBytes,
@@ -312,6 +325,8 @@ export interface Mac0CreateOptions {
     unprotectedHeaders?: Map<number, unknown>;
     /** External additional authenticated data (default: empty) */
     externalAad?: Uint8Array;
+    /** Detached content: MAC `payload` but transmit `null` in the payload slot (RFC 9052 §2) */
+    detachedPayload?: boolean;
 }
 
 /** Result of COSE_Mac0 verification */
@@ -379,7 +394,7 @@ export async function createMac0(opts: Mac0CreateOptions): Promise<Uint8Array> {
     const tag = new Uint8Array(tagBuffer);
 
     const unprotected = opts.unprotectedHeaders ?? new Map<number, unknown>();
-    const coseArray = [protectedHeaderBytes, unprotected, payload, tag];
+    const coseArray = [protectedHeaderBytes, unprotected, opts.detachedPayload ? null : payload, tag];
 
     const arrayBytes = encode(coseArray);
     const result = new Uint8Array(TAG_17_HEADER.length + arrayBytes.length);
@@ -415,9 +430,10 @@ export function decodeCoseMac0(coseMac0Bytes: Uint8Array): CoseMac0Structure {
         ? unprotectedRaw
         : new Map<number, unknown>();
 
-    const payload = payloadRaw instanceof Uint8Array ? payloadRaw
-        : payloadRaw === null ? null
-        : null;
+    if (!(payloadRaw instanceof Uint8Array) && payloadRaw !== null) {
+        throw new Error('Invalid COSE_Mac0: payload must be a byte string or nil');
+    }
+    const payload = payloadRaw;
 
     return {
         protectedHeaders: protectedHeaderBytes,
@@ -437,8 +453,17 @@ export async function verifyMac0(
     coseMac0Bytes: Uint8Array,
     macKey: CryptoKey,
     externalAad: Uint8Array = new Uint8Array(0),
+    detachedPayload?: Uint8Array,
 ): Promise<Mac0VerifyResult> {
     const parsed = decodeCoseMac0(coseMac0Bytes);
+
+    // Detached content: transmitted payload MUST be nil (see verifySign1).
+    if (detachedPayload !== undefined) {
+        if (parsed.payload !== null) {
+            return { valid: false, payload: null, protectedHeaders: parsed.decodedProtectedHeaders };
+        }
+        parsed.payload = detachedPayload;
+    }
 
     const alg = parsed.decodedProtectedHeaders.get(COSE_HEADER.ALG);
     if (alg !== COSE_MAC_ALG.HMAC_256_256) {
