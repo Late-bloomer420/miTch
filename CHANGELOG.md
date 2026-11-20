@@ -12,6 +12,9 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- docs(qa): review the 2026-11-03 API audit against d7f0e77 (#299) ([#302](https://github.com/Late-bloomer420/miTch/pull/302)) — evidence: [`API_AUDIT_REVIEW_2026-11-18.md`](docs/qa/API_AUDIT_REVIEW_2026-11-18.md)
+- docs(session): record Session 23 — #247 scope split assessed and not carried out ([#300](https://github.com/Late-bloomer420/miTch/pull/300))
+- test(verifier-demo): cover credential expiry in the age_over_18 profile ([#298](https://github.com/Late-bloomer420/miTch/pull/298)) — evidence: [`AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md`](docs/qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md)
 - fix: clarify age claims and test issuer-attested disclosure ([#287](https://github.com/Late-bloomer420/miTch/pull/287))
 - docs(tasks): scope slim age-verifier template and map open PRs ([#290](https://github.com/Late-bloomer420/miTch/pull/290))
 - fix(shared-crypto): trust list fails closed outside explicit dev mode (#240) ([#276](https://github.com/Late-bloomer420/miTch/pull/276))
