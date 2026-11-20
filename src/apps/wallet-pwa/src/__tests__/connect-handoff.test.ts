@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  isWalletDeepLink,
   parseConnectHandoff,
   loadConnectRequest,
   presentationAccepted,
@@ -58,6 +59,23 @@ describe('Connect wallet handoff', () => {
       false
     );
     expect(presentationAccepted(true, { status: 'verified', result: { eligible: false } })).toBe(
+      false
+    );
+  });
+});
+
+describe('isWalletDeepLink', () => {
+  it('recognises a Connect handoff and a verifier demo link', () => {
+    expect(isWalletDeepLink(query)).toBe(true);
+    expect(
+      isWalletDeepLink('?scenario=liquor-store&endpoint=http%3A%2F%2Flocalhost%3A3004&sessionId=s1')
+    ).toBe(true);
+  });
+
+  it('leaves plain and partial URLs on the landing page', () => {
+    expect(isWalletDeepLink('')).toBe(false);
+    expect(isWalletDeepLink('?utm_source=newsletter')).toBe(false);
+    expect(isWalletDeepLink('?scenario=liquor-store&endpoint=http%3A%2F%2Flocalhost%3A3004')).toBe(
       false
     );
   });

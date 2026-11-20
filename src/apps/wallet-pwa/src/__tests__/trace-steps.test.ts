@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { DataFlowTransaction } from '@askmi/data-flow';
-import { describeTraceSteps } from '../utils/trace-steps';
+import { describeTraceSteps, NO_DELIVERY_RECORDED } from '../utils/trace-steps';
+
+/** Minimal data-flow event marking that the presentation reached the verifier. */
+const delivered = [{ action: 'VP_SENT' }] as unknown as DataFlowTransaction['events'];
 
 const txn = (overrides: Partial<DataFlowTransaction>): DataFlowTransaction =>
   ({
@@ -35,9 +38,24 @@ describe('describeTraceSteps', () => {
         claimsRequested: ['age >= 18'],
         provenClaims: ['age >= 18'],
         claimsShared: [],
+        events: delivered,
       })
     );
     expect(steps).toEqual({ requested: '1 item', allowed: 'ALLOW', sent: '1 proof · 0 raw' });
+  });
+
+  it('does not report a prepared presentation as sent without a delivery event', () => {
+    // generatePresentation logs VP_GENERATED before key resolution and transmission,
+    // so an unreachable verifier leaves proven claims in the log with nothing sent.
+    const steps = describeTraceSteps(
+      txn({
+        verdict: 'ALLOW',
+        claimsRequested: ['age >= 18'],
+        provenClaims: ['age >= 18'],
+        events: [{ action: 'VP_GENERATED' }] as unknown as DataFlowTransaction['events'],
+      })
+    );
+    expect(steps).toEqual({ requested: '1 item', allowed: 'ALLOW', sent: NO_DELIVERY_RECORDED });
   });
 
   it('mentions withheld claims in the sent step', () => {
@@ -47,6 +65,7 @@ describe('describeTraceSteps', () => {
         claimsRequested: ['givenName', 'birthDate', 'address'],
         claimsShared: ['givenName'],
         claimsWithheld: ['birthDate', 'address'],
+        events: delivered,
       })
     );
     expect(steps.requested).toBe('3 items');
