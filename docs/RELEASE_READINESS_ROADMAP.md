@@ -30,6 +30,10 @@ The public EC implementation is a multi-repository organization, not one monolit
 
 ## Authority and evidence
 
+### Observable trust outcomes — additive planning, 2026-10-14
+
+Product goals stay as listed in [Goals retained](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md#goals-retained-implementation-gaps-remain-visible). The [assurance and role contract](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) defines TR-1 understandable promises (#175), TR-2 one bounded real transaction (#171; #170 closed 2026-10-25 via #224), TR-3 authenticated agent authority (#177), TR-4 role/provider dependencies and exit (#176/#97), and TR-5 operating evidence (#172/#173 and existing independent/release gates). These milestones refine the existing waves; they are not completed controls, new calendar commitments or replacements for G0/G1. #178 owns this documentation intake. The first code slice (#170) landed via #208/#224 on 2026-10-25 with scoped evidence; the next runtime slices are #171 and applicable #172/#173.
+
 | Surface | Authority |
 |---|---|
 | [EUDI source baseline](eudi/EUDI_SOURCE_BASELINE.md) | Official source/version lock and AskMI role boundary |
@@ -329,3 +333,18 @@ Production becomes schedulable only after successful pilot exit plus durable gov
 
 Do not move G0/G1 or promote future sprints from this documentation-only reconciliation.
 Numerical `age` is the current accepted Connect profile; a no-raw-age claim needs an explicit profile decision under #97.
+
+## Single-show deniable presentations
+
+Scope the experiment to one synthetic ES256 credential, one anonymous holder key and one authenticated designated verifier per presentation. Keep the existing reference flow as the comparison baseline. Multi-show unlinkability, age-predicate proofs, changes to issuance services, EUDI interoperability certification and production rollout are outside this experiment.
+
+| Order | Deliverable | Exit condition |
+| --- | --- | --- |
+| [1 · Baseline](https://github.com/Late-bloomer420/miTch/issues/260) | Trace one ordinary age check | Reproducible inventory of what an outside party can verify |
+| [2 · Profile](https://github.com/Late-bloomer420/miTch/issues/261) | Specify wire format, key trust and single-use rules | Independent cryptographic review completed and findings resolved |
+| [3 · Fixture](https://github.com/Late-bloomer420/miTch/issues/262) | Implement wallet proof, verifier and simulator in isolation | Reproducible positive and negative vectors |
+| [4 · Evaluation](https://github.com/Late-bloomer420/miTch/issues/263) | Exercise replay, races, restart and evidence leakage | Reviewed comparison with baseline and explicit stop, revise or continue decision |
+
+Each stage depends on the previous stage. Only the baseline is ready to start.
+
+[Design rationale and review gates](security/DENIABLE_ECDSA_PRESENTATIONS.md)
