@@ -39,3 +39,19 @@ describe('issuer-mock /credential issues vc+sd-jwt', () => {
     expect(jwks.body.keys.map((k: { kid: string }) => k.kid)).toEqual([header.kid]);
   });
 });
+
+describe('API-01.4: issuer identifier matches the verifier default', () => {
+  it('signs with ASKMI_DEMO.issuerUri, which the bundled trust list lists', async () => {
+    await ready;
+    const { ASKMI_DEMO } = await import('@askmi/shared-types');
+    const { readFileSync } = await import('node:fs');
+    const { pub } = await holderJwk();
+    const res = await request(app)
+      .post('/credential')
+      .send({ proof: { jwk: pub }, credential_definition: { type: ['AgeCredential'] } });
+    const payload = JSON.parse(Buffer.from(res.body.credential.split('~')[0].split('.')[1], 'base64url').toString());
+    expect(payload.iss).toBe(ASKMI_DEMO.issuerUri);
+    const lotl = JSON.parse(readFileSync(new URL('../public/v1/eudi-lotl.json', import.meta.url), 'utf8'));
+    expect(lotl.issuers).toContain(ASKMI_DEMO.issuerUri);
+  });
+});

@@ -16,7 +16,7 @@ import { verifyMdocOffline } from '../src/verifier';
 import { verifySign1 } from '../src/cose';
 import { decode, decodeMdoc } from '../src/cbor';
 import { digestItem } from '../src/mso';
-import { createSign1, encode } from '../src/index';
+import { createSign1, buildDeviceAuthenticationBytes } from '../src/index';
 import {
   MDL_DOCTYPE,
   MDL_NAMESPACE,
@@ -255,9 +255,9 @@ describe('buildMdocDocument → verifyMdocOffline roundtrip', () => {
     // Simulate holder adding deviceSigned at presentation time
     const sessionTranscript = makeSessionTranscript();
     const deviceSignature = await createSign1({
-      payload: encode({ deviceNameSpaces: {} }),
+      payload: buildDeviceAuthenticationBytes(sessionTranscript, MDL_DOCTYPE),
       privateKey: deviceKeyPair.privateKey,
-      externalAad: encode(sessionTranscript),
+      detachedPayload: true,
     });
 
     const documentWithDeviceAuth = {
@@ -293,9 +293,9 @@ describe('buildMdocDocument → verifyMdocOffline roundtrip', () => {
 
     const sessionTranscript = makeSessionTranscript();
     const deviceSignature = await createSign1({
-      payload: encode({ deviceNameSpaces: {} }),
+      payload: buildDeviceAuthenticationBytes(sessionTranscript, MDL_DOCTYPE),
       privateKey: deviceKeyPair.privateKey,
-      externalAad: encode(sessionTranscript),
+      detachedPayload: true,
     });
 
     const doc = {

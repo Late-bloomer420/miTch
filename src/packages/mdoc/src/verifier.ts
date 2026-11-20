@@ -186,6 +186,7 @@ export async function verifyMdocOffline(
       mso,
       sessionTranscript,
       opts.eReaderPrivateKey,
+      document.deviceSigned.nameSpaces,
     );
     steps.push({
       step: 'device-auth',

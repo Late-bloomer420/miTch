@@ -84,14 +84,19 @@ beforeAll(async () => {
 // ─── Test 1: valid signed credential + correct resolver → signaturesVerified:true ─
 
 describe('verifyAuthorizationResponse — crypto verification', () => {
-    it('1) valid signed SD-JWT VC + correct issuer key → valid:true, signaturesVerified:true', async () => {
-        const issuerJwt = await issueSDJWTVC(vcPayload(), issuerKeyPair.privateKey);
-        // SD-JWT compact (no disclosures, no KB-JWT): "header.payload.sig~"
-        const credential = `${issuerJwt}~`;
+    it('1) valid signed, holder-bound SD-JWT VC + correct issuer key → valid:true, signaturesVerified:true', async () => {
+        const cnf = await buildCNFClaim(holderKeyPair.publicKey);
+        const issuerJwt = await issueSDJWTVC(vcPayload(cnf as { jwk: JsonWebKey }), issuerKeyPair.privateKey);
+        const nonce = `nonce-valid-${Date.now()}`;
+        const kbJwt = await createKeyBindingJWT(
+            { aud: VERIFIER_AUD, nonce, sdJwtWithDisclosures: `${issuerJwt}~` },
+            holderKeyPair.privateKey
+        );
+        const credential = `${issuerJwt}~${kbJwt}`;
 
         const result = await verifyAuthorizationResponse({
             response: buildResp(credential),
-            expectedNonce: `nonce-valid-${Date.now()}`,
+            expectedNonce: nonce,
             expectedState: 'state-crypto',
             definition: DEFINITION,
             skipNonceCheck: true,
@@ -103,6 +108,40 @@ describe('verifyAuthorizationResponse — crypto verification', () => {
         expect(result.valid).toBe(true);
         expect(result.signaturesVerified).toBe(true);
         expect(result.errors).toHaveLength(0);
+    });
+
+    it('API-03d) holder-bound VC presented with trailing "~" (no KB-JWT) → fail-closed', async () => {
+        const cnf = await buildCNFClaim(holderKeyPair.publicKey);
+        const issuerJwt = await issueSDJWTVC(vcPayload(cnf as { jwk: JsonWebKey }), issuerKeyPair.privateKey);
+        const result = await verifyAuthorizationResponse({
+            response: buildResp(`${issuerJwt}~`),
+            expectedNonce: `nonce-nokb-${Date.now()}`,
+            expectedState: 'state-crypto',
+            definition: DEFINITION,
+            skipNonceCheck: true,
+            verifyCredentialSignatures: true,
+            resolveIssuerKey: async (_iss: string) => issuerKeyPair.publicKey,
+            expectedAudience: VERIFIER_AUD,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.signaturesVerified).toBe(false);
+        expect(result.errors.join(' ')).toMatch(/KB-JWT required/);
+    });
+
+    it('API-03d) VC without cnf and without KB-JWT → fail-closed (nonce cannot be bound)', async () => {
+        const issuerJwt = await issueSDJWTVC(vcPayload(), issuerKeyPair.privateKey);
+        const result = await verifyAuthorizationResponse({
+            response: buildResp(`${issuerJwt}~`),
+            expectedNonce: `nonce-nocnf-${Date.now()}`,
+            expectedState: 'state-crypto',
+            definition: DEFINITION,
+            skipNonceCheck: true,
+            verifyCredentialSignatures: true,
+            resolveIssuerKey: async (_iss: string) => issuerKeyPair.publicKey,
+            expectedAudience: VERIFIER_AUD,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.signaturesVerified).toBe(false);
     });
 
     it('2a) wrong issuer key → fail-closed (valid:false, signaturesVerified:false)', async () => {

@@ -12,6 +12,7 @@ import { parseOpenerOrigins, readOpenerRequest } from './utils/opener-bridge';
 
 import { type EvaluationContext } from '@askmi/policy-engine';
 import type {
+  DecisionCapsule,
   VerifierRequest,
   PolicyEvaluationResult,
   PolicyManifest,
@@ -48,6 +49,7 @@ import { describeTraceSteps } from './utils/trace-steps';
 import { DataFlowService, type DataFlowTransaction } from '@askmi/data-flow';
 import { padPayload, UNIFORM_HEADERS, applyJitter } from './utils/anti-fingerprinting';
 import { isSingleUsePresentation } from './utils/single-use';
+import { authorizedDisclosureClaims } from './utils/authorized-disclosure';
 
 const traceFlowService = new DataFlowService();
 
@@ -987,16 +989,27 @@ function WalletApp() {
     authRequest: AuthorizationRequest,
     _scenarioId: string,
     sessionId: string,
-    decisionId: string | null = null
+    capsule: DecisionCapsule | null | undefined
   ) => {
+    const decisionId = capsule?.decision_id ?? null;
     try {
       setStatus('PROVING');
       addLog('🔐 Generating SD-JWT Verifiable Presentation...', 'info');
 
-      // ADOPT-0b: Derive requested claim names from the presentation definition
-      const requestedClaimNames = authRequest.presentation_definition.input_descriptors.flatMap(
+      // API-02: disclose only what the policy decision authorized, never the raw request.
+      const verifierRequestedClaims = authRequest.presentation_definition.input_descriptors.flatMap(
         (d) => d.constraints?.fields?.flatMap((f) => f.path.map((p) => p.replace('$.', ''))) ?? []
       );
+      const requestedClaimNames = authorizedDisclosureClaims(capsule, verifierRequestedClaims);
+      if (requestedClaimNames.length === 0) {
+        addLog('❌ Policy authorized no claim for this request — nothing presented.', 'error');
+        setStatus('IDLE');
+        return;
+      }
+      const withheld = verifierRequestedClaims.filter((c) => !requestedClaimNames.includes(c));
+      if (withheld.length > 0) {
+        addLog(`🛡️ Withheld (not authorized): ${withheld.join(', ')}`, 'warning');
+      }
 
       // ADOPT-0b: Locate the most recent real stored SD-JWT VC (fail-closed if none)
       const credId = await walletRef.current!.getLatestSdJwtVcId();
@@ -1210,12 +1223,7 @@ function WalletApp() {
         addLog(`✅ Policy ALLOWED. Building SD-JWT VP...`, 'success');
         setFlashAllow(true);
         setTimeout(() => setFlashAllow(false), 900);
-        await presentOID4VP(
-          authRequest,
-          scenario,
-          sessionId,
-          result.decisionCapsule?.decision_id ?? null
-        );
+        await presentOID4VP(authRequest, scenario, sessionId, result.decisionCapsule);
       }
     } catch (e) {
       addLog(`❌ OID4VP Error: ${(e as Error).message}`, 'error');
@@ -1867,7 +1875,7 @@ function WalletApp() {
                 pendingAuth,
                 pendingScenario,
                 pendingSessionId,
-                evaluationResult?.decisionCapsule?.decision_id ?? null
+                evaluationResult?.decisionCapsule
               );
             } else {
               proceedWithProof(evaluationResult, undefined, currentRequest?.serviceEndpoint);

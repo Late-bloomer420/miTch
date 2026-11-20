@@ -1,8 +1,13 @@
 import { describe, test, expect, beforeAll } from 'vitest';
-import { verifyDeviceSignature, verifyDeviceMac, verifyDeviceAuth } from '../src/device-auth';
+import {
+  verifyDeviceSignature,
+  verifyDeviceMac,
+  verifyDeviceAuth,
+  buildDeviceAuthenticationBytes,
+} from '../src/device-auth';
 import { exportCoseKey } from '../src/cose-key';
-import { createSign1, createMac0, deriveSessionMacKey } from '../src/cose';
-import { encode } from '../src/cbor';
+import { createSign1, createMac0, deriveSessionMacKey, decodeCoseSign1 } from '../src/cose';
+import { encode, decode } from '../src/cbor';
 import type {
   DeviceAuth,
   MobileSecurityObject,
@@ -50,16 +55,30 @@ function makeSessionTranscript(): SessionTranscript {
   ];
 }
 
+const DOCTYPE = 'org.iso.18013.5.1.mDL';
+
+/** ISO/IEC 18013-5 §9.1.3.6: detached COSE_Sign1 over DeviceAuthenticationBytes, empty AAD. */
 async function signDeviceAuth(
   privateKey: CryptoKey,
   sessionTranscript: SessionTranscript,
+  docType = DOCTYPE,
 ): Promise<Uint8Array> {
-  const externalAad = encode(sessionTranscript);
-  const payload = encode({ deviceNameSpaces: {} });
   return createSign1({
-    payload,
+    payload: buildDeviceAuthenticationBytes(sessionTranscript, docType),
     privateKey,
-    externalAad,
+    detachedPayload: true,
+  });
+}
+
+/** Pre-fix shape: embedded payload + SessionTranscript as external_aad (non-ISO). */
+async function signLegacyDeviceAuth(
+  privateKey: CryptoKey,
+  sessionTranscript: SessionTranscript,
+): Promise<Uint8Array> {
+  return createSign1({
+    payload: encode({ deviceNameSpaces: {} }),
+    privateKey,
+    externalAad: encode(sessionTranscript),
   });
 }
 
@@ -113,9 +132,11 @@ async function macDeviceAuth(
   macKey: CryptoKey,
   sessionTranscript: SessionTranscript,
 ): Promise<Uint8Array> {
-  const externalAad = encode(sessionTranscript);
-  const payload = encode({ deviceNameSpaces: {} });
-  return createMac0({ payload, macKey, externalAad });
+  return createMac0({
+    payload: buildDeviceAuthenticationBytes(sessionTranscript, DOCTYPE),
+    macKey,
+    detachedPayload: true,
+  });
 }
 
 // ─── verifyDeviceSignature ──────────────────────────────────────────────────
@@ -125,7 +146,7 @@ describe('verifyDeviceSignature', () => {
     const transcript = makeSessionTranscript();
     const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
 
-    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript);
+    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript, DOCTYPE);
     expect(result.valid).toBe(true);
     expect(result.reason).toBeUndefined();
   });
@@ -134,7 +155,7 @@ describe('verifyDeviceSignature', () => {
     const transcript = makeSessionTranscript();
     const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
 
-    const result = await verifyDeviceSignature(sig, otherKeyPair.publicKey, transcript);
+    const result = await verifyDeviceSignature(sig, otherKeyPair.publicKey, transcript, DOCTYPE);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('invalid');
   });
@@ -149,7 +170,7 @@ describe('verifyDeviceSignature', () => {
       transcript[2],
     ];
 
-    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, tamperedTranscript);
+    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, tamperedTranscript, DOCTYPE);
     expect(result.valid).toBe(false);
   });
 
@@ -161,7 +182,7 @@ describe('verifyDeviceSignature', () => {
     const corrupted = new Uint8Array(sig);
     corrupted[corrupted.length - 1] ^= 0xff;
 
-    const result = await verifyDeviceSignature(corrupted, deviceKeyPair.publicKey, transcript);
+    const result = await verifyDeviceSignature(corrupted, deviceKeyPair.publicKey, transcript, DOCTYPE);
     expect(result.valid).toBe(false);
   });
 
@@ -169,7 +190,7 @@ describe('verifyDeviceSignature', () => {
     const transcript: SessionTranscript = [null, null, 'handover'];
     const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
 
-    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript);
+    const result = await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript, DOCTYPE);
     expect(result.valid).toBe(true);
   });
 
@@ -177,7 +198,7 @@ describe('verifyDeviceSignature', () => {
     const transcript = makeSessionTranscript();
     const garbage = new Uint8Array([0x00, 0x01, 0x02, 0x03]);
 
-    const result = await verifyDeviceSignature(garbage, deviceKeyPair.publicKey, transcript);
+    const result = await verifyDeviceSignature(garbage, deviceKeyPair.publicKey, transcript, DOCTYPE);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('decoding failed');
   });
@@ -265,7 +286,7 @@ describe('verifyDeviceMac', () => {
     const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
     const mac = await macDeviceAuth(macKey, transcript);
 
-    const result = await verifyDeviceMac(mac, macKey, transcript);
+    const result = await verifyDeviceMac(mac, macKey, transcript, DOCTYPE);
     expect(result.valid).toBe(true);
     expect(result.reason).toBeUndefined();
   });
@@ -277,7 +298,7 @@ describe('verifyDeviceMac', () => {
 
     // Derive a different key (device↔device instead of reader↔device)
     const wrongKey = await deriveSessionMacKey(deviceEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
-    const result = await verifyDeviceMac(mac, wrongKey, transcript);
+    const result = await verifyDeviceMac(mac, wrongKey, transcript, DOCTYPE);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('MAC tag invalid');
   });
@@ -292,7 +313,7 @@ describe('verifyDeviceMac', () => {
       transcript[1],
       transcript[2],
     ];
-    const result = await verifyDeviceMac(mac, macKey, tamperedTranscript);
+    const result = await verifyDeviceMac(mac, macKey, tamperedTranscript, DOCTYPE);
     expect(result.valid).toBe(false);
   });
 
@@ -300,7 +321,7 @@ describe('verifyDeviceMac', () => {
     const transcript = makeSessionTranscript();
     const macKey = await deriveSessionMacKey(readerEcdhKeyPair.privateKey, deviceEcdhKeyPair.publicKey);
 
-    const result = await verifyDeviceMac(new Uint8Array([0x00, 0x01]), macKey, transcript);
+    const result = await verifyDeviceMac(new Uint8Array([0x00, 0x01]), macKey, transcript, DOCTYPE);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('decoding failed');
   });
@@ -364,5 +385,64 @@ describe('verifyDeviceAuth (Mac0 path)', () => {
     const result = await verifyDeviceAuth(deviceAuth, mso, transcript, readerEcdhKeyPair.privateKey);
     expect(result.valid).toBe(false);
     expect(result.reason).toContain('No deviceSignature or deviceMac');
+  });
+});
+
+// ─── API-04: ISO/IEC 18013-5 §9.1.3 structure ───────────────────────────────
+
+describe('API-04: DeviceAuthentication structure', () => {
+  test('DeviceAuthenticationBytes = Tag24(bstr(["DeviceAuthentication", ST, DocType, Tag24(DeviceNameSpaces)]))', () => {
+    const transcript = makeSessionTranscript();
+    const bytes = buildDeviceAuthenticationBytes(transcript, DOCTYPE);
+    expect([bytes[0], bytes[1]]).toEqual([0xd8, 0x18]); // Tag 24
+    // decode() unwraps Tag 24 recursively, so the inner array is visible in full.
+    const decoded = decode<unknown[]>(bytes);
+    expect(decoded[0]).toBe('DeviceAuthentication');
+    expect(decoded[2]).toBe(DOCTYPE);
+    expect(decoded).toHaveLength(4);
+    // The fourth element carries its own Tag 24 header on the wire.
+    const inner = encode(transcript);
+    expect(Buffer.from(bytes).includes(Buffer.from(inner))).toBe(true);
+    // Empty DeviceNameSpaces on the wire: Tag 24 (d8 18), bstr(1) (41), map(0) (a0).
+    expect([...bytes.subarray(-4)]).toEqual([0xd8, 0x18, 0x41, 0xa0]);
+  });
+
+  test('ISO-conformant detached signature verifies; transmitted payload is nil', async () => {
+    const transcript = makeSessionTranscript();
+    const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
+    const parsed = decodeCoseSign1(sig);
+    expect(parsed.payload).toBeNull();
+    expect((await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript, DOCTYPE)).valid).toBe(true);
+  });
+
+  test('rejects the pre-fix shape (embedded payload, SessionTranscript as external_aad)', async () => {
+    const transcript = makeSessionTranscript();
+    const legacy = await signLegacyDeviceAuth(deviceKeyPair.privateKey, transcript);
+    const result = await verifyDeviceSignature(legacy, deviceKeyPair.publicKey, transcript, DOCTYPE);
+    expect(result.valid).toBe(false);
+  });
+
+  test('rejects an embedded payload even when it equals DeviceAuthenticationBytes', async () => {
+    const transcript = makeSessionTranscript();
+    const embedded = await createSign1({
+      payload: buildDeviceAuthenticationBytes(transcript, DOCTYPE),
+      privateKey: deviceKeyPair.privateKey,
+    });
+    expect((await verifyDeviceSignature(embedded, deviceKeyPair.publicKey, transcript, DOCTYPE)).valid).toBe(false);
+  });
+
+  test('rejects a signature made for another docType', async () => {
+    const transcript = makeSessionTranscript();
+    const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript, 'eu.europa.ec.av.1');
+    expect((await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript, DOCTYPE)).valid).toBe(false);
+  });
+
+  test('rejects a signature when DeviceNameSpaces differ', async () => {
+    const transcript = makeSessionTranscript();
+    const sig = await signDeviceAuth(deviceKeyPair.privateKey, transcript);
+    const smuggled = new Map<string, unknown>([['org.iso.18013.5.1', new Map([['age_over_18', true]])]]);
+    expect(
+      (await verifyDeviceSignature(sig, deviceKeyPair.publicKey, transcript, DOCTYPE, smuggled)).valid
+    ).toBe(false);
   });
 });

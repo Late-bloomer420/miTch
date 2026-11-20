@@ -127,6 +127,11 @@ export async function issueSDJWTVC(
 
 // ─── SD-JWT VC Validation ─────────────────────────────────────────────────────
 
+/** Accepted SD-JWT VC media types: `dc+sd-jwt` (current) and `vc+sd-jwt` (legacy). */
+const SD_JWT_VC_TYPES: ReadonlySet<string> = new Set(['dc+sd-jwt', 'vc+sd-jwt']);
+/** Accepted issuer signature algorithms (asymmetric only). */
+export const SD_JWT_VC_ALGORITHMS = ['ES256', 'ES384', 'ES512', 'EdDSA'] as const;
+
 /**
  * Validate an SD-JWT VC against draft-11 requirements.
  * Verifies signature and all mandatory claims.
@@ -146,20 +151,27 @@ export async function validateSDJWTVC(
         const key = issuerPublicKey instanceof CryptoKey
             ? issuerPublicKey
             : await importJWK(issuerPublicKey as JWK);
-        // Bypass jose's time checks — we validate exp/nbf ourselves for clear error messages
+        // Bypass jose's time checks — we validate exp/nbf ourselves for clear error messages.
+        // API-03 / RFC 9901 + SD-JWT VC: restrict to asymmetric algorithms (no `none`, no HMAC).
         const result = await jwtVerify(jwtPart, key, {
             clockTolerance: Number.MAX_SAFE_INTEGER,
+            algorithms: [...SD_JWT_VC_ALGORITHMS],
         });
         payload = result.payload as unknown as SDJWTVCPayload;
+        // API-03: the protected header `typ` MUST identify an SD-JWT VC.
+        const typ = result.protectedHeader.typ;
+        if (typeof typ !== 'string' || !SD_JWT_VC_TYPES.has(typ.toLowerCase())) {
+            return {
+                ok: false,
+                errors: [`Invalid typ header: expected dc+sd-jwt or vc+sd-jwt, got ${String(typ)}`],
+            };
+        }
     } catch (e: unknown) {
         return {
             ok: false,
             errors: [`Signature verification failed: ${e instanceof Error ? e.message : String(e)}`],
         };
     }
-
-    // Validate typ header — must be vc+sd-jwt
-    // (jose validates this via options; we do a claim-level check here)
 
     // Mandatory: iss — MUST be URI
     if (!payload.iss) {

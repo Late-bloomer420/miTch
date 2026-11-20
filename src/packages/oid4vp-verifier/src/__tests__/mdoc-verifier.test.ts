@@ -13,6 +13,7 @@ import {
   encodeEmbeddedCbor,
   exportCoseKey,
   MDL_DOCTYPE,
+  buildDeviceAuthenticationBytes,
   MDL_NAMESPACE,
   MDL_ELEMENTS,
   type IssuerSignedItem,
@@ -131,9 +132,10 @@ async function buildDeviceResponseBase64(opts?: {
   const deviceSignature = opts?.skipDeviceSigned
     ? undefined
     : await createSign1({
-        payload: encode({ deviceNameSpaces: {} }),
+        // ISO/IEC 18013-5 §9.1.3.6: detached payload over DeviceAuthenticationBytes
+        payload: buildDeviceAuthenticationBytes(sessionTranscript, MDL_DOCTYPE),
         privateKey: deviceKeyPair.privateKey,
-        externalAad: encode(sessionTranscript),
+        detachedPayload: true,
       });
 
   const document: Record<string, unknown> = {

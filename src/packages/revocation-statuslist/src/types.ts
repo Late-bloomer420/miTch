@@ -61,4 +61,17 @@ export interface StatusListResolverOptions {
   offlineGraceMsLowRisk?: number;
   /** Custom fetch function (for testing) */
   fetchFn?: typeof fetch;
+  /**
+   * API-05: `live` (default) accepts only a status list signed as a compact JWS
+   * (`typ: vc+jwt` or `statuslist+jwt`, ES256) whose issuer key `resolveStatusListKey`
+   * returns. `dev` additionally accepts unsigned JSON for local mocks and tests.
+   * Defaults to `ASKMI_TRUST_MODE` (same switch as the trust list): `dev` → dev, else live.
+   */
+  statusListMode?: StatusListMode;
+  /** Resolve the status-list issuer's verification key; null → reject (fail-closed). */
+  resolveStatusListKey?: StatusListKeyResolver;
 }
+
+export type StatusListMode = 'live' | 'dev';
+
+export type StatusListKeyResolver = (issuer: string, kid?: string) => Promise<CryptoKey | null>;

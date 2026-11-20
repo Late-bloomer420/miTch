@@ -32,7 +32,7 @@ import {
   type AuthorizationRequest,
   type PresentationDefinition,
 } from '@askmi/oid4vp';
-import { trustListResolver } from '@askmi/shared-crypto';
+import { statusResolver, trustListResolver } from '@askmi/shared-crypto';
 import {
   ASKMI_DEMO,
   ASKMI_ENV,
@@ -492,6 +492,11 @@ let issuerKeyResolver: IssuerKeyResolver = defaultResolveIssuerKey;
 export function setIssuerKeyResolver(fn: IssuerKeyResolver): void {
   issuerKeyResolver = fn;
 }
+
+// API-05: a status list is accepted only when signed by the trusted issuer's key
+// (same trust-list + JWKS resolution as the credential itself). Outside
+// ASKMI_TRUST_MODE=dev an unsigned list makes the revocation check fail closed.
+statusResolver.setStatusListKeyResolver((iss, kid) => issuerKeyResolver(iss, kid));
 
 // Dedicated Connect store: legacy demo routes cannot write Connect results.
 const connectStore = new InMemoryAskMIConnectSessionStore();

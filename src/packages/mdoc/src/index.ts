@@ -20,6 +20,7 @@ export {
     decode,
     decodeMdoc,
     encodeEmbeddedCbor,
+    wrapEmbeddedCborBytes,
     decodeEmbeddedCbor,
     CBOR_TAGS,
 } from './cbor.js';
@@ -98,6 +99,7 @@ export {
     verifyDeviceSignature,
     verifyDeviceMac,
     verifyDeviceAuth,
+    buildDeviceAuthenticationBytes,
 } from './device-auth.js';
 
 export type {

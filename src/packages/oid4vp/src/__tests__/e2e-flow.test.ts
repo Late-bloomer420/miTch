@@ -17,6 +17,7 @@ import {
     SCENARIO_VCT,
 } from '../demo-flow';
 import { statusResolver } from '@askmi/shared-crypto';
+import { SignJWT } from 'jose';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -179,13 +180,20 @@ describe('T-01: OID4VP E2E — Revoked Credential', () => {
             },
         };
 
+        // API-05: the status list is a signed VC-JWT from the issuer's key.
+        const statusJws = await new SignJWT({ iss: mockSL.issuer, vc: mockSL })
+            .setProtectedHeader({ alg: 'ES256', typ: 'vc+jwt' })
+            .sign(issuerKeys.privateKey);
         const fetchFn = vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => mockSL,
+            text: async () => statusJws,
         });
 
         vi.stubGlobal('fetch', fetchFn);
         statusResolver.setFetch(fetchFn as any);
+        statusResolver.setStatusListKeyResolver(async (iss) =>
+            iss === mockSL.issuer ? issuerKeys.publicKey : null
+        );
 
         const { request } = buildOID4VPRequest({
             verifierClientId: VERIFIER_CLIENT_ID,
@@ -214,6 +222,7 @@ describe('T-01: OID4VP E2E — Revoked Credential', () => {
         expect(validation.ok).toBe(false);
         expect(validation.errors[0]).toMatch(/revoked|DENY_CREDENTIAL_REVOKED/i);
 
+        statusResolver.setStatusListKeyResolver(undefined);
         vi.unstubAllGlobals();
     });
 });

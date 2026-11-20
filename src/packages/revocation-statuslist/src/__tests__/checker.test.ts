@@ -58,6 +58,7 @@ describe('StatusListRevocationChecker', () => {
   describe('valid credential (not revoked) → ALLOW', () => {
     it('returns ALLOW for non-revoked index', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 
@@ -69,6 +70,7 @@ describe('StatusListRevocationChecker', () => {
 
     it('returns ALLOW for index 3 (not in revoked set)', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 
@@ -81,6 +83,7 @@ describe('StatusListRevocationChecker', () => {
   describe('revoked credential → DENY', () => {
     it('returns DENY with REVOKED reason for revoked index', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 
@@ -93,6 +96,7 @@ describe('StatusListRevocationChecker', () => {
 
     it('returns DENY for another revoked index', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 
@@ -105,6 +109,7 @@ describe('StatusListRevocationChecker', () => {
   describe('status server unreachable → DENY (fail-closed)', () => {
     it('returns DENY with STATUS_SOURCE_UNAVAILABLE for high-risk', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchFail(),
       });
 
@@ -117,6 +122,7 @@ describe('StatusListRevocationChecker', () => {
 
     it('returns DENY on timeout for high-risk', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchTimeout(),
         fetchTimeoutMs: 10,
       });
@@ -131,6 +137,7 @@ describe('StatusListRevocationChecker', () => {
     it('uses cached status list when fresh', async () => {
       const fetchFn = mockFetchOk(credential);
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn,
         cacheTtlMs: 60_000,
       });
@@ -149,6 +156,7 @@ describe('StatusListRevocationChecker', () => {
     it('re-fetches when cache expires', async () => {
       const fetchFn = mockFetchOk(credential);
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn,
         cacheTtlMs: 1, // 1ms TTL — expires immediately
       });
@@ -168,6 +176,7 @@ describe('StatusListRevocationChecker', () => {
     it('low-risk: uses stale cache within grace period', async () => {
       const fetchFn = mockFetchOk(credential);
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn,
         cacheTtlMs: 1, // Expires immediately
         offlineGraceMsLowRisk: 60_000, // 1 min grace
@@ -192,6 +201,7 @@ describe('StatusListRevocationChecker', () => {
 
     it('low-risk: DENY beyond grace period', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchFail(),
         cacheTtlMs: 1,
         offlineGraceMsLowRisk: 1, // 1ms grace — expires immediately
@@ -206,6 +216,7 @@ describe('StatusListRevocationChecker', () => {
     it('high-risk: DENY immediately even with stale cache', async () => {
       const fetchFn = mockFetchOk(credential);
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn,
         cacheTtlMs: 1,
         offlineGraceMsLowRisk: 60_000,
@@ -228,7 +239,7 @@ describe('StatusListRevocationChecker', () => {
   describe('batch check (privacy-preserving)', () => {
     it('deduplicates fetches for same URL', async () => {
       const fetchFn = mockFetchOk(credential);
-      const checker = new StatusListRevocationChecker({ fetchFn });
+      const checker = new StatusListRevocationChecker({ fetchFn, statusListMode: 'dev' });
 
       const results = await checker.checkRevocationBatch([
         { statusEntry: makeEntry(0), riskTier: 'high' },
@@ -248,6 +259,7 @@ describe('StatusListRevocationChecker', () => {
   describe('edge cases', () => {
     it('invalid index (out of range) → DENY', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 
@@ -259,6 +271,7 @@ describe('StatusListRevocationChecker', () => {
 
     it('negative index → DENY', async () => {
       const checker = new StatusListRevocationChecker({
+        statusListMode: 'dev',
         fetchFn: mockFetchOk(credential),
       });
 

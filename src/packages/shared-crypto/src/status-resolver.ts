@@ -4,7 +4,13 @@
  */
 
 import { StatusListRevocationChecker } from '@askmi/revocation-statuslist';
-import type { StatusListEntry, RevocationCheckResult, RiskTier } from '@askmi/revocation-statuslist';
+import type {
+    StatusListEntry,
+    RevocationCheckResult,
+    RiskTier,
+    StatusListKeyResolver,
+    StatusListMode,
+} from '@askmi/revocation-statuslist';
 import type { StatusClaim } from './sd-jwt-vc.js';
 
 /**
@@ -12,11 +18,30 @@ import type { StatusClaim } from './sd-jwt-vc.js';
  */
 export class SDJWTStatusResolver {
     private checker: StatusListRevocationChecker;
+    private readonly statusListMode: StatusListMode | undefined;
+    private resolveStatusListKey: StatusListKeyResolver | undefined;
 
-    constructor(options?: { fetchFn?: typeof fetch }) {
-        this.checker = new StatusListRevocationChecker({
-            fetchFn: options?.fetchFn,
+    /**
+     * API-05: outside `ASKMI_TRUST_MODE=dev` (or `statusListMode: 'dev'`) a status list must
+     * be a signed VC-JWT whose issuer key `resolveStatusListKey` returns; otherwise the
+     * revocation check fails closed.
+     */
+    constructor(options?: {
+        fetchFn?: typeof fetch;
+        statusListMode?: StatusListMode;
+        resolveStatusListKey?: StatusListKeyResolver;
+    }) {
+        this.statusListMode = options?.statusListMode;
+        this.resolveStatusListKey = options?.resolveStatusListKey;
+        this.checker = this.createChecker(options?.fetchFn);
+    }
+
+    private createChecker(fetchFn: typeof fetch | undefined): StatusListRevocationChecker {
+        return new StatusListRevocationChecker({
+            fetchFn,
             cacheTtlMs: 10 * 60 * 1000, // 10 minutes
+            statusListMode: this.statusListMode,
+            resolveStatusListKey: this.resolveStatusListKey,
         });
     }
 
@@ -25,11 +50,13 @@ export class SDJWTStatusResolver {
      * Useful for testing environments where fetch is stubbed after module load.
      */
     setFetch(fetchFn: typeof fetch): void {
-        // Re-initialize checker with new fetchFn
-        this.checker = new StatusListRevocationChecker({
-            fetchFn,
-            cacheTtlMs: 10 * 60 * 1000,
-        });
+        this.checker = this.createChecker(fetchFn);
+    }
+
+    /** Wire the status-list issuer key resolver (e.g. the verifier's trusted-issuer JWKS). */
+    setStatusListKeyResolver(resolver: StatusListKeyResolver | undefined): void {
+        this.resolveStatusListKey = resolver;
+        this.checker.setStatusListKeyResolver(resolver);
     }
 
     /**

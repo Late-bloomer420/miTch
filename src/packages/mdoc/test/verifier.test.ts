@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { verifyMdocOffline } from '../src/verifier';
 import { createSign1 } from '../src/cose';
+import { buildDeviceAuthenticationBytes } from '../src/device-auth';
 import { encode, encodeEmbeddedCbor } from '../src/cbor';
 import { exportCoseKey } from '../src/cose-key';
 import type {
@@ -98,11 +99,15 @@ async function signMso(
 
 async function signDeviceAuth(
   privateKey: CryptoKey,
-  sessionTranscript: SessionTranscript
+  sessionTranscript: SessionTranscript,
+  docType = 'org.iso.18013.5.1.mDL'
 ): Promise<Uint8Array> {
-  const externalAad = encode(sessionTranscript);
-  const payload = encode({ deviceNameSpaces: {} });
-  return createSign1({ payload, privateKey, externalAad });
+  // ISO/IEC 18013-5 §9.1.3.6: detached payload over DeviceAuthenticationBytes
+  return createSign1({
+    payload: buildDeviceAuthenticationBytes(sessionTranscript, docType),
+    privateKey,
+    detachedPayload: true,
+  });
 }
 
 async function buildValidDocument(overrides?: {

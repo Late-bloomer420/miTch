@@ -18,6 +18,8 @@ import type {
   StatusListCache,
   RiskTier,
   StatusListResolverOptions,
+  StatusListMode,
+  StatusListKeyResolver,
 } from './types.js';
 
 // Deny reason codes — inline strings to avoid cross-package dep at runtime.
@@ -36,8 +38,12 @@ export class StatusListRevocationChecker {
   private readonly fetchTimeoutMs: number;
   private readonly offlineGraceMsLowRisk: number;
   private readonly fetchFn: typeof fetch;
+  private readonly statusListMode: StatusListMode;
+  private resolveStatusListKey: StatusListKeyResolver | undefined;
 
   constructor(options: StatusListResolverOptions = {}) {
+    this.statusListMode = options.statusListMode ?? (readTrustModeEnv() === 'dev' ? 'dev' : 'live');
+    this.resolveStatusListKey = options.resolveStatusListKey;
     this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
     this.fetchTimeoutMs = options.fetchTimeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
     this.offlineGraceMsLowRisk = options.offlineGraceMsLowRisk ?? DEFAULT_OFFLINE_GRACE_LOW_RISK_MS;
@@ -187,14 +193,19 @@ export class StatusListRevocationChecker {
     const timeout = setTimeout(() => controller.abort(), this.fetchTimeoutMs);
 
     try {
-      const response = await this.fetchFn(url, { signal: controller.signal });
+      const response = await this.fetchFn(url, {
+        signal: controller.signal,
+        headers: { Accept: 'application/vc+jwt, application/statuslist+jwt, application/json;q=0.1' },
+      });
       clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`Status list fetch failed: HTTP ${response.status}`);
       }
 
-      const credential = (await response.json()) as StatusListCredential;
+      const body: unknown =
+        typeof response.text === 'function' ? await response.text() : await response.json();
+      const credential = await this.authenticateStatusList(body);
 
       // Validate
       if (!credential.credentialSubject?.encodedList) {
@@ -209,6 +220,61 @@ export class StatusListRevocationChecker {
       clearTimeout(timeout);
       throw e;
     }
+  }
+
+  /** Replace the status-list issuer key resolver (e.g. wired by the verifier at startup). */
+  setStatusListKeyResolver(resolver: StatusListKeyResolver | undefined): void {
+    this.resolveStatusListKey = resolver;
+    this.cache.clear();
+  }
+
+  /**
+   * API-05: return the status list only if its origin is authenticated.
+   * A compact JWS is verified (ES256, typ vc+jwt|statuslist+jwt, key by issuer/kid,
+   * iss == credential.issuer, exp/nbf). Unsigned JSON is accepted only in `dev` mode.
+   */
+  private async authenticateStatusList(body: unknown): Promise<StatusListCredential> {
+    const text = typeof body === 'string' ? body.trim() : null;
+    if (text !== null && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(text)) {
+      return this.verifySignedStatusList(text);
+    }
+    if (this.statusListMode !== 'dev') {
+      throw new Error('Unsigned status list rejected (live mode requires a signed status list)');
+    }
+    return (text !== null ? JSON.parse(text) : body) as StatusListCredential;
+  }
+
+  private async verifySignedStatusList(jws: string): Promise<StatusListCredential> {
+    const [h, p, sig] = jws.split('.');
+    const header = JSON.parse(utf8(base64urlDecode(h))) as { alg?: string; typ?: string; kid?: string };
+    if (header.alg !== 'ES256') throw new Error('Status list: unsupported alg');
+    const typ = header.typ?.toLowerCase();
+    if (typ !== 'vc+jwt' && typ !== 'statuslist+jwt') throw new Error('Status list: invalid typ');
+    const payload = JSON.parse(utf8(base64urlDecode(p))) as {
+      iss?: string;
+      exp?: number;
+      nbf?: number;
+      vc?: StatusListCredential;
+    } & Partial<StatusListCredential>;
+    const credential = (payload.vc ?? payload) as StatusListCredential;
+    const issuer = payload.iss ?? credential.issuer;
+    if (!issuer || (credential.issuer && credential.issuer !== issuer)) {
+      throw new Error('Status list: issuer mismatch');
+    }
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (typeof payload.exp === 'number' && nowSec >= payload.exp) throw new Error('Status list: expired');
+    if (typeof payload.nbf === 'number' && nowSec < payload.nbf) throw new Error('Status list: not yet valid');
+    if (!this.resolveStatusListKey) throw new Error('Status list: no issuer key resolver configured');
+    const key = await this.resolveStatusListKey(issuer, header.kid);
+    if (!key) throw new Error('Status list: issuer key not resolvable');
+    const ok = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      key,
+      base64urlDecode(sig),
+      new TextEncoder().encode(`${h}.${p}`),
+    );
+    if (!ok) throw new Error('Status list: signature invalid');
+    return credential;
   }
 
   /**
@@ -314,6 +380,25 @@ export class StatusListRevocationChecker {
   getCacheEntry(url: string): StatusListCache | undefined {
     return this.cache.get(url);
   }
+}
+
+function base64urlDecode(input: string): Uint8Array<ArrayBuffer> {
+  const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+  const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function utf8(bytes: Uint8Array): string {
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+}
+
+/** Same switch as the trust-list resolver; browser- and Node-safe. */
+function readTrustModeEnv(): string | undefined {
+  const importMetaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const maybeProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+  return (importMetaEnv?.ASKMI_TRUST_MODE ?? maybeProcess?.env?.ASKMI_TRUST_MODE)?.trim();
 }
 
 export * from './types.js';

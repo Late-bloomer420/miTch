@@ -6,7 +6,8 @@
  */
 
 export const ASKMI_DEMO = {
-  issuerUri: 'https://issuer.askmi.demo',
+  // API-01.4: the identifier issuer-mock signs with (`iss`); single source for issuer and verifier.
+  issuerUri: 'did:web:localhost%3A3005',
   issuerBaseUrl: 'http://localhost:3005',
   trustListUrl: 'http://localhost:3005/v1/eudi-lotl.json',
   statusListUri: 'http://localhost:3005/status-list/1',

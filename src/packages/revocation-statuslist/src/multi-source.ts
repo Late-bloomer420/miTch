@@ -8,7 +8,7 @@
  * - Fail-closed: all sources fail → DENY
  */
 
-import type { StatusListEntry, RevocationCheckResult, RiskTier } from './types.js';
+import type { StatusListEntry, RevocationCheckResult, RiskTier, StatusListResolverOptions } from './types.js';
 import { StatusListRevocationChecker } from './index.js';
 
 export interface SourceConfig {
@@ -22,6 +22,10 @@ export interface MultiSourceResolverOptions {
     fetchFn?: typeof fetch;
     /** Max attempts per source before moving to next */
     maxAttemptsPerSource?: number;
+    /** API-05: see StatusListResolverOptions.statusListMode */
+    statusListMode?: StatusListResolverOptions['statusListMode'];
+    /** API-05: see StatusListResolverOptions.resolveStatusListKey */
+    resolveStatusListKey?: StatusListResolverOptions['resolveStatusListKey'];
 }
 
 export interface MultiSourceResult extends RevocationCheckResult {
@@ -119,6 +123,8 @@ export class MultiSourceStatusResolver {
             this.checkers.set(url, new StatusListRevocationChecker({
                 fetchTimeoutMs: this.options.fetchTimeoutMs,
                 fetchFn: this.options.fetchFn,
+                statusListMode: this.options.statusListMode,
+                resolveStatusListKey: this.options.resolveStatusListKey,
             }));
         }
         return this.checkers.get(url)!;
