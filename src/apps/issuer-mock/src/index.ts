@@ -8,7 +8,7 @@ import {
 } from '@askmi/shared-crypto';
 import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@askmi/mdoc';
 import type { ValidityInfo } from '@askmi/mdoc';
-import { newCorrelationId } from '@askmi/shared-types';
+import { ASKMI_DEMO, newCorrelationId } from '@askmi/shared-types';
 import type { CredentialResponse } from '@askmi/shared-types';
 import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
@@ -46,7 +46,8 @@ app.use(express.static('public'));
 
 // Global Issuer KeyPair (In-Memory for PoC)
 let issuerKeys: CryptoKeyPair | null = null;
-const ISSUER_DID = 'did:web:localhost%3A3005'; // encoding : to %3A for did:web
+// API-01.4: same constant the verifier trusts by default (did:web, ':' encoded as %3A).
+const ISSUER_DID = ASKMI_DEMO.issuerUri;
 
 // Initialize keys on startup — resolved before any request is handled.
 // Exported as `ready` so tests can await key initialisation without binding a port.
@@ -117,11 +118,11 @@ app.get('/.well-known/jwks.json', async (req, res) => {
     });
 });
 
-app.get('/status-list/1', (req, res) => {
+app.get('/status-list/1', async (req, res) => {
     const bitstring = new Uint8Array(64);
     bitstring[5] = 0b00100000; // StatusList2021 index 42 is revoked (MSB-first)
 
-    res.json({
+    const statusList = {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         id: `http://localhost:${PORT}/status-list/1`,
         type: ['VerifiableCredential', 'StatusList2021Credential'],
@@ -133,7 +134,28 @@ app.get('/status-list/1', (req, res) => {
             statusPurpose: 'revocation',
             encodedList: Buffer.from(bitstring).toString('base64'),
         },
-    });
+    };
+
+    // API-05: verifiers in live mode accept only a signed status list (VC-JWT, ES256,
+    // same issuer key and kid as the credentials). Plain JSON stays for dev tooling.
+    if (String(req.headers.accept ?? '').includes('application/vc+jwt')) {
+        if (!issuerKeys) return res.status(503).json({ error: 'keys_not_ready' });
+        const b64u = (bytes: Uint8Array) => Buffer.from(bytes).toString('base64url');
+        const json = (value: unknown) => b64u(new TextEncoder().encode(JSON.stringify(value)));
+        const signingInput = `${json({ alg: 'ES256', typ: 'vc+jwt', kid: ISSUER_KID })}.${json({
+            iss: ISSUER_DID,
+            iat: Math.floor(Date.now() / 1000),
+            vc: statusList,
+        })}`;
+        const signature = await crypto.subtle.sign(
+            { name: 'ECDSA', hash: 'SHA-256' },
+            issuerKeys.privateKey,
+            new TextEncoder().encode(signingInput),
+        );
+        const jws = `${signingInput}.${b64u(new Uint8Array(signature))}`;
+        return res.type('application/vc+jwt').send(jws);
+    }
+    return res.json(statusList);
 });
 
 // mdoc (ISO 18013-5) Credential Issuance Endpoint

@@ -194,7 +194,15 @@ export async function verifyAuthorizationResponse(
                             const parts = credential.split('~');
                             // parts[0] = issuerJwt, parts[1..n-2] = disclosures, parts[n-1] = kbJwt or ''
                             const lastSegment = parts[parts.length - 1];
-                            if (lastSegment.length > 0 && isCompactJWT(lastSegment)) {
+                            // API-03: expectedNonce is mandatory, and the nonce/aud binding exists
+                            // only inside the KB-JWT. A presentation without one (e.g. a trailing
+                            // '~') is rejected instead of silently skipping holder binding.
+                            if (lastSegment.length === 0 || !isCompactJWT(lastSegment)) {
+                                errors.push(
+                                    `KB-JWT required: presentation for issuer ${iss} has no key binding JWT`
+                                );
+                                credPassed = false;
+                            } else {
                                 const kbJwt = lastSegment;
                                 // sdJwtWithDisclosures = everything before the final kbJwt segment
                                 // i.e. parts[0]~parts[1]~...~parts[n-2]~ (with trailing tilde)

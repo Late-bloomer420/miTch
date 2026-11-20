@@ -5,10 +5,9 @@
  *
  * Verifies that the holder (device) consents to the disclosure by
  * checking either:
- * - COSE_Sign1 signature over the SessionTranscript (general case)
- * - COSE_Mac0 MAC over the SessionTranscript (NFC proximity, ECDH key agreement)
- *
- * Detached payload: fail-closed (not supported).
+ * - COSE_Sign1 signature (general case)
+ * - COSE_Mac0 MAC (ECDH key agreement)
+ * over DeviceAuthenticationBytes with detached payload (ISO/IEC 18013-5 §9.1.3).
  */
 
 import type {
@@ -16,7 +15,7 @@ import type {
   MobileSecurityObject,
   SessionTranscript,
 } from './mdoc-types.js';
-import { encode } from './cbor.js';
+import { encode, wrapEmbeddedCborBytes } from './cbor.js';
 import { verifySign1, verifyMac0, deriveSessionMacKey } from './cose.js';
 import { importCoseKey } from './cose-key.js';
 
@@ -27,26 +26,60 @@ export interface DeviceAuthResult {
 }
 
 /**
- * Verify a device COSE_Sign1 signature with SessionTranscript binding.
+ * Build `DeviceAuthenticationBytes` per ISO/IEC 18013-5 §9.1.3.4:
  *
- * Per ISO 18013-5 §9.1.3.6:
- * - SessionTranscript is CBOR-encoded and used as externalAad
- * - The device signs over the SessionTranscript context, binding
- *   the signature to the specific session
+ *   DeviceAuthentication = ["DeviceAuthentication", SessionTranscript, DocType, DeviceNameSpacesBytes]
+ *   DeviceNameSpacesBytes = #6.24(bstr .cbor DeviceNameSpaces)
+ *   DeviceAuthenticationBytes = #6.24(bstr .cbor DeviceAuthentication)
  *
- * Fail-closed: detached payload (null) → invalid.
+ * Known limit: DeviceNameSpaces is re-encoded from the parsed map. A third-party
+ * wallet whose original encoding differs (non-canonical order/length) would not
+ * verify until the parser keeps the raw DeviceNameSpacesBytes.
+ */
+export function buildDeviceAuthenticationBytes(
+  sessionTranscript: SessionTranscript,
+  docType: string,
+  deviceNameSpaces: Map<string, unknown> = new Map(),
+): Uint8Array {
+  const deviceNameSpacesBytes = wrapEmbeddedCborBytes(encode(deviceNameSpaces));
+  // CBOR array(4) header + elements; the fourth element is already a Tag 24 item.
+  const parts = [
+    new Uint8Array([0x84]),
+    encode('DeviceAuthentication'),
+    encode(sessionTranscript),
+    encode(docType),
+    deviceNameSpacesBytes,
+  ];
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  const deviceAuthentication = new Uint8Array(total);
+  let offset = 0;
+  for (const p of parts) {
+    deviceAuthentication.set(p, offset);
+    offset += p.length;
+  }
+  return wrapEmbeddedCborBytes(deviceAuthentication);
+}
+
+/**
+ * Verify a device COSE_Sign1 signature (ISO/IEC 18013-5 §9.1.3.6, API-04).
+ *
+ * The deviceSignature is a COSE_Sign1 with **detached** payload (nil) and empty
+ * external_aad; the signed content is DeviceAuthenticationBytes over the
+ * SessionTranscript, DocType and DeviceNameSpaces. An embedded payload, an
+ * external_aad binding, or a signature over another session/docType is rejected.
  */
 export async function verifyDeviceSignature(
   deviceSignature: Uint8Array,
   devicePublicKey: CryptoKey,
   sessionTranscript: SessionTranscript,
+  docType: string,
+  deviceNameSpaces: Map<string, unknown> = new Map(),
 ): Promise<DeviceAuthResult> {
-  // Encode SessionTranscript as CBOR → externalAad
-  const externalAad = encode(sessionTranscript);
+  const detached = buildDeviceAuthenticationBytes(sessionTranscript, docType, deviceNameSpaces);
 
   let result;
   try {
-    result = await verifySign1(deviceSignature, devicePublicKey, externalAad);
+    result = await verifySign1(deviceSignature, devicePublicKey, new Uint8Array(0), detached);
   } catch {
     return { valid: false, reason: 'COSE_Sign1 decoding failed' };
   }
@@ -54,37 +87,31 @@ export async function verifyDeviceSignature(
   if (!result.valid) {
     return { valid: false, reason: 'Device signature invalid' };
   }
-
-  // Detached payload: fail-closed (only reachable if signature was valid but payload missing)
-  if (result.payload === null) {
-    return { valid: false, reason: 'Detached payload not supported (payload is null)' };
-  }
-
   return { valid: true };
 }
 
 /**
- * Verify a device COSE_Mac0 tag with SessionTranscript binding.
+ * Verify a device COSE_Mac0 tag (ISO/IEC 18013-5 §9.1.3.5, API-04).
  *
- * Per ISO 18013-5 §9.1.1.5:
- * - Device and reader perform ECDH key agreement
- * - Shared secret → HKDF → HMAC key (EMacKey)
- * - Device MACs the session context with this key
+ * Same content rule as the signature path: detached payload, empty external_aad,
+ * MAC over DeviceAuthenticationBytes.
  *
  * @param deviceMac - COSE_Mac0 bytes from DeviceAuth
  * @param macKey - Pre-derived HMAC key (from ECDH + HKDF)
- * @param sessionTranscript - SessionTranscript for external AAD binding
+ * @param sessionTranscript - SessionTranscript bound inside DeviceAuthenticationBytes
  */
 export async function verifyDeviceMac(
   deviceMac: Uint8Array,
   macKey: CryptoKey,
   sessionTranscript: SessionTranscript,
+  docType: string,
+  deviceNameSpaces: Map<string, unknown> = new Map(),
 ): Promise<DeviceAuthResult> {
-  const externalAad = encode(sessionTranscript);
+  const detached = buildDeviceAuthenticationBytes(sessionTranscript, docType, deviceNameSpaces);
 
   let result;
   try {
-    result = await verifyMac0(deviceMac, macKey, externalAad);
+    result = await verifyMac0(deviceMac, macKey, new Uint8Array(0), detached);
   } catch {
     return { valid: false, reason: 'COSE_Mac0 decoding failed' };
   }
@@ -92,11 +119,6 @@ export async function verifyDeviceMac(
   if (!result.valid) {
     return { valid: false, reason: 'Device MAC tag invalid' };
   }
-
-  if (result.payload === null) {
-    return { valid: false, reason: 'Detached payload not supported (payload is null)' };
-  }
-
   return { valid: true };
 }
 
@@ -116,6 +138,7 @@ export async function verifyDeviceAuth(
   mso: MobileSecurityObject,
   sessionTranscript: SessionTranscript,
   eReaderPrivateKey?: CryptoKey,
+  deviceNameSpaces: Map<string, unknown> = new Map(),
 ): Promise<DeviceAuthResult> {
   // Extract device public key from MSO (needed for both paths)
   if (!mso.deviceKeyInfo?.deviceKey) {
@@ -138,6 +161,8 @@ export async function verifyDeviceAuth(
       deviceAuth.deviceSignature,
       devicePublicKey,
       sessionTranscript,
+      mso.docType,
+      deviceNameSpaces,
     );
   }
 
@@ -169,7 +194,7 @@ export async function verifyDeviceAuth(
       };
     }
 
-    return verifyDeviceMac(deviceAuth.deviceMac, macKey, sessionTranscript);
+    return verifyDeviceMac(deviceAuth.deviceMac, macKey, sessionTranscript, mso.docType, deviceNameSpaces);
   }
 
   return { valid: false, reason: 'No deviceSignature or deviceMac in DeviceAuth' };

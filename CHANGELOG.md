@@ -12,6 +12,10 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - chore(audit): remove the dormant picomatch exception and stale npm lockfiles, pin pnpm and Node 22 in app images; docs: map the PR/security cleanup to roadmap gates ([#310](https://github.com/Late-bloomer420/miTch/pull/310)) — evidence: [`SECURITY_AUDIT_GATE_2026-11-20.md`](docs/qa/SECURITY_AUDIT_GATE_2026-11-20.md)
+- docs: session 24 part 3 — #312 merge recorded in STATE/SESSION_HISTORY ([#319](https://github.com/Late-bloomer420/miTch/pull/319))
+- fix: API audit Stage 0 — close API-01..05 with code and negative tests ([#312](https://github.com/Late-bloomer420/miTch/pull/312)) — evidence: [`API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md`](docs/qa/API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md)
+- docs: session 24 part 2 sync — ADR-012 (#315) in BACKLOG/STATE/CHANGELOG/SESSION_HISTORY ([#318](https://github.com/Late-bloomer420/miTch/pull/318))
+- docs(adr): ADR-012 audit anchor backend (RFC 9162 log default, L2 optional, no own chain) for #295/L2A-03 + post-merge QA record ([#315](https://github.com/Late-bloomer420/miTch/pull/315)) — evidence: [`POST_MERGE_VERIFICATION_2026-11-20.md`](docs/qa/POST_MERGE_VERIFICATION_2026-11-20.md)
 - docs: session plan + STATE/BACKLOG/SESSION_HISTORY/CHANGELOG sync after 2026-11-20 merge session ([#311](https://github.com/Late-bloomer420/miTch/pull/311))
 - docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
 - perf: port Jules micro-optimizations from closed #163 and #164 ([#308](https://github.com/Late-bloomer420/miTch/pull/308))

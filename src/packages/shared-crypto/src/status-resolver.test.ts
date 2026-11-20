@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SDJWTStatusResolver } from './status-resolver.js';
+import { SignJWT } from 'jose';
 
 describe('SDJWTStatusResolver', () => {
     it('should correctly map SD-JWT VC status to StatusList2021 entry and check it', async () => {
@@ -24,12 +25,21 @@ describe('SDJWTStatusResolver', () => {
             }
         };
 
+        // API-05: the status list is a signed VC-JWT; the issuer key is resolved by the verifier.
+        const issuer = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+        const jws = await new SignJWT({ iss: mockSL.issuer, vc: mockSL })
+            .setProtectedHeader({ alg: 'ES256', typ: 'vc+jwt' })
+            .sign(issuer.privateKey);
         const fetchFn = vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => mockSL
+            text: async () => jws,
         });
 
-        const resolver = new SDJWTStatusResolver({ fetchFn: fetchFn as any });
+        const resolver = new SDJWTStatusResolver({
+            fetchFn: fetchFn as any,
+            statusListMode: 'live',
+            resolveStatusListKey: async (iss) => (iss === mockSL.issuer ? issuer.publicKey : null),
+        });
         
         // Case 1: Index 42 (revoked in mock)
         const result1 = await resolver.checkStatus({
@@ -46,6 +56,17 @@ describe('SDJWTStatusResolver', () => {
         
         expect(result2.revoked).toBe(false);
         expect(result2.decision).toBe('ALLOW');
+    });
+
+    it('API-05: an unsigned status list fails closed in live mode', async () => {
+        const fetchFn = vi.fn().mockResolvedValue({
+            ok: true,
+            text: async () => JSON.stringify({ credentialSubject: { type: 'StatusList2021', encodedList: 'AAAA' } }),
+        });
+        const resolver = new SDJWTStatusResolver({ fetchFn: fetchFn as any, statusListMode: 'live' });
+        const result = await resolver.checkStatus({ status_list: { idx: 1, uri: 'https://example.com/status/1' } });
+        expect(result.decision).toBe('DENY');
+        expect(result.revoked).toBe(false);
     });
 
     it('should fail-closed on fetch failure for high-risk', async () => {

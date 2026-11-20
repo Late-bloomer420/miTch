@@ -32,7 +32,8 @@ export const CBOR_TAGS = {
 const decodeTags = [] as ((inner: any) => any)[];
 decodeTags[CBOR_TAGS.COSE_MAC0] = (value: any) => value;
 decodeTags[CBOR_TAGS.COSE_SIGN1] = (value: any) => value;
-decodeTags[CBOR_TAGS.EMBEDDED_CBOR] = (innerBytes: any) => cborgDecode(innerBytes);
+// Nested Tag 24 (e.g. DeviceNameSpacesBytes inside DeviceAuthentication) decodes recursively.
+decodeTags[CBOR_TAGS.EMBEDDED_CBOR] = (innerBytes: any) => cborgDecode(innerBytes, DECODE_OPTIONS);
 const DECODE_OPTIONS = { tags: decodeTags };
 
 /**
@@ -108,6 +109,19 @@ function encodeBstrLength(length: number): Uint8Array {
  */
 export function encodeEmbeddedCbor(value: unknown): Uint8Array {
     const innerBytes = encode(value);
+    const lengthPrefix = encodeBstrLength(innerBytes.length);
+    const result = new Uint8Array(TAG_24_HEADER.length + lengthPrefix.length + innerBytes.length);
+    result.set(TAG_24_HEADER, 0);
+    result.set(lengthPrefix, TAG_24_HEADER.length);
+    result.set(innerBytes, TAG_24_HEADER.length + lengthPrefix.length);
+    return result;
+}
+
+/**
+ * Wrap already-encoded CBOR bytes as Tag 24 (`#6.24(bstr .cbor X)`), without re-encoding.
+ * Use this when the exact inner bytes matter (e.g. DeviceAuthenticationBytes).
+ */
+export function wrapEmbeddedCborBytes(innerBytes: Uint8Array): Uint8Array {
     const lengthPrefix = encodeBstrLength(innerBytes.length);
     const result = new Uint8Array(TAG_24_HEADER.length + lengthPrefix.length + innerBytes.length);
     result.set(TAG_24_HEADER, 0);

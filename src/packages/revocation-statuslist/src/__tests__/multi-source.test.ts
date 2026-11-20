@@ -97,7 +97,7 @@ describe('MultiSourceStatusResolver (Spec 62)', () => {
             return okFetch(url) as any;
         };
 
-        const resolver = new MultiSourceStatusResolver({ fetchFn: mockFetch as typeof fetch });
+        const resolver = new MultiSourceStatusResolver({ fetchFn: mockFetch as typeof fetch, statusListMode: 'dev' });
         const entry = makeEntry('https://primary.example.com/status', '0');
         const result = await resolver.resolve(entry, ['https://fallback.example.com/status'], 'low');
 
@@ -108,7 +108,7 @@ describe('MultiSourceStatusResolver (Spec 62)', () => {
 
     it('all sources fail → DENY with ALL_SOURCES_UNAVAILABLE', async () => {
         const failFetch = async () => { throw new Error('All fail'); };
-        const resolver = new MultiSourceStatusResolver({ fetchFn: failFetch as any });
+        const resolver = new MultiSourceStatusResolver({ fetchFn: failFetch as any, statusListMode: 'dev' });
         const entry = makeEntry('https://primary.example.com/status');
         const result = await resolver.resolve(entry, ['https://fallback.example.com/status'], 'high');
 
@@ -136,7 +136,7 @@ describe('MultiSourceStatusResolver (Spec 62)', () => {
             }),
         }) as Response;
 
-        const resolver = new MultiSourceStatusResolver({ fetchFn: mockFetch as any });
+        const resolver = new MultiSourceStatusResolver({ fetchFn: mockFetch as any, statusListMode: 'dev' });
         const entry = makeEntry('https://status.example.com/list', '5');
         const result = await resolver.resolve(entry, [], 'high');
 
@@ -153,7 +153,7 @@ describe('MultiSourceStatusResolver (Spec 62)', () => {
 
     it('batch resolve handles multiple entries', async () => {
         const failFetch = async () => { throw new Error('fail'); };
-        const resolver = new MultiSourceStatusResolver({ fetchFn: failFetch as any });
+        const resolver = new MultiSourceStatusResolver({ fetchFn: failFetch as any, statusListMode: 'dev' });
         const results = await resolver.resolveBatch([
             { entry: makeEntry('https://a.example.com/s1', '0'), riskTier: 'high' },
             { entry: makeEntry('https://b.example.com/s2', '1'), riskTier: 'high' },
