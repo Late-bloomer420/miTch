@@ -71,6 +71,20 @@ high, ReDoS) has no patched release and reaches only dev tooling. It is excepted
 production-only audit (`pnpm audit --prod`) stays clean. Critical findings are never
 excepted; entries expire after at most 90 days. Dated registry output, no `docs/qa/` record.
 
+**2026-11-20 — exception removed; PR backlog cleared (base `8dd7f3e`):** the picomatch entry is
+removed (the advisory no longer appears; the gate passes without it). The high/critical gate now
+has its first [dated QA record](qa/SECURITY_AUDIT_GATE_2026-11-20.md), including a synthetic
+negative. Stale npm lockfiles are removed. The PR cleanup that started 2026-10-23 is complete,
+with 0 open PRs; [timeline, roadmap mapping and branch list](ops/PR_BRANCH_CLEANUP_2026-11-20.md).
+New open tasks:
+
+| Task | Priority | Status | Acceptance |
+|---|---|---|---|
+| SEC-AUDIT-5a pin pnpm in app images | P1 | OPEN | `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` Dockerfiles use `pnpm@10.34.9` (corepack or explicit version); image build succeeds |
+| SEC-AUDIT-5b frozen install in security workflow | P1 | OPEN | `ci-security.yml` uses `pnpm install --frozen-lockfile`; audit job stays green |
+| BR-01 delete merged/closed branches | P2 | OPEN, owner | 60 listed branches deleted by the owner (agent push was refused with 403); three no-PR branches decided |
+| W0-PIN Node version pin | P2 | OPEN | One Node major declared outside CI (`engines` or `.nvmrc`) and matched in CI and images |
+
 ## Current evidence-linked work — 2026-10-14
 
 ### Observable trust follow-up (planning, #178)
@@ -94,8 +108,8 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 | EV-03 real SD-JWT single-use | P1 / profile-required P0 | OPEN #171 | Atomically reserve/consume stored single-use, holder lifecycle and honest cleanup |
 | EV-04 Tier-2 sink integration | P1 | OPEN #172 | Inventory actual outputs first; apply existing schema only to in-scope exports/telemetry; preserve Tier 1 |
 | EV-06 revision-bound evidence | P1 | OPEN #173 / SEC-AUDIT-3 | Actual-file hash and source/profile/config; active-path coverage |
-| EV-05 audit CI gate | P0 | OPEN #141 / SEC-AUDIT-1/2 | Critical/high and audit failures block; preserve #152 runner |
-| Key separation / decision randomness | Existing | OPEN #150/#151 | Re-review on current base with targeted format/key/randomness tests |
+| EV-05 audit CI gate | P0 | Gate criterion implemented: critical #194 (2026-10-25), high #257 (2026-11-19), no exceptions since 2026-11-20 ([evidence](qa/SECURITY_AUDIT_GATE_2026-11-20.md)); closure decision with #185 owner | Critical/high and audit failures block; preserve #152 runner |
+| Key separation / decision randomness | Existing | Randomness fixed via #203 (#151 closed 2026-10-25); key separation #150 closed unmerged 2026-10-25, re-review still open | Re-review on current base with targeted format/key/randomness tests |
 | S-11 / #122 named layer gap | Scoped | Implemented #125; scoped closure supported | Two negatives plus fresh 63-test schema/metadata/security run; not full health readiness |
 | Naming / #95 | Decision | Superseded by AskMI + #158 | No implementation guarantee attached |
 | G-100.5 / #97 | Profile | OPEN | Exact current official age/mdoc/ZKP semantics plus interoperability evidence |

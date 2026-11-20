@@ -114,6 +114,7 @@ gantt
     axisFormat %b %d
     section Baseline
     Truth and source lock :active, w0, 2026-08-26, 10d
+    PR and supply-chain cleanup :done, w0c, 2026-10-23, 2026-11-20
     section Protocol
     OID4VP and OID4VCI parity :w1, 2026-09-07, 33d
     section Trust
@@ -127,6 +128,12 @@ gantt
 ```
 
 Production is intentionally unscheduled.
+
+**Schedule variance — 2026-11-20:** the Wave 0 repository-convergence work ran from 23 October to
+20 November and ended about eleven weeks after the planned window closed, with 0 open PRs and a
+high/critical audit gate without exceptions. Wave 0 itself stays open; see the
+[checkpoint below](#repository-convergence-checkpoint--2026-11-20). Later wave dates are not moved
+by this record.
 
 **Schedule variance — 2026-10-12:** Wave 0 and G0 remain open while the source-baseline stack through PR #168 is unlanded. The G1 buyer gate due 11 October also elapsed without a published completed-interview tally or evidence for 20 interviews, at least 8 problem confirmations and at least 3 buyer/procurement/deadline signals. G1 remains open and the stated stop rule applies: pause broad product expansion until the buyer/workflow/category hypothesis is evidenced or revised. No technical or commercial gate closes from elapsed time.
 
@@ -160,6 +167,22 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 - Pin Node/pnpm consistently and remove or quarantine stale npm lockfiles.
 
 **Exit:** one canonical revision; no stale PR presented as merge-ready; dated source lock; consistent middleware/reference-harness wording; unsupported percentages marked historical.
+
+### Repository convergence checkpoint — 2026-11-20
+
+Evidence for the Wave 0 items it touches, at base `8dd7f3e`. The roadmap owner records any
+checkbox change in #142.
+
+| Wave 0 item | Evidence | Proposed status |
+|---|---|---|
+| Reconcile #141 security changes | Code fixes ported in #195 (2026-10-25); #141 closed | Evidenced; owner to tick |
+| Close/re-scope stale PRs | #105, #139, #140, #141, the EUDI upstream chain (#144, #145, #146, #156, #157, #168, #169), #163/#164 and #248 closed with reasons; #129, #130 merged; 0 open PRs on 2026-11-20 | Evidenced; owner to tick |
+| Pin Node/pnpm; remove stale npm lockfiles | pnpm 10.34.9 in `packageManager`, CI and one image (#257); stale lockfiles removed (this checkpoint). Open: three app images install pnpm unpinned; Node pinned only as CI major 22 | Partly evidenced |
+| EV-05 audit threshold (Wave 0 remediation row) | Critical #194, high #257; no exceptions since 2026-11-20 | Gate criterion implemented; #185 stays open |
+| Source lock, CIR traceability, pilot profile freeze | Not assessed here | Unchanged |
+
+[Dated audit evidence](qa/SECURITY_AUDIT_GATE_2026-11-20.md) ·
+[Cleanup timeline, mapping and branch list](ops/PR_BRANCH_CLEANUP_2026-11-20.md)
 
 ## Wave 1 — current protocol parity
 
@@ -308,6 +331,10 @@ A go decision requires Waves 0–4 with linked evidence; official Android/iOS in
 | Issue #122 | Scoped fix #125 is present; close with the current two negatives/63-test focused evidence |
 | Issue #95 | Superseded by AskMI naming and accepted #158 product boundary |
 
+**Outcome 2026-11-20:** #141 closed after its code fixes landed in #195. #140 closed (the PostCSS
+floor landed in #207). #105 and #139 closed. #129 and #130 merged. No PR is open. Details:
+[cleanup record](ops/PR_BRANCH_CLEANUP_2026-11-20.md).
+
 ## Production gate — intentionally undated
 
 Production becomes schedulable only after successful pilot exit plus durable governance, external assurance, interoperability, legal/privacy review, operational controls, and support. If AskMI becomes a Wallet Solution, it needs a separate certification programme; this roadmap neither grants nor predicts certification.
@@ -328,7 +355,7 @@ Production becomes schedulable only after successful pilot exit plus durable gov
 | #171 real SD-JWT single-use | Waves 1/4 | Open; preserve delivered legacy B+C mechanism |
 | #172 audit/telemetry sinks | Wave 4 | Open; schema exists, runtime integration/retention not established |
 | #173 source-bound evidence/file bytes | Waves 0/1/4, SEC-AUDIT-3 | Open; 10 manifest PASS do not cover these counterexamples |
-| EV-05 CI audit threshold | Wave 0, #141 / SEC-AUDIT-1/2 | Open; critical synthetic JSON exits 0 on master |
+| EV-05 CI audit threshold | Wave 0, #141 / SEC-AUDIT-1/2 | Open; critical synthetic JSON exits 0 on master. **Update 2026-11-20:** critical (#194) and high (#257) now deny on master, no exceptions; [evidence](qa/SECURITY_AUDIT_GATE_2026-11-20.md). Closure with #185 owner |
 | GAP-1/GAP-4 and F-19/F-20 | Wave 4/residuals | Explicitly open; no downgrade hidden by a success label |
 
 Do not move G0/G1 or promote future sprints from this documentation-only reconciliation.
