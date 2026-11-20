@@ -30,10 +30,13 @@ jobs:
           cache: 'pnpm'
 
       - name: Install
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Audit gate regression tests
         run: node --test scripts/check-security-audit.test.mjs
+
+      - name: Toolchain pin checks
+        run: node --test scripts/check-toolchain-pins.test.mjs
 
       - name: Enforce high/critical dependency audit gate
         shell: bash

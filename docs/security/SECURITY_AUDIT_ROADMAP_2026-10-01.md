@@ -52,7 +52,7 @@ js-yaml, browserslist, vite), and the `pnpm` CLI devDep in `@askmi/evidence`.
 | SEC-AUDIT-2 | Batches #206, #227, #229, then #269, #272 and #257: 0 findings at every level on 2026-11-20 (dated registry output). The time-boxed picomatch exception is removed | [Gate record](../qa/SECURITY_AUDIT_GATE_2026-11-20.md) |
 | SEC-AUDIT-3 | OPEN (#173) | — |
 | SEC-AUDIT-4 | OPEN; F-05/F-06 mitigated by honest status labels (#297, #301); real anchoring #294–#296 | [L2 record](../qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md) |
-| SEC-AUDIT-5 (new) | OPEN: (a) pin pnpm in the `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` images; (b) `--frozen-lockfile` in `ci-security.yml` | [Follow-up findings](../qa/SECURITY_AUDIT_GATE_2026-11-20.md#follow-up-findings-not-fixed-here) |
+| SEC-AUDIT-5 (new) | Implemented in #310: (a) pnpm pinned via corepack in the `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` images, which also moved off end-of-life Node 20; (b) `--frozen-lockfile` in `ci-security.yml`; a CI guard keeps both pinned. Residual: base images are referenced by tag, not digest | [Addendum](../qa/SECURITY_AUDIT_GATE_2026-11-20.md#addendum--follow-up-fixes-same-day) |
 
 Exception policy from here: the exceptions file stays `[]`. A new entry needs a high (never
 critical) advisory with no fixed release, a clean production audit, a written reason, a tracking

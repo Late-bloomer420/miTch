@@ -11,7 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
-- chore(audit): remove the dormant picomatch exception and stale npm lockfiles; docs: map the PR/security cleanup to roadmap gates ([#310](https://github.com/Late-bloomer420/miTch/pull/310)) — evidence: [`SECURITY_AUDIT_GATE_2026-11-20.md`](docs/qa/SECURITY_AUDIT_GATE_2026-11-20.md)
+- chore(audit): remove the dormant picomatch exception and stale npm lockfiles, pin pnpm and Node 22 in app images; docs: map the PR/security cleanup to roadmap gates ([#310](https://github.com/Late-bloomer420/miTch/pull/310)) — evidence: [`SECURITY_AUDIT_GATE_2026-11-20.md`](docs/qa/SECURITY_AUDIT_GATE_2026-11-20.md)
 - docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
 - fix(demo): Startskript passt zur HTTPS-Wallet, Trace meldet Zustellung wahrheitsgemäß ([#265](https://github.com/Late-bloomer420/miTch/pull/265))
 - docs(qa): build/test performance baseline 2026-11-19 ([#304](https://github.com/Late-bloomer420/miTch/pull/304)) — evidence: [`BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md`](docs/qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md)

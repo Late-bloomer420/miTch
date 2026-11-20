@@ -80,10 +80,10 @@ New open tasks:
 
 | Task | Priority | Status | Acceptance |
 |---|---|---|---|
-| SEC-AUDIT-5a pin pnpm in app images | P1 | OPEN | `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` Dockerfiles use `pnpm@10.34.9` (corepack or explicit version); image build succeeds |
-| SEC-AUDIT-5b frozen install in security workflow | P1 | OPEN | `ci-security.yml` uses `pnpm install --frozen-lockfile`; audit job stays green |
+| SEC-AUDIT-5a pin pnpm in app images | P1 | Implemented in #310: corepack `pnpm@10.34.9`; images also moved from end-of-life `node:20` to `node:22`; guard `scripts/check-toolchain-pins.test.mjs` in CI. Image build not run locally (no Docker daemon) | `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` Dockerfiles use `pnpm@10.34.9` (corepack or explicit version); image build succeeds |
+| SEC-AUDIT-5b frozen install in security workflow | P1 | Implemented in #310 | `ci-security.yml` uses `pnpm install --frozen-lockfile`; audit job stays green |
 | BR-01 delete merged/closed branches | P2 | OPEN, owner | 60 listed branches deleted by the owner (agent push was refused with 403); three no-PR branches decided |
-| W0-PIN Node version pin | P2 | OPEN | One Node major declared outside CI (`engines` or `.nvmrc`) and matched in CI and images |
+| W0-PIN Node version pin | P2 | OPEN, owner decision | CI and all images now use Node 22 (end of life 2027-04-30). Owner chooses 22 or 24 for local development, then declares it (`engines` or `.nvmrc`); CI, images and the guard's supported set follow |
 
 ## Current evidence-linked work — 2026-10-14
 

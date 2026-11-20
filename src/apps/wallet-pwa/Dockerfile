@@ -1,12 +1,12 @@
 # Wallet PWA Dockerfile
-# Based on AskMI 100% Compliance Architecture
+# Development/evaluation image; not a compliance or production claim
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies (pnpm is used in monorepo)
-RUN npm install -g pnpm
+# pnpm version must match "packageManager" in package.json (checked by scripts/check-toolchain-pins.test.mjs)
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 
 # Copy root monorepo config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./

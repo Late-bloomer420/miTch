@@ -62,3 +62,38 @@ that the old entry excused now blocks the gate.
 
 #185 stays OPEN for evidence provenance, SBOM/signed provenance, conformance and independent
 validation. This record does not establish release readiness or a clean audit beyond its date.
+
+## Addendum — follow-up fixes (same day)
+
+Both follow-up findings above are fixed in the same PR (#310). One more was found while doing so.
+The observations above are left as recorded.
+
+| Change                                                                                                                                                                                                                                    | Files                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| pnpm pinned through `corepack prepare pnpm@10.34.9 --activate`, as in the verifier-demo frontend image                                                                                                                                    | `src/apps/issuer-mock/Dockerfile`, `src/apps/verifier-demo/backend/Dockerfile`, `src/apps/wallet-pwa/Dockerfile` |
+| Base image `node:20-alpine` → `node:22-alpine`. Node.js 20 reached end of life on 2026-04-30 and gets no security releases; CI already tests on Node 22                                                                                   | same three files                                                                                                 |
+| Header comment "Based on AskMI 100% Compliance Architecture" replaced; the images make no compliance claim                                                                                                                                | same three files                                                                                                 |
+| `pnpm install` → `pnpm install --frozen-lockfile`                                                                                                                                                                                         | `.github/workflows/ci-security.yml`                                                                              |
+| New guard `scripts/check-toolchain-pins.test.mjs`, run in `ci-security.yml`. It checks pnpm against `packageManager` in images and workflows, supported Node majors in images (22, 24), and `--frozen-lockfile` on every workflow install | `scripts/`, workflow                                                                                             |
+
+Verification (Linux, Node `v22.22.0`):
+
+- The guard fails on base `8dd7f3e`: unpinned pnpm, `node:20`, non-frozen install (3 of 4 tests). It passes on the branch (4/4).
+- `corepack prepare pnpm@10.34.9 --activate` on Node 22 (corepack 0.34.0) activates pnpm 10.34.9.
+- **Not run:** a Docker image build. No Docker daemon is available in this environment. The images run the same Node 22 that CI tests on, but a first image build must confirm them.
+- **Residual:** base images (`node`, `nginx`, `caddy`) are referenced by tag, not by digest.
+
+### EU regulatory reference (orientation, not a compliance statement)
+
+- **Fact.** The Cyber Resilience Act (Regulation (EU) 2024/2847) entered into force on
+  2024-12-10. Its reporting duties (Art. 14) apply from 2026-09-11 and its main obligations from
+  2027-12-11.
+- **Fact.** Annex I Part I asks products to be placed on the market without known exploitable
+  vulnerabilities and to allow vulnerabilities to be addressed through security updates.
+  Part II asks manufacturers to identify and document components, including an SBOM.
+- **Assessment.** Pinned build tools, a lockfile-exact install and a runtime that still gets
+  security releases support these aims: reproducible builds make an SBOM accurate, and an EOL
+  runtime cannot receive fixes.
+- **Open.** Whether and when the CRA applies to AskMI depends on whether and how it is placed on
+  the market. Today it is development/evaluation software. This change does not establish CRA
+  conformity, and SBOM/provenance work stays under #185.

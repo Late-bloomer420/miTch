@@ -53,9 +53,10 @@ excepted; entries expire after at most 90 days. Dated registry output, no `docs/
 longer appears in the registry response, so the entry above had no effect. It is removed and
 `scripts/security-audit-exceptions.json` is `[]`. Full and production audits report 0 findings
 at every level. The gate passes, 36/36 gate tests pass, and a synthetic high `picomatch` report
-is now denied. The stale npm lockfiles (root and `poc-hardened`) are removed. Two follow-ups
-remain open: three app Dockerfiles install pnpm unpinned, and `ci-security.yml` installs without
-`--frozen-lockfile`. [Dated evidence](docs/qa/SECURITY_AUDIT_GATE_2026-11-20.md). The PR backlog
+is now denied. The stale npm lockfiles (root and `poc-hardened`) are removed. All four app images
+now pin pnpm 10.34.9 and use Node 22; three had used end-of-life Node 20. `ci-security.yml` installs
+with `--frozen-lockfile`, and a CI guard keeps these pins aligned. Images were not built locally.
+[Dated evidence](docs/qa/SECURITY_AUDIT_GATE_2026-11-20.md). The PR backlog
 is at 0 open PRs; [cleanup record and roadmap mapping](docs/ops/PR_BRANCH_CLEANUP_2026-11-20.md).
 #185 stays open for its broader scope. No release gate changes.
 

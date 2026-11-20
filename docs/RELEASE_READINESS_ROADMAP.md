@@ -177,7 +177,7 @@ checkbox change in #142.
 |---|---|---|
 | Reconcile #141 security changes | Code fixes ported in #195 (2026-10-25); #141 closed | Evidenced; owner to tick |
 | Close/re-scope stale PRs | #105, #139, #140, #141, the EUDI upstream chain (#144, #145, #146, #156, #157, #168, #169), #163/#164 and #248 closed with reasons; #129, #130 merged; 0 open PRs on 2026-11-20 | Evidenced; owner to tick |
-| Pin Node/pnpm; remove stale npm lockfiles | pnpm 10.34.9 in `packageManager`, CI and one image (#257); stale lockfiles removed (this checkpoint). Open: three app images install pnpm unpinned; Node pinned only as CI major 22 | Partly evidenced |
+| Pin Node/pnpm; remove stale npm lockfiles | pnpm 10.34.9 in `packageManager` and CI (#257) and in all four images (#310); images on Node 22 like CI; CI guard against drift; stale lockfiles removed (#310). Open: Node major for local development (owner decision 22 or 24) | Evidenced for CI and images; local Node pin open |
 | EV-05 audit threshold (Wave 0 remediation row) | Critical #194, high #257; no exceptions since 2026-11-20 | Gate criterion implemented; #185 stays open |
 | Source lock, CIR traceability, pilot profile freeze | Not assessed here | Unchanged |
 
