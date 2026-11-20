@@ -1,9 +1,1 @@
-[
-  {
-    "id": "GHSA-fc5q-39xc-vjpf",
-    "module": "picomatch",
-    "expires": "2026-12-18",
-    "reason": "ReDoS via repeated extglobs; no patched picomatch release exists (latest 4.0.7 is affected). Reached only through dev tooling (vitest, nodemon/chokidar, typescript-eslint/tinyglobby) with repository-controlled glob patterns; the production-only audit must stay clean for this exception to apply. Remove as soon as a fixed version can be pinned.",
-    "tracking": "#257"
-  }
-]
+[]

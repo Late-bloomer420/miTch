@@ -67,14 +67,12 @@ This file defines the authoritative document per topic area and serves as naviga
 
 - **Audit-log L2 anchor honest status (SECURE-1 F-05/F-06 mitigation, tasks L2A-01..04):** [qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md); supplements the unchanged SECURE-1 records. Real anchoring remains open (#294, #295, #296).
 
-- **Audit-log L2 anchor honest status (SECURE-1 F-05/F-06 mitigation, tasks L2A-01..04):** [qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md); supplements the unchanged SECURE-1 records. Real anchoring remains open (#294, #295, #296).
-
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
 - **Canonical architecture decoupling model:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
-- **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
+- **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`; PR/branch cleanup with roadmap/gate mapping: `docs/ops/PR_BRANCH_CLEANUP_2026-11-20.md`
 - **Epic 4–5 execution plan (Scout & Advisor record):** `docs/EXECUTION_PLAN_epic4-5.md`
 - **Verifier-facing Commercial Trust Kit (narrative, technical appendix, evidence index, security sign-off):** `docs/05-business/trust-kit/README.md`
 - **September 2026 external-style EUDI desk assessment (research, not certification/legal advice):** `docs/compliance/EXTERNAL_DESK_AUDIT_EUDI_2026-09-11.md`

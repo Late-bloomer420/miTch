@@ -44,6 +44,22 @@ evidence](../qa/SECURITY_AUDIT_2_FAST_URI_2026-10-25.md). Open batches: the
 ip-address, zod), the dev/test tooling batch (undici, brace-expansion,
 js-yaml, browserslist, vite), and the `pnpm` CLI devDep in `@askmi/evidence`.
 
+## Checkpoint — 2026-11-20 (base `8dd7f3e`)
+
+| Slice | State | Evidence |
+|---|---|---|
+| SEC-AUDIT-1 | #151's randomness fix landed as #203; #141 code hardening ported in #195; #152 runner preserved; EV-05 gate denies critical (#194) and high (#257) | [Gate record](../qa/SECURITY_AUDIT_GATE_2026-11-20.md) |
+| SEC-AUDIT-2 | Batches #206, #227, #229, then #269, #272 and #257: 0 findings at every level on 2026-11-20 (dated registry output). The time-boxed picomatch exception is removed | [Gate record](../qa/SECURITY_AUDIT_GATE_2026-11-20.md) |
+| SEC-AUDIT-3 | OPEN (#173) | — |
+| SEC-AUDIT-4 | OPEN; F-05/F-06 mitigated by honest status labels (#297, #301); real anchoring #294–#296 | [L2 record](../qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md) |
+| SEC-AUDIT-5 (new) | Implemented in #310: (a) pnpm pinned via corepack in the `issuer-mock`, `verifier-demo/backend` and `wallet-pwa` images, which also moved off end-of-life Node 20; (b) `--frozen-lockfile` in `ci-security.yml`; a CI guard keeps both pinned. Residual: base images are referenced by tag, not digest | [Addendum](../qa/SECURITY_AUDIT_GATE_2026-11-20.md#addendum--follow-up-fixes-same-day) |
+
+Exception policy from here: the exceptions file stays `[]`. A new entry needs a high (never
+critical) advisory with no fixed release, a clean production audit, a written reason, a tracking
+reference and an expiry of at most 90 days. The committed-file test fails CI once an entry
+expires. #185 remains open for provenance, SBOM, conformance and independent validation.
+[Cleanup record](../ops/PR_BRANCH_CLEANUP_2026-11-20.md).
+
 ## Purpose
 
 This document turns the current security-audit backlog into small, reviewable
