@@ -223,6 +223,25 @@ describe('DataFlowService', () => {
     expect(txns[1].transactionId).toBe(DEC_ID);
   });
 
+  it('orders events chronologically within a transaction', () => {
+    const metadata = { decision_id: DEC_ID };
+    const [txn] = service.buildTransactions([
+      makeEntry({ action: 'KEY_DESTROYED', timestamp: '2026-01-01T00:00:02Z', metadata }),
+      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-01-01T00:00:01Z', metadata }),
+    ]);
+
+    expect(txn.events.map(event => event.action)).toEqual(['KEY_CREATED', 'KEY_DESTROYED']);
+  });
+
+  it('places a transaction with an unparsable start time last', () => {
+    const txns = service.buildTransactions([
+      makeEntry({ action: 'KEY_CREATED', timestamp: 'not-a-date', metadata: { decision_id: DEC_ID } }),
+      makeEntry({ action: 'KEY_CREATED', timestamp: '2026-01-01T00:00:00Z', metadata: { decision_id: DEC_ID_2 } }),
+    ]);
+
+    expect(txns.map(txn => txn.transactionId)).toEqual([DEC_ID_2, DEC_ID]);
+  });
+
   it('builds single event transaction', () => {
     const entries = [
       makeEntry({ action: 'KEY_CREATED', metadata: { decision_id: DEC_ID } }),

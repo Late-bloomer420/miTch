@@ -15,6 +15,12 @@ function extractVerifierLabel(did: string | null): string {
     .join(' ');
 }
 
+/** Unparsable timestamps sort as the epoch, so the order stays deterministic. */
+function sortTime(timestamp: string): number {
+  const time = Date.parse(timestamp);
+  return Number.isNaN(time) ? 0 : time;
+}
+
 export class DataFlowService {
   buildTransactions(entries: AuditLogEntry[]): DataFlowTransaction[] {
     // Group by decision_id
@@ -35,8 +41,8 @@ export class DataFlowService {
     const transactions: DataFlowTransaction[] = [];
 
     for (const [decisionId, group] of groups) {
-      // Sort by timestamp ascending
-      group.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const entryTimes = new Map(group.map((entry) => [entry, sortTime(entry.timestamp)]));
+      group.sort((a, b) => entryTimes.get(a)! - entryTimes.get(b)!);
 
       // Find VP_GENERATED event for claim data
       const vpEvent = group.find(e => e.action === 'VP_GENERATED');
@@ -161,8 +167,9 @@ export class DataFlowService {
       });
     }
 
-    // Sort newest first
-    transactions.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+    // Newest first
+    const startTimes = new Map(transactions.map((tx) => [tx, sortTime(tx.startedAt)]));
+    transactions.sort((a, b) => startTimes.get(b)! - startTimes.get(a)!);
 
     return transactions;
   }
