@@ -1,6 +1,17 @@
 import type { AuthorizationRequest } from '@askmi/oid4vp';
 import { ASKMI_DEMO } from '@askmi/shared-types';
 
+/**
+ * True when the URL addresses the wallet: a Connect handoff (`request_uri`) or a
+ * verifier demo link (`scenario` + `endpoint` + `sessionId`). Such links must open
+ * the wallet, not the landing page. Validation stays with the wallet's own intake.
+ */
+export function isWalletDeepLink(search: string): boolean {
+  const params = new URLSearchParams(search);
+  if (params.get('request_uri')) return true;
+  return Boolean(params.get('scenario') && params.get('endpoint') && params.get('sessionId'));
+}
+
 export function parseConnectHandoff(search: string) {
   const params = new URLSearchParams(search);
   const requestUri = params.get('request_uri');
@@ -57,6 +68,7 @@ export function presentationAccepted(
   body: { ok?: boolean; status?: string; result?: { eligible?: boolean } }
 ): boolean {
   if (!responseOk) return false;
-  if (body.status !== undefined) return body.status === 'verified' && body.result?.eligible === true;
+  if (body.status !== undefined)
+    return body.status === 'verified' && body.result?.eligible === true;
   return body.ok === true;
 }

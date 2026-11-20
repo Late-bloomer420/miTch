@@ -2,8 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
+// Relative source import on purpose: Node loads this config before resolve.alias
+// applies, and the wallet must start without a workspace package build.
+import { askmiDevWalletUsesHttps } from '../../packages/shared-types/src/askmi';
 
-const useBasicSsl = process.env.ASKMI_DEV_HTTPS !== '0';
+const useBasicSsl = askmiDevWalletUsesHttps(process.env.ASKMI_DEV_HTTPS);
 
 const securityHeaders = {
   'Content-Security-Policy': "frame-ancestors 'none';",
