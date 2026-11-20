@@ -11,6 +11,7 @@ import {
   matchActiveProfile,
   type ActiveProfileId,
 } from './active-profile';
+import { protectedHeaderKid, selectIssuerJwk } from './issuer-jwks';
 import { createAskMIConnect, InMemoryAskMIConnectSessionStore } from '@askmi/connect';
 import { askmiConnectExpressRouter } from '@askmi/connect/express';
 import {
@@ -453,7 +454,7 @@ app.post('/wallet-present', requireSession, async (req, res) => {
 // list / issuer JWKS — never against a wallet-supplied `issuer_jwk` (which would
 // be circular: the wallet would provide both the signature and the key to check
 // it against). A real issuer (Austria ID / eIDAS) plugs in via the trust list.
-async function resolveTrustedIssuerKey(iss: string): Promise<CryptoKey | null> {
+async function resolveTrustedIssuerKey(iss: string, kid?: string): Promise<CryptoKey | null> {
   // This demo has one configured JWKS authority, not a multi-issuer resolver.
   if (iss !== CONFIGURED_ISSUER) return null;
   const trust = await trustListResolver.isIssuerTrusted(iss);
@@ -464,24 +465,31 @@ async function resolveTrustedIssuerKey(iss: string): Promise<CryptoKey | null> {
   if (!r.ok) throw new Error('Issuer key service unavailable');
   const jwks = (await r.json()) as { keys?: JsonWebKey[] };
   if (!jwks.keys?.length) throw new Error('Issuer key response missing keys');
+  // Select by the credential's protected-header `kid`; ambiguous or unknown → deny.
+  const jwk = selectIssuerJwk(jwks.keys, kid);
+  if (!jwk) return null;
   return await globalThis.crypto.subtle.importKey(
     'jwk',
-    jwks.keys[0],
+    jwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['verify']
   );
 }
-export async function defaultResolveIssuerKey(iss: string): Promise<CryptoKey | null> {
+export async function defaultResolveIssuerKey(
+  iss: string,
+  kid?: string
+): Promise<CryptoKey | null> {
   try {
-    return await resolveTrustedIssuerKey(iss);
+    return await resolveTrustedIssuerKey(iss, kid);
   } catch {
     return null;
   }
 }
-let issuerKeyResolver: (iss: string) => Promise<CryptoKey | null> = defaultResolveIssuerKey;
+type IssuerKeyResolver = (iss: string, kid?: string) => Promise<CryptoKey | null>;
+let issuerKeyResolver: IssuerKeyResolver = defaultResolveIssuerKey;
 /** Test seam: override how the verifier resolves the issuer key. */
-export function setIssuerKeyResolver(fn: (iss: string) => Promise<CryptoKey | null>): void {
+export function setIssuerKeyResolver(fn: IssuerKeyResolver): void {
   issuerKeyResolver = fn;
 }
 
@@ -492,10 +500,10 @@ const connect = createAskMIConnect({
   audienceBaseUrl: process.env.VERIFIER_BASE_URL || 'http://localhost:3004',
   walletBaseUrl: process.env.WALLET_BASE_URL || askmiDevWalletUrl(process.env.ASKMI_DEV_HTTPS),
   store: connectStore,
-  issuerKeyResolver: (iss) =>
+  issuerKeyResolver: (iss, kid) =>
     issuerKeyResolver === defaultResolveIssuerKey
-      ? resolveTrustedIssuerKey(iss)
-      : issuerKeyResolver(iss),
+      ? resolveTrustedIssuerKey(iss, kid)
+      : issuerKeyResolver(iss, kid),
 });
 app.use(
   '/askmi/connect',
@@ -553,7 +561,9 @@ app.post('/oid4vp-present', requireSession, oid4vpPresentRouteLimiter, async (re
     } catch {
       iss = '';
     }
-    const issuerPublicKey = iss ? await issuerKeyResolver(iss) : null;
+    const issuerPublicKey = iss
+      ? await issuerKeyResolver(iss, protectedHeaderKid(presentedIssuerJwt))
+      : null;
     if (!isCurrentAuthorization()) {
       return res.status(403).json({ ok: false, error: 'INVALID_SESSION_AUTHORIZATION' });
     }

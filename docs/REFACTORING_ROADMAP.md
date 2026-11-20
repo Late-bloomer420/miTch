@@ -3,8 +3,8 @@
 > **Role:** Deferred architecture work from PoC to production hardening.
 > This is the canonical roadmap referenced by `docs/DOCS_CANON.md`.
 
-**Status:** Reference closeout for F-16/F-18
-**Last updated:** 2026-06-25
+**Status:** Active Phase 6 architecture migration authority
+**Last updated:** 2026-11-19
 
 This file tracks larger architecture work that should not be mixed into small
 security, UX, or pilot-readiness fixes. Items here are planned or partially
@@ -16,19 +16,33 @@ active sprint.
 - Operational state: [`../STATE.md`](../STATE.md)
 - Task tracking: [`BACKLOG.md`](BACKLOG.md)
 - Architecture authority map: [`DOCS_CANON.md`](DOCS_CANON.md)
+- Canonical boundary model and findings: [`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md)
 - WalletService decomposition ADR: [`03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md`](03-architecture/mvp/ADR-013_WalletService_Monolith_Decomposition_Strategy.md)
 - Original audit finding source: [`AUDIT_2026_03.md`](AUDIT_2026_03.md)
 
-## Closed Reference Gap
+## Finding Status
 
 | Finding | Status | Roadmap placement |
 |---|---|---|
-| F-16 WalletService god object | Documented | Phase 6 wallet facade and service extraction |
+| F-16 WalletService god object | Open; documented | Phase 6 wallet facade and service extraction; ARCH-01/ARCH-09 |
 | F-18 missing refactoring roadmap | Closed | This canonical file, plus root compatibility pointer |
 
 F-16 is not a one-line fix. Treat it as an architecture extraction sequence with
 API stability gates. Do not refactor `WalletService` opportunistically while
 working on unrelated policy, UX, or demo-flow tasks.
+
+### Runtime Truth Correction — 2026-11-01
+
+The earlier backlog entry `R-02 WalletService Decomposition — ✅` described the
+presence of repository/evaluator/presentation interfaces in `wallet-core`, not
+a completed runtime cutover. At `002ce5e` (2026-11-01), `App.tsx` still constructs
+the 2,464-line PWA-local `WalletService`; the modular facade is not the runtime
+authority. R-02 is therefore **partial**, and completion is governed
+by ARCH-01 and ARCH-09 in the canonical decoupling audit.
+
+Before service extraction, the security-sensitive preconditions ARCH-02 through
+ARCH-05 must be characterized with tests so moving code cannot preserve or hide
+an unsafe boundary.
 
 ## Phase 6 Gate: WalletService Decomposition
 
@@ -53,8 +67,8 @@ services while preserving the public wallet API.
 ### Migration Rules
 
 - Extract one seam at a time.
-- Keep `WalletService` public method signatures stable unless a dedicated
-  migration task says otherwise.
+- Keep `WalletService` public method signatures stable until the runtime cutover
+  (step 8 below) or a dedicated migration task says otherwise.
 - Add tests at the seam before moving behavior.
 - Do not change disclosure, policy verdict, or audit semantics as a side effect
   of moving code.
@@ -64,10 +78,41 @@ services while preserving the public wallet API.
 
 | Gate | Measurement |
 |---|---|
-| API stability | Existing wallet-pwa tests pass with no caller rewrites |
+| API stability | Before the runtime cutover, existing wallet-pwa tests pass with no caller rewrites; afterwards the canonical Behavior stability gate applies |
 | Behavior stability | Scenario disclosure outputs and audit event sequences unchanged |
 | Extraction proof | Each extracted service has focused tests |
 | Facade reduction | `WalletService` becomes mostly orchestration, not domain logic |
+
+The architecture-wide gates, including runtime authority, authorization binding,
+metadata-first isolation and dependency direction, are defined only in
+[`Global Acceptance Gates`](03-architecture/ARCHITECTURE_DECOUPLING.md#global-acceptance-gates).
+
+### Phase 6 Migration Sequence
+
+This is the single canonical sequence. The findings and acceptance gates it
+must satisfy (ARCH-01 to ARCH-09) are defined in
+[`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md).
+
+1. **Characterization gates:** add tests for presentation binding, pairwise-DID
+   failure, lifecycle eligibility, audit sequencing, and key separation
+   (ARCH-02 to ARCH-05) before moving behavior.
+2. **Authorization plan:** introduce a single `AuthorizePresentation` use case
+   and route online and proximity flows through it.
+3. **Lifecycle authority:** centralize credential status, expiration,
+   consumption, and pool rotation in one authority, including the ARCH-04
+   residual left after #130.
+4. **Presentation extraction:** make builders side-effect free; orchestration
+   owns storage, audit, state transitions, and transport.
+5. **Policy purification:** separate pure policy decisions from rate limiting,
+   clocks/IDs, capsule construction, pairwise identity, and signing.
+6. **Composition inversion:** move browser factories and concrete adapters out
+   of `wallet-core` into the PWA composition root.
+7. **Contract convergence:** converge DecisionCapsule and policy contracts
+   behind compatibility adapters.
+8. **Runtime cutover:** switch `App.tsx` to the modular facade, reduce the
+   local service to a compatibility wrapper, then remove it.
+9. **Mechanical enforcement:** activate import, cycle, deep-import, and
+   boundary-cast checks in CI.
 
 ## SecureStorage Boundary
 
@@ -95,7 +140,9 @@ Related deferred findings:
 ## PolicyEngine Extension Point
 
 **Current concern:** credential selection and verifier matching should stay
-simple until a product requirement forces a strategy boundary.
+simple, but privacy rotation is now an explicit product requirement through the
+credential-pool work merged via #130. The strategy boundary trigger has therefore
+been met.
 
 Candidate future seam:
 
@@ -111,16 +158,40 @@ interface ICredentialSelectionStrategy {
 
 Rules:
 
-- Current first-compatible credential behavior is acceptable for the pilot.
-- Add a strategy only when multi-issuer or privacy-rotation requirements are
-  explicit.
+- Keep first-compatible behavior only for credentials outside a rotation pool.
+- Implement privacy rotation in the wallet lifecycle/application layer, not as
+  additional stateful behavior inside the policy engine.
+- One eligibility authority must combine lifecycle status, expiration,
+  consumption, and pool exhaustion before policy sees candidates.
 - Do not introduce reputation scoring into verifier-facing enforcement without a
   separate design decision; AskMI remains deny-biased and scope-bound.
+
+## Audit Anchor Boundary
+
+**Current concern:** `src/packages/audit-log/src/storage/l2-anchor-client.ts`,
+`src/packages/audit-log/src/anchor.ts` and `src/packages/anchor-service`.
+
+The anchor client reports honestly what it did (L2A-01, PR #297, evidence in
+[`qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md`](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md)). Real anchoring is
+deferred until a backend is chosen.
+
+| Planned seam | Responsibility |
+|---|---|
+| `AnchorBackend` | `submit` and `verify` per backend; statuses `verified`, `mock`, `pending`, `unverifiable` |
+
+Rules:
+
+- No own chain. Evaluate a timestamp authority (RFC 3161), OpenTimestamps and an L2 contract as adapters (#295).
+- Never report a mocked or unchecked anchor as confirmed or verified.
+- Privacy constraints hold for every backend: salted leaves, no identifiers in leaves, no per-user anchors, fixed batch intervals.
+- Reconcile with `@askmi/anchor-service` before adding a second implementation.
+- Real submit and verify, with integration negatives, are tracked in #294; the `StateAnchorClient` fallback in #296.
 
 ## Deferred Crypto / Platform Items
 
 | Item | Status |
 |---|---|
+| L2 anchor backend (F-05/F-06 residual) | Deferred; honest status delivered (PR #297). Backend choice #295, real submit/verify #294 |
 | F-04 EphemeralKey unification | Mostly delivered via shared interface and conforming implementations |
 | F-05 TEE migration | Deferred; WebAuthn identity binding is delivered, session-key TEE wrapping remains platform-dependent |
 | F-07 claim-level encryption | Deferred until credential schema is stable |

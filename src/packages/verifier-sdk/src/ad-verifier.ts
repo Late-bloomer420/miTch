@@ -222,6 +222,14 @@ export class AdTechVerifier {
     private generateNonce(): string {
         const bytes = new Uint8Array(16);
         globalThis.crypto.getRandomValues(bytes);
+        // Node fast path (ported from #163); same base64url output as the fallback below.
+        // Looked up on globalThis so browser builds need neither Node types nor a Buffer polyfill.
+        const NodeBuffer = (globalThis as {
+            Buffer?: { from(data: ArrayBuffer, offset: number, length: number): { toString(encoding: 'base64url'): string } };
+        }).Buffer;
+        if (NodeBuffer) {
+            return NodeBuffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64url');
+        }
         // base64url encode without Buffer (works in browser + Node 19+)
         return btoa(String.fromCharCode(...bytes))
             .replace(/\+/g, '-')

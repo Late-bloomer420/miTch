@@ -7,6 +7,12 @@
 
 # 1. Wallet PWA (Frontend)
 wallet.askmi.demo {
+    # The wallet must never be framed (#239). frame-ancestors cannot be set from
+    # the page's <meta> policy, so it has to come from the server.
+    header {
+        Content-Security-Policy "frame-ancestors 'none'"
+        X-Frame-Options "DENY"
+    }
     reverse_proxy wallet-pwa:80
 }
 

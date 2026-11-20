@@ -21,7 +21,7 @@
 | `03-architecture/mvp/` | Formale Architektur-Strategie-ADRs | ADR-001–012; [README](03-architecture/mvp/README.md) |
 | `compliance/ADR/` | Compliance- und implementierungsnahe ADRs | ADR-001–009; [README](compliance/ADR/README.md) |
 | `04-legal/` | Legal documents | Unique content |
-| `05-business/` | Business documents | Unique content |
+| `05-business/` | Business documents | Unique content; entry: [COMPETITIVE_POSITIONING.md](05-business/COMPETITIVE_POSITIONING.md) (draft), [USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md](05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md), [marketing/](05-business/marketing/) |
 | `context/` | Context documents | Unique content |
 | `ops/` | Operational docs | EVIDENCE_PACK_P0, METADATA_BUDGET, RUNBOOKS |
 | `pilot/` | Pilot execution records | PILOT_DRY_RUN_01, FINDINGS_BACKLOG |

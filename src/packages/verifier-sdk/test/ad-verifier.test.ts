@@ -116,6 +116,25 @@ describe('AdTechVerifier.createRequest', () => {
         expect(req.expiresAt).toBeTruthy();
     });
 
+    it('nonce is 16 random bytes as unpadded base64url (Node Buffer path)', () => {
+        const verifier = new AdTechVerifier({ verifierDid: VERIFIER_DID });
+        const { nonce } = verifier.createRequest({ scopeId: SCOPE_ID, predicates: [] });
+        expect(nonce).toMatch(/^[A-Za-z0-9_-]{22}$/);
+    });
+
+    it('nonce keeps the same format without Buffer (browser fallback path)', () => {
+        const verifier = new AdTechVerifier({ verifierDid: VERIFIER_DID });
+        const g = globalThis as { Buffer?: unknown };
+        const saved = g.Buffer;
+        g.Buffer = undefined;
+        try {
+            const { nonce } = verifier.createRequest({ scopeId: SCOPE_ID, predicates: [] });
+            expect(nonce).toMatch(/^[A-Za-z0-9_-]{22}$/);
+        } finally {
+            g.Buffer = saved;
+        }
+    });
+
     it('each request has a unique nonce', () => {
         const verifier = new AdTechVerifier({ verifierDid: VERIFIER_DID });
         const nonces = new Set(
