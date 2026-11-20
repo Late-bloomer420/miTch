@@ -291,6 +291,7 @@ gantt
 - [ ] **C:** start the second design-partner engagement if G2 passed.
 - [ ] **A:** review whether any raw PID reaches downstream systems and document containment options.
 - [ ] **O:** update the gap register and plan only evidence-backed fixes.
+- [ ] **M:** attend/use the 8 December Nictiz/VWS event „eIDAS en wallets in de zorg“ (Utrecht; [announcement](https://www.nictiz.nl/agenda/eidas-en-wallets-in-de-zorg/), programme not yet published on 2026-11-20) as a learning and discovery channel for healthcare buyers; record only anonymised counts; do not imply programme membership.
 
 **Exit:** iOS matrix result, reviewed claim profile, and explicit remaining legal/technical gaps.
 

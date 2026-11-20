@@ -11,6 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
+- docs(business): sourced competitor examples (openapi, Digidentity) and Nictiz/VWS healthcare-wallet event in S07 ([#PR](https://github.com/Late-bloomer420/miTch/pulls))
 - fix: API audit Stage 0 — close API-01..05 with code and negative tests ([#312](https://github.com/Late-bloomer420/miTch/pull/312)) — evidence: [`API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md`](docs/qa/API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md)
 - docs(adr): ADR-012 audit anchor backend (RFC 9162 log default, L2 optional, no own chain) for #295/L2A-03 + post-merge QA record ([#315](https://github.com/Late-bloomer420/miTch/pull/315)) — evidence: [`POST_MERGE_VERIFICATION_2026-11-20.md`](docs/qa/POST_MERGE_VERIFICATION_2026-11-20.md)
 - docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
