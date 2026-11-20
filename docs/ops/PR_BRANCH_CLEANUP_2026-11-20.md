@@ -25,7 +25,7 @@ item each step serves. It does not close any gate; see [Gate effect](#gate-effec
 | 2026-11-19 | pnpm 10.34.9 pinned everywhere; audit gate denies high and critical; time-boxed picomatch exception (owner decision)                                                          | #257                                     |
 | 2026-11-20 | Build/test baseline corrected for two review findings, then merged                                                                                                            | #304                                     |
 | 2026-11-20 | Functional parts of #163/#164 ported with tests                                                                                                                               | #308                                     |
-| 2026-11-20 | Dormant picomatch exception removed, stale npm lockfiles removed, this record                                                                                                 | this PR                                  |
+| 2026-11-20 | Dormant picomatch exception removed, stale npm lockfiles removed, this record                                                                                                 | #310                                     |
 
 The owner merged further PRs in the same window (for example #265, #266, #297, #301, #302, #309).
 They are listed in [CHANGELOG.md](../../CHANGELOG.md) and are not part of this record's decisions.
