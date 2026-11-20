@@ -12,7 +12,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
 | Slim age-verifier template: scope, open-PR mapping, profile decision (planning, not evidence) | [tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md](tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md) |
 | Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 and planning owners #175–#177 |
-| Operating snapshot | [../STATE.md](../STATE.md) |
+| Operating snapshot (current values with date and revision; no change history — that lives in the CHANGELOG and, before 2026-10-14, in SESSION_HISTORY) | [../STATE.md](../STATE.md) |
 | Change history (what merged on master since 2026-10-14) | [../CHANGELOG.md](../CHANGELOG.md); one line per merged PR with links to the PR and its QA record. It holds no test results or status claims; earlier history: [SESSION_HISTORY.md](SESSION_HISTORY.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
