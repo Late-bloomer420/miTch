@@ -179,6 +179,40 @@ Alle vier Manifest-Prinzipien haben mindestens eine belegte STRIDE-Zeile. **SECU
 
 ---
 
+## Externe formale Analyse (OIDF) — zusätzliche Bedrohungsszenarien
+
+**Quelle:** OpenID Foundation, „Formal Security Analysis of OpenID for Verifiable Credentials" (Universität Stuttgart, veröffentlicht 2024-01-18; vorläufig, nicht peer-reviewed; Spec-Basis Mai 2023): <https://openid.net/formal-security-analysis-openid-verifiable-credentials/>; Bericht: <https://openid.net/wp-content/uploads/2025/08/Report-Deliverable-A_1_B_.pdf>. Tracking: #196. Einordnung der Forschungsnotiz: [`docs/research/FORMAL_VERIFICATION_CREDENTIALS_RESEARCH_2026-10-24.md`](../../research/FORMAL_VERIFICATION_CREDENTIALS_RESEARCH_2026-10-24.md).
+
+**Einordnung der Evidenz:** Die Analyse bewies Same-Device-Flows von OpenID for Verifiable Credentials im untersuchten Modell als sicher. Für den Pre-Authorized-Code-Flow (OID4VCI) und den Cross-Device-Flow (OID4VP) dokumentiert sie Phishing-Angriffe, die ohne explizite Nutzeraufmerksamkeit gelingen. Das ist externe Evidenz über die **Spezifikation** im modellierten Stand, kein Befund und kein Beleg über diese Implementierung. Dass die OIDF-Arbeitsgruppe die Rückmeldungen in aktuelle Spec-Versionen eingearbeitet hat, steht so in #196 und wurde hier nicht gegengeprüft.
+
+### Szenario 4: Cross-Device-Präsentation (QR / Handoff)
+
+**Threat:** Ein Angreifer bringt den Nutzer dazu, auf dem Wallet-Gerät eine vom Angreifer gestartete Präsentationsanfrage zu bestätigen, oder relayt eine legitime Sitzung an ein anderes Gerät.
+**STRIDE:** S (Spoofing), I (Information Disclosure)
+
+**Betroffene Pfade (Stand `8dd7f3e`):** `connect/src/browser/handoff.ts` (`method: 'browser-redirect-or-qr'`, `state`, `nonce`, `request_uri`); QR-Darstellung in `verifier-demo/frontend/src/components/VerifierPanel.tsx` und `ConnectPanel.tsx`; Proximity-QR-Engagement in `mdoc/src/engagement.ts` (Mock-Transport in `wallet-pwa/src/services/ProximityService.ts`).
+
+**Vorhandene Teil-Mitigations (anderer Zweck):** serverseitig gehaltene Nonce/State-Bindung (#195) und One-Shot-Sitzungen (#193, #208). Sie adressieren Replay und Sitzungswiederverwendung; sie sind nicht als Schutz gegen vom Angreifer gestartete oder relayte Sitzungen getestet.
+
+**Geplant, nicht implementiert:** rotierende QR-Codes und Number-Matching als Anti-Relay-UX — `API-V2-QR` in `docs/BACKLOG.md` und [`docs/tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md`](../../tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md). Im Quellcode (`src/`) bei der Prüfung am 2026-11-20 nicht gefunden.
+
+**Evidenz-Status:** **offen** — kein Test modelliert Cross-Device-Phishing oder Relay als Angriff. Das Ziel „Kontrolle über jede Offenlegung" bleibt unverändert; dieses Szenario beschreibt, wie der Fortschritt getestet wird.
+
+### Szenario 5: Pre-Authorized-Code-Phishing (OID4VCI)
+
+**Threat:** Ein Angreifer bringt den Nutzer dazu, ein Credential Offer mit einem Pre-Authorized Code zu scannen oder zu akzeptieren, oder ein Dritter löst einen weitergegebenen Code ein, wenn keine zusätzliche Nutzerbindung (`tx_code`) verlangt wird.
+**STRIDE:** S (Spoofing), E (Elevation of Privilege)
+
+**Befund für dieses Repository (Quellprüfung 2026-11-20, `8dd7f3e`):** Kein Pfad nutzt den Grant. Die einzige Fundstelle ist der ungenutzte optionale Typ in `shared-types/src/oid4vci.ts:142-148`. `OID4VCIIssuer.createOffer` (`oid4vci/src/index.ts:30`) erzeugt einen `authorization_code`-Grant mit `issuer_state`. `wallet-pwa` bezieht Credentials per direktem POST an den konfigurierten Issuer-Endpunkt (`issuerEndpoint` in `WalletService.ts`), nicht über ein Offer.
+
+**Design-Entscheidung (aus der #196-Prüfung, 2026-11-20):** Dieses Repository implementiert und nutzt den Pre-Authorized-Code-Grant nicht (vermeiden). Wer ihn einführt, bewertet dieses Szenario neu und aktualisiert vorher dieses ADR.
+
+**Nicht in diesem Repository:** Der Schwester-Issuer VeriCred (`askmi-dev/vericred`) nutzt den Pre-Authorized-Code-Flow (`src/oid4vci/token.ts`, `user_pin_required: false`, Offer per QR; Code laut `docs/WALLET_INTEROP_LOG.md` 10 Minuten gültig). Für ihn ist das Szenario **keine** abgeschlossene Design-Entscheidung, sondern offen; die Bewertung gehört in dessen eigenes Threat Model.
+
+**Evidenz-Status:** **teilweise belegt** — statische Quellprüfung, kein Test, der den Grant ablehnt.
+
+---
+
 ## Gap-Analyse
 
 | # | Gap | Prio | Status | Mitigation-Pfad |
@@ -238,3 +272,4 @@ Siehe Task S-10 im BACKLOG (Phase 3). Dieses ADR dokumentiert ausschließlich vo
 + 2026-03-18: STRIDE-Tabelle vollständig (22 Einträge, alle belegt), 3 Test-Szenarien, Gap-Analyse (4 Gaps), Fail-Closed Acceptance-Bewertung. Status bleibt PROPOSED (externer Review offen).
 + 2026-06-08: Sprint-1-Mitigations (Identity Firewall → I-8) und Sprint-Proof-Randomization-Mitigations (Ephemeral Holder Binding + Single-Use Pool → I-9) als STRIDE-Zeilen integriert; D-4 (Traffic-Analyse → Anti-Fingerprinting) ergänzt; Verifier-Collusion-Szenario Residualrisiko aktualisiert (Jitter ist belegt); GAP-3 auf "teilweise belegt" runtergestuft; Manifest-Prinzip-Abdeckung um I-8/I-9/D-4 erweitert. Status: **Accepted (technical) — pending external review** (GAP-4 🔴 bleibt). Siehe `docs/tasks/SPRINT_04_THREAT_MODEL_FINALIZATION.md`.
 + 2026-07-13: **SECURE-1 Reconciliation.** (1) **GAP-2 korrigiert:** `shared-crypto/src/recovery.ts` implementiert echtes Shamir-Secret-Sharing (2-of-3, GF(2⁸)) Trust-Circle-Recovery, verdrahtet in `WalletService.ts` + `App.tsx`; GAP-2-Status auf „geschlossen mit Residual" (kein Remote-Wipe; Guardian-Trust-Annahmen). (2) **GAP-3 mitigiert:** SECURE-1 fand keinen sekretabhängigen I/O-Branch; bounded-variance Regressions-Guard hinzugefügt; Residual dokumentiert (echte Konstant-Zeit in V8 unerreichbar). (3) **STRIDE erweitert:** 5 neue Einträge (T-7 policy-persist, T-8 key-field-mismatch, T-9 WebAuthn-false-success-stub, T-10 IndexedDB-swallow, I-10 credential-sig-verification) aus SECURE-1 F-01/F-02/F-03/F-14/F-16/F-18. I-6 um F-04 fail-closed geo-scope ergänzt (augmented, not a new row). (4) **Fail-Closed-Acceptance-Tabelle** auf 30 STRIDE-Einträge + neue GAP-Statuszeilen aktualisiert. GAP-1 🟡 und GAP-4 🔴 bleiben offen. Verifiziert: 46/46 Turbo-Tasks grün (2026-07-13). Siehe `docs/qa/SECURE_1_GAP_CLOSURE_2026-07-13.md`.
++ 2026-11-20: **OIDF-Findings (#196).** Neuer Abschnitt „Externe formale Analyse (OIDF)" mit Szenario 4 (Cross-Device-Präsentation, offen) und Szenario 5 (Pre-Authorized-Code; in diesem Repo nicht genutzt, als Design-Entscheidung festgehalten; VeriCred separat offen). STRIDE-Tabelle, Gap-Analyse und Acceptance-Bewertung unverändert; Status bleibt **Accepted (technical) — pending external review**.

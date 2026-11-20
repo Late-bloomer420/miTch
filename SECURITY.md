@@ -24,6 +24,18 @@ This policy covers the AskMI codebase as hosted in this repository:
 
 Out of scope: third-party dependencies (report those upstream), the demo issuer mock, CI infrastructure.
 
+## Known findings from external formal analysis
+
+The OpenID Foundation published a formal security analysis of OpenID for Verifiable Credentials (University of Stuttgart, 2024-01-18): <https://openid.net/formal-security-analysis-openid-verifiable-credentials/>. The analysis is preliminary, not peer-reviewed, and based on spec versions from May 2023. It is evidence about the protocol specifications, not about this implementation.
+
+| Finding (external) | Relevance to this repository (checked at `8dd7f3e`, 2026-11-20) | Status |
+|---|---|---|
+| Same-device flows proven secure in the analysed model | Scoped external evidence; no claim about this code | — |
+| Cross-device flow (OID4VP) vulnerable to phishing without explicit user attention | QR/handoff paths exist (`@askmi/connect` handoff, verifier-demo QR, proximity engagement). No test models this attack; rotating-QR / number-matching measures are planned, not implemented | **Open** |
+| Pre-authorized code flow (OID4VCI) vulnerable to phishing | No flow in this repository uses it; recorded as a design decision (avoid). The sibling issuer VeriCred (separate repository) does use it | Not used here; VeriCred open |
+
+Details, evidence and source references: [ADR-009](docs/03-architecture/mvp/ADR-009_Threat_Model.md), section "Externe formale Analyse (OIDF)"; tracking in #196.
+
 ## Supported Versions
 
 Security fixes are applied to the `master` branch only. No backport policy exists because the project has not reached a production release.
