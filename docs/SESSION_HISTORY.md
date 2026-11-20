@@ -179,7 +179,8 @@ The separate Connect API and integration remain outstanding under #170.
   empty `git status` before each run. Exact commands, numbers and limits:
   [dated QA report](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md).
 - Measured results: warm test run 1.7 s turbo ("FULL TURBO") / 3.3 s wall; full cold
-  test graph (`turbo run test --force`, 50 tasks) 3 m 7.5 s turbo / 3 m 11.1 s wall.
+  test graph (`turbo run test --force`, 50 tasks incl. `@askmi/poc-hardened`, which `pnpm test`
+  excludes; not like-for-like with the warm run) 3 m 7.5 s turbo / 3 m 11.1 s wall.
   Top suites under full load: evidence 83.3 s wall vs 13.6 s isolated (~6x CPU
   contention; its real `spawnSync` subprocess tests are the package's purpose),
   wallet-pwa 78.2 s with worker-aggregated import time dominating and environment

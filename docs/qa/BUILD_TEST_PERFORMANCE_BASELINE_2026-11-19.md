@@ -17,9 +17,11 @@ All measurement runs were performed on a clean checkout of `70c7aef` (verified `
 
 | Run | Turbo task time | Wall clock (`time`) | Tasks / cache state |
 |---|---|---|---|
-| `pnpm exec turbo run test --force` (full cold: all test tasks AND their `^build` dependencies executed) | 3 m 7.506 s | **3 m 11.115 s** | 50 tasks, 0 cached |
+| `pnpm exec turbo run test --force` (full cold: all test tasks AND their `^build` dependencies executed; **includes `@askmi/poc-hardened`**, see note) | 3 m 7.506 s | **3 m 11.115 s** | 50 tasks, 0 cached |
 | `pnpm test` (immediately after, warm test cache) | 1.653 s | 3.275 s | 49 tasks, 49 cached ("FULL TURBO") |
 | `pnpm build` (immediately after the forced test run; mixed cache state) | 28.632 s | 30.284 s | 31 tasks, 19 cached |
+
+**Scope note (added after review):** the cold run called `turbo run test` directly, so it did not apply the root `test` script's `--filter=!@askmi/poc-hardened` (`package.json`). It therefore ran 50 tasks including `@askmi/poc-hardened`, while the warm `pnpm test` ran 49 without it. The cold and warm rows are not like-for-like, and the cold figure slightly overstates a cold `pnpm test`. A like-for-like cold number would come from `pnpm test -- --force`; it was not measured at `70c7aef`.
 
 Per-suite wall-clock durations inside the full cold run (30 packages report duration numbers; suites ran under full parallel load, so per-suite wall clocks are inflated by CPU contention):
 
@@ -29,7 +31,7 @@ Per-suite wall-clock durations inside the full cold run (30 packages report dura
 | @askmi/wallet-pwa | 78.2 s | aggregated import time 62.3 s across workers; environment startup 6 ms |
 | @askmi/phase0-security | 22.6 s | — |
 | @askmi/shared-crypto | 19.4 s | aggregated test time 61.2 s (PQC keygen/signing is real work) |
-| @askmi/policy-engine | 18.5 s | aggregated import 73.9 s equivalent patterns; transform 35.3 s |
+| @askmi/policy-engine | 18.5 s | aggregated import time 73.9 s; transform 35.3 s |
 | @askmi/issuer-mock | 14.6 s | — |
 | @askmi/shared-types | 13.1 s | — |
 | @askmi/consent-ui | 12.4 s | — |
