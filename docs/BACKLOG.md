@@ -3,6 +3,37 @@
 **2026-11-19 — Build/test runtime baseline (branch `docs/qa-perf-baseline-2026-11-19`, clean revision `70c7aef`):**
 first measured baseline for `pnpm build`/`pnpm test` (Windows, Node 24, 12 cores): warm test run 1.7 s turbo ("FULL TURBO", 49/49 cached) / 3.3 s wall; full cold test graph (`turbo run test --force`, 50 tasks) 3 m 7.5 s turbo / **3 m 11.1 s wall**. Top suite wall clocks under that full load: evidence 83.3 s (13.6 s isolated — ~6x CPU contention; its real `spawnSync` subprocess tests are the package's purpose, no change recommended) and wallet-pwa 78.2 s (worker-aggregated import time dominates; environment startup measured 6 ms). A preliminary timing taken on an unversioned dirty local tree was retracted as non-reproducible and is superseded by these committed-revision numbers. `turbo.json` defines no `inputs`; CI keeps a cold Turbo cache per run plus a duplicate `pnpm build` in the layer-validation job. [Dated evidence, commands and limits](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md). Follow-ups proposed, NOT implemented: turbo `inputs`, CI Turbo cache, wallet-pwa module-import-cost investigation, demo/pilot environment hosting (owner decision). Docs-only; no code changed, no release or pilot gate moves.
 
+## What to work on first
+
+Start with the [first delivery milestone](https://github.com/Late-bloomer420/miTch/milestone/1). It brings together two questions. Can a buyer describe a costly problem in approving a hotel check-in request? Can a reviewer establish exactly what information survives one synthetic age check? DACH hospitality is the commercial hypothesis. The age check is a technical reference. Product owns any decision to change the first market.
+
+| Order | Who leads | First action | What counts as done |
+|---|---|---|---|
+| Now | Product owner | Reconcile the private interview tally for the **22 November 2026** offer review. Use the [interview kit](05-business/ASKMI_G1_INTERVIEW_KIT.md). | The founder records the G1 and G2 decisions, anonymised counts or explicit unknowns, and the next action in the [commercial tracker](https://github.com/Late-bloomer420/miTch/issues/143). [Review task #305](https://github.com/Late-bloomer420/miTch/issues/305) |
+| In parallel | Assurance lead, with an engineer to run the fixture | Follow one synthetic age check from issuer to application. Record which claims and artifacts each recipient can see or retain. | A reviewer can repeat the run from its revision and command. The table covers disclosures, receipts, logs and exports and identifies surfaces the reviewer could not inspect. [Evidence task #260](https://github.com/Late-bloomer420/miTch/issues/260) |
+| At the decision | Product owner | Compare one buyer's workflow with its incumbent approach, using the discovery results. Choose a measurable difference such as staff minutes spent approving a change to a claim request. Record how the baseline was measured. | The owner names the buyer role, country, workflow and alternative, then records a reason to pursue, narrow, partner or park. [Buyer decision #284](https://github.com/Late-bloomer420/miTch/issues/284) |
+
+### From discovery to a success story
+
+1. **Buyer evidence.** G1 calls for 20 interviews, at least eight problem confirmations and three interviews with a budget owner, procurement trigger or deadline. G2 calls for two design partners and at least one paid Readiness Sprint with signed scope and success criteria. If evidence falls short, keep the expansion hold and record the next discovery question. [Market roadmap](GTM_SPRINT_ROADMAP.md)
+2. **A repeatable handoff.** Once a partner agrees to a readiness exercise, write down the starting workflow, one metric and the success threshold together. Have someone outside the implementation team repeat the synthetic exercise. Record the observed value, revision, profile and limitations. Official-wallet interoperability and the live-credential pilot have separate acceptance criteria in the [technical roadmap](RELEASE_READINESS_ROADMAP.md) and [release tracker](https://github.com/Late-bloomer420/miTch/issues/142).
+3. **A story the partner can verify.** Write one paragraph with the original problem, the before and after measurements, the workflow tested, what failed or remains unknown, and the partner's next decision. Get the partner's approval for any public wording. Keep raw scorecards and contracts private.
+
+### Running the work
+
+Use the GitHub label for the group leading the task.
+
+- `group: product` owns buyer, offer and priority decisions.
+- `group: engineering` owns the working integration and its reproducible handoff.
+- `group: assurance` reviews privacy and security evidence and records residual findings.
+
+One person can cover several roles. When the author also reviews a result, record it as a self-review. The existing independent review gate still applies.
+
+- **Intake.** Search for the outcome first. Add a checklist to the existing issue when the same person can deliver it. Open a linked delivery task for a separate owner or separately verifiable result. Select one `group:` label for the lead. Keep existing component, security and decision labels where applicable.
+- **Weekly selection.** At a 20-minute weekly review, open the milestone, read the evidence on the last item and choose one next action per available owner. An assignee is the person who has taken the work. Unassigned items are available. Record blockers on the issue with the decision needed and who can make it. Work outside the milestone stays in the backlog.
+- **Handoff.** Engineering gives Assurance the revision, profile, command and expected result. Assurance records what was observed and what remains unknown. Product uses that record when discussing a capability with a buyer. Close the issue when its acceptance evidence is linked. The roadmap owner records any gate change on the relevant tracker.
+- **When to form a department.** At each monthly review, look for a group with recurring work, a named lead with time to own it, and decisions or handoffs that repeatedly stall. If those conditions hold, give that lead a written mandate, capacity and a measure they own. Until then, manage the work through the group label and issue assignee.
+
 **2026-11-18 — audit-log L2 anchor honest status (`fix/audit-log-l2-anchor-honest-status`, base `58d0af9`, change `a7ed22d`):**
 PR #297 stops the L2 anchor client from reporting mocked submissions as `confirmed` and unchecked verifications as verified (SECURE-1 F-05/F-06, tasks `L2A-01`..`L2A-04`). This is a mitigation: no real anchoring exists. [Scoped evidence and limits](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). The SECURE-1 records stay unchanged; real anchoring remains OPEN under #294, backend decision under #295, `StateAnchorClient` labeling under #296. No release or pilot gate moves.
 
@@ -41,6 +72,16 @@ production-only audit (`pnpm audit --prod`) stays clean. Critical findings are n
 excepted; entries expire after at most 90 days. Dated registry output, no `docs/qa/` record.
 
 ## Current evidence-linked work — 2026-10-14
+
+### Observable trust follow-up (planning, #178)
+
+| Work | Priority / sequence | Status | Boundary |
+|---|---|---|---|
+| #175 understandable assurances and visible outcomes | P1 after first verified outcome | OPEN | Link existing evidence to plain-language promises; no new universal guarantee |
+| #176 role separation and provider dependency/exit | P2 design; before independence claims | OPEN design | Selected RP profile; actual interoperability stays #97 |
+| #177 agent advice versus authenticated action consent | P2 design; before live agent actions | OPEN contract investigation | Evaluation Boolean is not an approval token; runtime enforcement before a live action connector |
+
+Product goals stay as listed in [Goals retained](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md#goals-retained-implementation-gaps-remain-visible). [Five outcome milestones](security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md) fit inside #142's existing waves. No dates or gates change. #170's active-route slice is implemented and merged (#208/#224, closed 2026-10-25; [scoped evidence](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md), limits per [dated evidence](qa/ACTIVE_AGE_PROFILE_2026-10-25.md)); remaining runtime work stays #171 and applicable #172/#173, plus the wallet-side final gate #180/#181. Do not duplicate those issues.
 
 Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md), [dated probes](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md),
@@ -94,12 +135,24 @@ Quelle: kein existierendes Issue/Spec; initiiert aus der MCI-Vorlesung *Mengen &
 
 | Task | Priority | Status | Acceptance / owner |
 |---|---|---|---|
-| DC-01 | 🟢 P2 | PR [#189](https://github.com/Late-bloomer420/miTch/pull/189) | `@askmi/discrete-core`: Relation/Mapping/compose/inverse + miTch-Guards (`findDuplicateKeys`, `analyzeComposition`, `verifyBijectionPair`, `verifyTrustEquivalence`); fail-closed `MappingError`-Codes; 40 Vitest-Tests grün auf `44306b1` |
-| DC-02 | 🟢 P2 | ✅ auf Branch | Review-Punkte aus dem PR-Audit behoben: `verifyBijectionPair`-Mengenkompatibilitäts-Guard (fail-closed bei inkompatiblen deklarierten Mengen, 2 negative Tests), unbenutzter generischer Parameter `_N` aus `CompositionAnalysis` entfernt, README „dependency-free" → „zero runtime dependencies" präzisiert |
-| DC-03 | 🟢 P2 | ⏳ | Merge-Kriterien PR #189: CI grün auf Head, Draft-Status aufheben (✅ erledigt), Owner-Approval, CHANGELOG-Eintrag beim Merge |
+| DC-01 | 🟢 P2 | ✅ gemergt ([#189](https://github.com/Late-bloomer420/miTch/pull/189), `f4c0073`) | `@askmi/discrete-core`: Relation/Mapping/compose/inverse + miTch-Guards (`findDuplicateKeys`, `analyzeComposition`, `verifyBijectionPair`, `verifyTrustEquivalence`); fail-closed `MappingError`-Codes; 45 Vitest-Tests grün auf master `002ce5e` (2026-11-02) |
+| DC-02 | 🟢 P2 | ✅ gemergt (#189) | Review-Punkte aus dem PR-Audit behoben: `verifyBijectionPair`-Mengenkompatibilitäts-Guard (fail-closed bei inkompatiblen deklarierten Mengen, 2 negative Tests), unbenutzter generischer Parameter `_N` aus `CompositionAnalysis` entfernt, README „dependency-free" → „zero runtime dependencies" präzisiert |
+| DC-03 | 🟢 P2 | ✅ | Merge-Kriterien PR #189: CI grün auf Head ✅, Draft-Status aufgehoben ✅, Owner-Approval und Merge ✅ (`f4c0073`, 2026-10-25). Festgehalten in [`CHANGELOG.md`](../CHANGELOG.md) (eingeführt mit #249), `STATE.md` und hier |
 | DC-04 | 🟢 P2 | ✅ F-1–F-4 (`beeae79`), F-5/Framing (`44306b1`) | Review-Befunde 2026-10-23 ([QA](qa/DISCRETE_CORE_REVIEW_2026-10-23.md)) vor Merge beheben: F-1 `Relation`-Pair-Index (Trust-Check n=80 ≈ 27 s), F-2 `equivalenceClasses` fail-closed, F-3 Fixture `age:17 → 18+` ersetzen, (F-4 SameValueZero ✅ in `95f1fe3`); README-Framing (kein transitives Trust-Modell) |
 
 Nicht Teil dieser Arbeit: keine Verdrahtung in Wallet/Verifier (reine Logik-Bibliothek, umgeht nicht die Policy Engine); kein bestehender P0/P1-Backlog-Eintrag wird dadurch geschlossen.
+
+## Evidence- und Doku-Konsolidierung (2026-11-02)
+
+Übersicht und Plan: [#251](https://github.com/Late-bloomer420/miTch/issues/251). Ziel: jede Aussage hat genau eine Heimat, alle anderen Stellen verlinken. Verschieben statt kopieren; datierte Protokolle in `docs/qa/` bleiben unverändert (Korrekturen als neuer Eintrag). Jeder Schritt aktualisiert `docs/DOCS_CANON.md` im selben PR. Owner-Entscheidungen vom 2026-11-02: CHANGELOG rückwirkend ab der Evidence-Baseline 2026-10-14; `docs/qa/README.md` wird der einzige Einstieg in die Belege.
+
+| Task | Priority | Status | Acceptance / owner |
+|---|---|---|---|
+| DOC-01 ([#252](https://github.com/Late-bloomer420/miTch/issues/252)) | 🟢 P2 | 🟡 PR [#249](https://github.com/Late-bloomer420/miTch/pull/249) | `CHANGELOG.md` eingeführt, ab 2026-10-14 nachgetragen (jeder seither gemergte PR; Link zum QA-Protokoll nur dort, wo der PR eines hinzufügt oder ändert; ohne eigene Testzahlen); Rolle in `DOCS_CANON.md`; PR-Vorlage verlangt eine Zeile pro PR |
+| DOC-02 ([#253](https://github.com/Late-bloomer420/miTch/issues/253)) | 🟢 P2 | ⏳ | Inventar aller Beleg-Orte (`docs/qa/`, `docs/qa/evidence-reports/`, `data/evidence/`, `docs/ops/EVIDENCE_PACK_P0.md`, `docs/security/REPO_EVIDENCE_STATUS_2026-10-14.md`, `docs/AUDIT_2026_03.md`, `docs/pilot/`, Trust-Kit- und Marketing-Indizes) mit Rolle und Entscheidung behalten/verschieben/archivieren/nur verlinken; noch keine Verschiebung |
+| DOC-03 ([#254](https://github.com/Late-bloomer420/miTch/issues/254)) | 🟢 P2 | ⏳ | `docs/qa/README.md` als einziger Index: 12 fehlende Protokolle (Stand 2026-11-02) eintragen; Trust-Kit-, Marketing- und Security-Index verweisen hinein statt Zahlen zu kopieren; `DOCS_CANON.md` angepasst |
+| DOC-04 ([#255](https://github.com/Late-bloomer420/miTch/issues/255)) | 🟢 P2 | ⏳ | `STATE.md` nur noch Momentaufnahme: Abschnitte „Recent additions“ verschieben, nicht kopieren (ab 2026-10-14 in `CHANGELOG.md`, älteres nach `docs/SESSION_HISTORY.md`); `SESSION_HISTORY.md` als abgeschlossen markieren |
+| DOC-05 ([#256](https://github.com/Late-bloomer420/miTch/issues/256)) | 🟢 P3 | ⏳ optional | CI-Check: jedes Protokoll in `docs/qa/` steht im Index, relative Links in `CHANGELOG.md`/`docs/qa/README.md` lösen auf |
 
 ## Existing task/change records
 
@@ -350,13 +403,31 @@ Alle P0 + P1 Gaps geschlossen. 34/34 Turbo Tasks, 155+ Tests, 0 Audit Vulns.
 
 ---
 
-## Phase 2 — Architecture & Modularity ✅
+## Phase 2 — Architecture & Modularity 🟡
 
 ### 2.1 Decoupling (Refactoring Phase 6)
 | ID | Status | Beschreibung |
 |---|---|---|
 | R-01 | ✅ | `IStorageAdapter` — Entkopplung von SecureStorage und IndexedDB |
-| R-02 | ✅ | `WalletService` Decomposition — Zerlegung in Repositories (Credential, Policy, Presentation) |
+| R-02 | ⚠️ teilweise | `wallet-core` enthält Repository-/Evaluator-/Presentation-Ports und einen kleinen Facade-Entwurf; `App.tsx` konstruiert aber weiterhin den PWA-lokalen `WalletService` (2.464 Zeilen @ `002ce5e`). Runtime-Cutover und Entfernung der Doppel-Autorität sind offen (ARCH-01/ARCH-09). |
+
+### 2.2 Canonical Architecture Decoupling Audit (2026-08-20, re-checks 2026-10-23 @ `624cf9a` und 2026-11-01 @ `002ce5e`)
+
+Quelle und vollständige Akzeptanz-Gates:
+[`03-architecture/ARCHITECTURE_DECOUPLING.md`](03-architecture/ARCHITECTURE_DECOUPLING.md).
+
+| ID | Prio | Status | Beschreibung | Akzeptanzkriterium |
+|---|---|---|---|---|
+| ARCH-01 | 🟡 P1 | ⬜ offen | Zwei Wallet-Orchestrierungs-Autoritäten: PWA-lokaler Monolith vs. unverdrahteter `wallet-core`-Facade | PWA nutzt genau einen injizierten `wallet-core`-Facade; lokaler Doppel-Service entfernt |
+| ARCH-02 | 🔴 P0 | ⬜ offen | Proximity-Flow lädt caller-gewähltes Raw-Credential vor Policy und bindet Builder nicht strukturell an die policy-selektierte Credential-ID / ein explizites ALLOW | Ein `AuthorizedPresentationPlan` ist einzige Builder-Eingabe; DENY/PROMPT und ID-Mismatch erreichen keinen Builder |
+| ARCH-02a | 🟡 P1 | ⬜ offen | Proximity-`DeviceAuth` ist ein Platzhalter (`deviceSignature: 0xdeadbeef`); die mdoc-Proximity-Antwort hat damit keine Device-/Holder-Bindung (festgestellt 2026-10-23, bestätigt @ `002ce5e`) | Echte DeviceAuth über das SessionTranscript mit dem DeviceKey aus dem MSO, oder Proximity-Pfad ausdrücklich als Demo ohne Holder-Bindung gekennzeichnet und von jeder Proximity-Aussage ausgenommen |
+| ARCH-03 | 🔴 P0 | ⬜ offen | `PolicyEngine` mischt Entscheidung, Rate-State, Clock/UUID, WebCrypto, Capsule, Pairwise-DID und Signing; Pairwise-Fehler läuft aktuell ohne DID weiter | Pure deterministische Policy; erforderliche Crypto-/Binding-Fehler resultieren fail-closed in DENY |
+| ARCH-04 | 🟡 P1 | ⬜ offen (#130 gemergt, Residual) | Presentability wird getrennt über `consumedAt`, Pool-`usedAt`, Lifecycle-`status` und Presentation-Consumption bestimmt; #130 (gemergt) behebt O(n²), aber nicht die geteilte Status-Autorität | Ein zentraler Eligibility-/Lifecycle-Service; nullifiziertes ältestes Pool-Member verdeckt kein aktives Geschwister |
+| ARCH-05 | 🟡 P1 | 🟡 teilweise | `signData()` signiert seit #221 mit dem Identity-Key (kein Private-Audit-Key-Cast mehr); `getIdentityPublicKey()` liest aber weiter `auditPublicKey` per Cast, der Audit-Key dient damit noch als Device-Engagement-Identity-Key | Getrennte `IdentitySigner`-/Audit-Key-Capabilities; keine Private-State-Casts über Paketgrenzen |
+| ARCH-06 | 🟢 P2 | ⬜ offen | `shared-crypto` exportiert Status-/Trust-Resolver und hängt von `revocation-statuslist` ab | Crypto-Primitives ohne Status-/Netzwerk-Infrastruktur; Resolver hinter eigenen Ports |
+| ARCH-07 | 🟡 P1 | ⬜ offen | Mehrere inkompatible `DecisionCapsule`-/Policy-Contracts und breites `shared-types` mit 21 direkten Produktions-Consumern | Ein versionierter Capsule-/Policy-Contract; Storage-Metadata von Policy-View getrennt |
+| ARCH-08 | 🟡 P1 | ⬜ offen | Architekturgrenzen sind dokumentiert, aber ESLint/CI prüfen keine erlaubte Import-Richtung oder Zyklen | Statische Import-, Deep-Import-, Cycle- und Boundary-Cast-Checks in CI |
+| ARCH-09 | 🟡 P1 | ⬜ offen | Dependency-Inversion in `wallet-core` unvollständig: konkrete Browser-/Storage-/Audit-/Policy-Abhängigkeiten; `IPresentationManager` nicht verdrahtet | `wallet-core` hängt nur von Domain + Ports ab; konkrete Adapter im PWA-Composition-Root |
 
 ---
 
@@ -502,7 +573,7 @@ Basierend auf: `docs/00-welt/concept_controlled_insight.md`
 
 ---
 
-## Architecture Decision Records (ADR-001–012)
+## Architecture Decision Records (ADR-001–013)
 
 Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance/ADR/`: `ADR-009.md` (WebAuthn Native Verifier — anderes Thema als ADR-009 Threat Model) und `ADR-010.md` (Regulatory-Positioning Boundary for Age Verification — gesalvaged via #37, renumbered von 013).
 
@@ -520,6 +591,7 @@ Alle ADRs liegen in `docs/03-architecture/mvp/`. Zusätzlich in `docs/compliance
 | ADR-010 | TEE Integration Strategy | PROPOSED | dokumentiert; deferred T-31 |
 | ADR-011 | Claim-Level Encryption (Per-Claim SD-JWT) | PROPOSED | dokumentiert; deferred F-07 |
 | ADR-012 | ISO 18013-5 mdoc & Offline Verification | PROPOSED | dokumentiert; E-11 komplett: Offline-Verifikation + COSE_Mac0 (169 tests) + Wallet (73/73) + Verifier (52/52) + Hybrid Issuance (builder + issuer-mock) |
+| ADR-013 | WalletService Monolith Decomposition Strategy | PROPOSED | kanonischer Boundary-Audit + Akzeptanz-Gates in `03-architecture/ARCHITECTURE_DECOUPLING.md`; aktive Sequenz nur in `REFACTORING_ROADMAP.md` (Phase 6 Migration Sequence) |
 
 ---
 

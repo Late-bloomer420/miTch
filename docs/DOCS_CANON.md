@@ -8,11 +8,12 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Topic | Canonical source |
 |---|---|
 | Additional scoped findings and links to their evidence | [security/REPO_EVIDENCE_STATUS_2026-10-14.md](security/REPO_EVIDENCE_STATUS_2026-10-14.md); this index does not replace topic/component evidence below |
-| Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md) |
+| Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md), reviewed at `d7f0e77` in [qa/API_AUDIT_REVIEW_2026-11-18.md](qa/API_AUDIT_REVIEW_2026-11-18.md) |
 | API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
 | Slim age-verifier template: scope, open-PR mapping, profile decision (planning, not evidence) | [tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md](tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md) |
-| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
+| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 and planning owners #175–#177 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
+| Change history (what merged on master since 2026-10-14) | [../CHANGELOG.md](../CHANGELOG.md); one line per merged PR with links to the PR and its QA record. It holds no test results or status claims; earlier history: [SESSION_HISTORY.md](SESSION_HISTORY.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
 | Market hypotheses / live gate | [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md), #143 |
 | Competitive positioning vs. identity-verification incumbents (draft, claims not yet individually sourced) | [05-business/COMPETITIVE_POSITIONING.md](05-business/COMPETITIVE_POSITIONING.md); competitor statements are public self-descriptions pending verification per its TODO list |
@@ -38,9 +39,11 @@ This file defines the authoritative document per topic area and serves as naviga
 | Dokument | Zweck | Rolle |
 |----------|-------|-------|
 | `STATE.md` | Operativer Health-Snapshot (Tests, Lint, Audit, Demo) | Was läuft? |
+| `CHANGELOG.md` | Was wurde auf `master` gemergt (eine Zeile pro PR, verlinkt PR und QA-Protokoll) | Was hat sich geändert? |
 | `docs/BACKLOG.md` | Autoritatives Task-Tracking (erledigt / offen / geplant) | Was ist erledigt, was fehlt? |
 | `docs/specs/SPECS_STATUS_INDEX.md` | Statusübersicht aller 112 Specs | Spec-Navigation |
 | `docs/DOCS_CANON.md` | Dokumenten-Autorität und Navigation (diese Datei) | Einstiegspunkt |
+| `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` | Kanonische Layer-Grenzen, Coupling-Findings und Akzeptanz-Gates | Wie muss Code abhängen, was ist offen? |
 | `docs/REFACTORING_ROADMAP.md` | Deferred Architekturarbeit (PoC → Production) | Größere Umbauten |
 | `docs/qa/` | Datierte QA-/Evidence-Artefakte | Was wurde konkret geprüft? |
 
@@ -66,7 +69,7 @@ This file defines the authoritative document per topic area and serves as naviga
 
 - **Spec status index (all 112 specs classified):** `docs/specs/SPECS_STATUS_INDEX.md`
 - **Master Backlog (offene Arbeit + ADR-Sektion):** `docs/BACKLOG.md`
-- **Architecture decoupling audit (proposed):** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
+- **Canonical architecture decoupling model:** `docs/03-architecture/ARCHITECTURE_DECOUPLING.md`
 - **Session History (abgeschlossene Sessions):** `docs/SESSION_HISTORY.md`
 - **QA evidence (date-specific validation records):** `docs/qa/`
 - **Branch hygiene manifests (dated cleanup records):** `docs/ops/BRANCH_CLEANUP_2026-06-06.md`
@@ -83,6 +86,9 @@ This file defines the authoritative document per topic area and serves as naviga
 - **Security audit remediation roadmap:** `docs/security/SECURITY_AUDIT_ROADMAP_2026-10-01.md`
 - **STRIDE × LINDDUN threat-model roadmap and issue register (maps T-IDs to EV-01..EV-09):** `docs/security/THREAT_MODEL_ROADMAP_2026-10-23.md`
 - **Phase-0 threat-model narrative (surviving source for the "lost" hardening content):** `src/packages/phase0-security/EXECUTIVE_SUMMARY.md` — the strategy narrative (platform-vendor bypass, split-key 3-share design, memory/network/supply-chain/seizure/AI defenses with per-strategy pros/cons) lost from the deleted root `ADVANCED_SECURITY_HARDENING.ts` survives here; only the `HARDENING_CHECKLIST` const and `RECOMMENDATION MATRIX` are unrecovered (see `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`).
+- **Archive inventory (packages and docs folders; proposals pending owner decision, nothing moved):** `docs/ARCHIVE_INVENTORY_2026-11-11.md`
+
+- **Observable trust milestones and assurance/role boundaries:** `docs/security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md` (planning; #175–#177, complements existing component evidence and #170–#173).
 
 ## Research And Strategy Inputs
 
@@ -127,6 +133,10 @@ neuer Auftrag behandelt werden.
 - If a public claim conflicts with a reproduced finding, qualify the overlapping claim with its specific dated evidence. Preserve other component Evidence Pack results; the finding index is navigation, not a global override.
 - A protocol spec defines intended behavior; dated active-path evidence defines observed implementation. STATE must expose any gap rather than present a normative spec as implementation.
 - If BACKLOG.md conflicts with STATE.md regarding completion status, BACKLOG.md is authoritative for task tracking, STATE.md for operational status.
+- If an older architecture diagram, milestone rollup, or audit conflicts with
+  `docs/03-architecture/ARCHITECTURE_DECOUPLING.md` on dependency direction or
+  current coupling findings, the canonical decoupling document wins. Backlog
+  status remains authoritative in `docs/BACKLOG.md`.
 - If QA evidence conflicts with STATE.md, prefer the newer dated evidence for
   the specific validation it records, then update STATE.md in the next docs
   alignment pass.
