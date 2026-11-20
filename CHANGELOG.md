@@ -11,6 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
+- docs(qa): re-check the 2026-11-03 API audit at 8dd7f3e (#299) ([#313](https://github.com/Late-bloomer420/miTch/pull/313)) — evidence: [`API_AUDIT_REVIEW_2026-11-20.md`](docs/qa/API_AUDIT_REVIEW_2026-11-20.md)
 - docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
 - perf: port Jules micro-optimizations from closed #163 and #164 ([#308](https://github.com/Late-bloomer420/miTch/pull/308))
 - docs(qa): build/test performance baseline 2026-11-19 ([#304](https://github.com/Late-bloomer420/miTch/pull/304)) — evidence: [`BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md`](docs/qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md)
