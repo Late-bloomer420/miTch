@@ -11,6 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
+- fix: API audit Stage 0 — close API-01..05 with code and negative tests ([#312](https://github.com/Late-bloomer420/miTch/pull/312)) — evidence: [`API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md`](docs/qa/API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md)
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
 - fix: clarify age claims and test issuer-attested disclosure ([#287](https://github.com/Late-bloomer420/miTch/pull/287))
 - docs(tasks): scope slim age-verifier template and map open PRs ([#290](https://github.com/Late-bloomer420/miTch/pull/290))
