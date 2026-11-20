@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest';
+import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { MockGovernmentIssuer, computeAgeProof } from '@askmi/mock-issuer';
 import { PolicyEngine } from '@askmi/policy-engine';
 import { ProtectionLayer } from '@askmi/layer-resolver';
@@ -99,7 +100,7 @@ describe('E2E: Full Credential Lifecycle', () => {
   });
 
   it('E2E: WebAuthn + Policy + Revocation (Full Stack)', async () => {
-    // G-10: Full stack test with mocked WebAuthn step-up authentication
+    // G-10: Full stack test with a software WebAuthn authenticator (real ES256 signature)
     const { WebAuthnNativeVerifier } = await import('@askmi/webauthn-verifier');
 
     const verifier = new WebAuthnNativeVerifier('mitch.example.com', 'https://mitch.example.com');
@@ -110,43 +111,72 @@ describe('E2E: Full Credential Lifecycle', () => {
     expect(challenge.challenge).toBeDefined();
     expect(challenge.expiresAt).toBeGreaterThan(Date.now());
 
-    // STEP 2: Mock authenticator registration (simulates prior enrollment)
-    const mockCredentialID = Buffer.from('mock-credential-id-001');
-    const mockPublicKey = Buffer.from('mock-public-key-placeholder');
+    // STEP 2: Enroll a software ES256 authenticator (real key, COSE-encoded public key).
+    //         API-05d: the verifier checks the assertion signature, so a mock key no longer passes.
+    const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+    const jwk = publicKey.export({ format: 'jwk' }) as { x: string; y: string };
+    const credentialID = Buffer.from('soft-credential-id-001');
+    // COSE_Key {1: 2 (EC2), 3: -7 (ES256), -1: 1 (P-256), -2: x, -3: y}
+    const cosePublicKey = Buffer.concat([
+      Buffer.from([0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]),
+      Buffer.from(jwk.x, 'base64url'),
+      Buffer.from([0x22, 0x58, 0x20]),
+      Buffer.from(jwk.y, 'base64url'),
+    ]);
     await verifier.registerAuthenticator(userDID, {
-      credentialID: mockCredentialID,
-      credentialPublicKey: mockPublicKey,
+      credentialID,
+      credentialPublicKey: cosePublicKey,
       counter: 0,
       transports: ['internal'],
     });
 
-    // STEP 3: Mock WebAuthn assertion (simulates hardware authenticator response)
-    const clientDataJSON = Buffer.from(JSON.stringify({
+    // STEP 3: Authenticator signs authenticatorData || SHA-256(clientDataJSON)
+    const clientDataBytes = Buffer.from(JSON.stringify({
       type: 'webauthn.get',
       challenge: challenge.challenge,
       origin: 'https://mitch.example.com',
       crossOrigin: false,
-    })).toString('base64url');
-
-    // Build authenticator data: 32-byte rpIdHash + 1 flags byte + 4-byte counter (BE)
-    const rpIdHash = Buffer.alloc(32, 0xAA); // Mock RP ID hash
-    const flags = Buffer.from([0x01]); // UP flag set
+    }));
     const counterBuf = Buffer.alloc(4);
     counterBuf.writeUInt32BE(1, 0); // Counter = 1 (incremented from 0)
-    const authenticatorData = Buffer.concat([rpIdHash, flags, counterBuf]).toString('base64url');
-
-    const mockSignature = Buffer.from('mock-signature').toString('base64url');
+    const authData = Buffer.concat([
+      createHash('sha256').update('mitch.example.com').digest(), // real rpIdHash
+      Buffer.from([0x05]), // UP + UV
+      counterBuf,
+    ]);
+    const signature = sign(
+      'sha256',
+      Buffer.concat([authData, createHash('sha256').update(clientDataBytes).digest()]),
+      privateKey
+    );
 
     const signedAssertion = {
-      id: mockCredentialID.toString('base64url'),
-      rawId: mockCredentialID.toString('base64url'),
+      id: credentialID.toString('base64url'),
+      rawId: credentialID.toString('base64url'),
       response: {
-        clientDataJSON,
-        authenticatorData,
-        signature: mockSignature,
+        clientDataJSON: clientDataBytes.toString('base64url'),
+        authenticatorData: authData.toString('base64url'),
+        signature: signature.toString('base64url'),
       },
       type: 'public-key' as const,
     };
+
+    // Negative control: the same assertion with forged signature bytes is rejected.
+    const forged = new WebAuthnNativeVerifier('mitch.example.com', 'https://mitch.example.com');
+    await forged.registerAuthenticator(userDID, { credentialID, credentialPublicKey: cosePublicKey, counter: 0 });
+    const forgedChallenge = await forged.generateChallenge(userDID);
+    const forgedClientData = Buffer.from(JSON.stringify({
+      type: 'webauthn.get', challenge: forgedChallenge.challenge, origin: 'https://mitch.example.com',
+    })).toString('base64url');
+    const forgedResult = await forged.verifyAssertion({
+      ...signedAssertion,
+      response: {
+        ...signedAssertion.response,
+        clientDataJSON: forgedClientData,
+        signature: Buffer.from('mock-signature').toString('base64url'),
+      },
+    }, userDID);
+    expect(forgedResult).toEqual({ verified: false, reason: 'SIGNATURE_INVALID' });
 
     // STEP 4: Verify the WebAuthn assertion (step-up auth)
     const webauthnResult = await verifier.verifyAssertion(signedAssertion, userDID);

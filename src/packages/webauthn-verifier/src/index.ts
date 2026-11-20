@@ -9,6 +9,7 @@
  * - Origin binding for phishing resistance
  */
 
+import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import type {
   AuthenticatorInfo,
   VerificationResult,
@@ -93,10 +94,11 @@ export class WebAuthnNativeVerifier {
    * Verification steps:
    * 1. Check challenge exists and not expired
    * 2. Lookup authenticator by credential ID
-   * 3. Verify signature (simplified for MVP - use @simplewebauthn in production)
-   * 4. Check counter increment (replay protection)
-   * 5. Update stored counter
-   * 6. Clean up used challenge
+   * 3. Reject challenge/origin mismatch and counter replay (reject-only pre-checks)
+   * 4. Consume the challenge (single-use, also on failure)
+   * 5. Verify the assertion signature against the registered COSE key, plus
+   *    rpIdHash, UP/UV flags and type (API-05d)
+   * 6. Update stored counter
    *
    * @param signedAssertion - WebAuthn assertion from client
    * @param userDID - User's DID
@@ -126,50 +128,81 @@ export class WebAuthnNativeVerifier {
       return { verified: false, reason: 'KEY_NOT_FOUND' };
     }
 
-    // 4. Verify signature (simplified - in production use @simplewebauthn/server)
-    // For MVP, we'll do basic validation
+    // 4. Pre-checks on the (not yet authenticated) client data and counter.
+    //    They only ever reject; acceptance requires the signature check in step 5.
+    let clientData: { type?: string; challenge?: string; origin?: string };
+    let newCounter: number;
     try {
-      // Parse client data JSON
-      const clientData = JSON.parse(
+      clientData = JSON.parse(
         Buffer.from(signedAssertion.response.clientDataJSON, 'base64url').toString()
       );
-
-      // Verify challenge matches
-      if (clientData.challenge !== storedChallenge.challenge) {
-        return { verified: false, reason: 'CHALLENGE_MISMATCH' };
-      }
-
-      // Verify origin (phishing protection)
-      if (clientData.origin !== this.expectedOrigin) {
-        return { verified: false, reason: 'SIGNATURE_INVALID' };
-      }
-
-      // Parse authenticator data to get counter
       const authData = Buffer.from(signedAssertion.response.authenticatorData, 'base64url');
-
+      if (authData.length < 37) return { verified: false, reason: 'SIGNATURE_INVALID' };
       // Counter is at bytes 33-36 (after rpIdHash and flags)
-      const newCounter = authData.readUInt32BE(33);
-
-      // 5. Check counter (replay protection)
-      if (newCounter <= authenticator.counter) {
-        return { verified: false, reason: 'COUNTER_REPLAY' };
-      }
-
-      // 6. Update stored counter
-      authenticator.counter = newCounter;
-      this.authenticators.set(credentialID, authenticator);
-
-      // 7. Clean up used challenge
-      this.challenges.delete(userDID);
-
-      return {
-        verified: true,
-        newCounter,
-      };
-    } catch (error) {
-      console.error('WebAuthn verification error:', error);
+      newCounter = authData.readUInt32BE(33);
+    } catch {
       return { verified: false, reason: 'SIGNATURE_INVALID' };
     }
+
+    if (clientData.challenge !== storedChallenge.challenge) {
+      return { verified: false, reason: 'CHALLENGE_MISMATCH' };
+    }
+    // Origin binding (phishing protection)
+    if (clientData.origin !== this.expectedOrigin) {
+      return { verified: false, reason: 'SIGNATURE_INVALID' };
+    }
+    // Replay protection
+    if (newCounter <= authenticator.counter) {
+      return { verified: false, reason: 'COUNTER_REPLAY' };
+    }
+
+    // From here on the challenge is spent, whatever the outcome (single-use).
+    this.challenges.delete(userDID);
+
+    // 5. API-05d: cryptographic verification of the assertion. Checks the signature over
+    //    authenticatorData || SHA-256(clientDataJSON) against the registered COSE public key,
+    //    plus type 'webauthn.get', challenge, origin, rpIdHash, the UP/UV flags and counter.
+    try {
+      const { verified } = await verifyAuthenticationResponse({
+        response: {
+          id: signedAssertion.id,
+          rawId: signedAssertion.rawId,
+          response: {
+            clientDataJSON: signedAssertion.response.clientDataJSON,
+            authenticatorData: signedAssertion.response.authenticatorData,
+            signature: signedAssertion.response.signature,
+            ...(signedAssertion.response.userHandle
+              ? { userHandle: signedAssertion.response.userHandle }
+              : {}),
+          },
+          type: 'public-key',
+          clientExtensionResults: {},
+        },
+        expectedChallenge: storedChallenge.challenge,
+        expectedOrigin: this.expectedOrigin,
+        expectedRPID: this.rpID,
+        expectedType: 'webauthn.get',
+        credential: {
+          id: credentialID,
+          publicKey: new Uint8Array(authenticator.credentialPublicKey),
+          counter: authenticator.counter,
+          transports: authenticator.transports,
+        },
+        requireUserVerification: true,
+      });
+      if (!verified) return { verified: false, reason: 'SIGNATURE_INVALID' };
+    } catch {
+      return { verified: false, reason: 'SIGNATURE_INVALID' };
+    }
+
+    // 6. Update stored counter only after a verified signature
+    authenticator.counter = newCounter;
+    this.authenticators.set(credentialID, authenticator);
+
+    return {
+      verified: true,
+      newCounter,
+    };
   }
 
   /**
