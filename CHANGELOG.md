@@ -11,6 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
+- docs(adr): ADR-012 audit anchor backend (RFC 9162 log default, L2 optional, no own chain) for #295/L2A-03 + post-merge QA record ([#315](https://github.com/Late-bloomer420/miTch/pull/315)) — evidence: [`POST_MERGE_VERIFICATION_2026-11-20.md`](docs/qa/POST_MERGE_VERIFICATION_2026-11-20.md)
 - docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
 - perf: port Jules micro-optimizations from closed #163 and #164 ([#308](https://github.com/Late-bloomer420/miTch/pull/308))
 - docs(qa): build/test performance baseline 2026-11-19 ([#304](https://github.com/Late-bloomer420/miTch/pull/304)) — evidence: [`BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md`](docs/qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md)

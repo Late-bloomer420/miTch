@@ -103,7 +103,7 @@ Executable baseline: `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 | GAP-1/GAP-4/F-19/F-20 | Residual | OPEN | Runtime erasure/external review/durable audit/explicit unlinkability downgrade |
 | L2A-01 (F-05/F-06 honest status) | P1 (proposed) | Implemented, scoped; PR #297 open | Mocked receipts are `mocked`, unchecked verification is `unverifiable`; [evidence](qa/L2_ANCHOR_HONEST_STATUS_2026-11-18.md). Public API behavior change needs owner approval; does not close F-05/F-06 |
 | L2A-02 real anchoring | P2 (proposed) | OPEN #294 | Real submit and verify, integration negatives, dated evidence; depends on L2A-03 |
-| L2A-03 anchor backend ADR + port | P2 (proposed) | OPEN #295 | ADR (TSA / OpenTimestamps / L2 contract; no own chain), `AnchorBackend` port, reconcile with `@askmi/anchor-service`, privacy constraints |
+| L2A-03 anchor backend ADR + port | P2 (proposed) | ADR-012 drafted (Proposed, #315) — owner decision pending on #295; port still OPEN | RFC 9162 transparency log as default, L2 contract optional, no own chain; `AnchorProvider` port + privacy constraints in [ADR-012](../compliance/ADR/ADR-012.md) |
 | L2A-04 `StateAnchorClient` labeling | P1 (proposed) | Implemented via #301 (`21fc573`); #296 close proposed, owner confirmation pending (evidence comment 7032389824) | Dev-fallback receipts are `network: 'mock'`, `status: 'mocked'`; export test green (34/34 audit-log suite) |
 
 These documentation edits do not implement the open fixes or close a release/market gate. Docs-only edits do not require a full repository re-audit; revalidate affected paths/profiles/dependencies.
