@@ -8,7 +8,7 @@ import {
 } from '@askmi/shared-crypto';
 import { buildMdocDocument, MDL_DOCTYPE, MDL_NAMESPACE, MDL_ELEMENTS } from '@askmi/mdoc';
 import type { ValidityInfo } from '@askmi/mdoc';
-import { newCorrelationId } from '@askmi/shared-types';
+import { ASKMI_DEMO, newCorrelationId } from '@askmi/shared-types';
 import type { CredentialResponse } from '@askmi/shared-types';
 import { assertValidBatch, issueAgeCredentialBatch } from './batch';
 
@@ -46,7 +46,8 @@ app.use(express.static('public'));
 
 // Global Issuer KeyPair (In-Memory for PoC)
 let issuerKeys: CryptoKeyPair | null = null;
-const ISSUER_DID = 'did:web:localhost%3A3005'; // encoding : to %3A for did:web
+// API-01.4: same constant the verifier trusts by default (did:web, ':' encoded as %3A).
+const ISSUER_DID = ASKMI_DEMO.issuerUri;
 
 // Initialize keys on startup — resolved before any request is handled.
 // Exported as `ready` so tests can await key initialisation without binding a port.
