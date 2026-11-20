@@ -60,3 +60,35 @@ export function makeStatusListCredential(options: {
     },
   };
 }
+
+/**
+ * Sign a status-list credential as a compact VC-JWT (ES256, `typ: vc+jwt`,
+ * payload `{ iss, iat, vc }`) with WebCrypto. Test/mock issuers only.
+ */
+export async function signStatusListCredential(
+  credential: StatusListCredential,
+  privateKey: CryptoKey,
+  options: { kid?: string; typ?: string; exp?: number } = {},
+): Promise<string> {
+  const enc = (value: unknown) =>
+    btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(value))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  const header = enc({ alg: 'ES256', typ: options.typ ?? 'vc+jwt', ...(options.kid ? { kid: options.kid } : {}) });
+  const payload = enc({
+    iss: credential.issuer,
+    iat: Math.floor(Date.now() / 1000),
+    ...(options.exp !== undefined ? { exp: options.exp } : {}),
+    vc: credential,
+  });
+  const sig = new Uint8Array(
+    await crypto.subtle.sign(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      privateKey,
+      new TextEncoder().encode(`${header}.${payload}`),
+    ),
+  );
+  const b64 = btoa(String.fromCharCode(...sig)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `${header}.${payload}.${b64}`;
+}
