@@ -11,6 +11,7 @@ What changed on `master`, one line per merged pull request, newest first.
 
 ## 2026-11
 
+- docs(security): adopt OIDF formal-analysis findings in ADR-009 and SECURITY.md (#196) ([#314](https://github.com/Late-bloomer420/miTch/pull/314))
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
 - docs(qa): review the 2026-11-03 API audit against d7f0e77 (#299) ([#302](https://github.com/Late-bloomer420/miTch/pull/302)) — evidence: [`API_AUDIT_REVIEW_2026-11-18.md`](docs/qa/API_AUDIT_REVIEW_2026-11-18.md)
 - docs(session): record Session 23 — #247 scope split assessed and not carried out ([#300](https://github.com/Late-bloomer420/miTch/pull/300))
