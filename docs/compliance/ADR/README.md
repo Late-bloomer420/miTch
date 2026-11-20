@@ -25,6 +25,7 @@ Die Nummern ADR-001 bis ADR-009 existieren auch in `docs/03-architecture/mvp/` �
 | [ADR-009](ADR-009.md) | Native WebAuthn Verifier statt HMAC-Proxy-Mode-System | Accepted (retrospective) |
 | [ADR-010](ADR-010.md) | Regulatory-Positioning Boundary for Age Verification | Accepted |
 | [ADR-011](ADR-011.md) | Two-Tier Audit Model — Minimised, Accountable, Tamper-Evident | Accepted |
+| [ADR-012](ADR-012.md) | Audit Anchor Backend — RFC 9162 transparency log default, L2 optional, no own chain (#295 / L2A-03) | Proposed |
 
 ## Verwandte Sammlungen
 
