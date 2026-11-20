@@ -11,7 +11,7 @@ External reports/chats are inputs, not a second task-tracking authority.
 | Exact dated observations and reproducible probes | [qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md), [qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md](qa/API_PROTOCOL_REALITY_AUDIT_2026-11-03.md), reviewed at `d7f0e77` in [qa/API_AUDIT_REVIEW_2026-11-18.md](qa/API_AUDIT_REVIEW_2026-11-18.md) |
 | API & protocol v2 architecture and 4-stage plan | [tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md](tasks/API_V2_ARCHITECTURE_PLAN_2026-11-03.md) |
 | Slim age-verifier template: scope, open-PR mapping, profile decision (planning, not evidence) | [tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md](tasks/AGE_VERIFIER_TEMPLATE_SCOPE_2026-11-17.md) |
-| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 |
+| Task state | [BACKLOG.md](BACKLOG.md), linked implementation issues #170–#173 and planning owners #175–#177 |
 | Operating snapshot | [../STATE.md](../STATE.md) |
 | Change history (what merged on master since 2026-10-14) | [../CHANGELOG.md](../CHANGELOG.md); one line per merged PR with links to the PR and its QA record. It holds no test results or status claims; earlier history: [SESSION_HISTORY.md](SESSION_HISTORY.md) |
 | Technical sequence / live gate | [RELEASE_READINESS_ROADMAP.md](RELEASE_READINESS_ROADMAP.md), #142 |
@@ -87,6 +87,8 @@ This file defines the authoritative document per topic area and serves as naviga
 - **STRIDE × LINDDUN threat-model roadmap and issue register (maps T-IDs to EV-01..EV-09):** `docs/security/THREAT_MODEL_ROADMAP_2026-10-23.md`
 - **Phase-0 threat-model narrative (surviving source for the "lost" hardening content):** `src/packages/phase0-security/EXECUTIVE_SUMMARY.md` — the strategy narrative (platform-vendor bypass, split-key 3-share design, memory/network/supply-chain/seizure/AI defenses with per-strategy pros/cons) lost from the deleted root `ADVANCED_SECURITY_HARDENING.ts` survives here; only the `HARDENING_CHECKLIST` const and `RECOMMENDATION MATRIX` are unrecovered (see `docs/qa/PHASE0_SECURITY_CLEANUP_FORENSICS_2026-10-29.md`).
 - **Archive inventory (packages and docs folders; proposals pending owner decision, nothing moved):** `docs/ARCHIVE_INVENTORY_2026-11-11.md`
+
+- **Observable trust milestones and assurance/role boundaries:** `docs/security/TRUST_ASSURANCES_AND_ROLE_BOUNDARIES.md` (planning; #175–#177, complements existing component evidence and #170–#173).
 
 ## Research And Strategy Inputs
 
