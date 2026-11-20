@@ -169,3 +169,29 @@ The separate Connect API and integration remain outstanding under #170.
 - [Exact code revision, commands, results and boundaries](qa/CONNECT_PROFILE_INTEGRATION_2026-10-25.md).
   This is numeric-age middleware with minimized application results, not ZKP or
   official-wallet interoperability evidence. No pilot/release gate changes.
+
+# 2026-11-19 — Build/test runtime baseline measurement
+
+- Question: why does `pnpm build`/`pnpm test` feel long? No documented runtime
+  baseline existed (no runtime entries in BACKLOG/STATE/SESSION_HISTORY).
+- Method: timed warm/cold runs plus per-suite vitest breakdown at clean committed
+  revision `70c7aef` on the local Windows machine (Node 24, 12 cores), verified
+  empty `git status` before each run. Exact commands, numbers and limits:
+  [dated QA report](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md).
+- Measured results: warm test run 1.7 s turbo ("FULL TURBO") / 3.3 s wall; full cold
+  test graph (`turbo run test --force`, 50 tasks incl. `@askmi/poc-hardened`, which `pnpm test`
+  excludes; not like-for-like with the warm run) 3 m 7.5 s turbo / 3 m 11.1 s wall.
+  Top suites under full load: evidence 83.3 s wall vs 13.6 s isolated (~6x CPU
+  contention; its real `spawnSync` subprocess tests are the package's purpose),
+  wallet-pwa 78.2 s with worker-aggregated import time dominating and environment
+  startup measured at 6 ms. shared-crypto is real PQC test work but 19.4 s wall
+  (the 61.2 s figure is worker-aggregated, not wall clock). `turbo.json` defines
+  no `inputs`; CI runs with a cold Turbo cache per run plus a duplicate
+  `pnpm build` in the layer-validation job.
+- Retraction: a preliminary timing taken on an unversioned dirty local tree
+  (including a locally modified `package.json`) did not reproduce at the committed
+  revision and was retracted; the committed-revision numbers above supersede it.
+- Outcome: docs-only evidence on branch `docs/qa-perf-baseline-2026-11-19`;
+  follow-up proposals recorded in the BACKLOG entry (turbo `inputs`, CI cache,
+  wallet-pwa module-import-cost investigation, demo environment hosting
+  decision). No code changed, no pilot/release gate moves.
