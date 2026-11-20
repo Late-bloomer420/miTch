@@ -12,7 +12,18 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - fix: API audit Stage 0 — close API-01..05 with code and negative tests ([#312](https://github.com/Late-bloomer420/miTch/pull/312)) — evidence: [`API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md`](docs/qa/API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md)
+- docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
+- perf: port Jules micro-optimizations from closed #163 and #164 ([#308](https://github.com/Late-bloomer420/miTch/pull/308))
+- docs(qa): build/test performance baseline 2026-11-19 ([#304](https://github.com/Late-bloomer420/miTch/pull/304)) — evidence: [`BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md`](docs/qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md)
+- fix(audit-log): label fallback anchor receipts as mocked ([#301](https://github.com/Late-bloomer420/miTch/pull/301))
+- fix(demo): Startskript passt zur HTTPS-Wallet, Trace meldet Zustellung wahrheitsgemäß ([#265](https://github.com/Late-bloomer420/miTch/pull/265))
+- docs: Archiv-Inventar für Pakete und Doku-Ordner (Vorschläge, nichts verschoben) ([#266](https://github.com/Late-bloomer420/miTch/pull/266))
+- docs: map observable trust assurances, role boundaries and milestones ([#178](https://github.com/Late-bloomer420/miTch/pull/178))
+- perf: Optimize Date sorting using Schwartzian transform ([#165](https://github.com/Late-bloomer420/miTch/pull/165))
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
+- docs(qa): review the 2026-11-03 API audit against d7f0e77 (#299) ([#302](https://github.com/Late-bloomer420/miTch/pull/302)) — evidence: [`API_AUDIT_REVIEW_2026-11-18.md`](docs/qa/API_AUDIT_REVIEW_2026-11-18.md)
+- docs(session): record Session 23 — #247 scope split assessed and not carried out ([#300](https://github.com/Late-bloomer420/miTch/pull/300))
+- test(verifier-demo): cover credential expiry in the age_over_18 profile ([#298](https://github.com/Late-bloomer420/miTch/pull/298)) — evidence: [`AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md`](docs/qa/AGE_OVER_18_EXPLORATION_PROFILE_2026-11-18.md)
 - fix: clarify age claims and test issuer-attested disclosure ([#287](https://github.com/Late-bloomer420/miTch/pull/287))
 - docs(tasks): scope slim age-verifier template and map open PRs ([#290](https://github.com/Late-bloomer420/miTch/pull/290))
 - fix(shared-crypto): trust list fails closed outside explicit dev mode (#240) ([#276](https://github.com/Late-bloomer420/miTch/pull/276))
