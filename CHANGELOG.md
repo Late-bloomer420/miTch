@@ -12,6 +12,14 @@ What changed on `master`, one line per merged pull request, newest first.
 ## 2026-11
 
 - docs(security): adopt OIDF formal-analysis findings in ADR-009 and SECURITY.md (#196) ([#314](https://github.com/Late-bloomer420/miTch/pull/314))
+- docs(changelog): add #298, #300 and #302 ([#309](https://github.com/Late-bloomer420/miTch/pull/309))
+- perf: port Jules micro-optimizations from closed #163 and #164 ([#308](https://github.com/Late-bloomer420/miTch/pull/308))
+- docs(qa): build/test performance baseline 2026-11-19 ([#304](https://github.com/Late-bloomer420/miTch/pull/304)) — evidence: [`BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md`](docs/qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md)
+- fix(audit-log): label fallback anchor receipts as mocked ([#301](https://github.com/Late-bloomer420/miTch/pull/301))
+- fix(demo): Startskript passt zur HTTPS-Wallet, Trace meldet Zustellung wahrheitsgemäß ([#265](https://github.com/Late-bloomer420/miTch/pull/265))
+- docs: Archiv-Inventar für Pakete und Doku-Ordner (Vorschläge, nichts verschoben) ([#266](https://github.com/Late-bloomer420/miTch/pull/266))
+- docs: map observable trust assurances, role boundaries and milestones ([#178](https://github.com/Late-bloomer420/miTch/pull/178))
+- perf: Optimize Date sorting using Schwartzian transform ([#165](https://github.com/Late-bloomer420/miTch/pull/165))
 - docs: introduce CHANGELOG.md and record the #189 merge in STATE and backlog ([#249](https://github.com/Late-bloomer420/miTch/pull/249))
 - docs(qa): review the 2026-11-03 API audit against d7f0e77 (#299) ([#302](https://github.com/Late-bloomer420/miTch/pull/302)) — evidence: [`API_AUDIT_REVIEW_2026-11-18.md`](docs/qa/API_AUDIT_REVIEW_2026-11-18.md)
 - docs(session): record Session 23 — #247 scope split assessed and not carried out ([#300](https://github.com/Late-bloomer420/miTch/pull/300))
