@@ -1,5 +1,14 @@
 # STATE.md — Current Operating State
 
+**Scoped update 2026-11-21 — full local run at `b00eb14`:** `pnpm build --force` 31/31 tasks;
+`pnpm test --force` 49/49 tasks with 2659 passed, 1 skipped, 0 failed; `pnpm lint` 0 errors,
+7 known warnings. issuer-mock (:3005), verifier-backend (:3004) and wallet-pwa (:5174, HTTPS)
+started as filtered dev servers and answered health/metadata probes. One unauthenticated
+presentation was denied with 400, and the JWKS holds no private key material. Linux, Node 22.22.0,
+pnpm 10.34.9. The real credential flow and the browser smoke check were not re-run. This supersedes
+the older test counts below only for this revision and environment.
+[Dated evidence](docs/qa/FULL_BUILD_TEST_DEV_2026-11-21.md). No release or pilot gate moves.
+
 **Scoped update 2026-11-20 (3) — master `d47ee50`:** #312 merged (API audit Stage 0, closes API-01..05 with code + negative tests). Owner explicitly approved the three breaking API changes on the PR (mdoc `docType` required; signed status lists only outside `ASKMI_TRUST_MODE=dev`; WebAuthn `requireUserVerification`). CHANGELOG line landed with the PR. Remaining open PRs are other agents' drafts. `Entire Gates` still red (no credits), non-blocking. No release or pilot gate moves.
 
 **Scoped update 2026-11-20 (2) — master `11e4792`:** #311 (doc sync) and #315 (ADR-012 anchor-backend proposal for #295 + post-merge QA record) merged; open PRs are only other agents' drafts (#310, #312–#314, branches conflict-cleaned against master). Local verification at `ab72eb7`: lint 13/13 (7 pre-existing warnings), warm tests 49/49 FULL TURBO, audit-log 34/34; cold `--force` fails only in `@askmi/evidence` due to the sandbox pnpm path (environmental, CI green) — see [`docs/qa/POST_MERGE_VERIFICATION_2026-11-20.md`](docs/qa/POST_MERGE_VERIFICATION_2026-11-20.md). ADR-012 proposes RFC 9162 log as anchor default; owner decision on #295 pending. No release or pilot gate moves.

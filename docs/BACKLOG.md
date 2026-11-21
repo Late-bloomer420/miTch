@@ -1,5 +1,11 @@
 # AskMI — Master Backlog
 
+**2026-11-21 — full local run at `b00eb14`:** build 31/31, test 49/49 (2659 passed, 0 failed),
+lint 0 errors, and all three apps start and answer probes; [dated evidence](qa/FULL_BUILD_TEST_DEV_2026-11-21.md).
+This is current evidence, not a goal change. Open acceptance work stays as listed: the
+clean-checkout RC report and failure-gating browser E2E (Wave 1 exit), a re-run of the real
+credential flow, and the `wallet-pwa` Vite config warnings (`__dirname`, extensionless import).
+
 **2026-11-19 — Build/test runtime baseline (branch `docs/qa-perf-baseline-2026-11-19`, clean revision `70c7aef`):**
 first measured baseline for `pnpm build`/`pnpm test` (Windows, Node 24, 12 cores): warm test run 1.7 s turbo ("FULL TURBO", 49/49 cached) / 3.3 s wall; full cold test graph (`turbo run test --force`, 50 tasks incl. `@askmi/poc-hardened`, which `pnpm test` excludes) 3 m 7.5 s turbo / **3 m 11.1 s wall**. Top suite wall clocks under that full load: evidence 83.3 s (13.6 s isolated — ~6x CPU contention; its real `spawnSync` subprocess tests are the package's purpose, no change recommended) and wallet-pwa 78.2 s (worker-aggregated import time dominates; environment startup measured 6 ms). A preliminary timing taken on an unversioned dirty local tree was retracted as non-reproducible and is superseded by these committed-revision numbers. `turbo.json` defines no `inputs`; CI keeps a cold Turbo cache per run plus a duplicate `pnpm build` in the layer-validation job. [Dated evidence, commands and limits](qa/BUILD_TEST_PERFORMANCE_BASELINE_2026-11-19.md). Follow-ups proposed, NOT implemented: turbo `inputs`, CI Turbo cache, wallet-pwa module-import-cost investigation, demo/pilot environment hosting (owner decision). Docs-only; no code changed, no release or pilot gate moves.
 
