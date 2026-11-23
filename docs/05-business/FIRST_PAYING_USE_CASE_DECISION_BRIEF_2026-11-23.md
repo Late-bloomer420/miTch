@@ -3,6 +3,7 @@
 Date: 2026-11-23
 Status: PROPOSED. A recommendation for the decision owner, not a decision. Not buyer evidence.
 Decision owner: repository owner (author of #284, assignee of #143).
+Follow-up: first-mover options and EU legal variance in `FIRST_MOVER_OPTIONS_AND_EU_LEGAL_VARIANCE_2026-11-23.md`.
 Sub-issues: #324 decision record · #325 Austria workflow/legal map · #326 baseline comparison · #327 market matrix · #328 interview focus.
 
 Sources were read on 2026-11-23: miTch documents on `master`, issues #142, #143 and #284, and the EC age verification policy page. Points marked *verify* come from general knowledge and have no source yet.
@@ -58,7 +59,7 @@ Austria is proposed because of the founder ecosystem (Innsbruck, ID Austria). Th
 | Dimension | Commercial candidate: hotel registration (T02) | Reference: online alcohol sale (C01) |
 |---|---|---|
 | Workflow | Guests register before arrival; the record is matched at check-in | Age check before an online spirits order ships |
-| Legal driver | Guest-register duty under the Austrian Meldegesetz (*verify* fields and scope) | Youth protection is state law: 16 for beer/wine, 18 for spirits (*verify* online-sale duties) |
+| Legal driver | Guest register for **all** guests under MeldeG §10: filed within 24 h, kept 7 years, with travel-document data ([USP](https://www.usp.gv.at/themen/brancheninformationen/gastronomie-und-tourismus/gaesteverzeichnis.html); exact fields still need counsel review, #325) | Youth protection is state law: 16 for beer/wine, 18 for spirits (*verify* online-sale duties) |
 | Buyer (budget) | PMS vendor product lead, or hotel group COO/IT lead | E-shop owner or shop-platform vendor |
 | Operator | Front desk | Shop operations or delivery |
 | Decision maker | Hotel group management, with privacy-officer sign-off | Shop owner |
@@ -66,7 +67,7 @@ Austria is proposed because of the founder ecosystem (Innsbruck, ID Austria). Th
 | Fallback | Manual form at the desk | The courier checks ID at the door |
 | Wallet dependency | Austrian EUDI wallet with a PID | EU age verification app or an EUDI wallet |
 
-Germany abolished the hotel registration form for German citizens from 1 Jan 2025 (*verify*). That would weaken T02 in Germany.
+Germany abolished the hotel registration form for German citizens from 1 Jan 2025 (Bürokratieentlastungsgesetz IV); foreign guests still register under §§29–30 BMG ([Haufe](https://www.haufe.de/recht/weitere-rechtsgebiete/wirtschaftsrecht/meldepflicht-in-beherbergungsstaetten_210_639508.html), secondary source). That weakens T02 in Germany. Austria's 7-year retention also cuts against minimisation: the benefit there is fewer typed and wrong fields, not less data stored.
 
 ## 5. Differentiation test
 

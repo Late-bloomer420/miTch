@@ -81,6 +81,7 @@ This file defines the authoritative document per topic area and serves as naviga
 - **September 2026 use-case and GTM research (proposal, not approved backlog):** `docs/05-business/USE_CASE_LANDSCAPE_AND_SEQUENCED_ROADMAP_2026-09-11.md` and `docs/05-business/USE_CASES_AND_GTM_BRAINSTORM_2026-09-11.md`
 - **Carrier (Rechtsform) and revenue model proposal with Sep/Oct 2026 survey sources (PROPOSED, not decided):** `docs/05-business/CARRIER_AND_REVENUE_MODEL_PROPOSAL_2026-11-03.md`
 - **First paying use case decision brief for #284 (PROPOSED, not decided; not buyer evidence):** `docs/05-business/FIRST_PAYING_USE_CASE_DECISION_BRIEF_2026-11-23.md`; age-verifier baseline vs EU AV solution, official verifier and IDV vendors (#326): `docs/qa/AGE_VERIFIER_BASELINE_COMPARISON_2026-11-23.md`
+- **First-mover options and EU legal variance (PROPOSED research note; trackers #330, #338):** `docs/05-business/FIRST_MOVER_OPTIONS_AND_EU_LEGAL_VARIANCE_2026-11-23.md`
 - **ADOPT-1 planning gate ("Sign in with AskMI" / `@askmi/connect`):** `docs/tasks/ADOPT_1_CONNECT_PLAN.md`
 - **ADOPT-1.0 product boundary decision:** `docs/tasks/ADOPT_1_PRODUCT_BOUNDARY_DECISION.md`
 - **ADOPT-1.1 minimal session contract:** `docs/tasks/ADOPT_1_MINIMAL_SESSION_CONTRACT.md`
