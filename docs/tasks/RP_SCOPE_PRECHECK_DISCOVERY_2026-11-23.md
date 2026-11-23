@@ -62,4 +62,47 @@ Where it would live: next to the existing policy engine or verifier SDK. This ne
 
 - The exact ETSI TS 119 475 profile and IR 2026/1730 Annex text in English: does a missing `claim` list mean "whole credential"? (#337)
 - Do intermediaries (itsme, eID Easy, Lissi) already run such a check in their connectors? (#328, module D)
-- Prior art: Sokolov, "Who Assures the Verifier?", arXiv 2609.26220. How far does its RP profile and evidence receipt already cover §3–§4? It needs reading before any build, and it must be cited.
+- Prior art: answered in §7.
+
+## 7. Prior art: arXiv 2609.26220 (read 2026-11-23)
+
+The paper is A. Sokolov (Tyche Institute), "Who Assures the Verifier? An Executable Assurance-Locus Audit of the European Digital Identity Wallet", v1, preprint v0.1, not peer reviewed, dated 2026-08-11. Its arXiv ID suggests September but the paper is dated August; the mismatch is not resolved. The artifact is published as arXiv ancillary files, and its licence is not stated.
+
+It proposes:
+- a 17-rule decision profile (`research-proposal-not-adopted`);
+- a JSON Lines evidence receipt;
+- 36 synthetic vectors, run through three study-authored implementations (108 runs, 0 disagreements);
+- a source audit of the EC verifier, Multipaz and walt.id.
+
+Its conclusion: existing artefacts "do not yet join governance, implementation and reliance evidence into one portable object". It says the proposal complements wallet certification, RP registration and FCAF, and does not replace any of them.
+
+### Overlap with #338
+
+| #338 step | Paper rule | Overlap |
+|---|---|---|
+| 1 Certificate validity | R_RP_UNREGISTERED, R_RP_SUSPENDED, R_RP_IDENTITY_MISMATCH | Same intent |
+| 2–4 Credential match, claim subset, every option in scope | R_ATTRIBUTE_OVER_REQUEST ("requested attributes … subset of the registered attribute set") | Same intent, but the paper models it as a boolean fact |
+| 5 Purpose | R_PURPOSE_MISMATCH | Same intent; neither defines how to match free-text purposes |
+| Evidence record (§4) | Receipt (§4.4): profile and version, input hash, verdict and ordered reason codes, RP registration identifier, verifier and policy versions, time | Near-identical; §6.5 "prefer hashes, short-lived pseudonymous transaction references" matches our no-values rule |
+
+**Conclusion: the core idea of #338 is not new.** Rules 2–6 plus the receipt are already published as a research profile, and it must be cited.
+
+### What #338 adds (to be confirmed, not claimed)
+
+- **Real objects instead of booleans.** The paper's inputs are "boolean or finite-state facts" (§4.5). It states that production cases "must use actual OpenID4VP, SD-JWT VC and mdoc objects" (§6.4). #338 evaluates real DCQL against the real registration certificate structure. That includes `claim_sets`, `credential_sets` and `null` array paths, none of which the readable text covers.
+- **Runtime placement before sending.** The paper evaluates recorded transactions for conformance, audit and FCAF (the RP as system under test). #338 is a runtime gate on the RP side before the request leaves.
+- **Observed evidence.** The paper's audit is "source-presence observations". #338 rests on runtime probes against the official verifier v0.12.0 (#326).
+- **Change detection when certificates or schemas change.** The paper only names "declared retest triggers" (§6.4).
+
+### What the paper has that #338 lacks
+
+- Presentation-phase rules 7–14 (signature, disclosure binding, holder binding, audience, nonce, freshness, status, issuer trust). #338 leaves these to the verifier; the miTch path covers part of them (#326).
+- Reliance-phase rules 15–17: `R_USE_EXCEEDS_APPROVAL`, `R_LAWFUL_BASIS_UNRECORDED`, `R_AUDIT_EVIDENCE_INCOMPLETE`. These fit miTch's evidence hypothesis and are worth adopting.
+- A signed implementation and policy identity in the receipt (§6.4).
+
+### Consequences
+
+1. **Reuse the paper's reason codes** (`R_*`) instead of inventing new ones, and cite it. Our draft codes in §3 map onto them; one code that differs is `OPTION_OUT_OF_SCOPE`.
+2. **Partner/reuse beats build.** The paper asks for an externally owned plugfest with real objects and mutation testing (§8). Contributing real-object vectors from #326 is a low-cost first step that gives external evidence. Reusing its code needs a licence first, because the artifact's licence is unknown.
+3. **Add buyer risks to the interviews (module D).** The paper expects that "deployers may reject expensive receipts" and that "registrars may resist owning software assurance" (§8). Both are disconfirming signals.
+4. **Consider the other buyer.** The paper's target owner is conformance and certification: FCAF, laboratories, supervisors. That is a different buyer from intermediaries and RPs, and #328 should test it.

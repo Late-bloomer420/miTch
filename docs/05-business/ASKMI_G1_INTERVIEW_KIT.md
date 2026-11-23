@@ -254,6 +254,7 @@ Disconfirming answers to record explicitly:
 - a wallet warning is acceptable or never happens in practice;
 - registration scope is set once and never changes;
 - no one asks for evidence beyond the certificate itself.
+- the receipt is seen as too expensive, or the registrar or supervisor does not want to own software assurance (expected tensions named in arXiv 2609.26220, §8).
 
 ## 7. Short 15-minute version
 
