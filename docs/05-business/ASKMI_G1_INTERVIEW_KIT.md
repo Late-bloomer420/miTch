@@ -4,7 +4,8 @@
 **Gate date:** 11 October 2026  
 **Gate targets:** 20 completed interviews; at least 8 problem confirmations; at least 3 interviews that identify a budget owner, procurement trigger, or deadline  
 **Roadmap:** [#142](https://github.com/Late-bloomer420/miTch/issues/142)  
-**GTM tracker:** [#143](https://github.com/Late-bloomer420/miTch/issues/143)
+**GTM tracker:** [#143](https://github.com/Late-bloomer420/miTch/issues/143)  
+**Revision 2026-11-23:** added hypothesis variant B, module D and concept test B for [#338](https://github.com/Late-bloomer420/miTch/issues/338). Gate targets and counting rules are unchanged.
 
 > This kit tests a market hypothesis. It does not claim certification, compliance, production readiness, customers, revenue, or European Commission endorsement.
 
@@ -19,6 +20,12 @@ The interview must test whether an organisation has a concrete problem in decidi
 3. which policy, trust source, registration scope, and software revision produced a decision;
 4. what happens when a rulebook, credential schema, wallet, or connector changes; and
 5. whether review evidence can be retained without retaining complete credential payloads.
+
+### Hypothesis variant B: registration scope before sending (#338)
+
+Relying parties must hold a registration certificate that lists their intended use and the credentials and claims they may request (Implementing Regulation (EU) 2025/848, amended by 2026/1730). The wallet checks a request against that certificate and warns the user when it goes beyond it. Nothing on the relying-party side checks the request **before** it is sent. The test question: does a relying party, intermediary or registrar have a concrete problem with (a) keeping requests within the registered scope as products, schemas and certificates change, and (b) proving afterwards why a request was allowed?
+
+Variant B is tested inside the same interviews and counted under the same rules. It is not a separate programme. Record whether module D was used, so its evidence can be reported separately.
 
 Do not lead with a wallet product, zero-knowledge claims, a feature tour, or a sales pitch. Ask about the interviewee's current workflow before describing AskMI.
 
@@ -46,6 +53,7 @@ Use the S01 cohort as the minimum mix:
 | Integrator/service platform | CTO, identity/IAM lead, solution architect, delivery lead | 3+ |
 | Identity/privacy/security owner | EUDI product owner, IAM lead, privacy engineering, security architecture | 3+ |
 | Second cohort | Fill evidence gaps while preserving role diversity | 10 |
+| — of which, for variant B | Wallet intermediary or connector provider, registration/access-certificate provider, national registrar or supervisor, compliance lead at a regulated relying party (bank, telco, health, transport) | 3+ |
 
 Avoid filling the sample with people who share the same organisation, role, or relationship to the project.
 
@@ -217,6 +225,37 @@ Use one module after question 10. Do not ask every module in the same interview.
 6. Which failures must result in denial by default?
 7. Which claim must a supplier avoid without independent assessment?
 
+### D. Relying-party registration and request scope (variant B, #338)
+
+Use with intermediaries, certificate providers, registrars or regulated relying parties. Ask about their current preparation first. Do not describe a solution before question 6.
+
+#### German
+
+1. Wie bereiten Sie die Registrierung als Relying Party vor, oder wie unterstützen Sie Kunden dabei? Wer legt fest, welche Zwecke und Claims eingetragen werden?
+2. Wie stellen Sie sicher, dass eine konkrete Wallet-Anfrage im registrierten Umfang bleibt? Wer prüft das, und wann?
+3. Was passiert heute, wenn sich ein Produkt, ein Credential-Schema oder das Registrierungszertifikat ändert? Woran merken Sie, dass eine Anfrage nicht mehr passt?
+4. Was wäre die Folge, wenn Nutzer bei Ihrer Anfrage eine Wallet-Warnung sehen, weil sie über die Registrierung hinausgeht? Ist das schon vorgekommen oder getestet worden?
+5. Welchen Nachweis verlangen Datenschutz, Revision oder Aufsicht dafür, warum eine Anfrage zulässig war? Wie erbringen Sie ihn heute?
+6. Bis wann müssen Sie registriert sein oder Wallets akzeptieren, und was treibt diesen Termin?
+7. Wer würde eine Prüfung der Anfrage vor dem Senden bezahlen: die Relying Party, der Intermediär, oder niemand, weil die Wallet ohnehin warnt?
+
+#### English
+
+1. How do you prepare relying-party registration, or support customers with it? Who decides which purposes and claims go into it?
+2. How do you make sure a specific wallet request stays within the registered scope? Who checks that, and when?
+3. What happens today when a product, a credential schema or the registration certificate changes? How do you notice that a request no longer fits?
+4. What would it cost you if users saw a wallet warning because your request goes beyond the registration? Has that happened or been tested?
+5. What evidence do privacy, audit or supervisors require for why a request was allowed? How do you provide it today?
+6. By when must you be registered or accept wallets, and what drives that date?
+7. Who would pay for checking a request before it is sent: the relying party, the intermediary, or nobody, because the wallet warns anyway?
+
+Disconfirming answers to record explicitly:
+- the intermediary or certificate provider already checks requests;
+- a wallet warning is acceptable or never happens in practice;
+- registration scope is set once and never changes;
+- no one asks for evidence beyond the certificate itself.
+- the receipt is seen as too expensive, or the registrar or supervisor does not want to own software assurance (expected tensions named in arXiv 2609.26220, §8).
+
 ## 7. Short 15-minute version
 
 Use this only when 30 minutes is unavailable. It can count as a completed interview if every required evidence field receives a clear answer.
@@ -266,6 +305,22 @@ Follow with:
 
 Use the same four follow-up questions above.
 
+### Concept test B: registration scope (only after module D)
+
+#### German
+
+> Ich teste eine zweite Arbeitshypothese: Bevor eine Relying Party eine Wallet-Anfrage sendet, prüft eine Komponente sie gegen das eigene Registrierungszertifikat, also gegen Zweck, Credentials und Claims. Sie blockiert Anfragen außerhalb des registrierten Umfangs und erzeugt einen datensparsamen Nachweis, warum eine Anfrage zulässig war. Das soll Wallet-Warnungen vermeiden und die Prüfung nach Änderungen beschleunigen.  
+>   
+> Welcher Teil wäre nützlich, welcher unnötig und welcher unklar?
+
+#### English
+
+> I am testing a second working hypothesis: before a relying party sends a wallet request, a component checks it against the party's own registration certificate (purpose, credentials and claims). It blocks requests outside the registered scope and produces a data-minimised record of why a request was allowed. The aim is to avoid wallet warnings and to speed up review after changes.  
+>   
+> Which part would be useful, which part unnecessary, and which part unclear?
+
+Use the same four follow-up questions.
+
 ## 9. Interview scorecard
 
 > [!WARNING]
@@ -310,6 +365,8 @@ Complete this immediately after the interview, in your private copy.
 | Alternatives | |
 | Objections | |
 | Referral role | |
+| Module D / variant B used | Yes / No |
+| Variant B problem confirmation | Yes / No / Unclear / Not asked |
 | Private evidence reference | |
 | Interviewer inference | |
 | Follow-up action | |
@@ -383,6 +440,7 @@ Publish only anonymised counts and approved findings.
 - Procurement trigger/deadline:
 - Selected hospitality workflow:
 - Price/procurement finding:
+- Variant B (#338), from interviews with module D only — confirmations / buyer signals / strongest contrary evidence:
 - Strongest contrary evidence:
 
 ### Decision
