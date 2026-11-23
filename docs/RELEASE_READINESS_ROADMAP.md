@@ -4,10 +4,10 @@
 > (`4d4cc604337a88738ec51d9f1ce448d5330e0f56`) onto executable baseline `cacbc95e5ef884e59c688aea41081f8fb7f12fa6`.
 > This imports no #141 security code and closes no technical/market gate. #170–#173 and EV-05 must be dispositioned.
 > [Current findings](security/REPO_EVIDENCE_STATUS_2026-10-14.md) and [dated evidence](qa/PCC_LEARNINGS_REPO_AUDIT_2026-10-14.md)
-> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 9 November section below; they are not a newly run interop matrix.
+> qualify only overlapping paths/claims and preserve existing component evidence. Official-source coordinates are refreshed in the 23 November section below; they are not a newly run interop matrix.
 
 **Status:** Active, evidence-gated integrated plan  
-**Baseline date:** 2026-11-09  
+**Baseline date:** 2026-11-23  
 **Technical/readiness tracker:** [GitHub issue #142](https://github.com/Late-bloomer420/miTch/issues/142)  
 **GTM sprint tracker:** [GitHub issue #143](https://github.com/Late-bloomer420/miTch/issues/143)  
 **Complete 26-sprint GTM plan:** [GTM_SPRINT_ROADMAP.md](GTM_SPRINT_ROADMAP.md)  
@@ -69,6 +69,19 @@ Internal tests establish implementation behavior only. They do not establish leg
 ## Claims correction
 
 The June 2026 CIR matrix is a historical internal engineering checklist. Its "98%" total, LoA High row, hardware-binding row, and FCAF-readiness row are not conformance or certification evidence. Replace it with requirement-level traceability against the locked official baseline. Until then, no percentage may appear in release or marketing claims.
+
+## Source-watch acceptance additions — 2026-11-23
+
+Use the [November 23 source registry](eudi/EUDI_SOURCE_BASELINE.md#upstream-delta--2026-11-23). Independent iOS core moves to v0.64.0; both released mobile UIs remain build 43.
+
+- **Wave 1:** DCQL path direction, absent claims, VCT alternatives and optional/multiple credential sets; explicit proof-fallback/algorithm policy, per-credential key bounds, deferred errors, authorization-handler and concurrent metadata-cache isolation.
+- **Wave 2:** owner-specific status trust and cache isolation; evidence that configured PubEAA LoTE anchors actually load if in scope. Preserve fail-closed behavior; never use warning mode to conceal missing trust.
+- **Wave 3:** reader/request identity and HTTPS/type checks, typed consent values, response date fixtures, and transport-bound consent/teardown/concurrency negatives. A new core tag or closed upstream issue does not establish passing official-device evidence.
+- **Wave 4:** applicable manual FCAF cases require manual evidence; record exact BrowserStack binary/environment and deployed issuer image digest.
+- Preserve the delivered [Stage 0 fixes and limits](qa/API_AUDIT_STAGE0_REMEDIATION_2026-11-20.md), current BACKLOG and #260/#305 work. Signed local status-list validation is not owner-specific ETSI integration; Profile C remains non-official and the parser remains Presentation Exchange.
+- **Planning checkpoint:** November 23 is the Wave 3 target start, not completion of prerequisites. Reconcile current evidence and the November 22 offer-review decision in #143/#305 before declaring readiness. No gate, date or commercial stop rule changes here.
+
+AskMI remains middleware/reference tooling, not a certified EUDI Wallet Solution. This is a source review only; no new runtime or device PASS is claimed.
 
 ## Source-watch acceptance additions — 2026-11-09
 
@@ -232,7 +245,7 @@ Customer discovery, synthetic-data demonstrations, and paid readiness/design eng
 
 Integration order: official Android wallet/core, official iOS wallet/core, official EC issuer/verifier comparison anchors, then AskMI as verifier middleware/adapter—not a replacement wallet.
 
-Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.32.0 and iOS v0.59.0; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.59.0 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
+Current released mobile anchors are Android and iOS 2026.10.43-Demo build 43. The independent core anchors are Android v0.32.0 and iOS v0.64.0; iOS build 43 integrates Wallet Kit v0.52.1 and must not be represented as a v0.64.0 UI/core combination. Build-42 and older results remain historical and do not satisfy the current matrix.
 
 - Record exact tags/SHAs, profile, credential, device/OS, configuration, result, deviations, logs, and artifacts for every run.
 - For iOS Wallet Kit v0.40.9+ evidence, record the OpenID4VCI client mode and the credential-offer URI/cache, expiry, and replay results.
